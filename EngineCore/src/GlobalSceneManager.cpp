@@ -1,0 +1,111 @@
+#include "GlobalSceneManager.hpp"
+#include "Logging/Logging.hpp"
+
+namespace Engine
+{
+	GlobalSceneManager::GlobalSceneManager()
+	{
+		// Reset transform and rotation
+		this->cameraTransform = glm::vec3(2.0, 0, 1.0);
+		this->cameraHVRotation = glm::vec2(0.0, 0.0);
+	}
+
+	GlobalSceneManager::~GlobalSceneManager()
+	{
+		for (auto& [name, ptr] : this->objects)
+		{
+			delete ptr;
+		}
+		this->objects.clear();
+	}
+
+	void GlobalSceneManager::CameraUpdated()
+	{
+		for (auto& [name, ptr] : this->objects)
+		{
+			ptr->renderer->UpdateMesh();
+		}
+	}
+
+	const std::unordered_map<std::string, Object*>* const GlobalSceneManager::GetAllObjects() noexcept
+	{
+		return &(this->objects);
+	}
+	
+	void GlobalSceneManager::AddObject(std::string name, Object* ptr)
+	{
+		Logging::GlobalLogger->SimpleLog(Logging::LogLevel::Info, "Adding object \"%s\" to globally managed scene", name.c_str());
+		if (ptr != nullptr)
+		{
+			this->objects.emplace(name, ptr);
+		}
+	}
+
+	Object* GlobalSceneManager::FindObject(std::string name)
+	{
+		auto find_ret = this->objects.find(name);
+		if (find_ret != this->objects.end())
+		{
+			return find_ret->second;
+		}
+		return nullptr;
+	}
+
+	size_t GlobalSceneManager::RemoveObject(std::string name) noexcept
+	{
+		return this->objects.erase(name);
+	}
+
+	glm::vec3 GlobalSceneManager::GetCameraTransform()
+	{
+		return this->cameraTransform;
+	}
+
+	glm::vec2 GlobalSceneManager::GetCameraHVRotation()
+	{
+		return this->cameraHVRotation;
+	}
+
+	glm::mat4 GlobalSceneManager::GetCameraViewMatrix()
+	{
+		glm::vec3 direction = glm::vec3(
+			cos(this->cameraHVRotation.y) * sin(this->cameraHVRotation.x),
+			sin(this->cameraHVRotation.y),
+			cos(this->cameraHVRotation.y) * cos(this->cameraHVRotation.x)
+		);
+
+		glm::vec3 right = glm::vec3(
+			sin(this->cameraHVRotation.x - 3.14f / 2.0f), 0,
+			cos(this->cameraHVRotation.x - 3.14f / 2.0f)
+		);
+
+		glm::vec3 up = glm::cross(right, direction);
+
+		glm::mat4 ViewMatrix = glm::lookAt(this->cameraTransform, this->cameraTransform + direction, up);
+		
+		return ViewMatrix;
+	}
+
+	void GlobalSceneManager::SetCameraTransform(glm::vec3 transform)
+	{
+		this->cameraTransform = transform;
+		this->CameraUpdated();
+	}
+
+	void GlobalSceneManager::SetCameraHVRotation(glm::vec2 hvrotation)
+	{
+		if (hvrotation.y < 1.7)
+		{
+			hvrotation.y = 1.7;
+		}
+		else if (hvrotation.y > 4.5)
+		{
+			hvrotation.y = 4.5;
+		}
+
+		this->cameraHVRotation = hvrotation;
+		this->CameraUpdated();
+	}
+
+	__declspec(dllexport) GlobalSceneManager* global_scene_manager = nullptr;
+}
