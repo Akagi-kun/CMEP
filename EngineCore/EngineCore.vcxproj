@@ -90,7 +90,7 @@
     <IncludePath>$(IncludePath)</IncludePath>
     <PublicIncludeDirectories>$(PublicIncludeDirectories)</PublicIncludeDirectories>
     <RunCodeAnalysis>false</RunCodeAnalysis>
-    <OutDir>C:\Users\sla-t\source\repos\survivalgame\actual_build\</OutDir>
+    <OutDir>C:\Users\sla-t\source\repos\CMEP\actual_build\</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
@@ -99,7 +99,7 @@
     <PublicIncludeDirectories>$(PublicIncludeDirectories)</PublicIncludeDirectories>
     <RunCodeAnalysis>false</RunCodeAnalysis>
     <LibraryPath>C:\Users\sla-t\source\repos\EngineCore;$(LibraryPath)</LibraryPath>
-    <OutDir>C:\Users\sla-t\source\repos\survivalgame\actual_build\</OutDir>
+    <OutDir>C:\Users\sla-t\source\repos\CMEP\actual_build\</OutDir>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -165,7 +165,7 @@
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableUAC>false</EnableUAC>
-      <OutputFile>C:\Users\sla-t\source\repos\survivalgame\actual_build\$(TargetName)$(TargetExt)</OutputFile>
+      <OutputFile>C:\Users\sla-t\source\repos\CMEP\actual_build\</OutputFile>
       <TurnOffAssemblyGeneration>true</TurnOffAssemblyGeneration>
     </Link>
   </ItemDefinitionGroup>
@@ -197,7 +197,7 @@
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableUAC>false</EnableUAC>
-      <OutputFile>C:\Users\sla-t\source\repos\survivalgame\actual_build\$(TargetName)$(TargetExt)</OutputFile>
+      <OutputFile>C:\Users\sla-t\source\repos\CMEP\actual_build\$(TargetName)$(TargetExt)</OutputFile>
       <TurnOffAssemblyGeneration>true</TurnOffAssemblyGeneration>
       <AdditionalLibraryDirectories>C:\Users\sla-t\source\repos\EngineCore;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalOptions>

@@ -434,7 +434,11 @@ namespace Engine
 	{
 		// Set up loggre
 		Logging::GlobalLogger = std::make_unique<Logging::Logger>();
-		Logging::GlobalLogger->AddOutputHandle(_DEBUG ? Logging::LogLevel::Debug3 : Logging::LogLevel::Debug1, stdout, true);
+#if _DEBUG == 1
+		Logging::GlobalLogger->AddOutputHandle(Logging::LogLevel::Debug3, stdout, true);
+#else
+		Logging::GlobalLogger->AddOutputHandle(Logging::LogLevel::Info, stdout, true);
+#endif
 
 		// Set up global scene
 		global_scene_manager = new GlobalSceneManager();

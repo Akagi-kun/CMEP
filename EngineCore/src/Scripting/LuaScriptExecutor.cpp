@@ -187,9 +187,7 @@ namespace Engine
 
 			if (errload != LUA_OK || errexec != LUA_OK)
 			{
-				Logging::GlobalLogger->SimpleLog(Logging::LogLevel::Warning,
-					"Error when loading and compiling Lua script '%s'\n   Error codes:\n    load: %i\n    compile: %i\n  Compilation error: %s",
-					script->path.c_str(), errload, errexec, errorexec);
+				printf("Error when loading and compiling Lua script '%s'\n   Error codes:\n    load: %i\n    compile: %i\n  Compilation error: %s", script->path.c_str(), errload, errexec, errorexec);
 			}
 
 			printf("Loaded and compiled Lua script: '%s'\n", script->path.c_str());
