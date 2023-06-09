@@ -346,7 +346,7 @@ namespace Engine
 		glfwWindowHint(GLFW_SAMPLES, 4);
 		glfwWindowHint(GLFW_DEPTH_BITS, 16);
 		glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
-		glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
+		glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6);
 		glfwWindowHint(GLFW_VISIBLE, GL_FALSE);
 		glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
@@ -360,6 +360,11 @@ namespace Engine
 			Logging::GlobalLogger->SimpleLog(Logging::LogLevel::Error, "glewInit returned 0!");
 			exit(1);
 		}
+		Logging::GlobalLogger->SimpleLog(Logging::LogLevel::Info, "GLEW initialized");
+
+		GLint maxTextures;
+		glGetIntegerv(GL_MAX_TEXTURE_IMAGE_UNITS, &maxTextures);
+		Logging::GlobalLogger->SimpleLog(Logging::LogLevel::Debug1, "Texture limit: %i", maxTextures);
 
 		// OpenGL info printout
 		Logging::GlobalLogger->SimpleLog(Logging::LogLevel::Info, "OpenGL info:\n---------- OpenGL ----------\n Vendor: %s\n Renderer: %s\n Version: %s\n----------------------------\n",

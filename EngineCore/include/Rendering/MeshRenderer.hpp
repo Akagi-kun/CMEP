@@ -30,9 +30,16 @@ namespace Engine::Rendering
 		/// GL Material Buffer Object
 		/// </summary>
 		unsigned int mbo = 0;
+		/// <summary>
+		/// GL Tan/Bitan Buffer Object
+		/// </summary>
+		unsigned int tbbo = 0;
 
-		glm::mat4 matMVP;
 		glm::mat4 matM;
+		glm::mat4 matV;
+		glm::mat4 matMV;
+		glm::mat3 matMV3x3;
+		glm::mat4 matMVP;
 
 		/// <summary>
 		/// Currently used shader

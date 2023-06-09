@@ -111,15 +111,16 @@ namespace Engine::Rendering
 			materials.size(), diffuse_count, bump_count, roughness_count, metallic_count, reflection_count);
 
 		// Loop over shapes
-		for (size_t s = 0; s < shapes.size(); s++) {
+		for (size_t s = 0; s < shapes.size(); s++)
+		{
 			// Loop over faces(polygon)
 			size_t index_offset = 0;
 			for (size_t f = 0; f < shapes[s].mesh.num_face_vertices.size(); f++) {
 				size_t fv = size_t(shapes[s].mesh.num_face_vertices[f]);
 				
-
 				// Loop over vertices in the face.
-				for (size_t v = 0; v < fv; v++) {
+				for (size_t v = 0; v < fv; v++)
+				{
 					// access to vertex
 					tinyobj::index_t idx = shapes[s].mesh.indices[index_offset + v];
 					tinyobj::real_t vx = attrib.vertices[3 * size_t(idx.vertex_index) + 0];
@@ -128,7 +129,8 @@ namespace Engine::Rendering
 					this->mesh_vertices.push_back(glm::vec3(vx, vy, vz));
 
 					// Check if `normal_index` is zero or positive. negative = no normal data
-					if (idx.normal_index >= 0) {
+					if (idx.normal_index >= 0)
+					{
 						tinyobj::real_t nx = attrib.normals[3 * size_t(idx.normal_index) + 0];
 						tinyobj::real_t ny = attrib.normals[3 * size_t(idx.normal_index) + 1];
 						tinyobj::real_t nz = attrib.normals[3 * size_t(idx.normal_index) + 2];
@@ -136,7 +138,8 @@ namespace Engine::Rendering
 					}
 
 					// Check if `texcoord_index` is zero or positive. negative = no texcoord data
-					if (idx.texcoord_index >= 0) {
+					if (idx.texcoord_index >= 0)
+					{
 						tinyobj::real_t tx = attrib.texcoords[2 * size_t(idx.texcoord_index) + 0];
 						tinyobj::real_t ty = attrib.texcoords[2 * size_t(idx.texcoord_index) + 1];
 						this->mesh_uvs.push_back(glm::vec2(tx, ty));
@@ -160,97 +163,44 @@ namespace Engine::Rendering
 					}
 				}
 				index_offset += fv;
+
 			}
 
 		}
 		
-		/*
-		this->mesh_vertices.clear();
-		this->mesh_uvs.clear();
-		this->mesh_normals.clear();
-
-		std::vector <unsigned int> vertexIndices, uvIndices, normalIndices;
-		std::vector <glm::vec3> temp_vertices;
-		std::vector <glm::vec2> temp_uvs;
-		std::vector <glm::vec3> temp_normals;
-
-		FILE* file = fopen(path.c_str(), "r");
-		if (file == NULL) {
-			Logging::GlobalLogger->SimpleLog(Logging::LogLevel::Error, "Reading OBJ file: Could not open file '%s'", path.c_str());
-			return;
-		}
-
-		while (1)
+		for (size_t idx = 0; idx < this->mesh_vertices.size(); idx += 3)
 		{
+			// Shortcuts for vertices
+			glm::vec3& v0 = this->mesh_vertices[idx + 0];
+			glm::vec3& v1 = this->mesh_vertices[idx + 1];
+			glm::vec3& v2 = this->mesh_vertices[idx + 2];
 
-			char lineHeader[128];
-			// read the first word of the line
-			int res = fscanf(file, "%s", lineHeader);
-			if (res == EOF)
-			{
-				break; // EOF = End Of File. Quit the loop.
-			}
+			// Shortcuts for UVs
+			glm::vec2& uv0 = this->mesh_uvs[idx + 0];
+			glm::vec2& uv1 = this->mesh_uvs[idx + 1];
+			glm::vec2& uv2 = this->mesh_uvs[idx + 2];
 
-			if (strcmp(lineHeader, "v") == 0)
-			{
-				glm::vec3 vertex;
-				(void)fscanf(file, "%f %f %f\n", &vertex.x, &vertex.y, &vertex.z);
-				temp_vertices.push_back(vertex);
-			}
-			else if (strcmp(lineHeader, "vt") == 0)
-			{
-				glm::vec2 uv;
-				(void)fscanf(file, "%f %f\n", &uv.x, &uv.y);
-				temp_uvs.push_back(uv);
-			}
-			else if (strcmp(lineHeader, "vn") == 0)
-			{
-				glm::vec3 normal;
-				(void)fscanf(file, "%f %f %f\n", &normal.x, &normal.y, &normal.z);
-				temp_normals.push_back(normal);
-			}
-			else if (strcmp(lineHeader, "f") == 0)
-			{
-				std::string vertex1, vertex2, vertex3;
-				unsigned int vertexIndex[3], uvIndex[3], normalIndex[3];
-				int matches = fscanf(file, "%d/%d/%d %d/%d/%d %d/%d/%d\n", &vertexIndex[0], &uvIndex[0], &normalIndex[0], &vertexIndex[1], &uvIndex[1], &normalIndex[1], &vertexIndex[2], &uvIndex[2], &normalIndex[2]);
-				if (matches != 9) {
-					Logging::GlobalLogger->SimpleLog(Logging::LogLevel::Error, "Reading OBJ file: Triangle indice format malformed or incompatible.");
-					return;
-				}
-				vertexIndices.push_back(vertexIndex[0]);
-				vertexIndices.push_back(vertexIndex[1]);
-				vertexIndices.push_back(vertexIndex[2]);
-				uvIndices.push_back(uvIndex[0]);
-				uvIndices.push_back(uvIndex[1]);
-				uvIndices.push_back(uvIndex[2]);
-				normalIndices.push_back(normalIndex[0]);
-				normalIndices.push_back(normalIndex[1]);
-				normalIndices.push_back(normalIndex[2]);
-			}
+			// Edges of the triangle : position delta
+			glm::vec3 deltaPos1 = v1 - v0;
+			glm::vec3 deltaPos2 = v2 - v0;
+
+			// UV delta
+			glm::vec2 deltaUV1 = uv1 - uv0;
+			glm::vec2 deltaUV2 = uv2 - uv0;
+
+			float r = 1.0f / (deltaUV1.x * deltaUV2.y - deltaUV1.y * deltaUV2.x);
+			glm::vec3 tangent = (deltaPos1 * deltaUV2.y - deltaPos2 * deltaUV1.y) * r;
+			glm::vec3 bitangent = (deltaPos2 * deltaUV1.x - deltaPos1 * deltaUV2.x) * r;
+
+			this->mesh_tangents.push_back(tangent);
+			this->mesh_tangents.push_back(tangent);
+			this->mesh_tangents.push_back(tangent);
+
+			// Same thing for bitangents
+			this->mesh_bitangents.push_back(bitangent);
+			this->mesh_bitangents.push_back(bitangent);
+			this->mesh_bitangents.push_back(bitangent);
 		}
-
-		for (unsigned int i = 0; i < vertexIndices.size(); i++)
-		{
-			unsigned int vertexIndex = vertexIndices[i];
-			glm::vec3 vertex = temp_vertices[vertexIndex - 1];
-			this->mesh_vertices.push_back(vertex);
-		}
-
-		for (unsigned int j = 0; j < uvIndices.size(); j++)
-		{
-			unsigned int uvIndex = uvIndices[j];
-			glm::vec2 uv = temp_uvs[uvIndex - 1];
-			this->mesh_uvs.push_back(uv);
-		}
-
-		for (unsigned int k = 0; k < normalIndices.size(); k++)
-		{
-			unsigned int normalIndex = normalIndices[k];
-			glm::vec3 normal = temp_normals[normalIndex - 1];
-			this->mesh_normals.push_back(normal);
-		}
-		*/
 
 		Logging::GlobalLogger->SimpleLog(Logging::LogLevel::Info, "Reading OBJ file: Successfully read and parsed file '%s", path.c_str());
 	}

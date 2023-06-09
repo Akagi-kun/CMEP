@@ -17,6 +17,9 @@ namespace Engine::Rendering
 		std::vector<glm::vec3> mesh_vertices;
 		std::vector<glm::vec2> mesh_uvs;
 		std::vector<glm::vec3> mesh_normals;
+
+		std::vector<glm::vec3> mesh_tangents;
+		std::vector<glm::vec3> mesh_bitangents;
 		
 		std::vector<GLuint> matids;
 		std::vector<tinyobj::material_t> materials;

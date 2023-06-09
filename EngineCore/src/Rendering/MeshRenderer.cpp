@@ -83,6 +83,10 @@ namespace Engine::Rendering
 		{
 			glCreateBuffers(1, &this->mbo);
 		}
+		if (this->tbbo == 0)
+		{
+			glCreateBuffers(1, &this->tbbo);
+		}
 
 
 		glm::mat4 Projection = glm::perspective(glm::radians(45.0f), (float)this->_screenx / this->_screeny, 0.1f, 100.0f);
@@ -92,10 +96,10 @@ namespace Engine::Rendering
 		glm::mat4 Model = glm::translate(glm::mat4(1.0f), this->_pos) * glm::mat4(1.0f) * glm::toMat4(ModelRotation);
 
 		this->matM = Model;
+		this->matV = View;
+		this->matMV = View * Model;
+		this->matMV3x3 = glm::mat3(View * Model);
 		this->matMVP = Projection * View * Model;
-
-		//glNamedBufferData(this->vbo, sizeof(data), (void*)data, GL_STATIC_DRAW);
-		//glNamedBufferData(this->vbo, this->mesh->data.size() * sizeof(float), (void*)this->mesh->data.data(), GL_STATIC_DRAW);
 
 		if (!this->has_updated_meshdata)
 		{
@@ -165,6 +169,25 @@ namespace Engine::Rendering
 				(void*)&(this->mesh->mesh_dissolve[0])
 			);
 
+			// Tangents and bitangents
+			glNamedBufferData(this->tbbo,
+				this->mesh->mesh_tangents.size() * sizeof(glm::vec3) +
+				this->mesh->mesh_bitangents.size() * sizeof(glm::vec3),
+				NULL, GL_STATIC_DRAW
+			);
+
+			glNamedBufferSubData(this->tbbo,
+				0,
+				this->mesh->mesh_tangents.size() * sizeof(glm::vec3),
+				(void*)&(this->mesh->mesh_tangents[0])
+			);
+
+			glNamedBufferSubData(this->tbbo,
+				this->mesh->mesh_tangents.size() * sizeof(glm::vec3),
+				this->mesh->mesh_bitangents.size() * sizeof(glm::vec3),
+				(void*)&(this->mesh->mesh_bitangents[0])
+			);
+
 			//Logging::GlobalLogger->SimpleLog(Logging::LogLevel::Info, "%u %u %u %u %u", this->mesh->mesh_vertices.size(), this->mesh->mesh_diffuse.size(), this->mesh->mesh_specular.size(), this->mesh->matids.size(), this->mesh->mesh_dissolve.size());
 		}
 	}
@@ -184,11 +207,19 @@ namespace Engine::Rendering
 		}
 
 		glBindVertexArray(this->vao);
-		
+
 		// Bind shader
 		GLuint shader = this->program->GetProgram();
-		assert(shader != 0);
+
+		if (shader == 0)
+		{
+			throw std::exception("MeshRenderer: Shader::GetProgram() returned zero! Bad shader!");
+		}
+
 		glUseProgram(shader);
+
+		GLint maxTextures;
+		glGetIntegerv(GL_MAX_TEXTURE_IMAGE_UNITS, &maxTextures);
 
 		// Bind diffuse textures
 		unsigned int textureoffset = 0;
@@ -206,6 +237,11 @@ namespace Engine::Rendering
 
 				GLuint textureUsedLocation = glGetUniformLocation(shader, std::string("used_textureDiffuse").append(std::to_string(offset)).c_str());
 				glUniform1i(textureUsedLocation, 1);
+
+				if (textureoffset > maxTextures)
+				{
+					throw std::exception("MeshRenderer: Texture limit reached! Too many textures!");
+				}
 			}
 			else
 			{
@@ -217,63 +253,37 @@ namespace Engine::Rendering
 			}
 			textureoffset++;
 		}
-		/*
+
 		for (unsigned int offset = 0; offset < this->mesh->bump_textures.size(); offset++)
 		{
 			if (this->mesh->bump_textures[offset] != nullptr)
 			{
 				std::shared_ptr<Rendering::Texture> texture = this->mesh->bump_textures[offset];
 
-				GLuint textureLocation = glGetUniformLocation(shader, std::string("textureBump").append(std::to_string(offset)).c_str());
-				glUniform1i(textureLocation, offset);
+				GLuint textureLocation = glGetUniformLocation(shader, std::string("textureNormal").append(std::to_string(offset)).c_str());
 
+				glUniform1i(textureLocation, offset);
 				glActiveTexture(GL_TEXTURE0 + textureoffset);
 				glBindTexture(GL_TEXTURE_2D, texture->GetTexture());
+
+				GLuint textureUsedLocation = glGetUniformLocation(shader, std::string("used_textureNormal").append(std::to_string(offset)).c_str());
+				glUniform1i(textureUsedLocation, 1);
+
+				if (textureoffset > maxTextures)
+				{
+					throw std::exception("MeshRenderer: Texture limit reached! Too many textures!");
+				}
+			}
+			else
+			{
+				glActiveTexture(GL_TEXTURE0 + textureoffset);
+				glBindTexture(GL_TEXTURE_2D, 0);
+
+				GLuint textureUsedLocation = glGetUniformLocation(shader, std::string("used_textureNormal").append(std::to_string(offset)).c_str());
+				glUniform1i(textureUsedLocation, 0);
 			}
 			textureoffset++;
 		}
-
-		for (unsigned int offset = 0; offset < this->mesh->reflective_textures.size(); offset++)
-		{
-			if (this->mesh->reflective_textures[offset] != nullptr)
-			{
-				std::shared_ptr<Rendering::Texture> texture = this->mesh->reflective_textures[offset];
-
-				GLuint textureLocation = glGetUniformLocation(shader, std::string("textureReflection").append(std::to_string(offset)).c_str());
-				glUniform1i(textureLocation, offset);
-
-				glActiveTexture(GL_TEXTURE0 + textureoffset);
-				glBindTexture(GL_TEXTURE_2D, texture->GetTexture());
-			}
-			textureoffset++;
-		}*/
-		/*
-		for (auto& texture : this->mesh->roughness_textures)
-		{
-			if (offset > 95)
-			{
-				Logging::GlobalLogger->SimpleLog(Logging::LogLevel::Exception, "More than 32 roughness textures on mesh, cannot perform Engine::Rendering::MeshRenderer::Render()");
-				exit(1);
-			}
-
-			glActiveTexture(GL_TEXTURE0 + offset);
-			glBindTexture(GL_TEXTURE_2D, texture->GetTexture());
-			offset++;
-		}
-
-		for (auto& texture : this->mesh->metallic_textures)
-		{
-			if (offset > 127)
-			{
-				Logging::GlobalLogger->SimpleLog(Logging::LogLevel::Exception, "More than 32 metallic textures on mesh, cannot perform Engine::Rendering::MeshRenderer::Render()");
-				exit(1);
-			}
-
-			glActiveTexture(GL_TEXTURE0 + offset);
-			glBindTexture(GL_TEXTURE_2D, texture->GetTexture());
-			offset++;
-		}
-		*/
 
 		// Bind vbo and vertex data
 		glBindBuffer(GL_ARRAY_BUFFER, this->vbo);
@@ -289,12 +299,26 @@ namespace Engine::Rendering
 		glVertexAttribIPointer(6, 1, GL_UNSIGNED_INT, 0, (void*)(this->mesh->mesh_ambient.size() * sizeof(glm::vec3) + this->mesh->mesh_diffuse.size() * sizeof(glm::vec3) + this->mesh->mesh_specular.size() * sizeof(glm::vec3))); // material ids
 		glVertexAttribPointer(7, 1, GL_FLOAT, GL_FALSE, 0, (void*)(this->mesh->mesh_ambient.size() * sizeof(glm::vec3) + this->mesh->mesh_diffuse.size() * sizeof(glm::vec3) + this->mesh->mesh_specular.size() * sizeof(glm::vec3) + this->mesh->matids.size() * sizeof(GLuint))); // material dissolve
 
-		// Bind MVP matrix
-		GLuint mvp_uniform_id = glGetUniformLocation(shader, "matMVP");
-		glUniformMatrix4fv(mvp_uniform_id, 1, GL_FALSE, &this->matMVP[0][0]);
+		// Bind tbbo and tangent/bitangent data
+		glBindBuffer(GL_ARRAY_BUFFER, this->tbbo);
+		glVertexAttribPointer(8, 3, GL_FLOAT, GL_FALSE, 0, nullptr); // material ambient
+		glVertexAttribPointer(9, 3, GL_FLOAT, GL_FALSE, 0, (void*)(this->mesh->mesh_tangents.size() * sizeof(glm::vec3))); // material diffuse
 
+		// Bind matrixes
 		GLuint m_uniform_id = glGetUniformLocation(shader, "matM");
 		glUniformMatrix4fv(m_uniform_id, 1, GL_FALSE, &this->matM[0][0]);
+
+		GLuint v_uniform_id = glGetUniformLocation(shader, "matV");
+		glUniformMatrix4fv(v_uniform_id, 1, GL_FALSE, &this->matV[0][0]);
+
+		GLuint mv_uniform_id = glGetUniformLocation(shader, "matMV");
+		glUniformMatrix4fv(mv_uniform_id, 1, GL_FALSE, &this->matMV[0][0]);
+
+		GLuint mv3x3_uniform_id = glGetUniformLocation(shader, "matMV3x3");
+		glUniformMatrix3fv(mv3x3_uniform_id, 1, GL_FALSE, &this->matMV3x3[0][0]);
+
+		GLuint mvp_uniform_id = glGetUniformLocation(shader, "matMVP");
+		glUniformMatrix4fv(mvp_uniform_id, 1, GL_FALSE, &this->matMVP[0][0]);
 
 		GLuint light_uniform_id = glGetUniformLocation(shader, "Light");
 		glm::vec3 light_position = global_scene_manager->GetLightTransform();
@@ -313,6 +337,13 @@ namespace Engine::Rendering
 		for (int i = 0; i < 8; i++)
 		{
 			glDisableVertexAttribArray(i);
+		}
+
+		// Unbind textures
+		for (int i = 0; i < maxTextures; i++)
+		{
+			glActiveTexture(GL_TEXTURE0 + i);
+			glBindTexture(GL_TEXTURE_2D, 0);
 		}
 	}
 }
