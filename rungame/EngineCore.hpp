@@ -450,7 +450,7 @@ namespace Engine
 		void Init();
 		void Run();
 
-		void ConfigScript(Scripting::LuaScript* script);
+		void ConfigFile(std::string path);
 		void RegisterEventHandler(EventHandling::EventType event_type, std::function<void(EventHandling::Event&)> function);
 		void RegisterLuaEventHandler(EventHandling::EventType event_type, Scripting::LuaScript* script, std::string function);
 

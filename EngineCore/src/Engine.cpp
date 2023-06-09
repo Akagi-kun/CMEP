@@ -1,13 +1,12 @@
 #include <assert.h>
+#include <fstream>
 #include <memory>
 #include <chrono>
-#include <thread>
+
+#include "nlohmann-json/json.hpp"
 
 #include "Scripting/LuaScriptExecutor.hpp"
 #include "Scripting/LuaScript.hpp"
-
-//#include "Rendering/gl_calls.hpp"
-//#include "Rendering/Window.hpp"
 
 #include "AssetManager.hpp"
 #include "Engine.hpp"
@@ -177,32 +176,44 @@ namespace Engine
 			}
 		}
 	}
-	/*
 
-		/*
-		static bool was_clicked = false;
-		if (GetAsyncKeyState(VK_LBUTTON) && was_clicked == false)
+	void Engine::HandleConfig()
+	{
+		std::ifstream file(this->config_path);
+		
+		nlohmann::json data;
+		try
 		{
-			was_clicked = true;
-
-			POINT point;
-			GetCursorPos(&point);
-			ScreenToClient(this->window->GetHandle(), &point);
-			if (point.x >= 0 && point.y >= 0)
-			{	// Hack: add 32 pixels to compensate for titlebar
-				point.y += 32;
-				double x = (double)point.x / this->windowX;
-				double y = abs((double)point.y / this->windowY - 1.f);
-
-				for (auto& [name, ptr] : *global_scene_manager->GetAllObjects())
-				{
-					double xpos = ptr->xpos(), ypos = ptr->ypos(), xsize = ptr->xsize(), ysize = ptr->ysize();
-					if (x >= xpos && y >= ypos && x <= (xpos + xsize) && y <= (ypos + ysize)) { ptr->onClick(); }
-				}
-			}
+			data = nlohmann::json::parse(file);
 		}
-		if ((GetAsyncKeyState(VK_LBUTTON) & (1 << 15)) == 0) { was_clicked = false; }
-		*/
+		catch(std::exception& e)
+		{
+			Logging::GlobalLogger->SimpleLog(Logging::LogLevel::Exception, "Error parsing config json, what: %s", e.what());
+			exit(1);
+		}
+
+		Scripting::LuaScript* event_handler;
+		
+		std::string setting = "eventHandler.onInit";
+		asset_manager->AddLuaScript(data[setting]["file"], data[setting]["file"]);
+		event_handler = asset_manager->GetLuaScript(data[setting]["file"]);
+		global_engine->RegisterLuaEventHandler(::Engine::EventHandling::EventType::ON_INIT, event_handler, data[setting]["function"]);
+
+		setting = "eventHandler.onUpdate";
+		asset_manager->AddLuaScript(data[setting]["file"], data[setting]["file"]);
+		event_handler = asset_manager->GetLuaScript(data[setting]["file"]);
+		global_engine->RegisterLuaEventHandler(::Engine::EventHandling::EventType::ON_UPDATE, event_handler, data[setting]["function"]);
+
+		setting = "eventHandler.onKeyDown";
+		asset_manager->AddLuaScript(data[setting]["file"], data[setting]["file"]);
+		event_handler = asset_manager->GetLuaScript(data[setting]["file"]);
+		global_engine->RegisterLuaEventHandler(::Engine::EventHandling::EventType::ON_KEYDOWN, event_handler, data[setting]["function"]);
+
+		setting = "eventHandler.onMouseMoved";
+		asset_manager->AddLuaScript(data[setting]["file"], data[setting]["file"]);
+		event_handler = asset_manager->GetLuaScript(data[setting]["file"]);
+		global_engine->RegisterLuaEventHandler(::Engine::EventHandling::EventType::ON_MOUSEMOVED, event_handler, data[setting]["function"]);
+	}
 
 	void Engine::engineLoop()
 	{
@@ -365,7 +376,9 @@ namespace Engine
 	{
 		auto start = std::chrono::steady_clock::now();
 		
-		this->script_executor->ConfigScriptLoad(this->config_script);
+		//this->script_executor->ConfigScriptLoad(this->config_script);
+
+		this->HandleConfig();
 
 		// Fire ON_INIT event
 		EventHandling::Event onInitEvent = EventHandling::Event(EventHandling::EventType::ON_INIT);
@@ -391,9 +404,9 @@ namespace Engine
 		//renderThread.join();
 	}
 
-	void Engine::ConfigScript(Scripting::LuaScript* script)
+	void Engine::ConfigFile(std::string path)
 	{
-		this->config_script = script;
+		this->config_path = path;
 	}
 
 	void Engine::RegisterEventHandler(EventHandling::EventType event_type, std::function<void(EventHandling::Event&)> function)
@@ -437,7 +450,7 @@ namespace Engine
 #if _DEBUG == 1
 		Logging::GlobalLogger->AddOutputHandle(Logging::LogLevel::Debug3, stdout, true);
 #else
-		Logging::GlobalLogger->AddOutputHandle(Logging::LogLevel::Info, stdout, true);
+		Logging::GlobalLogger->AddOutputHandle(Logging::LogLevel::Debug1, stdout, true);
 #endif
 
 		// Set up global scene

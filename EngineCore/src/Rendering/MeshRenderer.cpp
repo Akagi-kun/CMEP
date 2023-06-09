@@ -130,7 +130,7 @@ namespace Engine::Rendering
 					this->mesh->mesh_diffuse.size() * sizeof(glm::vec3) +
 					this->mesh->mesh_specular.size() * sizeof(glm::vec3) +
 					this->mesh->matids.size() * sizeof(GLuint) +
-					this->mesh->mesh_dissolve.size() * sizeof(glm::vec3),
+					this->mesh->mesh_dissolve.size() * sizeof(float),
 				NULL, GL_STATIC_DRAW
 			);
 
@@ -159,11 +159,11 @@ namespace Engine::Rendering
 			);
 			
 			glNamedBufferSubData(this->mbo,
-				this->mesh->mesh_ambient.size() * sizeof(glm::vec3) + this->mesh->mesh_diffuse.size() * sizeof(glm::vec3) + this->mesh->mesh_specular.size() * sizeof(glm::vec3) + this->mesh->matids.size() * sizeof(GLuint),
+				this->mesh->mesh_ambient.size() * sizeof(glm::vec3) + this->mesh->mesh_diffuse.size() * sizeof(glm::vec3) + this->mesh->mesh_specular.size() * sizeof(glm::vec3)+ this->mesh->matids.size() * sizeof(GLuint),
 				this->mesh->mesh_dissolve.size() * sizeof(float),
 				(void*)&(this->mesh->mesh_dissolve[0])
 			);
-			
+
 			//Logging::GlobalLogger->SimpleLog(Logging::LogLevel::Info, "%u %u %u %u %u", this->mesh->mesh_vertices.size(), this->mesh->mesh_diffuse.size(), this->mesh->mesh_specular.size(), this->mesh->matids.size(), this->mesh->mesh_dissolve.size());
 		}
 	}
@@ -286,7 +286,7 @@ namespace Engine::Rendering
 		glVertexAttribPointer(4, 3, GL_FLOAT, GL_FALSE, 0, (void*)(this->mesh->mesh_ambient.size() * sizeof(glm::vec3))); // material diffuse
 		glVertexAttribPointer(5, 3, GL_FLOAT, GL_FALSE, 0, (void*)(this->mesh->mesh_ambient.size() * sizeof(glm::vec3) + this->mesh->mesh_diffuse.size() * sizeof(glm::vec3))); // material specular
 		glVertexAttribIPointer(6, 1, GL_UNSIGNED_INT, 0, (void*)(this->mesh->mesh_ambient.size() * sizeof(glm::vec3) + this->mesh->mesh_diffuse.size() * sizeof(glm::vec3) + this->mesh->mesh_specular.size() * sizeof(glm::vec3))); // material ids
-		glVertexAttribPointer(7, 1, GL_FLOAT, GL_FALSE, 0, (void*)(this->mesh->mesh_ambient.size() * sizeof(glm::vec3) + this->mesh->mesh_diffuse.size() * sizeof(glm::vec3) + this->mesh->mesh_specular.size() * sizeof(glm::vec3) + this->mesh->matids.size() * sizeof(GLuint))); // material ids
+		glVertexAttribPointer(7, 1, GL_FLOAT, GL_FALSE, 0, (void*)(this->mesh->mesh_ambient.size() * sizeof(glm::vec3) + this->mesh->mesh_diffuse.size() * sizeof(glm::vec3) + this->mesh->mesh_specular.size() * sizeof(glm::vec3) + this->mesh->matids.size() * sizeof(GLuint))); // material dissolve
 
 		// Bind MVP matrix
 		GLuint mvp_uniform_id = glGetUniformLocation(shader, "MVP");

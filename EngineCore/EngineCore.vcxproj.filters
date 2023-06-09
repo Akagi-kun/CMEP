@@ -19,9 +19,6 @@
     <Filter Include="Header Files\Rendering">
       <UniqueIdentifier>{c341cda7-a61c-42be-a6b6-7b6f23222339}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Header Files\Rendering\Renderers">
-      <UniqueIdentifier>{046fcc30-bd34-4ff7-82b3-4bba0489c1fb}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Source Files\Rendering\Renderers">
       <UniqueIdentifier>{022342d8-f0a0-4e2a-a3d0-f1d75f272e7d}</UniqueIdentifier>
     </Filter>

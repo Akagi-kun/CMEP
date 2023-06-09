@@ -35,7 +35,7 @@ namespace Engine
 		// Keeps internal loop running
 		bool run_threads = true;
 
-		Scripting::LuaScript* config_script;
+		std::string config_path;
 
 		// Window
 		GLFWwindow* window = nullptr;
@@ -58,6 +58,8 @@ namespace Engine
 
 		void engineLoop();
 
+		void HandleConfig();
+
 		void FireEvent(EventHandling::Event& event);
 	public:
 		Engine(const char* windowTitle, const unsigned windowX, const unsigned windowY) noexcept;
@@ -68,7 +70,7 @@ namespace Engine
 		void Init();
 		void Run();
 
-		void ConfigScript(Scripting::LuaScript* script);
+		void ConfigFile(std::string path);
 		void RegisterEventHandler(EventHandling::EventType event_type, std::function<void(EventHandling::Event&)> function);
 		void RegisterLuaEventHandler(EventHandling::EventType event_type, Scripting::LuaScript* script, std::string function);
 
