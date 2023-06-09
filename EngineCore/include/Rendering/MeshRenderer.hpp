@@ -31,7 +31,8 @@ namespace Engine::Rendering
 		/// </summary>
 		unsigned int mbo = 0;
 
-		glm::mat4 MVP;
+		glm::mat4 matMVP;
+		glm::mat4 matM;
 
 		/// <summary>
 		/// Currently used shader

@@ -56,6 +56,16 @@ namespace Engine
 		return this->objects.erase(name);
 	}
 
+	glm::vec3 GlobalSceneManager::GetLightTransform()
+	{
+		return this->lightPosition;
+	}
+
+	void GlobalSceneManager::SetLightTransform(glm::vec3 newpos)
+	{
+		this->lightPosition = newpos;
+	}
+
 	glm::vec3 GlobalSceneManager::GetCameraTransform()
 	{
 		return this->cameraTransform;

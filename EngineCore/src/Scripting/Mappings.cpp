@@ -54,6 +54,29 @@ namespace Engine::Scripting::Mappings
 
 			return 0;
 		}
+
+		int gsm_GetLightTransform(lua_State* state)
+		{
+			glm::vec3 transform = global_scene_manager->GetLightTransform();
+
+			lua_pushnumber(state, transform.x);
+			lua_pushnumber(state, transform.y);
+			lua_pushnumber(state, transform.z);
+
+			return 3;
+		}
+
+
+		int gsm_SetLightTransform(lua_State* state)
+		{
+			double x = lua_tonumber(state, 1);
+			double y = lua_tonumber(state, 2);
+			double z = lua_tonumber(state, 3);
+
+			global_scene_manager->SetLightTransform(glm::vec3(x, y, z));
+
+			return 0;
+		}
 #pragma endregion
 
 #pragma region Engine
@@ -392,6 +415,8 @@ namespace Engine::Scripting::Mappings
 		"gsm_SetCameraHVRotation",
 		"gsm_GetCameraTransform",
 		"gsm_SetCameraTransform",
+		"gsm_GetLightTransform",
+		"gsm_SetLightTransform",
 
 		"engine_GetAssetManager",
 		"engine_AddObject",
@@ -421,6 +446,8 @@ namespace Engine::Scripting::Mappings
 		Functions::gsm_SetCameraHVRotation,
 		Functions::gsm_GetCameraTransform,
 		Functions::gsm_SetCameraTransform,
+		Functions::gsm_GetLightTransform,
+		Functions::gsm_SetLightTransform,
 
 		Functions::engine_GetAssetManager,
 		Functions::engine_AddObject,

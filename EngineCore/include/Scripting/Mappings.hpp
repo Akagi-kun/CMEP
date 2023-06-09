@@ -10,9 +10,10 @@ namespace Engine::Scripting::Mappings
 	{
 		int gsm_GetCameraHVRotation(lua_State* state);
 		int gsm_SetCameraHVRotation(lua_State* state);
-	
 		int gsm_GetCameraTransform(lua_State* state);
 		int gsm_SetCameraTransform(lua_State* state);
+		int gsm_GetLightTransform(lua_State* state);
+		int gsm_SetLightTransform(lua_State* state);
 
 		int engine_AddObject(lua_State* state);
 		int engine_FindObject(lua_State* state);
@@ -36,7 +37,7 @@ namespace Engine::Scripting::Mappings
 		int mesh_CreateMeshFromObj(lua_State* state);
 	}
 
-	const uint32_t countMappings = 19;
+	const uint32_t countMappings = 21;
 
 	const char* nameMappings[];
 

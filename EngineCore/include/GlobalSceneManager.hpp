@@ -16,6 +16,8 @@ namespace Engine
 		glm::vec3 cameraTransform; // XYZ position
 		glm::vec2 cameraHVRotation; // Horizontal and Vertical rotation
 
+		glm::vec3 lightPosition;
+
 		void CameraUpdated();
 	public:
 		GlobalSceneManager();
@@ -26,7 +28,10 @@ namespace Engine
 		void AddObject(std::string name, Object* ptr);
 		Object* FindObject(std::string name);
 		size_t RemoveObject(std::string name) noexcept;
-		
+
+		glm::vec3 GetLightTransform();
+		void SetLightTransform(glm::vec3 newpos);
+
 		glm::vec3 GetCameraTransform();
 		glm::vec2 GetCameraHVRotation();
 		glm::mat4 GetCameraViewMatrix();

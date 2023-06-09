@@ -24,7 +24,7 @@ namespace Engine::Rendering
 
 		this->program = std::make_unique<Shader>(vertsstr.str().c_str(), fragsstr.str().c_str());
 
-		this->MVP = glm::mat4();
+		this->matMVP = glm::mat4();
 	}
 
 	MeshRenderer::~MeshRenderer()
@@ -89,9 +89,10 @@ namespace Engine::Rendering
 		glm::mat4 View = global_scene_manager->GetCameraViewMatrix();
 
 		glm::quat ModelRotation = glm::quat(glm::radians(this->_rotation));
-		glm::mat4 Model = glm::mat4(1.0f) * glm::mat4(1.0f) * glm::toMat4(ModelRotation);
+		glm::mat4 Model = glm::translate(glm::mat4(1.0f), this->_pos) * glm::mat4(1.0f) * glm::toMat4(ModelRotation);
 
-		this->MVP = Projection * View * Model;
+		this->matM = Model;
+		this->matMVP = Projection * View * Model;
 
 		//glNamedBufferData(this->vbo, sizeof(data), (void*)data, GL_STATIC_DRAW);
 		//glNamedBufferData(this->vbo, this->mesh->data.size() * sizeof(float), (void*)this->mesh->data.data(), GL_STATIC_DRAW);
@@ -289,11 +290,15 @@ namespace Engine::Rendering
 		glVertexAttribPointer(7, 1, GL_FLOAT, GL_FALSE, 0, (void*)(this->mesh->mesh_ambient.size() * sizeof(glm::vec3) + this->mesh->mesh_diffuse.size() * sizeof(glm::vec3) + this->mesh->mesh_specular.size() * sizeof(glm::vec3) + this->mesh->matids.size() * sizeof(GLuint))); // material dissolve
 
 		// Bind MVP matrix
-		GLuint mvp_uniform_id = glGetUniformLocation(shader, "MVP");
-		glUniformMatrix4fv(mvp_uniform_id, 1, GL_FALSE, &this->MVP[0][0]);
+		GLuint mvp_uniform_id = glGetUniformLocation(shader, "matMVP");
+		glUniformMatrix4fv(mvp_uniform_id, 1, GL_FALSE, &this->matMVP[0][0]);
+
+		GLuint m_uniform_id = glGetUniformLocation(shader, "matM");
+		glUniformMatrix4fv(m_uniform_id, 1, GL_FALSE, &this->matM[0][0]);
 
 		GLuint light_uniform_id = glGetUniformLocation(shader, "Light");
-		glUniform3f(light_uniform_id, 90.0, 45.0, 0.0);
+		glm::vec3 light_position = global_scene_manager->GetLightTransform();
+		glUniform3f(light_uniform_id, light_position.x, light_position.y, light_position.z);
 
 		// Enable vertex attribs
 		for (int i = 0; i < 8; i++)
