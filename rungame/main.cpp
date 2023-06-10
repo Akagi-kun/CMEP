@@ -10,7 +10,7 @@
 
 Engine::Engine* engine;
 const char* windowTitle = "Test Game";
-const unsigned int windowSizeX = 1366, windowSizeY = 768;
+const unsigned int windowSizeX = 1200, windowSizeY = 720;
 
 int main(int argc, char** argv)
 {

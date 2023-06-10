@@ -213,6 +213,14 @@ namespace Engine
 		asset_manager->AddLuaScript(data[setting]["file"], data[setting]["file"]);
 		event_handler = asset_manager->GetLuaScript(data[setting]["file"]);
 		global_engine->RegisterLuaEventHandler(::Engine::EventHandling::EventType::ON_MOUSEMOVED, event_handler, data[setting]["function"]);
+
+		setting = "window.title";
+		this->windowTitle = data[setting];
+		glfwSetWindowTitle(this->window, this->windowTitle.c_str());
+
+		setting = "window.size";
+		this->windowX = data[setting]["x"]; this->windowY = data[setting]["y"];
+		glfwSetWindowSize(this->window, this->windowX, this->windowY);
 	}
 
 	void Engine::engineLoop()
@@ -224,8 +232,6 @@ namespace Engine
 		glEnable(GL_BLEND);
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-		glDisable(GL_CULL_FACE);
-
 		glViewport(0, 0, this->windowX, this->windowY);
 
 		// Pre-make ON_UPDATE event so we don't have to create it over and over again in hot loop
@@ -236,7 +242,6 @@ namespace Engine
 		int counter = 0;
 		auto prevClock = std::chrono::steady_clock::now();
 		// hot loop
-		//while (true)
 		while (!glfwWindowShouldClose(this->window))
 		{
 			const auto nextClock = std::chrono::steady_clock::now();
@@ -265,13 +270,20 @@ namespace Engine
 				try
 				{
 					ptr->renderer->Render();
+					glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 				}
 				catch (const std::exception& e)
 				{
 					Logging::GlobalLogger->SimpleLog(Logging::LogLevel::Exception, "Caught exception while rendering object %s: %s", name.c_str(), e.what());
+					exit(1);
 				}
 			}
 			
+			enum { EASY, HARD };
+			static int op = EASY;
+			static float value = 0.6f;
+			static int i = 20;
+
 			glfwSwapBuffers(this->window);
 			glfwPollEvents();
 			
@@ -350,7 +362,7 @@ namespace Engine
 		glfwWindowHint(GLFW_VISIBLE, GL_FALSE);
 		glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-		this->window = glfwCreateWindow(this->windowX, this->windowY, this->windowTitle, NULL, NULL);
+		this->window = glfwCreateWindow(this->windowX, this->windowY, this->windowTitle.c_str(), NULL, NULL);
 
 		glfwMakeContextCurrent(this->window);
 		glfwSwapInterval(1);
@@ -393,20 +405,7 @@ namespace Engine
 		double total = (std::chrono::steady_clock::now() - start).count() / 1e6;
 		Logging::GlobalLogger->SimpleLog(Logging::LogLevel::Debug1, "Handling ON_INIT took %.3lf ms total", total);
 
-		// Give up context
-		//this->window->GiveupContext();
-
-		// Create and run the main rendering thread
-		//std::thread renderThread(&Engine::engineLoop, this);
-
 		this->engineLoop();
-
-		//AttachThreadInput(GetThreadId(renderThread.native_handle()), GetCurrentThreadId(), true);
-
-		//this->window->EnterMessageLoop();
-
-		//this->run_threads = false;
-		//renderThread.join();
 	}
 
 	void Engine::ConfigFile(std::string path)

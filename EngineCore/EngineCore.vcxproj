@@ -44,6 +44,7 @@
     <UseDebugLibraries>true</UseDebugLibraries>
     <PlatformToolset>v143</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
+    <EnableASAN>false</EnableASAN>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
@@ -51,6 +52,7 @@
     <PlatformToolset>v143</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
+    <EnableASAN>false</EnableASAN>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
@@ -210,6 +212,7 @@
     <ClCompile Include="src\Logging\ConsoleColors.cpp" />
     <ClCompile Include="src\dllmain.cpp" />
     <ClCompile Include="src\Engine.cpp" />
+    <ClCompile Include="src\Rendering\AxisRenderer.cpp" />
     <ClCompile Include="src\Rendering\Font.cpp" />
     <ClCompile Include="src\GlobalSceneManager.cpp" />
     <ClCompile Include="src\Logging\Logging.cpp" />
@@ -519,12 +522,49 @@
     <ClInclude Include="include\glm\vec4.hpp" />
     <ClInclude Include="include\glm\vector_relational.hpp" />
     <ClInclude Include="include\GlobalSceneManager.hpp" />
-    <ClInclude Include="include\GL\glcorearb.h" />
-    <ClInclude Include="include\GL\wglext.h" />
     <ClInclude Include="include\Logging\ConsoleColors.hpp" />
     <ClInclude Include="include\Logging\Logging.hpp" />
+    <ClInclude Include="include\nanogui\button.h" />
+    <ClInclude Include="include\nanogui\canvas.h" />
+    <ClInclude Include="include\nanogui\checkbox.h" />
+    <ClInclude Include="include\nanogui\colorpicker.h" />
+    <ClInclude Include="include\nanogui\colorwheel.h" />
+    <ClInclude Include="include\nanogui\combobox.h" />
+    <ClInclude Include="include\nanogui\common.h" />
+    <ClInclude Include="include\nanogui\formhelper.h" />
+    <ClInclude Include="include\nanogui\graph.h" />
+    <ClInclude Include="include\nanogui\icons.h" />
+    <ClInclude Include="include\nanogui\imagepanel.h" />
+    <ClInclude Include="include\nanogui\imageview.h" />
+    <ClInclude Include="include\nanogui\label.h" />
+    <ClInclude Include="include\nanogui\layout.h" />
+    <ClInclude Include="include\nanogui\messagedialog.h" />
+    <ClInclude Include="include\nanogui\metal.h" />
+    <ClInclude Include="include\nanogui\nanogui.h" />
+    <ClInclude Include="include\nanogui\object.h" />
+    <ClInclude Include="include\nanogui\opengl.h" />
+    <ClInclude Include="include\nanogui\popup.h" />
+    <ClInclude Include="include\nanogui\popupbutton.h" />
+    <ClInclude Include="include\nanogui\progressbar.h" />
+    <ClInclude Include="include\nanogui\python.h" />
+    <ClInclude Include="include\nanogui\renderpass.h" />
+    <ClInclude Include="include\nanogui\screen.h" />
+    <ClInclude Include="include\nanogui\shader.h" />
+    <ClInclude Include="include\nanogui\slider.h" />
+    <ClInclude Include="include\nanogui\tabwidget.h" />
+    <ClInclude Include="include\nanogui\textarea.h" />
+    <ClInclude Include="include\nanogui\textbox.h" />
+    <ClInclude Include="include\nanogui\texture.h" />
+    <ClInclude Include="include\nanogui\theme.h" />
+    <ClInclude Include="include\nanogui\toolbutton.h" />
+    <ClInclude Include="include\nanogui\traits.h" />
+    <ClInclude Include="include\nanogui\vector.h" />
+    <ClInclude Include="include\nanogui\vscrollpanel.h" />
+    <ClInclude Include="include\nanogui\widget.h" />
+    <ClInclude Include="include\nanogui\window.h" />
     <ClInclude Include="include\Object.hpp" />
     <ClInclude Include="include\ObjectFactory.hpp" />
+    <ClInclude Include="include\Rendering\AxisRenderer.hpp" />
     <ClInclude Include="include\Rendering\Font.hpp" />
     <ClInclude Include="include\Rendering\GLCommon.hpp" />
     <ClInclude Include="include\Rendering\lodepng\lodepng.hpp" />

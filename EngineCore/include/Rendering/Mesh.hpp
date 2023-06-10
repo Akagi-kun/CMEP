@@ -27,6 +27,7 @@ namespace Engine::Rendering
 		std::vector<glm::vec3> mesh_diffuse;
 		std::vector<glm::vec3> mesh_specular;
 		std::vector<float> mesh_dissolve;
+		std::vector<glm::vec3> mesh_emission;
 
 		std::vector<std::shared_ptr<Rendering::Texture>> diffuse_textures;
 		std::vector<std::shared_ptr<Rendering::Texture>> bump_textures;

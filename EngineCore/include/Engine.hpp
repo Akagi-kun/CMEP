@@ -39,9 +39,9 @@ namespace Engine
 
 		// Window
 		GLFWwindow* window = nullptr;
-		const unsigned windowX = 0, windowY = 0;
-		const char* windowTitle = nullptr;
-		unsigned framerateTarget = 30;
+		unsigned int windowX = 0, windowY = 0;
+		std::string windowTitle;
+		unsigned int framerateTarget = 30;
 
 		// Managers
 		AssetManager* asset_manager = nullptr;

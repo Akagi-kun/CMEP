@@ -155,11 +155,13 @@ namespace Engine::Rendering
 						const tinyobj::real_t* face_diffuse = materials[shapes[s].mesh.material_ids[f]].diffuse;
 						const tinyobj::real_t* face_specular = materials[shapes[s].mesh.material_ids[f]].specular;
 						const tinyobj::real_t face_dissolve = materials[shapes[s].mesh.material_ids[f]].dissolve;
+						const tinyobj::real_t* face_emission = materials[shapes[s].mesh.material_ids[f]].emission;
 
 						this->mesh_ambient.push_back(glm::vec3(face_ambient[0], face_ambient[1], face_ambient[2]));
 						this->mesh_diffuse.push_back(glm::vec3(face_diffuse[0], face_diffuse[1], face_diffuse[2]));
 						this->mesh_specular.push_back(glm::vec3(face_specular[0], face_specular[1], face_specular[2]));
 						this->mesh_dissolve.push_back(face_dissolve);
+						this->mesh_emission.push_back(glm::vec3(face_emission[0], face_emission[1], face_emission[2]));
 					}
 				}
 				index_offset += fv;
