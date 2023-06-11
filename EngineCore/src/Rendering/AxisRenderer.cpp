@@ -2,29 +2,27 @@
 
 #include "Rendering/GLCommon.hpp"
 
+#include <fstream>
+#include <sstream>
+
 #include "Rendering/AxisRenderer.hpp"
 #include "Rendering/Texture.hpp"
 #include "Rendering/Shader.hpp"
 #include "Object.hpp"
 #include "GlobalSceneManager.hpp"
 
-#include "glm/gtc/matrix_transform.hpp"
-
 namespace Engine::Rendering
 {
 	AxisRenderer::AxisRenderer()
 	{
-		static const char* vertex_shader_source =
-			"#version 400 core\n"
-			"layout(location = 0) in vec3 pos; layout(location = 1) in vec2 texCord; out vec2 fragTexCord;"
-			"void main() { gl_Position = vec4(pos, 1.0f); fragTexCord = texCord; }";
+		std::ifstream vert("data/shaders/axisrenderer.vert");
+		std::ifstream frag("data/shaders/axisrenderer.frag");
+		std::ostringstream vertsstr;
+		std::ostringstream fragsstr;
+		vertsstr << vert.rdbuf();
+		fragsstr << frag.rdbuf();
 
-		static const char* fragment_shader_source =
-			"#version 400 core\n"
-			"out vec4 color; in vec2 fragTexCord; uniform sampler2D texture0;"
-			"void main() { color = texture(texture0, fragTexCord); }";
-
-		this->program = std::make_unique<Rendering::Shader>(vertex_shader_source, fragment_shader_source);
+		this->program = std::make_unique<Shader>(vertsstr.str().c_str(), fragsstr.str().c_str());
 	}
 
 	AxisRenderer::~AxisRenderer()
@@ -48,35 +46,40 @@ namespace Engine::Rendering
 	void AxisRenderer::UpdateMesh() noexcept
 	{
 		this->has_updated_mesh = true;
-
+	
 		if (this->vbo == 0)
 		{
 			glCreateBuffers(1, &this->vbo);
 		}
+		
 		if (this->vao == 0)
 		{
 			glCreateVertexArrays(1, &this->vao);
 		}
 
-		const float xs = (float)this->_size.x * 2; const float ys = (float)this->_size.y * 2;
-		const float x = (float)this->_pos.x * 2 - 1.f; const float y = (float)this->_pos.y * 2 - 1.f;
-		const GLfloat data[] = {
-			0, 0, 0, 1,
-			0, 1, 0, 1,
-			0, 0, 0, 2,
-			1, 0, 0, 2,
-			0, 0, 0, 3,
-			0, 0, 0, 3
+		const GLfloat data_vert[] = {
+			0.0, 0.0, 0.0,
+			1.0, 0.0, 0.0,
+			0.0, 0.0, 0.0,
+			0.0, 1.0, 0.0,
+			0.0, 0.0, 0.0,
+			0.0, 0.0, 1.0,
 		};
+
+		const GLint data_axis[] = {
+			1, 1, 2, 2, 3, 3
+		};
+
 
 		glm::mat4 Projection = glm::perspective(glm::radians(45.0f), (float)this->_screenx / this->_screeny, 0.1f, 100.0f);
 		glm::mat4 View = global_scene_manager->GetCameraViewMatrix();
+		glm::mat4 Model = glm::mat4(1.0f);
 
-		//glm::mat4 Model = ;
+		this->matMVP = Projection * View * Model;
 
-		//this->matMVP = Projection * View * Model;
-
-		glNamedBufferData(this->vbo, sizeof(data), (void*)data, GL_STATIC_DRAW);
+		glNamedBufferData(this->vbo, sizeof(data_vert) + sizeof(data_axis), NULL, GL_STATIC_DRAW);
+		glNamedBufferSubData(this->vbo, 0, sizeof(data_vert), (void*)&data_vert[0]);
+		glNamedBufferSubData(this->vbo, sizeof(data_vert), sizeof(data_axis), (void*)&data_axis[0]);
 	}
 
 	void AxisRenderer::Render()
@@ -90,22 +93,25 @@ namespace Engine::Rendering
 		assert(texture != 0);
 		assert(shader != 0);
 
-		glBindVertexArray(this->vao);
-		glBindBuffer(GL_ARRAY_BUFFER, this->vbo);
-
 		glUseProgram(shader);
 
+		glBindVertexArray(this->vao);
+
 		// Vertex and texture coord data
-		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 4 * sizeof(GLfloat), (void*)nullptr);
-		glVertexAttribPointer(1, 1, GL_FLOAT, GL_FALSE, 4 * sizeof(GLfloat), (void*)(3 * sizeof(GLfloat)));
+		glBindBuffer(GL_ARRAY_BUFFER, this->vbo);
+		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, (void*)nullptr);
+		glVertexAttribIPointer(1, 1, GL_INT, 0, (void*)(18 * sizeof(GLfloat)));
+
+		GLuint mvp_uniform_id = glGetUniformLocation(shader, "matMVP");
+		glUniformMatrix4fv(mvp_uniform_id, 1, GL_FALSE, &this->matMVP[0][0]);
 
 		glEnableVertexAttribArray(0);
 		glEnableVertexAttribArray(1);
 
-		glDrawArrays(GL_LINE, 0, 6);
+		glLineWidth(5.0);
+		glDrawArrays(GL_LINES, 0, 18);
 
 		glDisableVertexAttribArray(0);
 		glDisableVertexAttribArray(1);
-
 	}
 }

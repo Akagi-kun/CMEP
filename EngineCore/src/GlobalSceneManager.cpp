@@ -79,19 +79,16 @@ namespace Engine
 	glm::mat4 GlobalSceneManager::GetCameraViewMatrix()
 	{
 		glm::vec3 direction = glm::vec3(
-			cos(this->cameraHVRotation.y) * sin(this->cameraHVRotation.x),
+			cos(this->cameraHVRotation.x) * cos(this->cameraHVRotation.y),
 			sin(this->cameraHVRotation.y),
-			cos(this->cameraHVRotation.y) * cos(this->cameraHVRotation.x)
+			sin(this->cameraHVRotation.x) * cos(this->cameraHVRotation.y)
 		);
 
-		glm::vec3 right = glm::vec3(
-			sin(this->cameraHVRotation.x - 3.14f / 2.0f), 0,
-			cos(this->cameraHVRotation.x - 3.14f / 2.0f)
-		);
+		glm::vec3 front = glm::normalize(direction);
+		glm::vec3 right = glm::normalize(glm::cross(direction, glm::vec3(0, 1, 0)));
+		glm::vec3 up = glm::normalize(glm::cross(right, front));
 
-		glm::vec3 up = glm::cross(right, direction);
-
-		glm::mat4 ViewMatrix = glm::lookAt(this->cameraTransform, this->cameraTransform + direction, up);
+		glm::mat4 ViewMatrix = glm::lookAt(this->cameraTransform, this->cameraTransform + front, up);
 		
 		return ViewMatrix;
 	}

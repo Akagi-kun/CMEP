@@ -135,7 +135,8 @@ namespace Engine::Rendering
 					this->mesh->mesh_diffuse.size() * sizeof(glm::vec3) +
 					this->mesh->mesh_specular.size() * sizeof(glm::vec3) +
 					this->mesh->matids.size() * sizeof(GLuint) +
-					this->mesh->mesh_dissolve.size() * sizeof(float),
+					this->mesh->mesh_dissolve.size() * sizeof(float) +
+					this->mesh->mesh_emission.size() * sizeof(glm::vec3),
 				NULL, GL_STATIC_DRAW
 			);
 

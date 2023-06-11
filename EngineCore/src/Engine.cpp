@@ -5,12 +5,15 @@
 
 #include "nlohmann-json/json.hpp"
 
+#include "Rendering/AxisRenderer.hpp"
+
 #include "Scripting/LuaScriptExecutor.hpp"
 #include "Scripting/LuaScript.hpp"
 
 #include "AssetManager.hpp"
 #include "Engine.hpp"
 #include "Object.hpp"
+
 
 #if defined( _WIN32 )
 	#ifndef _DEBUG
@@ -227,6 +230,16 @@ namespace Engine
 	{
 		Logging::GlobalLogger->MapCurrentThreadToName("game");
 
+		Object* object = new Object();
+		object->renderer = new Rendering::AxisRenderer();
+		object->Translate(glm::vec3(0, 0, 0));
+		object->Scale(glm::vec3(1, 1, 1));
+		object->Rotate(glm::vec3(0, 0, 0));
+		object->ScreenSizeInform(this->windowX, this->windowY);
+		((Rendering::AxisRenderer*)object->renderer)->UpdateMesh();
+
+		global_scene_manager->AddObject("_axis", object);
+
 		glEnable(GL_MULTISAMPLE);
 		glEnable(GL_DEPTH_TEST);
 		glEnable(GL_BLEND);
@@ -360,6 +373,7 @@ namespace Engine
 		glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
 		glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6);
 		glfwWindowHint(GLFW_VISIBLE, GL_FALSE);
+		glfwWindowHint(GLFW_RESIZABLE, GL_FALSE);
 		glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
 		this->window = glfwCreateWindow(this->windowX, this->windowY, this->windowTitle.c_str(), NULL, NULL);

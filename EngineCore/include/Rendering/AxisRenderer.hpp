@@ -4,6 +4,8 @@
 
 #include "IRenderer.hpp"
 
+#include "glm/gtc/matrix_transform.hpp"
+
 namespace Engine::Rendering
 {
 	class Texture;
@@ -24,6 +26,8 @@ namespace Engine::Rendering
 		/// GL Vertex Buffer Object
 		/// </summary>
 		unsigned int vbo = 0;
+
+		glm::mat4 matMVP;
 
 		std::unique_ptr<Rendering::Shader> program;
 
