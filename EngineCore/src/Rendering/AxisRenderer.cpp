@@ -109,7 +109,7 @@ namespace Engine::Rendering
 		glEnableVertexAttribArray(1);
 
 		glLineWidth(5.0);
-		glDrawArrays(GL_LINES, 0, 18);
+		glDrawArrays(GL_LINES, 0, 6);
 
 		glDisableVertexAttribArray(0);
 		glDisableVertexAttribArray(1);

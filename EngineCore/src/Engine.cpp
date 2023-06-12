@@ -237,8 +237,7 @@ namespace Engine
 		object->Rotate(glm::vec3(0, 0, 0));
 		object->ScreenSizeInform(this->windowX, this->windowY);
 		((Rendering::AxisRenderer*)object->renderer)->UpdateMesh();
-
-		global_scene_manager->AddObject("_axis", object);
+		//global_scene_manager->AddObject("_axis", object);
 
 		glEnable(GL_MULTISAMPLE);
 		glEnable(GL_DEPTH_TEST);

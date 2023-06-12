@@ -131,7 +131,7 @@ namespace Engine::Rendering
 
 			// Materials
 			glNamedBufferData(this->mbo,
-				this->mesh->mesh_ambient.size() * sizeof(glm::vec3) +
+					this->mesh->mesh_ambient.size() * sizeof(glm::vec3) +
 					this->mesh->mesh_diffuse.size() * sizeof(glm::vec3) +
 					this->mesh->mesh_specular.size() * sizeof(glm::vec3) +
 					this->mesh->matids.size() * sizeof(GLuint) +
@@ -140,38 +140,44 @@ namespace Engine::Rendering
 				NULL, GL_STATIC_DRAW
 			);
 
+			size_t offset = 0;
 			glNamedBufferSubData(this->mbo,
-				0,
+				offset,
 				this->mesh->mesh_ambient.size() * sizeof(glm::vec3),
 				(void*)&(this->mesh->mesh_ambient[0])
 			);
+			offset += this->mesh->mesh_ambient.size() * sizeof(glm::vec3);
 
 			glNamedBufferSubData(this->mbo,
-				this->mesh->mesh_ambient.size() * sizeof(glm::vec3),
+				offset,
 				this->mesh->mesh_diffuse.size() * sizeof(glm::vec3),
 				(void*)&(this->mesh->mesh_diffuse[0])
 			);
+			offset += this->mesh->mesh_diffuse.size() * sizeof(glm::vec3);
 
 			glNamedBufferSubData(this->mbo,
-				this->mesh->mesh_ambient.size() * sizeof(glm::vec3) + this->mesh->mesh_diffuse.size() * sizeof(glm::vec3),
+				offset,
 				this->mesh->mesh_specular.size() * sizeof(glm::vec3),
 				(void*)&(this->mesh->mesh_specular[0])
 			);
+			offset += this->mesh->mesh_specular.size() * sizeof(glm::vec3);
 
 			glNamedBufferSubData(this->mbo,
-				this->mesh->mesh_ambient.size() * sizeof(glm::vec3) + this->mesh->mesh_diffuse.size() * sizeof(glm::vec3) + this->mesh->mesh_specular.size() * sizeof(glm::vec3),
+				offset,
 				this->mesh->matids.size() * sizeof(GLuint),
 				(void*)&(this->mesh->matids[0])
 			);
+			offset += this->mesh->matids.size() * sizeof(GLuint);
 			
 			glNamedBufferSubData(this->mbo,
-				this->mesh->mesh_ambient.size() * sizeof(glm::vec3) + this->mesh->mesh_diffuse.size() * sizeof(glm::vec3) + this->mesh->mesh_specular.size() * sizeof(glm::vec3)+ this->mesh->matids.size() * sizeof(GLuint),
+				offset,
 				this->mesh->mesh_dissolve.size() * sizeof(float),
 				(void*)&(this->mesh->mesh_dissolve[0])
 			);
+			offset += this->mesh->mesh_dissolve.size() * sizeof(float);
 
 			glNamedBufferSubData(this->mbo,
-				this->mesh->mesh_ambient.size() * sizeof(glm::vec3) + this->mesh->mesh_diffuse.size() * sizeof(glm::vec3) + this->mesh->mesh_specular.size() * sizeof(glm::vec3) + this->mesh->matids.size() * sizeof(GLuint) + this->mesh->mesh_dissolve.size() * sizeof(float),
+				offset,
 				this->mesh->mesh_emission.size() * sizeof(glm::vec3),
 				(void*)&(this->mesh->mesh_emission[0])
 			);
@@ -333,7 +339,7 @@ namespace Engine::Rendering
 		glUniform3f(light_uniform_id, light_position.x, light_position.y, light_position.z);
 
 		// Enable vertex attribs
-		for (int i = 0; i < 8; i++)
+		for (int i = 0; i < 11; i++)
 		{
 			glEnableVertexAttribArray(i);
 		}
@@ -342,7 +348,7 @@ namespace Engine::Rendering
 
 
 		// Disable vertex attribs
-		for (int i = 0; i < 8; i++)
+		for (int i = 0; i < 11; i++)
 		{
 			glDisableVertexAttribArray(i);
 		}
