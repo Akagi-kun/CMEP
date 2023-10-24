@@ -37,7 +37,7 @@ namespace Engine::Scripting::Mappings
 		int mesh_CreateMeshFromObj(lua_State* state);
 	}
 
-	const uint32_t countMappings = 21;
+	const uint32_t countMappings = 22;
 
 	const char* nameMappings[];
 

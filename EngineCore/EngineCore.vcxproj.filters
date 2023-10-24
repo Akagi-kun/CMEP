@@ -84,6 +84,9 @@
     <ClCompile Include="src\Rendering\AxisRenderer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\Rendering\VulkanRenderingEngine.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\AssetManager.hpp">
@@ -1149,6 +1152,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="include\Rendering\AxisRenderer.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\Rendering\VulkanRenderingEngine.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

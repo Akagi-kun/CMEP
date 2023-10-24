@@ -21,11 +21,11 @@ namespace Engine::Rendering
 		/// <summary>
 		/// GL Vertex Array Object
 		/// </summary>
-		unsigned int vao = 0;
+		//unsigned int vao = 0;
 		/// <summary>
 		/// GL Vertex Buffer Object
 		/// </summary>
-		unsigned int vbo = 0;
+		//unsigned int vbo = 0;
 		/// <summary>
 		/// Count of vertices in Vertex Buffer Object
 		/// </summary>
@@ -34,6 +34,10 @@ namespace Engine::Rendering
 		/// Text to be rendered
 		/// </summary>
 		std::string text = "";
+
+		VulkanPipeline* pipeline = nullptr;
+		VulkanTextureImage* textureImage = nullptr;
+		VulkanBuffer* vbo = nullptr;
 
 		/// <summary>
 		/// Currently used shader
@@ -63,6 +67,6 @@ namespace Engine::Rendering
 		int UpdateText(const std::string text) noexcept;
 		
 		void UpdateMesh() override;
-		void Render() override;
+		void Render(VkCommandBuffer commandBuffer, uint32_t currentFrame) override;
 	};
 }

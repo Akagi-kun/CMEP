@@ -5,8 +5,7 @@
 #include <vector>
 #include <memory>
 
-#include "glew/glew.h"
-#include "glfw/glfw3.h"
+#include "Rendering/VulkanRenderingEngine.hpp"
 
 #include "GlobalSceneManager.hpp"
 #include "Logging/Logging.hpp"
@@ -29,30 +28,67 @@ namespace Engine
 		class LuaScript;
 	}
 
+	struct QueueFamilyIndices {
+		std::optional<uint32_t> graphicsFamily;
+	};
+
 	class __declspec(dllexport) Engine final
 	{
 	private:
 		// Keeps internal loop running
 		bool run_threads = true;
 
-		std::string config_path;
+		std::string config_path = "";
 
 		// Window
-		GLFWwindow* window = nullptr;
+		//GLFWwindow* window = nullptr;
 		unsigned int windowX = 0, windowY = 0;
 		std::string windowTitle;
 		unsigned int framerateTarget = 30;
 
-		// Managers
+		/*
+		// Vulcan info
+		VkInstance vkInstance = VK_NULL_HANDLE;
+		VkDebugUtilsMessengerEXT vkDebugMessenger = VK_NULL_HANDLE;
+		VkPhysicalDevice vkPhysicalDevice = VK_NULL_HANDLE;
+		VkDevice vkLogicalDevice = VK_NULL_HANDLE;
+		const std::vector<const char*> vkValidationLayers = {
+			"VK_LAYER_KHRONOS_validation"
+		};
+
+#ifndef _DEBUG
+		const bool enableVkValidationLayers = false;
+#else
+		const bool enableVkValidationLayers = true;
+#endif
+		*/
+
+		// Engine parts
+		Rendering::VulkanRenderingEngine* rendering_engine = nullptr;
 		AssetManager* asset_manager = nullptr;
 		Scripting::LuaScriptExecutor* script_executor = nullptr;
 
+		// Event handler storage
 		std::vector<std::pair<EventHandling::EventType, std::function<void(EventHandling::Event&)>>> event_handlers;
 		std::vector<std::tuple<EventHandling::EventType, Scripting::LuaScript*, std::string>> lua_event_handlers;
+		/*
+		// Vulcan physical device functions
+		int checkVulkanPhysicalDeviceSuitability(VkPhysicalDevice device);
+		QueueFamilyIndices findVulkanQueueFamilies(VkPhysicalDevice device);
 
+		// Vulcan logical device functions
+		void createVulkanLogicalDevice();
+
+		// Vulcan init functions
+		bool checkVulkanValidationLayers();
+		void initVulkanInstance();
+		void initVulkanDevice();
+		void initVulkan();
+		*/
 		static void APIENTRY debugCallbackGL(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, const void* userParam) noexcept;
-
 		static void spinSleep(double seconds);
+
+		static void RenderCallback(VkCommandBuffer commandBuffer, uint32_t currentFrame);
 
 		void handleInput(const double deltaTime) noexcept;
 
@@ -79,6 +115,7 @@ namespace Engine
 		size_t RemoveObject(std::string name) noexcept;
 		
 		AssetManager* GetAssetManager() noexcept;
+		Rendering::VulkanRenderingEngine* GetRenderingEngine() noexcept;
 	};
 
 	__declspec(dllexport) Engine* initializeEngine(const char* windowTitle, const unsigned windowX, const unsigned windowY);

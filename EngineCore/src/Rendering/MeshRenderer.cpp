@@ -11,32 +11,53 @@
 
 #include "Rendering/GLCommon.hpp"
 
+#include "Engine.hpp"
+
 namespace Engine::Rendering
 {
 	MeshRenderer::MeshRenderer()
 	{
-		std::ifstream vert("data/shaders/meshrenderer.vert");
+		/*std::ifstream vert("data/shaders/meshrenderer.vert");
 		std::ifstream frag("data/shaders/meshrenderer.frag");
 		std::ostringstream vertsstr;
 		std::ostringstream fragsstr;
 		vertsstr << vert.rdbuf();
 		fragsstr << frag.rdbuf();
 
-		this->program = std::make_unique<Shader>(vertsstr.str().c_str(), fragsstr.str().c_str());
+		this->program = std::make_unique<Shader>(vertsstr.str().c_str(), fragsstr.str().c_str());*/
+
+		VulkanRenderingEngine* renderer = global_engine->GetRenderingEngine();
+
+		VulkanPipelineSettings pipeline_settings = renderer->getVulkanDefaultPipelineSettings();
+		pipeline_settings.inputAssembly.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
+		
+		pipeline_settings.descriptorLayoutSettings.binding.push_back(0);
+		pipeline_settings.descriptorLayoutSettings.descriptorCount.push_back(1);
+		pipeline_settings.descriptorLayoutSettings.types.push_back(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER);
+		pipeline_settings.descriptorLayoutSettings.stageFlags.push_back(VK_SHADER_STAGE_VERTEX_BIT);
+
+		pipeline_settings.descriptorLayoutSettings.binding.push_back(1);
+		pipeline_settings.descriptorLayoutSettings.descriptorCount.push_back(16);
+		pipeline_settings.descriptorLayoutSettings.types.push_back(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
+		pipeline_settings.descriptorLayoutSettings.stageFlags.push_back(VK_SHADER_STAGE_FRAGMENT_BIT);
+
+		this->pipeline = renderer->createVulkanPipeline(pipeline_settings, "data/shaders/vulkan/meshrenderer_vert.spv", "data/shaders/vulkan/meshrenderer_frag.spv");
 
 		this->matMVP = glm::mat4();
 	}
 
 	MeshRenderer::~MeshRenderer()
 	{
-		glDeleteVertexArrays(1, &this->vao);
-		glDeleteBuffers(1, &this->vbo);
-		glDeleteBuffers(1, &this->mbo);
+		global_engine->GetRenderingEngine()->cleanupVulkanBuffer(this->vbo);
+		global_engine->GetRenderingEngine()->cleanupVulkanPipeline(this->pipeline);
+		//glDeleteVertexArrays(1, &this->vao);
+		//glDeleteBuffers(1, &this->vbo);
+		//glDeleteBuffers(1, &this->mbo);
 	}
 
-	void MeshRenderer::AssignMesh(Mesh& new_mesh)
+	void MeshRenderer::AssignMesh(Mesh* new_mesh)
 	{
-		this->mesh = std::make_unique<Mesh>(new_mesh);
+		this->mesh = new_mesh;
 
 		this->has_updated_mesh = false;
 		this->has_updated_meshdata = false;
@@ -71,7 +92,7 @@ namespace Engine::Rendering
 		this->has_updated_mesh = true;
 
 		// Create VBO and VAO if they arent created already
-		if (this->vbo == 0)
+		/*if (this->vbo == 0)
 		{
 			glCreateBuffers(1, &this->vbo);
 		}
@@ -86,14 +107,21 @@ namespace Engine::Rendering
 		if (this->tbbo == 0)
 		{
 			glCreateBuffers(1, &this->tbbo);
-		}
+		}*/
 
+		VulkanRenderingEngine* renderer = global_engine->GetRenderingEngine();
 
 		glm::mat4 Projection = glm::perspective(glm::radians(45.0f), (float)this->_screenx / this->_screeny, 0.1f, 100.0f);
+		Projection[1][1] *= -1;
+
 		glm::mat4 View = global_scene_manager->GetCameraViewMatrix();
 
 		glm::quat ModelRotation = glm::quat(glm::radians(this->_rotation));
-		glm::mat4 Model = glm::translate(glm::mat4(1.0f), this->_pos) * glm::mat4(1.0f) * glm::toMat4(ModelRotation);
+		glm::mat4 Model = glm::translate(
+								glm::scale(
+									glm::toMat4(ModelRotation),
+								this->_size),
+							this->_pos);
 
 		this->matM = Model;
 		this->matV = View;
@@ -104,108 +132,234 @@ namespace Engine::Rendering
 		if (!this->has_updated_meshdata)
 		{
 			this->has_updated_meshdata = true;
-		
-			// Vertices, UVs and Normals
-			glNamedBufferData(this->vbo,
-				this->mesh->mesh_vertices.size() * sizeof(glm::vec3) + this->mesh->mesh_uvs.size() * sizeof(glm::vec2) + this->mesh->mesh_normals.size() * sizeof(glm::vec3),
-				NULL, GL_STATIC_DRAW
-			);
 
-			glNamedBufferSubData(this->vbo, 
-				0,
-				this->mesh->mesh_vertices.size() * sizeof(glm::vec3),
-				(void*)&(this->mesh->mesh_vertices[0])
-			);
+			if (this->vbo != nullptr)
+			{
+				vkDeviceWaitIdle(renderer->GetLogicalDevice());
+				renderer->cleanupVulkanBuffer(this->vbo);
+				this->vbo = nullptr;
+			}
 
-			glNamedBufferSubData(this->vbo,
-				this->mesh->mesh_vertices.size() * sizeof(glm::vec3),
-				this->mesh->mesh_uvs.size() * sizeof(glm::vec2),
-				(void*)&(this->mesh->mesh_uvs[0])
-			);
+			std::vector<RenderingVertex> generated_mesh = {};
 
-			glNamedBufferSubData(this->vbo,
-				this->mesh->mesh_vertices.size() * sizeof(glm::vec3) + this->mesh->mesh_uvs.size() * sizeof(glm::vec2),
-				this->mesh->mesh_normals.size() * sizeof(glm::vec3),
-				(void*)&(this->mesh->mesh_normals[0])
-			);
+			generated_mesh.resize(this->mesh->mesh_vertices.size());
 
-			// Materials
-			glNamedBufferData(this->mbo,
-					this->mesh->mesh_ambient.size() * sizeof(glm::vec3) +
-					this->mesh->mesh_diffuse.size() * sizeof(glm::vec3) +
-					this->mesh->mesh_specular.size() * sizeof(glm::vec3) +
-					this->mesh->matids.size() * sizeof(GLuint) +
-					this->mesh->mesh_dissolve.size() * sizeof(float) +
-					this->mesh->mesh_emission.size() * sizeof(glm::vec3),
-				NULL, GL_STATIC_DRAW
-			);
+			uint32_t i = 0;
+			for (glm::vec3 pos : this->mesh->mesh_vertices)
+			{
+				generated_mesh[i].pos = pos;
+				generated_mesh[i].color = glm::vec3(0);
+				i++;
+			}
 
-			size_t offset = 0;
-			glNamedBufferSubData(this->mbo,
-				offset,
-				this->mesh->mesh_ambient.size() * sizeof(glm::vec3),
-				(void*)&(this->mesh->mesh_ambient[0])
-			);
-			offset += this->mesh->mesh_ambient.size() * sizeof(glm::vec3);
+			i = 0;
+			for (glm::vec2 texCoord: this->mesh->mesh_uvs)
+			{
+				generated_mesh[i].texcoord = texCoord;
+				i++;
+			}
 
-			glNamedBufferSubData(this->mbo,
-				offset,
-				this->mesh->mesh_diffuse.size() * sizeof(glm::vec3),
-				(void*)&(this->mesh->mesh_diffuse[0])
-			);
-			offset += this->mesh->mesh_diffuse.size() * sizeof(glm::vec3);
+			i = 0;
+			for (glm::vec3 normal : this->mesh->mesh_normals)
+			{
+				generated_mesh[i].normal = normal;
+				i++;
+			}
 
-			glNamedBufferSubData(this->mbo,
-				offset,
-				this->mesh->mesh_specular.size() * sizeof(glm::vec3),
-				(void*)&(this->mesh->mesh_specular[0])
-			);
-			offset += this->mesh->mesh_specular.size() * sizeof(glm::vec3);
+			this->vbo = renderer->createVulkanVertexBufferFromData(generated_mesh);
 
-			glNamedBufferSubData(this->mbo,
-				offset,
-				this->mesh->matids.size() * sizeof(GLuint),
-				(void*)&(this->mesh->matids[0])
-			);
-			offset += this->mesh->matids.size() * sizeof(GLuint);
+			this->vbo_vert_count = generated_mesh.size();
 			
-			glNamedBufferSubData(this->mbo,
-				offset,
-				this->mesh->mesh_dissolve.size() * sizeof(float),
-				(void*)&(this->mesh->mesh_dissolve[0])
-			);
-			offset += this->mesh->mesh_dissolve.size() * sizeof(float);
+			std::vector<VkDescriptorImageInfo> diffuseImageBufferInfos{};
+			diffuseImageBufferInfos.resize(16);
+			for (int diffuseTextureIndex = 0; diffuseTextureIndex < this->mesh->diffuse_textures.size(); diffuseTextureIndex++)
+			{
+				Logging::GlobalLogger->SimpleLog(Logging::LogLevel::Debug2, "Filling imageBufferInfos at index %u", diffuseTextureIndex);
 
-			glNamedBufferSubData(this->mbo,
-				offset,
-				this->mesh->mesh_emission.size() * sizeof(glm::vec3),
-				(void*)&(this->mesh->mesh_emission[0])
-			);
+				VulkanTextureImage* currentDiffuseTextureImage = this->mesh->diffuse_textures[diffuseTextureIndex]->GetTextureImage();
 
-			// Tangents and bitangents
-			glNamedBufferData(this->tbbo,
-				this->mesh->mesh_tangents.size() * sizeof(glm::vec3) +
-				this->mesh->mesh_bitangents.size() * sizeof(glm::vec3),
-				NULL, GL_STATIC_DRAW
-			);
+				if (currentDiffuseTextureImage->image != nullptr)
+				{
+					Logging::GlobalLogger->SimpleLog(Logging::LogLevel::Debug2, "Resizing imageBufferInfos to size %u", diffuseImageBufferInfos.size() + 1);
+					VkDescriptorImageInfo diffuseImageBufferInfo{};
+					diffuseImageBufferInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+					diffuseImageBufferInfo.imageView = currentDiffuseTextureImage->image->imageView;
+					diffuseImageBufferInfo.sampler = currentDiffuseTextureImage->textureSampler;
+					diffuseImageBufferInfos[diffuseTextureIndex] = diffuseImageBufferInfo;
+				}
+			}
 
-			glNamedBufferSubData(this->tbbo,
-				0,
-				this->mesh->mesh_tangents.size() * sizeof(glm::vec3),
-				(void*)&(this->mesh->mesh_tangents[0])
-			);
+			for (int i = 0; i < diffuseImageBufferInfos.size(); i++)
+			{
+				if (diffuseImageBufferInfos[i].imageLayout != VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL)
+				{
 
-			glNamedBufferSubData(this->tbbo,
-				this->mesh->mesh_tangents.size() * sizeof(glm::vec3),
-				this->mesh->mesh_bitangents.size() * sizeof(glm::vec3),
-				(void*)&(this->mesh->mesh_bitangents[0])
-			);
+				}
+			}
 
-			//Logging::GlobalLogger->SimpleLog(Logging::LogLevel::Info, "%u %u %u %u %u", this->mesh->mesh_vertices.size(), this->mesh->mesh_diffuse.size(), this->mesh->mesh_specular.size(), this->mesh->matids.size(), this->mesh->mesh_dissolve.size());
+			for (size_t i = 0; i < renderer->GetMaxFramesInFlight(); i++)
+			{
+				VkDescriptorBufferInfo uniformBufferInfo{};
+				uniformBufferInfo.buffer = pipeline->uniformBuffers[i]->buffer;
+				uniformBufferInfo.offset = 0;
+				uniformBufferInfo.range = sizeof(glm::mat4);
+
+				std::vector<VkWriteDescriptorSet> descriptorWrites{};
+				descriptorWrites.resize(1);
+
+				descriptorWrites[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+				descriptorWrites[0].dstSet = pipeline->vkDescriptorSets[i];
+				descriptorWrites[0].dstBinding = 0;
+				descriptorWrites[0].dstArrayElement = 0;
+				descriptorWrites[0].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+				descriptorWrites[0].descriptorCount = 1;
+				descriptorWrites[0].pBufferInfo = &uniformBufferInfo;
+
+				if (diffuseImageBufferInfos.size() > 0)
+				{
+					Logging::GlobalLogger->SimpleLog(Logging::LogLevel::Debug1, "Updating set 0x%x binding 1", pipeline->vkDescriptorSets[i]);
+
+					descriptorWrites.resize(2);
+					descriptorWrites[1].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+					descriptorWrites[1].dstSet = pipeline->vkDescriptorSets[i];
+					descriptorWrites[1].dstBinding = 1;
+					descriptorWrites[1].dstArrayElement = 0;
+					descriptorWrites[1].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+					descriptorWrites[1].descriptorCount = diffuseImageBufferInfos.size();
+					descriptorWrites[1].pImageInfo = diffuseImageBufferInfos.data();
+				}
+
+				Logging::GlobalLogger->SimpleLog(Logging::LogLevel::Debug1, "Descriptor set 0x%x write of index 1 has binding %u, descriptorWrite size is %u",
+					pipeline->vkDescriptorSets[i], descriptorWrites[1].dstBinding, descriptorWrites.size());
+
+				vkUpdateDescriptorSets(renderer->GetLogicalDevice(), static_cast<uint32_t>(descriptorWrites.size()), descriptorWrites.data(), 0, nullptr);
+			}
+
+		//
+		//	// Vertices, UVs and Normals
+		//	glNamedBufferData(this->vbo,
+		//		this->mesh->mesh_vertices.size() * sizeof(glm::vec3) + this->mesh->mesh_uvs.size() * sizeof(glm::vec2) + this->mesh->mesh_normals.size() * sizeof(glm::vec3),
+		//		NULL, GL_STATIC_DRAW
+		//	);
+
+		//	glNamedBufferSubData(this->vbo, 
+		//		0,
+		//		this->mesh->mesh_vertices.size() * sizeof(glm::vec3),
+		//		(void*)&(this->mesh->mesh_vertices[0])
+		//	);
+
+		//	glNamedBufferSubData(this->vbo,
+		//		this->mesh->mesh_vertices.size() * sizeof(glm::vec3),
+		//		this->mesh->mesh_uvs.size() * sizeof(glm::vec2),
+		//		(void*)&(this->mesh->mesh_uvs[0])
+		//	);
+
+		//	glNamedBufferSubData(this->vbo,
+		//		this->mesh->mesh_vertices.size() * sizeof(glm::vec3) + this->mesh->mesh_uvs.size() * sizeof(glm::vec2),
+		//		this->mesh->mesh_normals.size() * sizeof(glm::vec3),
+		//		(void*)&(this->mesh->mesh_normals[0])
+		//	);
+
+		//	// Materials
+		//	glNamedBufferData(this->mbo,
+		//			this->mesh->mesh_ambient.size() * sizeof(glm::vec3) +
+		//			this->mesh->mesh_diffuse.size() * sizeof(glm::vec3) +
+		//			this->mesh->mesh_specular.size() * sizeof(glm::vec3) +
+		//			this->mesh->matids.size() * sizeof(GLuint) +
+		//			this->mesh->mesh_dissolve.size() * sizeof(float) +
+		//			this->mesh->mesh_emission.size() * sizeof(glm::vec3),
+		//		NULL, GL_STATIC_DRAW
+		//	);
+
+		//	size_t offset = 0;
+		//	glNamedBufferSubData(this->mbo,
+		//		offset,
+		//		this->mesh->mesh_ambient.size() * sizeof(glm::vec3),
+		//		(void*)&(this->mesh->mesh_ambient[0])
+		//	);
+		//	offset += this->mesh->mesh_ambient.size() * sizeof(glm::vec3);
+
+		//	glNamedBufferSubData(this->mbo,
+		//		offset,
+		//		this->mesh->mesh_diffuse.size() * sizeof(glm::vec3),
+		//		(void*)&(this->mesh->mesh_diffuse[0])
+		//	);
+		//	offset += this->mesh->mesh_diffuse.size() * sizeof(glm::vec3);
+
+		//	glNamedBufferSubData(this->mbo,
+		//		offset,
+		//		this->mesh->mesh_specular.size() * sizeof(glm::vec3),
+		//		(void*)&(this->mesh->mesh_specular[0])
+		//	);
+		//	offset += this->mesh->mesh_specular.size() * sizeof(glm::vec3);
+
+		//	glNamedBufferSubData(this->mbo,
+		//		offset,
+		//		this->mesh->matids.size() * sizeof(GLuint),
+		//		(void*)&(this->mesh->matids[0])
+		//	);
+		//	offset += this->mesh->matids.size() * sizeof(GLuint);
+		//	
+		//	glNamedBufferSubData(this->mbo,
+		//		offset,
+		//		this->mesh->mesh_dissolve.size() * sizeof(float),
+		//		(void*)&(this->mesh->mesh_dissolve[0])
+		//	);
+		//	offset += this->mesh->mesh_dissolve.size() * sizeof(float);
+
+		//	glNamedBufferSubData(this->mbo,
+		//		offset,
+		//		this->mesh->mesh_emission.size() * sizeof(glm::vec3),
+		//		(void*)&(this->mesh->mesh_emission[0])
+		//	);
+
+		//	// Tangents and bitangents
+		//	glNamedBufferData(this->tbbo,
+		//		this->mesh->mesh_tangents.size() * sizeof(glm::vec3) +
+		//		this->mesh->mesh_bitangents.size() * sizeof(glm::vec3),
+		//		NULL, GL_STATIC_DRAW
+		//	);
+
+		//	glNamedBufferSubData(this->tbbo,
+		//		0,
+		//		this->mesh->mesh_tangents.size() * sizeof(glm::vec3),
+		//		(void*)&(this->mesh->mesh_tangents[0])
+		//	);
+
+		//	glNamedBufferSubData(this->tbbo,
+		//		this->mesh->mesh_tangents.size() * sizeof(glm::vec3),
+		//		this->mesh->mesh_bitangents.size() * sizeof(glm::vec3),
+		//		(void*)&(this->mesh->mesh_bitangents[0])
+		//	);
+
+		//	//Logging::GlobalLogger->SimpleLog(Logging::LogLevel::Info, "%u %u %u %u %u", this->mesh->mesh_vertices.size(), this->mesh->mesh_diffuse.size(), this->mesh->mesh_specular.size(), this->mesh->matids.size(), this->mesh->mesh_dissolve.size());
+		//
+
+		//	glBindVertexArray(this->vao);
+		//	// Bind vbo and vertex data
+		//	glBindBuffer(GL_ARRAY_BUFFER, this->vbo);
+		//	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, nullptr); // vertices
+		//	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 0, (void*)(this->mesh->mesh_vertices.size() * sizeof(glm::vec3))); // uvs
+		//	glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 0, (void*)(this->mesh->mesh_vertices.size() * sizeof(glm::vec3) + this->mesh->mesh_uvs.size() * sizeof(glm::vec2))); // normals
+
+		//	// Bind mbo and material data
+		//	glBindBuffer(GL_ARRAY_BUFFER, this->mbo);
+		//	glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, 0, nullptr); // material ambient
+		//	glVertexAttribPointer(4, 3, GL_FLOAT, GL_FALSE, 0, (void*)(this->mesh->mesh_ambient.size() * sizeof(glm::vec3))); // material diffuse
+		//	glVertexAttribPointer(5, 3, GL_FLOAT, GL_FALSE, 0, (void*)(this->mesh->mesh_ambient.size() * sizeof(glm::vec3) + this->mesh->mesh_diffuse.size() * sizeof(glm::vec3))); // material specular
+		//	glVertexAttribIPointer(6, 1, GL_UNSIGNED_INT, 0, (void*)(this->mesh->mesh_ambient.size() * sizeof(glm::vec3) + this->mesh->mesh_diffuse.size() * sizeof(glm::vec3) + this->mesh->mesh_specular.size() * sizeof(glm::vec3))); // material ids
+		//	glVertexAttribPointer(7, 1, GL_FLOAT, GL_FALSE, 0, (void*)(this->mesh->mesh_ambient.size() * sizeof(glm::vec3) + this->mesh->mesh_diffuse.size() * sizeof(glm::vec3) + this->mesh->mesh_specular.size() * sizeof(glm::vec3) + this->mesh->matids.size() * sizeof(GLuint))); // material dissolve
+		//	glVertexAttribPointer(8, 3, GL_FLOAT, GL_FALSE, 0, (void*)(this->mesh->mesh_ambient.size() * sizeof(glm::vec3) + this->mesh->mesh_diffuse.size() * sizeof(glm::vec3) + this->mesh->mesh_specular.size() * sizeof(glm::vec3) + this->mesh->matids.size() * sizeof(GLuint) + this->mesh->mesh_dissolve.size() * sizeof(float))); // material emission
+
+		//	// Bind tbbo and tangent/bitangent data
+		//	glBindBuffer(GL_ARRAY_BUFFER, this->tbbo);
+		//	glVertexAttribPointer(9, 3, GL_FLOAT, GL_FALSE, 0, nullptr); // material ambient
+		//	glVertexAttribPointer(10, 3, GL_FLOAT, GL_FALSE, 0, (void*)(this->mesh->mesh_tangents.size() * sizeof(glm::vec3))); // material diffuse
+
 		}
 	}
 
-	void MeshRenderer::Render()
+	void MeshRenderer::Render(VkCommandBuffer commandBuffer, uint32_t currentFrame)
 	{
 		if (!this->has_updated_mesh)
 		{
@@ -213,151 +367,140 @@ namespace Engine::Rendering
 		}
 
 		// If no shader bound, throw exception
-		if (!this->program)
+		/*if (!this->program)
 		{
 			Logging::GlobalLogger->SimpleLog(Logging::LogLevel::Exception, "No program assigned to MeshRenderer, cannot perform Engine::Rendering::MeshRenderer::Render()");
 			exit(1);
-		}
+		}*/
 
-		glBindVertexArray(this->vao);
+		memcpy(this->pipeline->uniformBuffers[currentFrame]->mappedMemory, &this->matMVP, sizeof(glm::mat4));
+		vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, this->pipeline->vkPipelineLayout, 0, 1, &this->pipeline->vkDescriptorSets[currentFrame], 0, nullptr);
 
-		// Bind shader
-		GLuint shader = this->program->GetProgram();
+		vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, this->pipeline->pipeline);
+		VkBuffer vertexBuffers[] = { this->vbo->buffer };
+		VkDeviceSize offsets[] = { 0 };
+		vkCmdBindVertexBuffers(commandBuffer, 0, 1, vertexBuffers, offsets);
 
-		if (shader == 0)
-		{
-			throw std::exception("MeshRenderer: Shader::GetProgram() returned zero! Bad shader!");
-		}
+		vkCmdDraw(commandBuffer, this->vbo_vert_count, 1, 0, 0);
 
-		glUseProgram(shader);
+		//glBindVertexArray(this->vao);
 
-		GLint maxTextures;
-		glGetIntegerv(GL_MAX_TEXTURE_IMAGE_UNITS, &maxTextures);
+		//// Bind shader
+		//GLuint shader = this->program->GetProgram();
 
-		// Bind diffuse textures
-		unsigned int textureoffset = 0;
-		for (unsigned int offset = 0; offset < this->mesh->diffuse_textures.size(); offset++)
-		{
-			if (this->mesh->diffuse_textures[offset] != nullptr)
-			{
-				std::shared_ptr<Rendering::Texture> texture = this->mesh->diffuse_textures[offset];
+		//if (shader == 0)
+		//{
+		//	throw std::exception("MeshRenderer: Shader::GetProgram() returned zero! Bad shader!");
+		//}
 
-				GLuint textureLocation = glGetUniformLocation(shader, std::string("textureDiffuse").append(std::to_string(offset)).c_str());
+		//glUseProgram(shader);
 
-				glUniform1i(textureLocation, offset);
-				glActiveTexture(GL_TEXTURE0 + textureoffset);
-				glBindTexture(GL_TEXTURE_2D, texture->GetTexture());
+		//GLint maxTextures;
+		//glGetIntegerv(GL_MAX_TEXTURE_IMAGE_UNITS, &maxTextures);
 
-				GLuint textureUsedLocation = glGetUniformLocation(shader, std::string("used_textureDiffuse").append(std::to_string(offset)).c_str());
-				glUniform1i(textureUsedLocation, 1);
+		//// Bind diffuse textures
+		//unsigned int textureoffset = 0;
+		//for (unsigned int offset = 0; offset < this->mesh->diffuse_textures.size(); offset++)
+		//{
+		//	if (this->mesh->diffuse_textures[offset] != nullptr)
+		//	{
+		//		std::shared_ptr<Rendering::Texture> texture = this->mesh->diffuse_textures[offset];
 
-				if (textureoffset > maxTextures)
-				{
-					throw std::exception("MeshRenderer: Texture limit reached! Too many textures!");
-				}
-			}
-			else
-			{
-				glActiveTexture(GL_TEXTURE0 + textureoffset);
-				glBindTexture(GL_TEXTURE_2D, 0);
+		//		GLuint textureLocation = glGetUniformLocation(shader, std::string("textureDiffuse").c_str());
 
-				GLuint textureUsedLocation = glGetUniformLocation(shader, std::string("used_textureDiffuse").append(std::to_string(offset)).c_str());
-				glUniform1i(textureUsedLocation, 0);
-			}
-			textureoffset++;
-		}
+		//		glUniform1i(textureLocation, offset);
+		//		glActiveTexture(GL_TEXTURE0 + textureoffset);
+		//		glBindTexture(GL_TEXTURE_2D, texture->GetTexture());
 
-		for (unsigned int offset = 0; offset < this->mesh->bump_textures.size(); offset++)
-		{
-			if (this->mesh->bump_textures[offset] != nullptr)
-			{
-				std::shared_ptr<Rendering::Texture> texture = this->mesh->bump_textures[offset];
+		//		GLuint textureUsedLocation = glGetUniformLocation(shader, std::string("used_textureDiffuse").c_str());
+		//		glUniform1i(textureUsedLocation, 1);
 
-				GLuint textureLocation = glGetUniformLocation(shader, std::string("textureNormal").append(std::to_string(offset)).c_str());
+		//		if (textureoffset > maxTextures)
+		//		{
+		//			throw std::exception("MeshRenderer: Texture limit reached! Too many textures!");
+		//		}
+		//	}
+		//	else
+		//	{
+		//		glActiveTexture(GL_TEXTURE0 + textureoffset);
+		//		glBindTexture(GL_TEXTURE_2D, 0);
 
-				glUniform1i(textureLocation, offset);
-				glActiveTexture(GL_TEXTURE0 + textureoffset);
-				glBindTexture(GL_TEXTURE_2D, texture->GetTexture());
+		//		GLuint textureUsedLocation = glGetUniformLocation(shader, std::string("used_textureDiffuse").append(std::to_string(offset)).c_str());
+		//		glUniform1i(textureUsedLocation, 0);
+		//	}
+		//	textureoffset++;
+		//}
 
-				GLuint textureUsedLocation = glGetUniformLocation(shader, std::string("used_textureNormal").append(std::to_string(offset)).c_str());
-				glUniform1i(textureUsedLocation, 1);
+		//for (unsigned int offset = 0; offset < this->mesh->bump_textures.size(); offset++)
+		//{
+		//	if (this->mesh->bump_textures[offset] != nullptr)
+		//	{
+		//		std::shared_ptr<Rendering::Texture> texture = this->mesh->bump_textures[offset];
 
-				if (textureoffset > maxTextures)
-				{
-					throw std::exception("MeshRenderer: Texture limit reached! Too many textures!");
-				}
-			}
-			else
-			{
-				glActiveTexture(GL_TEXTURE0 + textureoffset);
-				glBindTexture(GL_TEXTURE_2D, 0);
+		//		GLuint textureLocation = glGetUniformLocation(shader, std::string("textureNormal").append(std::to_string(offset)).c_str());
 
-				GLuint textureUsedLocation = glGetUniformLocation(shader, std::string("used_textureNormal").append(std::to_string(offset)).c_str());
-				glUniform1i(textureUsedLocation, 0);
-			}
-			textureoffset++;
-		}
+		//		glUniform1i(textureLocation, offset);
+		//		glActiveTexture(GL_TEXTURE0 + textureoffset);
+		//		glBindTexture(GL_TEXTURE_2D, texture->GetTexture());
 
-		// Bind vbo and vertex data
-		glBindBuffer(GL_ARRAY_BUFFER, this->vbo);
-		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, nullptr); // vertices
-		glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 0, (void*)(this->mesh->mesh_vertices.size() * sizeof(glm::vec3))); // uvs
-		glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 0, (void*)(this->mesh->mesh_vertices.size() * sizeof(glm::vec3) + this->mesh->mesh_uvs.size() * sizeof(glm::vec2))); // normals
+		//		GLuint textureUsedLocation = glGetUniformLocation(shader, std::string("used_textureNormal").append(std::to_string(offset)).c_str());
+		//		glUniform1i(textureUsedLocation, 1);
 
-		// Bind mbo and material data
-		glBindBuffer(GL_ARRAY_BUFFER, this->mbo);
-		glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, 0, nullptr); // material ambient
-		glVertexAttribPointer(4, 3, GL_FLOAT, GL_FALSE, 0, (void*)(this->mesh->mesh_ambient.size() * sizeof(glm::vec3))); // material diffuse
-		glVertexAttribPointer(5, 3, GL_FLOAT, GL_FALSE, 0, (void*)(this->mesh->mesh_ambient.size() * sizeof(glm::vec3) + this->mesh->mesh_diffuse.size() * sizeof(glm::vec3))); // material specular
-		glVertexAttribIPointer(6, 1, GL_UNSIGNED_INT, 0, (void*)(this->mesh->mesh_ambient.size() * sizeof(glm::vec3) + this->mesh->mesh_diffuse.size() * sizeof(glm::vec3) + this->mesh->mesh_specular.size() * sizeof(glm::vec3))); // material ids
-		glVertexAttribPointer(7, 1, GL_FLOAT, GL_FALSE, 0, (void*)(this->mesh->mesh_ambient.size() * sizeof(glm::vec3) + this->mesh->mesh_diffuse.size() * sizeof(glm::vec3) + this->mesh->mesh_specular.size() * sizeof(glm::vec3) + this->mesh->matids.size() * sizeof(GLuint))); // material dissolve
-		glVertexAttribPointer(8, 3, GL_FLOAT, GL_FALSE, 0, (void*)(this->mesh->mesh_ambient.size() * sizeof(glm::vec3) + this->mesh->mesh_diffuse.size() * sizeof(glm::vec3) + this->mesh->mesh_specular.size() * sizeof(glm::vec3) + this->mesh->matids.size() * sizeof(GLuint) + this->mesh->mesh_dissolve.size() * sizeof(float))); // material emission
+		//		if (textureoffset > maxTextures)
+		//		{
+		//			throw std::exception("MeshRenderer: Texture limit reached! Too many textures!");
+		//		}
+		//	}
+		//	else
+		//	{
+		//		glActiveTexture(GL_TEXTURE0 + textureoffset);
+		//		glBindTexture(GL_TEXTURE_2D, 0);
 
-		// Bind tbbo and tangent/bitangent data
-		glBindBuffer(GL_ARRAY_BUFFER, this->tbbo);
-		glVertexAttribPointer(9, 3, GL_FLOAT, GL_FALSE, 0, nullptr); // material ambient
-		glVertexAttribPointer(10, 3, GL_FLOAT, GL_FALSE, 0, (void*)(this->mesh->mesh_tangents.size() * sizeof(glm::vec3))); // material diffuse
+		//		GLuint textureUsedLocation = glGetUniformLocation(shader, std::string("used_textureNormal").append(std::to_string(offset)).c_str());
+		//		glUniform1i(textureUsedLocation, 0);
+		//	}
+		//	textureoffset++;
+		//}
+		//
+		//// Bind matrixes
+		//GLuint m_uniform_id = glGetUniformLocation(shader, "matM");
+		//glUniformMatrix4fv(m_uniform_id, 1, GL_FALSE, &this->matM[0][0]);
 
-		// Bind matrixes
-		GLuint m_uniform_id = glGetUniformLocation(shader, "matM");
-		glUniformMatrix4fv(m_uniform_id, 1, GL_FALSE, &this->matM[0][0]);
+		//GLuint v_uniform_id = glGetUniformLocation(shader, "matV");
+		//glUniformMatrix4fv(v_uniform_id, 1, GL_FALSE, &this->matV[0][0]);
 
-		GLuint v_uniform_id = glGetUniformLocation(shader, "matV");
-		glUniformMatrix4fv(v_uniform_id, 1, GL_FALSE, &this->matV[0][0]);
+		//GLuint mv_uniform_id = glGetUniformLocation(shader, "matMV");
+		//glUniformMatrix4fv(mv_uniform_id, 1, GL_FALSE, &this->matMV[0][0]);
 
-		GLuint mv_uniform_id = glGetUniformLocation(shader, "matMV");
-		glUniformMatrix4fv(mv_uniform_id, 1, GL_FALSE, &this->matMV[0][0]);
+		//GLuint mv3x3_uniform_id = glGetUniformLocation(shader, "matMV3x3");
+		//glUniformMatrix3fv(mv3x3_uniform_id, 1, GL_FALSE, &this->matMV3x3[0][0]);
 
-		GLuint mv3x3_uniform_id = glGetUniformLocation(shader, "matMV3x3");
-		glUniformMatrix3fv(mv3x3_uniform_id, 1, GL_FALSE, &this->matMV3x3[0][0]);
+		//GLuint mvp_uniform_id = glGetUniformLocation(shader, "matMVP");
+		//glUniformMatrix4fv(mvp_uniform_id, 1, GL_FALSE, &this->matMVP[0][0]);
 
-		GLuint mvp_uniform_id = glGetUniformLocation(shader, "matMVP");
-		glUniformMatrix4fv(mvp_uniform_id, 1, GL_FALSE, &this->matMVP[0][0]);
+		//GLuint light_uniform_id = glGetUniformLocation(shader, "Light");
+		//glm::vec3 light_position = global_scene_manager->GetLightTransform();
+		//glUniform3f(light_uniform_id, light_position.x, light_position.y, light_position.z);
 
-		GLuint light_uniform_id = glGetUniformLocation(shader, "Light");
-		glm::vec3 light_position = global_scene_manager->GetLightTransform();
-		glUniform3f(light_uniform_id, light_position.x, light_position.y, light_position.z);
+		//// Enable vertex attribs
+		//for (int i = 0; i < 11; i++)
+		//{
+		//	glEnableVertexAttribArray(i);
+		//}
 
-		// Enable vertex attribs
-		for (int i = 0; i < 11; i++)
-		{
-			glEnableVertexAttribArray(i);
-		}
+		//glDrawArrays(GL_TRIANGLES, 0, GLsizei(this->mesh->mesh_vertices.size()));
 
-		glDrawArrays(GL_TRIANGLES, 0, GLsizei(this->mesh->mesh_vertices.size()));
+		//// Disable vertex attribs
+		//for (int i = 0; i < 11; i++)
+		//{
+		//	glDisableVertexAttribArray(i);
+		//}
 
-
-		// Disable vertex attribs
-		for (int i = 0; i < 11; i++)
-		{
-			glDisableVertexAttribArray(i);
-		}
-
-		// Unbind textures
-		for (int i = 0; i < maxTextures; i++)
-		{
-			glActiveTexture(GL_TEXTURE0 + i);
-			glBindTexture(GL_TEXTURE_2D, 0);
-		}
+		//// Unbind textures
+		//for (int i = 0; i < textureoffset; i++)
+		//{
+		//	glActiveTexture(GL_TEXTURE0 + i);
+		//	glBindTexture(GL_TEXTURE_2D, 0);
+		//}
 	}
 }

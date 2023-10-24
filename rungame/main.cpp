@@ -4,6 +4,8 @@
 #include <cassert>
 #include <array>
 
+#include <Windows.h>
+
 #include "EngineCore.hpp"
 
 #pragma comment(lib, "EngineCore.lib")
@@ -14,7 +16,11 @@ const unsigned int windowSizeX = 1200, windowSizeY = 720;
 
 int main(int argc, char** argv)
 {
-	//Engine::Scripting::LuaScript configScript = ::Engine::Scripting::LuaScript("data/config.lua");
+	HANDLE myConsole = GetStdHandle(STD_OUTPUT_HANDLE);
+	DWORD dwMode = 0;
+	GetConsoleMode(myConsole, &dwMode);
+	dwMode |= ENABLE_VIRTUAL_TERMINAL_PROCESSING;
+	SetConsoleMode(myConsole, dwMode);
 	//Engine::Scripting::LuaScript eventHandlers = ::Engine::Scripting::LuaScript("data/scripts/eventHandlers.lua");
 
 	engine = Engine::initializeEngine(windowTitle, windowSizeX, windowSizeY);

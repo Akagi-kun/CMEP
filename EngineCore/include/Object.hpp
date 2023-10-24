@@ -3,6 +3,8 @@
 #include <functional>
 #include <optional>
 
+#include "glm/matrix.hpp";
+
 #include "Rendering/IRenderer.hpp"
 
 namespace Engine
@@ -24,6 +26,17 @@ namespace Engine
 		/// Rotation of object.
 		/// </summary>
 		glm::vec3 _rotation = glm::vec3();
+
+		/// <summary>
+		/// Parent pos size and rot
+		/// </summary>
+		glm::vec3 _parent_pos = glm::vec3();
+		glm::vec3 _parent_size = glm::vec3();
+		glm::vec3 _parent_rotation = glm::vec3();
+
+		Object* parent;
+
+		std::vector<Object*> children;
 
 		unsigned int screenx = 0, screeny = 0;
 
@@ -59,9 +72,9 @@ namespace Engine
 			if (this->renderer != nullptr) { this->renderer->Update(this->_pos, this->_size, this->_rotation, this->screenx, this->screeny); }
 		}
 
-		virtual int Render() 
+		virtual int Render(VkCommandBuffer commandBuffer, uint32_t currentFrame)
 		{ 
-			if (this->renderer != nullptr) { this->renderer->Render(); } 
+			if (this->renderer != nullptr) { this->renderer->Render(commandBuffer, currentFrame); }
 			return 0; 
 		}
 
@@ -77,5 +90,19 @@ namespace Engine
 		glm::vec3 size() const noexcept { return this->_size; }
 		glm::vec3 rotation() const noexcept { return this->_rotation; }
 
+		void AddChild(Object* object)
+		{
+			this->children.push_back(object);
+		}
+
+		void RemoveChildren()
+		{
+			this->children.clear();
+		}
+
+		void SetParent(Object* object)
+		{
+			this->parent = object;
+		}
 	};
 }

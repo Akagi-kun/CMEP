@@ -6,44 +6,25 @@
 #include "Rendering/Texture.hpp"
 #include "Logging/Logging.hpp"
 
+#include "Engine.hpp"
+
 namespace Engine::Rendering
 {
-	Texture::Texture() noexcept {} // Constructor
-	Texture::Texture(const Texture& other) noexcept // Copy constructor
+	Texture::Texture() {}
+	Texture::~Texture()
 	{
-		unsigned int x = 0, y = 0;
-		other.GetSize(x, y);
-		this->InitRaw(other.GetData(), other.GetColorFormat(), x, y);
+		Logging::GlobalLogger->SimpleLog(Logging::LogLevel::Debug3, "Called texture destructor");
+		VulkanRenderingEngine* renderer = global_engine->GetRenderingEngine();
+
+		renderer->cleanupVulkanTextureImage(this->textureImage);
+		this->textureImage = nullptr;
+		//glDeleteTextures(1, &this->texture);
 	}
-	Texture::Texture(const Texture&& other) noexcept // Move constructor
+
+	void Texture::UsePremadeStagingBuffer(VulkanBuffer* staging_buffer)
 	{
-		other.GetSize(this->x, this->y);
-		this->data = other.GetData();
-		this->texture = other.GetTexture();
-		this->color_fmt = other.GetColorFormat();
-	}
-	Texture& Texture::operator=(const Texture& other) noexcept // Copy assignment
-	{
-		if (this == &other)
-		{
-			return *this;
-		}
-		unsigned int x = 0, y = 0;
-		other.GetSize(x, y);
-		this->InitRaw(other.GetData(), other.GetColorFormat(), x, y);
-		return *this;
-	}
-	Texture& Texture::operator=(const Texture&& other) noexcept // Move assignment
-	{
-		other.GetSize(this->x, this->y);
-		this->data = other.GetData();
-		this->texture = other.GetTexture();
-		this->color_fmt = other.GetColorFormat();
-		return *this;
-	}
-	Texture::~Texture() noexcept // Destructor
-	{
-		glDeleteTextures(1, &this->texture);
+		this->staging_buffer = staging_buffer;
+		this->managedStagingBuffer = true;
 	}
 
 	int Texture::InitRaw(std::vector<unsigned char> raw_data, GLenum color_format, unsigned int xsize, unsigned int ysize)
@@ -76,15 +57,40 @@ namespace Engine::Rendering
 		this->x = xsize;
 		this->y = ysize;
 
-		glCreateTextures(GL_TEXTURE_2D, 1, &this->texture);
+		VkDeviceSize memory_size = xsize * ysize * channel_count;
 
-		glTextureStorage2D(this->texture, 1, GL_RGBA8, this->x, this->y);
-		glTextureSubImage2D(this->texture, 0, 0, 0, this->x, this->y, color_format, GL_UNSIGNED_BYTE, &this->data[0]);
+		VulkanRenderingEngine* renderer = global_engine->GetRenderingEngine();
 
-		glTextureParameteri(this->texture, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-		glTextureParameteri(this->texture, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-		glTextureParameteri(this->texture, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-		glTextureParameteri(this->texture, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		if (!managedStagingBuffer)
+		{
+			this->staging_buffer = renderer->createVulkanStagingBufferPreMapped(memory_size);
+		}
+
+		memcpy(this->staging_buffer->mappedMemory, raw_data.data(), static_cast<size_t>(memory_size));
+
+		this->textureImage = renderer->createVulkanTextureImage(xsize, ysize, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
+		
+		renderer->transitionVulkanImageLayout(this->textureImage->image->image, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
+		renderer->copyVulcanBufferToImage(this->staging_buffer->buffer, this->textureImage->image->image, static_cast<uint32_t>(xsize), static_cast<uint32_t>(ysize));
+		renderer->transitionVulkanImageLayout(this->textureImage->image->image, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+
+		if (!managedStagingBuffer)
+		{
+			renderer->cleanupVulkanBuffer(this->staging_buffer);
+		}
+
+		renderer->appendVulkanImageViewToVulkanTextureImage(this->textureImage);
+		renderer->appendVulkanSamplerToVulkanTextureImage(this->textureImage);
+
+		//glCreateTextures(GL_TEXTURE_2D, 1, &this->texture);
+
+		//glTextureStorage2D(this->texture, 1, GL_RGBA8, this->x, this->y);
+		//glTextureSubImage2D(this->texture, 0, 0, 0, this->x, this->y, color_format, GL_UNSIGNED_BYTE, &this->data[0]);
+
+		//glTextureParameteri(this->texture, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+		//glTextureParameteri(this->texture, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+		//glTextureParameteri(this->texture, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		//glTextureParameteri(this->texture, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 
 		return 0;
 	}
@@ -152,6 +158,11 @@ namespace Engine::Rendering
 	GLuint Texture::GetTexture() const noexcept
 	{
 		return this->texture;
+	}
+
+	VulkanTextureImage* Texture::GetTextureImage() const noexcept
+	{
+		return this->textureImage;
 	}
 
 	GLenum Texture::GetColorFormat() const noexcept

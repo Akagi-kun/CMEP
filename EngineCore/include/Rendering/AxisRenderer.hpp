@@ -6,13 +6,15 @@
 
 #include "glm/gtc/matrix_transform.hpp"
 
+#include "Rendering/VulkanRenderingEngine.hpp"
+
 namespace Engine::Rendering
 {
 	class Texture;
 	class Shader;
 
 	/// <summary>
-	/// Implementation of <seealso cref="IRenderer"/> for 2D sprite renderables.
+	/// Implementation of <seealso cref="IRenderer"/> for an axis.
 	/// </summary>
 	/// <inheritdoc cref="IRenderer"/>
 	class __declspec(dllexport) AxisRenderer final : public IRenderer
@@ -21,11 +23,14 @@ namespace Engine::Rendering
 		/// <summary>
 		/// GL Vertex Array Object
 		/// </summary>
-		unsigned int vao = 0;
+		//unsigned int vao = 0;
 		/// <summary>
 		/// GL Vertex Buffer Object
 		/// </summary>
-		unsigned int vbo = 0;
+		//unsigned int vbo = 0;
+
+		VulkanPipeline* pipeline = nullptr;
+		VulkanBuffer* vbo = nullptr;
 
 		glm::mat4 matMVP;
 
@@ -36,9 +41,8 @@ namespace Engine::Rendering
 		~AxisRenderer();
 
 		void Update(glm::vec3 pos, glm::vec3 size, glm::vec3 rotation, uint_fast16_t screenx, uint_fast16_t screeny) noexcept override;
-		void UpdateTexture(const Rendering::Texture* texture) noexcept;
 		void UpdateMesh() noexcept override;
 
-		void Render() override;
+		void Render(VkCommandBuffer commandBuffer, uint32_t currentFrame) override;
 	};
 }

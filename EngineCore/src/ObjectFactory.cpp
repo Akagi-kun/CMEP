@@ -40,7 +40,7 @@ namespace Engine::ObjectFactory
 		return object;
 	}
 
-	Object* CreateGeneric3DObject(double x, double y, double z, double sizex, double sizey, double sizez, double rotx, double roty, double rotz, ::Engine::Rendering::Mesh mesh)
+	Object* CreateGeneric3DObject(double x, double y, double z, double sizex, double sizey, double sizez, double rotx, double roty, double rotz, ::Engine::Rendering::Mesh* mesh)
 	{
 		Engine::Object* object = new Engine::Object();
 		object->renderer = new Rendering::MeshRenderer();

@@ -10,7 +10,7 @@ namespace Engine::Rendering
 	GLuint Shader::SetupShader(const char* vert_src, const char* frag_src) noexcept
 	{
 		GLuint program = 0;
-
+		/*
 		unsigned int vertex_shader = glCreateShader(GL_VERTEX_SHADER);
 		glShaderSource(vertex_shader, 1, &(vert_src), NULL);
 		glCompileShader(vertex_shader);
@@ -65,7 +65,7 @@ namespace Engine::Rendering
 
 		glDeleteShader(vertex_shader);
 		glDeleteShader(fragment_shader);
-	
+	*/
 		return program;
 	}
 

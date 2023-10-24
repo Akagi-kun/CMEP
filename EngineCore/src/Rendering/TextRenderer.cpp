@@ -11,10 +11,12 @@
 
 #include "Rendering/GLCommon.hpp"
 
+#include "Engine.hpp"
+
 namespace Engine::Rendering
 {
 	TextRenderer::TextRenderer()
-	{
+	{/*
 		static const char* vertex_shader_source =
 			"#version 400 core\n"
 			"layout(location = 0) in vec3 pos; layout(location = 1) in vec2 texCord; out vec2 fragTexCord;"
@@ -25,13 +27,33 @@ namespace Engine::Rendering
 			"out vec4 color; in vec2 fragTexCord; uniform sampler2D texture0;"
 			"void main() { color = texture(texture0, fragTexCord); }";
 
-		this->program = std::make_unique<Rendering::Shader>(vertex_shader_source, fragment_shader_source);
+		this->program = std::make_unique<Rendering::Shader>(vertex_shader_source, fragment_shader_source);*/
+	
+		VulkanRenderingEngine* renderer = global_engine->GetRenderingEngine();
+
+		VulkanPipelineSettings pipeline_settings = renderer->getVulkanDefaultPipelineSettings();
+		pipeline_settings.inputAssembly.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
+
+		pipeline_settings.descriptorLayoutSettings.binding.push_back(0);
+		pipeline_settings.descriptorLayoutSettings.descriptorCount.push_back(1);
+		pipeline_settings.descriptorLayoutSettings.types.push_back(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER);
+		pipeline_settings.descriptorLayoutSettings.stageFlags.push_back(VK_SHADER_STAGE_VERTEX_BIT);
+
+		pipeline_settings.descriptorLayoutSettings.binding.push_back(1);
+		pipeline_settings.descriptorLayoutSettings.descriptorCount.push_back(1);
+		pipeline_settings.descriptorLayoutSettings.types.push_back(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
+		pipeline_settings.descriptorLayoutSettings.stageFlags.push_back(VK_SHADER_STAGE_FRAGMENT_BIT);
+
+		this->pipeline = renderer->createVulkanPipeline(pipeline_settings, "data/shaders/vulkan/textrenderer_vert.spv", "data/shaders/vulkan/textrenderer_frag.spv");
+
 	}
 
 	TextRenderer::~TextRenderer()
 	{
-		glDeleteVertexArrays(1, &this->vao);
-		glDeleteBuffers(1, &this->vbo);
+		global_engine->GetRenderingEngine()->cleanupVulkanBuffer(this->vbo);
+		global_engine->GetRenderingEngine()->cleanupVulkanPipeline(this->pipeline);
+		//glDeleteVertexArrays(1, &this->vao);
+		//glDeleteBuffers(1, &this->vbo);
 	}
 
 	void TextRenderer::Update(glm::vec3 pos, glm::vec3 size, glm::vec3 rotation, uint_fast16_t screenx, uint_fast16_t screeny) noexcept
@@ -69,7 +91,7 @@ namespace Engine::Rendering
 	{
 		this->has_updated_mesh = true;
 
-		if (this->vao == 0)
+		/*if (this->vao == 0)
 		{
 			glCreateVertexArrays(1, &this->vao);
 		}
@@ -77,11 +99,21 @@ namespace Engine::Rendering
 		if (this->vbo == 0)
 		{
 			glCreateBuffers(1, &this->vbo);
+		}*/
+
+		VulkanRenderingEngine* renderer = global_engine->GetRenderingEngine();
+
+		if (this->vbo != nullptr)
+		{
+			vkDeviceWaitIdle(renderer->GetLogicalDevice());
+			renderer->cleanupVulkanBuffer(this->vbo);
+			this->vbo = nullptr;
 		}
 
 		int fontsize = std::stoi(this->font.get()->GetFontInfoParameter("size")->c_str(), nullptr, 10);
 
-		std::vector<GLfloat> generated_mesh = {};
+		//std::vector<GLfloat> generated_mesh = {};
+		std::vector<RenderingVertex> generated_mesh = {};
 
 		unsigned int vbo_ = 0;
 		float accu_x = 0.f;
@@ -116,34 +148,82 @@ namespace Engine::Rendering
 				texture->GetSize(texture_x, texture_y);
 				assert(texture_x > 0 && texture_y > 0);
 
-				// Obscure math even I don't understand, achieved with trial and error and works so just leave it like this
+				// Obscure math I don't understand, achieved with trial and error and works so just leave it like this
 				const float xs = ch->width / (float)this->_screenx * 2 * (float)(std::round(_size.x) / fontsize);
 				const float ys = ch->height / (float)this->_screeny * 2 * (float)(std::round(_size.y) / fontsize);
 				const float x = (float)this->_pos.x * 2 - 1.f + accu_x;
 				const float y = (float)this->_pos.y * 2 - 1.f + accu_y;
 
-				std::array<GLfloat, 30> data = {
-					x, ys + y, 0.f, /**/ (ch->x) / (float)texture_x, (ch->y) / (float)texture_y,
-					xs + x, ys + y, 0.f, /**/ (ch->x + ch->width) / (float)texture_x, (ch->y) / (float)texture_y,
-					x, y, 0.f, /**/ (ch->x) / (float)texture_x, (ch->y + ch->height) / (float)texture_y,
+				std::array<RenderingVertex, 6> vertices = {};
+				vertices[0] = { glm::vec3(x, ys + y, 0.f),		glm::vec3(1.f, 0.f, 0.f), glm::vec2((ch->x) / (float)texture_x, (ch->y + ch->height) / (float)texture_y) };
+				vertices[1] = { glm::vec3(xs + x, ys + y, 0.f),	glm::vec3(1.f, 0.f, 0.f), glm::vec2((ch->x + ch->width) / (float)texture_x, (ch->y + ch->height) / (float)texture_y) };
+				vertices[2] = { glm::vec3(x, y, 0.f),			glm::vec3(1.f, 0.f, 0.f), glm::vec2((ch->x) / (float)texture_x, (ch->y) / (float)texture_y) };
+				vertices[3] = { glm::vec3(xs + x, ys + y, 0.f),	glm::vec3(1.f, 0.f, 0.f), glm::vec2((ch->x + ch->width) / (float)texture_x, (ch->y + ch->height) / (float)texture_y) };
+				vertices[4] = { glm::vec3(xs + x, y, 0.f),		glm::vec3(1.f, 0.f, 0.f), glm::vec2((ch->x + ch->width) / (float)texture_x, (ch->y) / (float)texture_y) };
+				vertices[5] = { glm::vec3(x, y, 0.f),			glm::vec3(1.f, 0.f, 0.f), glm::vec2((ch->x) / (float)texture_x, (ch->y) / (float)texture_y) };
 
-					xs + x, ys + y, 0.f, /**/ (ch->x + ch->width) / (float)texture_x, (ch->y) / (float)texture_y,
-					xs + x, y, 0.f, /**/ (ch->x + ch->width) / (float)texture_x, (ch->y + ch->height) / (float)texture_y,
-					x, y, 0.f, /**/ (ch->x) / (float)texture_x, (ch->y + ch->height) / (float)texture_y
-				};
+				//std::array<GLfloat, 30> data = {
+				//	x, ys + y, 0.f, /**/ (ch->x) / (float)texture_x, (ch->y) / (float)texture_y,
+				//	xs + x, ys + y, 0.f, /**/ (ch->x + ch->width) / (float)texture_x, (ch->y) / (float)texture_y,
+				//	x, y, 0.f, /**/ (ch->x) / (float)texture_x, (ch->y + ch->height) / (float)texture_y,
+
+				//	xs + x, ys + y, 0.f, /**/ (ch->x + ch->width) / (float)texture_x, (ch->y) / (float)texture_y,
+				//	xs + x, y, 0.f, /**/ (ch->x + ch->width) / (float)texture_x, (ch->y + ch->height) / (float)texture_y,
+				//	x, y, 0.f, /**/ (ch->x) / (float)texture_x, (ch->y + ch->height) / (float)texture_y
+				//};
 
 				accu_x += xs + (6.f / this->_screenx);
 
-				generated_mesh.insert(generated_mesh.end(), data.begin(), data.end());
+				generated_mesh.insert(generated_mesh.end(), vertices.begin(), vertices.end());
+
+				this->textureImage = texture->GetTextureImage();
 			}
 		}
 
 		assert(generated_mesh.size() > 0);
-		glNamedBufferData(this->vbo, generated_mesh.size() * sizeof(GLfloat), (void*)generated_mesh.data(), GL_STATIC_DRAW);
-		this->vbo_vert_count = generated_mesh.size() / 5;
+		//glNamedBufferData(this->vbo, generated_mesh.size() * sizeof(GLfloat), (void*)generated_mesh.data(), GL_STATIC_DRAW);
+		this->vbo_vert_count = generated_mesh.size();
+		
+		this->vbo = renderer->createVulkanVertexBufferFromData(generated_mesh);
+		
+		for (size_t i = 0; i < renderer->GetMaxFramesInFlight(); i++)
+		{
+			VkDescriptorBufferInfo bufferInfo{};
+			bufferInfo.buffer = pipeline->uniformBuffers[i]->buffer;
+			bufferInfo.offset = 0;
+			bufferInfo.range = sizeof(glm::mat4);
+
+			VkDescriptorImageInfo imageInfo{};
+			imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+			imageInfo.imageView = this->textureImage->image->imageView;
+			imageInfo.sampler = this->textureImage->textureSampler;
+
+			std::vector<VkWriteDescriptorSet> descriptorWrites{};
+			descriptorWrites.resize(2);
+
+			descriptorWrites[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+			descriptorWrites[0].dstSet = pipeline->vkDescriptorSets[i];
+			descriptorWrites[0].dstBinding = 0;
+			descriptorWrites[0].dstArrayElement = 0;
+			descriptorWrites[0].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+			descriptorWrites[0].descriptorCount = 1;
+			descriptorWrites[0].pBufferInfo = &bufferInfo;
+
+			descriptorWrites[1].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+			descriptorWrites[1].dstSet = pipeline->vkDescriptorSets[i];
+			descriptorWrites[1].dstBinding = 1;
+			descriptorWrites[1].dstArrayElement = 0;
+			descriptorWrites[1].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+			descriptorWrites[1].descriptorCount = 1;
+			descriptorWrites[1].pImageInfo = &imageInfo;
+
+			vkUpdateDescriptorSets(renderer->GetLogicalDevice(), static_cast<uint32_t>(descriptorWrites.size()), descriptorWrites.data(), 0, nullptr);
+		}
+
+		//renderer->updateVulkanDescriptorSetsVulkanTextureImage(this->pipeline, this->textureImage);
 	}
 
-	void TextRenderer::Render()
+	void TextRenderer::Render(VkCommandBuffer commandBuffer, uint32_t currentFrame)
 	{
 		if (this->text.size() == 0)
 		{
@@ -155,12 +235,21 @@ namespace Engine::Rendering
 			this->UpdateMesh();
 		}
 
-		if (!this->program)
+		vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, this->pipeline->vkPipelineLayout, 0, 1, &this->pipeline->vkDescriptorSets[currentFrame], 0, nullptr);
+
+		vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, this->pipeline->pipeline);
+		VkBuffer vertexBuffers[] = { this->vbo->buffer };
+		VkDeviceSize offsets[] = { 0 };
+		vkCmdBindVertexBuffers(commandBuffer, 0, 1, vertexBuffers, offsets);
+
+		vkCmdDraw(commandBuffer, this->vbo_vert_count, 1, 0, 0);
+
+		/*if (!this->program)
 		{
 			throw std::exception("No program assigned to TextRenderer, cannot perform Engine::Rendering::TextRenderer::Render()");
-		}
+		}*/
 
-		GLuint shader = this->program->GetProgram();
+		/*GLuint shader = this->program->GetProgram();
 		assert(shader != 0);
 
 		glBindVertexArray(this->vao);
@@ -187,6 +276,6 @@ namespace Engine::Rendering
 		glDrawArrays(GL_TRIANGLES, 0, GLsizei(this->vbo_vert_count));
 
 		glDisableVertexAttribArray(0);
-		glDisableVertexAttribArray(1);;
+		glDisableVertexAttribArray(1);;*/
 	}
 }

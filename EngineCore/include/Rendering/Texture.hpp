@@ -6,6 +6,8 @@
 
 #include "Rendering/GLCommon.hpp"
 
+#include "VulkanRenderingEngine.hpp"
+
 namespace Engine::Rendering
 {
 	typedef enum class Texture_InitFiletypeEnum
@@ -21,13 +23,15 @@ namespace Engine::Rendering
 		GLenum color_fmt = GL_RGB;
 		GLuint texture = 0;
 
+		VulkanBuffer* staging_buffer = nullptr;
+		bool managedStagingBuffer = false;
+		VulkanTextureImage* textureImage = nullptr;
+
 	public:
-		Texture() noexcept;
-		Texture(const Texture& other) noexcept;
-		Texture(const Texture&& other) noexcept;
-		Texture& operator=(const Texture& other) noexcept;
-		Texture& operator=(const Texture&& other) noexcept;
-		~Texture() noexcept;
+		Texture();
+		~Texture();
+
+		void UsePremadeStagingBuffer(VulkanBuffer* staging_buffer);
 
 		int InitRaw(std::vector<unsigned char> raw_data, GLenum color_format, unsigned int xsize, unsigned int ysize);
 		int InitFile(Texture_InitFiletype filetype, std::string path, unsigned int sizex = 0, unsigned int sizey = 0);
@@ -35,6 +39,7 @@ namespace Engine::Rendering
 		void GetSize(unsigned int& x, unsigned int& y) const noexcept;
 		const std::vector<unsigned char> GetData() const noexcept;
 		GLuint GetTexture() const noexcept;
+		VulkanTextureImage* GetTextureImage() const noexcept;
 		GLenum GetColorFormat() const noexcept;
 	};
 }

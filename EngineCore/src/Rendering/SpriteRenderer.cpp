@@ -78,7 +78,7 @@ namespace Engine::Rendering
 		glNamedBufferData(this->vbo, sizeof(data), (void*)data, GL_STATIC_DRAW);
 	}
 
-	void SpriteRenderer::Render()
+	void SpriteRenderer::Render(VkCommandBuffer commandBuffer, uint32_t currentFrame)
 	{
 		if (!this->has_updated_mesh)
 		{

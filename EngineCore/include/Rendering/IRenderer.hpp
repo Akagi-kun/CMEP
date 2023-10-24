@@ -2,6 +2,8 @@
 
 #include "glm/vec3.hpp"
 
+#include "VulkanRenderingEngine.hpp"
+
 namespace Engine
 {
 	class Object;
@@ -59,7 +61,7 @@ namespace Engine
 			/// <summary>
 			/// Render the renderable represented by this <seealso cref="Renderer"/>.
 			/// </summary>
-			virtual void Render() = 0;
+			virtual void Render(VkCommandBuffer commandBuffer, uint32_t currentFrame) = 0;
 		};
 	}
 }

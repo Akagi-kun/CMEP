@@ -195,6 +195,21 @@ namespace Engine::Scripting::Mappings
 
 #pragma region Object
 
+		int object_AddChild(lua_State* state)
+		{
+			lua_getfield(state, 1, "_pointer");
+			
+			Object* ptr_obj = *(Object**)lua_touserdata(state, -1);
+
+			lua_getfield(state, 2, "_pointer");
+
+			Object* ptr_child = *(Object**)lua_touserdata(state, -1);
+			
+			ptr_obj->AddChild(ptr_child);
+			
+			return 0;
+		}
+
 		int object_GetRotation(lua_State* state)
 		{
 			lua_getfield(state, 1, "_pointer");
@@ -352,7 +367,7 @@ namespace Engine::Scripting::Mappings
 			lua_getfield(state, 10, "_self");
 			Rendering::Mesh* mesh = *(Rendering::Mesh**)lua_touserdata(state, -1);
 
-			Object* obj = ObjectFactory::CreateGeneric3DObject(x, y, z, xsize, ysize, zsize, xrot, yrot, zrot, *mesh);
+			Object* obj = ObjectFactory::CreateGeneric3DObject(x, y, z, xsize, ysize, zsize, xrot, yrot, zrot, mesh);
 
 			if (obj != nullptr)
 			{
@@ -427,6 +442,7 @@ namespace Engine::Scripting::Mappings
 
 		"meshRenderer_UpdateTexture",
 
+		"object_AddChild",
 		"object_GetRotation",
 		"object_Rotate",
 
@@ -458,6 +474,7 @@ namespace Engine::Scripting::Mappings
 
 		Functions::meshRenderer_UpdateTexture,
 
+		Functions::object_AddChild,
 		Functions::object_GetRotation,
 		Functions::object_Rotate,
 

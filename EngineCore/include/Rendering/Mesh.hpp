@@ -29,11 +29,14 @@ namespace Engine::Rendering
 		std::vector<float> mesh_dissolve;
 		std::vector<glm::vec3> mesh_emission;
 
-		std::vector<std::shared_ptr<Rendering::Texture>> diffuse_textures;
-		std::vector<std::shared_ptr<Rendering::Texture>> bump_textures;
-		std::vector<std::shared_ptr<Rendering::Texture>> roughness_textures;
-		std::vector<std::shared_ptr<Rendering::Texture>> metallic_textures;
-		std::vector<std::shared_ptr<Rendering::Texture>> reflective_textures;
+		std::vector<Rendering::Texture*> diffuse_textures;
+		std::vector<Rendering::Texture*> bump_textures;
+		std::vector<Rendering::Texture*> roughness_textures;
+		std::vector<Rendering::Texture*> metallic_textures;
+		std::vector<Rendering::Texture*> reflective_textures;
+
+		Mesh();
+		~Mesh();
 
 		void CreateMeshFromObj(std::string path);
 	};

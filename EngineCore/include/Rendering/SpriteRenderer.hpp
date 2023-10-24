@@ -36,6 +36,6 @@ namespace Engine::Rendering
 		void UpdateTexture(const Rendering::Texture* texture) noexcept;
 		void UpdateMesh() noexcept override;
 
-		void Render() override;
+		void Render(VkCommandBuffer commandBuffer, uint32_t currentFrame) override;
 	};
 }

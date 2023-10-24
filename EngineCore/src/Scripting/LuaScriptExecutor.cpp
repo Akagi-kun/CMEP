@@ -167,9 +167,9 @@ namespace Engine
 			int64_t ret = lua_tointeger(state, -1);
 			lua_pop(state, 1);
 
-			Logging::GlobalLogger->SimpleLog(Logging::LogLevel::Debug2,
-				"Running lua script '%s', called function '%d' returned %llu",
-				script->path.c_str(), function.c_str(), ret);
+			//Logging::GlobalLogger->SimpleLog(Logging::LogLevel::Debug2,
+			//	"Running lua script '%s', called function '%d' returned %llu",
+			//	script->path.c_str(), function.c_str(), ret);
 		}
 
 		int LuaScriptExecutor::LoadAndCompileScript(LuaScript* script)

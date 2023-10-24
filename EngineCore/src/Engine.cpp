@@ -14,6 +14,7 @@
 #include "Engine.hpp"
 #include "Object.hpp"
 
+#include <Windows.h>
 
 #if defined( _WIN32 )
 	#ifndef _DEBUG
@@ -151,11 +152,13 @@ namespace Engine
 	{
 		double xpos, ypos;
 
-		glfwGetCursorPos(window, &xpos, &ypos);
+		Rendering::GLFWwindowData windowdata = this->rendering_engine->GetWindow();
+		
+		glfwGetCursorPos(windowdata.window, &xpos, &ypos);
 
-		if (glfwGetWindowAttrib(window, GLFW_FOCUSED))
+		if (glfwGetWindowAttrib(windowdata.window, GLFW_FOCUSED))
 		{
-			if ((this->windowX / 2) - xpos != 0 || (this->windowY / 2) - ypos != 0)
+			if ((windowdata.windowX / 2) - xpos != 0 || (windowdata.windowY / 2) - ypos != 0)
 			{
 				EventHandling::Event event = EventHandling::Event(EventHandling::EventType::ON_MOUSEMOVED);
 				event.mouse.x = xpos;
@@ -163,14 +166,14 @@ namespace Engine
 				event.deltaTime = deltaTime;
 				this->FireEvent(event);
 
-				glfwSetCursorPos(this->window, this->windowX / 2, this->windowY / 2);
+				glfwSetCursorPos(this->rendering_engine->GetWindow().window, this->windowX / 2, this->windowY / 2);
 			}
 		}
 
 		// Handle keyboard + mouse buttons
 		for (uint16_t i = 1; i < 256; i++)
 		{
-			if (glfwGetKey(this->window, i))
+			if (glfwGetKey(windowdata.window, i))
 			{
 				EventHandling::Event event = EventHandling::Event(EventHandling::EventType::ON_KEYDOWN);
 				event.keycode = i;
@@ -191,7 +194,7 @@ namespace Engine
 		}
 		catch(std::exception& e)
 		{
-			Logging::GlobalLogger->SimpleLog(Logging::LogLevel::Exception, "Error parsing config json, what: %s", e.what());
+			Logging::GlobalLogger->SimpleLog(Logging::LogLevel::Exception, "Error parsing config json '%s', what: %s", this->config_path.c_str(), e.what());
 			exit(1);
 		}
 
@@ -219,17 +222,41 @@ namespace Engine
 
 		setting = "window.title";
 		this->windowTitle = data[setting];
-		glfwSetWindowTitle(this->window, this->windowTitle.c_str());
 
 		setting = "window.size";
 		this->windowX = data[setting]["x"]; this->windowY = data[setting]["y"];
-		glfwSetWindowSize(this->window, this->windowX, this->windowY);
+	}
+
+	void Engine::RenderCallback(VkCommandBuffer commandBuffer, uint32_t currentFrame)
+	{
+		for (auto& [name, ptr] : *global_scene_manager->GetAllObjects())
+		{
+			try
+			{
+				// Reset topology to triangles before each object render
+				//global_engine->GetRenderingEngine()->SelectCurrentTopology(commandBuffer, Rendering::VULKAN_RENDERING_ENGINE_TOPOLOGY_TRIANGLE_LIST);
+
+				ptr->renderer->Render(commandBuffer, currentFrame);
+				//glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+			}
+			catch (const std::exception& e)
+			{
+				Logging::GlobalLogger->SimpleLog(Logging::LogLevel::Exception, "Caught exception while rendering object %s: %s", name.c_str(), e.what());
+				exit(1);
+			}
+		}
+		
+		//VkBuffer vertexBuffers[] = { global_engine->GetRenderingEngine()->GetVertexBuffer()->buffer };
+		//VkDeviceSize offsets[] = { 0 };
+		//vkCmdBindVertexBuffers(commandBuffer, 0, 1, vertexBuffers, offsets);
+
+		//vkCmdDraw(commandBuffer, 3, 1, 0, 0);
 	}
 
 	void Engine::engineLoop()
 	{
 		Logging::GlobalLogger->MapCurrentThreadToName("game");
-
+		
 		Object* object = new Object();
 		object->renderer = new Rendering::AxisRenderer();
 		object->Translate(glm::vec3(0, 0, 0));
@@ -237,24 +264,24 @@ namespace Engine
 		object->Rotate(glm::vec3(0, 0, 0));
 		object->ScreenSizeInform(this->windowX, this->windowY);
 		((Rendering::AxisRenderer*)object->renderer)->UpdateMesh();
-		//global_scene_manager->AddObject("_axis", object);
+		global_scene_manager->AddObject("_axis", object);
+		
+		//glEnable(GL_MULTISAMPLE);
+		//glEnable(GL_DEPTH_TEST);
+		//glEnable(GL_BLEND);
+		//glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-		glEnable(GL_MULTISAMPLE);
-		glEnable(GL_DEPTH_TEST);
-		glEnable(GL_BLEND);
-		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
-		glViewport(0, 0, this->windowX, this->windowY);
+		//glViewport(0, 0, this->windowX, this->windowY);
 
 		// Pre-make ON_UPDATE event so we don't have to create it over and over again in hot loop
 		EventHandling::Event premadeOnUpdateEvent = EventHandling::Event(EventHandling::EventType::ON_UPDATE);
 		
-		glfwShowWindow(this->window);
+		glfwShowWindow(this->rendering_engine->GetWindow().window);
 
 		int counter = 0;
 		auto prevClock = std::chrono::steady_clock::now();
 		// hot loop
-		while (!glfwWindowShouldClose(this->window))
+		while (!glfwWindowShouldClose(this->rendering_engine->GetWindow().window))
 		{
 			const auto nextClock = std::chrono::steady_clock::now();
 			const double deltaTime = (nextClock - prevClock).count() / 1e9;
@@ -273,16 +300,17 @@ namespace Engine
 			this->FireEvent(premadeOnUpdateEvent);
 
 			// Clear screen
-			glClearColor(0.1, 0.13, 0.2, 1.0);
-			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+			//glClearColor(0.1, 0.13, 0.2, 1.0);
+			//glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 			// Render every object
+			/*
 			for (auto& [name, ptr] : *global_scene_manager->GetAllObjects())
 			{
 				try
 				{
 					ptr->renderer->Render();
-					glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+					//glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 				}
 				catch (const std::exception& e)
 				{
@@ -290,13 +318,12 @@ namespace Engine
 					exit(1);
 				}
 			}
-			
-			enum { EASY, HARD };
-			static int op = EASY;
-			static float value = 0.6f;
-			static int i = 20;
+			*/
 
-			glfwSwapBuffers(this->window);
+			// Render
+			this->rendering_engine->drawFrame();
+			
+			glfwSwapBuffers(this->rendering_engine->GetWindow().window);
 			glfwPollEvents();
 			
 			// spin sleep if framerate locked
@@ -335,9 +362,10 @@ namespace Engine
 
 	Engine::~Engine() noexcept
 	{
-		glfwTerminate();
+		this->rendering_engine->cleanup();
 		
 		//delete this->window;
+		delete this->rendering_engine;
 		delete this->asset_manager;
 	}
 
@@ -350,6 +378,10 @@ namespace Engine
 	{
 		Logging::GlobalLogger->MapCurrentThreadToName("main");
 
+		// Not workib
+		//SetConsoleMode(GetStdHandle(STD_OUTPUT_HANDLE), ENABLE_PROCESSED_OUTPUT);
+		//SetConsoleMode(GetStdHandle(STD_OUTPUT_HANDLE), ENABLE_VIRTUAL_TERMINAL_PROCESSING);
+
 		// Engine info printout
 		Logging::GlobalLogger->SimpleLog(Logging::LogLevel::Info, 
 			"Engine info:\n////\nRunning CMEP EngineCore %s %s build, configured %s\nCompiler version: %u.%u\n////\n", 
@@ -359,56 +391,65 @@ namespace Engine
 		//this->window = new Rendering::Window(this->windowTitle, this->windowX, this->windowY);
 		this->asset_manager = new AssetManager();
 		this->script_executor = new Scripting::LuaScriptExecutor();
-		
-		if (!glfwInit())
-		{
-			Logging::GlobalLogger->SimpleLog(Logging::LogLevel::Error, "glfwInit returned 0!");
-			exit(1);
-		}
-		Logging::GlobalLogger->SimpleLog(Logging::LogLevel::Info, "GLFW initialized");
+		this->rendering_engine = new Rendering::VulkanRenderingEngine();
 
-		glfwWindowHint(GLFW_SAMPLES, 4);
-		glfwWindowHint(GLFW_DEPTH_BITS, 16);
-		glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
-		glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6);
-		glfwWindowHint(GLFW_VISIBLE, GL_FALSE);
-		glfwWindowHint(GLFW_RESIZABLE, GL_FALSE);
-		glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+		//if (!glfwInit())
+		//{
+		//	Logging::GlobalLogger->SimpleLog(Logging::LogLevel::Error, "glfwInit returned 0!");
+		//	exit(1);
+		//}
+		//Logging::GlobalLogger->SimpleLog(Logging::LogLevel::Info, "GLFW initialized");
 
-		this->window = glfwCreateWindow(this->windowX, this->windowY, this->windowTitle.c_str(), NULL, NULL);
+		////glfwWindowHint(GLFW_SAMPLES, 4);
+		////glfwWindowHint(GLFW_DEPTH_BITS, 16);
+		////glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
+		////glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6);
+		////glfwWindowHint(GLFW_VISIBLE, GL_FALSE);
+		////glfwWindowHint(GLFW_RESIZABLE, GL_FALSE);
+		////glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-		glfwMakeContextCurrent(this->window);
-		glfwSwapInterval(1);
+		//glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
+		//glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
+		//glfwWindowHint(GLFW_VISIBLE, GL_FALSE);
 
-		if (glewInit() != GLEW_OK)
-		{
-			Logging::GlobalLogger->SimpleLog(Logging::LogLevel::Error, "glewInit returned 0!");
-			exit(1);
-		}
-		Logging::GlobalLogger->SimpleLog(Logging::LogLevel::Info, "GLEW initialized");
+		//this->window = glfwCreateWindow(this->windowX, this->windowY, this->windowTitle.c_str(), NULL, NULL);
 
-		GLint maxTextures;
-		glGetIntegerv(GL_MAX_TEXTURE_IMAGE_UNITS, &maxTextures);
-		Logging::GlobalLogger->SimpleLog(Logging::LogLevel::Debug1, "Texture limit: %i", maxTextures);
+		//uint32_t extensionCount = 0;
+		//vkEnumerateInstanceExtensionProperties(nullptr, &extensionCount, nullptr);
 
-		// OpenGL info printout
-		Logging::GlobalLogger->SimpleLog(Logging::LogLevel::Info, "OpenGL info:\n---------- OpenGL ----------\n Vendor: %s\n Renderer: %s\n Version: %s\n----------------------------\n",
-			(char*)glGetString(GL_VENDOR), (char*)glGetString(GL_RENDERER), (char*)glGetString(GL_VERSION)
-		);
-
-		glEnable(GL_DEBUG_OUTPUT);
-		glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
-		Logging::GlobalLogger->SimpleLog(Logging::LogLevel::Info, "Setting OpenGL debug callback");
-		glDebugMessageCallback(Engine::debugCallbackGL, nullptr);
+		//glfwMakeContextCurrent(this->window);
+		//glfwSwapInterval(1);
+		//
+		//if (glewInit() != GLEW_OK)
+		//{
+		//	Logging::GlobalLogger->SimpleLog(Logging::LogLevel::Error, "glewInit returned 0!");
+		//	exit(1);
+		//}
+		//Logging::GlobalLogger->SimpleLog(Logging::LogLevel::Info, "GLEW initialized");
+		//
+		//GLint maxTextures;
+		//glGetIntegerv(GL_MAX_TEXTURE_IMAGE_UNITS, &maxTextures);
+		//Logging::GlobalLogger->SimpleLog(Logging::LogLevel::Debug1, "Texture limit: %i", maxTextures);
+		//
+		//// OpenGL info printout
+		//Logging::GlobalLogger->SimpleLog(Logging::LogLevel::Info, "OpenGL info:\n---------- OpenGL ----------\n Vendor: %s\n Renderer: %s\n Version: %s\n----------------------------\n",
+		//	(char*)glGetString(GL_VENDOR), (char*)glGetString(GL_RENDERER), (char*)glGetString(GL_VERSION)
+		//);
+		//
+		//glEnable(GL_DEBUG_OUTPUT);
+		//glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
+		//Logging::GlobalLogger->SimpleLog(Logging::LogLevel::Info, "Setting OpenGL debug callback");
+		//glDebugMessageCallback(Engine::debugCallbackGL, nullptr);
 	}
 
 	void Engine::Run()
 	{
 		auto start = std::chrono::steady_clock::now();
-		
-		//this->script_executor->ConfigScriptLoad(this->config_script);
 
 		this->HandleConfig();
+
+		this->rendering_engine->init(this->windowX, this->windowY, this->windowTitle);
+		this->rendering_engine->SetRenderCallback(this->RenderCallback);
 
 		// Fire ON_INIT event
 		EventHandling::Event onInitEvent = EventHandling::Event(EventHandling::EventType::ON_INIT);
@@ -436,6 +477,7 @@ namespace Engine
 		this->lua_event_handlers.push_back(std::make_tuple(event_type, script, function));
 	}
 
+	[[deprecated]]
 	void Engine::AddObject(std::string name, Object* ptr)
 	{
 		if (ptr != nullptr)
@@ -445,11 +487,13 @@ namespace Engine
 		}
 	}
 
+	[[deprecated]]
 	Object* Engine::FindObject(std::string name)
 	{
 		return global_scene_manager->FindObject(name);
 	}
 
+	[[deprecated]]
 	size_t Engine::RemoveObject(std::string name) noexcept
 	{
 		return global_scene_manager->RemoveObject(name);
@@ -458,6 +502,11 @@ namespace Engine
 	AssetManager* Engine::GetAssetManager() noexcept
 	{
 		return this->asset_manager;
+	}
+
+	Rendering::VulkanRenderingEngine* Engine::GetRenderingEngine() noexcept
+	{
+		return this->rendering_engine;
 	}
 
 	Engine* initializeEngine(const char* windowTitle, const unsigned windowX, const unsigned windowY)

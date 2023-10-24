@@ -7,8 +7,20 @@
 #define TINYOBJLOADER_IMPLEMENTATION
 #include "Rendering/tinyobjloader/tiny_obj_loader.h"
 
+#include "Engine.hpp"
+
 namespace Engine::Rendering
 {
+	Mesh::Mesh()
+	{
+
+	}
+
+	Mesh::~Mesh()
+	{
+		Logging::GlobalLogger->SimpleLog(Logging::LogLevel::Debug1, "Mesh destructor called");
+	}
+
 	void Mesh::CreateMeshFromObj(std::string path)
 	{
 		tinyobj::ObjReaderConfig reader_config;
@@ -37,16 +49,20 @@ namespace Engine::Rendering
 		int metallic_count = 0;
 		int reflection_count = 0;
 		
+		VulkanRenderingEngine* renderer = global_engine->GetRenderingEngine();
+
+		VulkanBuffer* premade_staging_buffer = renderer->createVulkanStagingBufferPreMapped(10240 * 10240 * 4); // 10240x1024 4-channel staging buffer
+
 		for (size_t i = 0; i < materials.size(); i++)
 		{
-
 			tinyobj::material_t material = materials[i];
 			if (material.diffuse_texname != "")
 			{
 				Logging::GlobalLogger->SimpleLog(Logging::LogLevel::Debug2, "TinyObjReader: Diffuse texture: '%s' for material: '%s'", material.diffuse_texname.c_str(), material.name.c_str());
-				Rendering::Texture textureDiffuse = Rendering::Texture();
-				textureDiffuse.InitFile(Rendering::Texture_InitFiletype::FILE_PNG, material.diffuse_texname);
-				this->diffuse_textures.push_back(std::make_shared<Rendering::Texture>(textureDiffuse));
+				Rendering::Texture* textureDiffuse = new Rendering::Texture();
+				textureDiffuse->UsePremadeStagingBuffer(premade_staging_buffer);
+				textureDiffuse->InitFile(Rendering::Texture_InitFiletype::FILE_PNG, material.diffuse_texname);
+				this->diffuse_textures.push_back(textureDiffuse);
 				diffuse_count++;
 			}
 			else
@@ -57,9 +73,10 @@ namespace Engine::Rendering
 			if (material.bump_texname != "")
 			{
 				Logging::GlobalLogger->SimpleLog(Logging::LogLevel::Debug2, "TinyObjReader: Bump texture: '%s' for material: '%s'", material.bump_texname.c_str(), material.name.c_str());
-				Rendering::Texture textureBump = Rendering::Texture();
-				textureBump.InitFile(Rendering::Texture_InitFiletype::FILE_PNG, material.bump_texname);
-				this->bump_textures.push_back(std::make_shared<Rendering::Texture>(textureBump));
+				Rendering::Texture* textureBump = new Rendering::Texture();
+				textureBump->UsePremadeStagingBuffer(premade_staging_buffer);
+				textureBump->InitFile(Rendering::Texture_InitFiletype::FILE_PNG, material.bump_texname);
+				this->bump_textures.push_back(textureBump);
 				bump_count++;
 			}
 			else
@@ -70,9 +87,10 @@ namespace Engine::Rendering
 			if (material.roughness_texname != "")
 			{
 				Logging::GlobalLogger->SimpleLog(Logging::LogLevel::Debug2, "TinyObjReader: Roughness texture: '%s' for material: '%s'", material.roughness_texname.c_str(), material.name.c_str());
-				Rendering::Texture textureRoughness = Rendering::Texture();
-				textureRoughness.InitFile(Rendering::Texture_InitFiletype::FILE_PNG, material.roughness_texname);
-				this->roughness_textures.push_back(std::make_shared<Rendering::Texture>(textureRoughness));
+				Rendering::Texture* textureRoughness = new Rendering::Texture();
+				textureRoughness->UsePremadeStagingBuffer(premade_staging_buffer);
+				textureRoughness->InitFile(Rendering::Texture_InitFiletype::FILE_PNG, material.roughness_texname);
+				this->roughness_textures.push_back(textureRoughness);
 				roughness_count++;
 			}
 			else
@@ -83,9 +101,10 @@ namespace Engine::Rendering
 			if (material.metallic_texname != "")
 			{
 				Logging::GlobalLogger->SimpleLog(Logging::LogLevel::Debug2, "TinyObjReader: Metallic texture: '%s' for material: '%s'", material.metallic_texname.c_str(), material.name.c_str());
-				Rendering::Texture textureMetallic = Rendering::Texture();
-				textureMetallic.InitFile(Rendering::Texture_InitFiletype::FILE_PNG, material.metallic_texname);
-				this->metallic_textures.push_back(std::make_shared<Rendering::Texture>(textureMetallic));
+				Rendering::Texture* textureMetallic = new Rendering::Texture();
+				textureMetallic->UsePremadeStagingBuffer(premade_staging_buffer);
+				textureMetallic->InitFile(Rendering::Texture_InitFiletype::FILE_PNG, material.metallic_texname);
+				this->metallic_textures.push_back(textureMetallic);
 				metallic_count++;
 			}
 			else
@@ -96,9 +115,10 @@ namespace Engine::Rendering
 			if (material.reflection_texname != "")
 			{
 				Logging::GlobalLogger->SimpleLog(Logging::LogLevel::Debug2, "TinyObjReader: Reflection texture: '%s' for material: '%s'", material.reflection_texname.c_str(), material.name.c_str());
-				Rendering::Texture textureReflection = Rendering::Texture();
-				textureReflection.InitFile(Rendering::Texture_InitFiletype::FILE_PNG, material.reflection_texname);
-				this->reflective_textures.push_back(std::make_shared<Rendering::Texture>(textureReflection));
+				Rendering::Texture* textureReflection = new Rendering::Texture();
+				textureReflection->UsePremadeStagingBuffer(premade_staging_buffer);
+				textureReflection->InitFile(Rendering::Texture_InitFiletype::FILE_PNG, material.reflection_texname);
+				this->reflective_textures.push_back(textureReflection);
 				reflection_count++;
 			}
 			else
@@ -106,6 +126,8 @@ namespace Engine::Rendering
 				this->reflective_textures.push_back(nullptr);
 			}
 		}
+
+		renderer->cleanupVulkanBuffer(premade_staging_buffer);
 
 		Logging::GlobalLogger->SimpleLog(Logging::LogLevel::Info, "\nTinyObjReader:\n  Loaded %u materials\n  %u diffuse textures\n  %u bump textures\n  %u roughness textures\n  %u metallic textures\n  %u reflective textures",
 			materials.size(), diffuse_count, bump_count, roughness_count, metallic_count, reflection_count);
