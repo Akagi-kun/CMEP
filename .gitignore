@@ -368,8 +368,6 @@ MigrationBackup/
 FodyWeavers.xsd
 
 # cmake
-CMakeFiles/*
-rungame/CMakeFiles/*
-EngineCore/CMakeFiles/*
+CMakeFiles
 *.cmake
 CMakeCache.txt
