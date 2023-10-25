@@ -1,8 +1,10 @@
+#include "glm/glm.hpp"
 #include "Rendering/TextRenderer.hpp"
 #include "Rendering/MeshRenderer.hpp"
 #include "Scripting/Mappings.hpp"
 #include "Rendering/Texture.hpp"
 
+#include "GlobalSceneManager.hpp"
 #include "AssetManager.hpp"
 #include "ObjectFactory.hpp"
 #include "Engine.hpp"

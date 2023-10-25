@@ -1,5 +1,6 @@
 #include "GlobalSceneManager.hpp"
 #include "Logging/Logging.hpp"
+#include "glm/common.hpp"
 
 namespace Engine
 {

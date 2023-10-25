@@ -1,7 +1,7 @@
 #pragma once
 
-#include <glm/gtc/matrix_transform.hpp>
-#include <glm/gtc/quaternion.hpp>
+#include "glm/glm.hpp"
+#include "glm/gtc/matrix_transform.hpp"
 #include <memory>
 
 #include "Object.hpp"
@@ -13,10 +13,10 @@ namespace Engine
 	private:
 		std::unordered_map<std::string, Object*> objects;
 
-		glm::vec3 cameraTransform; // XYZ position
-		glm::vec2 cameraHVRotation; // Horizontal and Vertical rotation
+		glm::vec3 cameraTransform{}; // XYZ position
+		glm::vec2 cameraHVRotation{}; // Horizontal and Vertical rotation
 
-		glm::vec3 lightPosition;
+		glm::vec3 lightPosition{};
 
 		void CameraUpdated();
 	public:
