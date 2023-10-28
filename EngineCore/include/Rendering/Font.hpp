@@ -1,6 +1,7 @@
 #pragma once
 
 #include <unordered_map>
+#include "PlatformSemantics.hpp"
 
 namespace Engine
 {
@@ -13,7 +14,7 @@ namespace Engine
 			int x, y, width, height, xoffset, yoffset, xadvance, page, channel;
 		};
 
-		class __declspec(dllexport) Font final
+		class CMEP_EXPORT Font final
 		{
 		private:
 			AssetManager* asset_manager;
