@@ -39,7 +39,7 @@ namespace Engine::Scripting::Mappings
 
 	const uint32_t countMappings = 22;
 
-	const char* nameMappings[];
+	extern const char* nameMappings[];
 
-	lua_CFunction functionMappings[];
+	extern lua_CFunction functionMappings[];
 }
