@@ -1,6 +1,7 @@
 #include <assert.h>
 #include <fstream>
 #include <memory>
+#include <thread>
 #include <chrono>
 
 #include "nlohmann-json/json.hpp"

@@ -4,7 +4,7 @@ project(EngineCore)
 if (MSVC)
     add_compile_options(/std:c++17)
 else()
-    add_compile_options(-std=c++17)
+    add_compile_options(-std=c++17 -lpthread)
 endif()
 
 set(HEADER_FILES
