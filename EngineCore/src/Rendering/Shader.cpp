@@ -6,9 +6,9 @@
 
 namespace Engine::Rendering
 {
-	GLuint Shader::SetupShader(const char* vert_src, const char* frag_src) noexcept
+	unsigned int Shader::SetupShader(const char* vert_src, const char* frag_src) noexcept
 	{
-		GLuint program = 0;
+		int program = 0;
 		/*
 		unsigned int vertex_shader = glCreateShader(GL_VERTEX_SHADER);
 		glShaderSource(vertex_shader, 1, &(vert_src), NULL);
@@ -73,7 +73,7 @@ namespace Engine::Rendering
 		//this->program = Shader::SetupShader(vert_src, frag_src);
 	}
 
-	GLuint Shader::GetProgram() const noexcept
+	unsigned int Shader::GetProgram() const noexcept
 	{
 		return 0;
 	}

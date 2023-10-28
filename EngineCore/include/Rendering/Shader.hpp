@@ -7,7 +7,7 @@ namespace Engine::Rendering
 	class CMEP_EXPORT Shader final
 	{
 	private:
-//		GLuint program = 0;
+		int program = 0;
 
 		static unsigned int SetupShader(const char* vert, const char* frag) noexcept;
 
