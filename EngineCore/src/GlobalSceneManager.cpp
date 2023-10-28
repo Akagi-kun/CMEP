@@ -115,5 +115,5 @@ namespace Engine
 		this->CameraUpdated();
 	}
 
-	__declspec(dllexport) GlobalSceneManager* global_scene_manager = nullptr;
+	CMEP_EXPORT GlobalSceneManager* global_scene_manager = nullptr;
 }
