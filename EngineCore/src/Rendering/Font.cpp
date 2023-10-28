@@ -1,6 +1,7 @@
 #include <assert.h>
 #include <cstdio>
 #include <string>
+#include <cstring>
 
 #include "Rendering/Texture.hpp"
 #include "Logging/Logging.hpp"
