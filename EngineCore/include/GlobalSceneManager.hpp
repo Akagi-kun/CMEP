@@ -41,5 +41,5 @@ namespace Engine
 		void SetCameraHVRotation(glm::vec2 hvrotation);
 	};
 
-	__declspec(dllexport) extern GlobalSceneManager* global_scene_manager;
+	CMEP_EXPORT extern GlobalSceneManager* global_scene_manager;
 }

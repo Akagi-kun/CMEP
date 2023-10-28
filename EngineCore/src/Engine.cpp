@@ -386,10 +386,22 @@ namespace Engine
 		//SetConsoleMode(GetStdHandle(STD_OUTPUT_HANDLE), ENABLE_VIRTUAL_TERMINAL_PROCESSING);
 
 		// Engine info printout
+#if defined(_MSC_VER)
 		Logging::GlobalLogger->SimpleLog(Logging::LogLevel::Info, 
-			"Engine info:\n////\nRunning CMEP EngineCore %s %s build, configured %s\nCompiler version: %u.%u\n////\n", 
+			"Engine info:\n////\nRunning CMEP EngineCore %s %s build, configured %s\nCompiled by MSVC compiler version: %u.%u\n////\n", 
 			__TIME__, __DATE__, _DEBUG ? "DEBUG" : "RELEASE", _MSC_FULL_VER, _MSC_BUILD
 		);
+#elif defined(__GNUC__)
+		Logging::GlobalLogger->SimpleLog(Logging::LogLevel::Info, 
+			"Engine info:\n////\nRunning CMEP EngineCore %s %s build\nCompiled by GCC compiler version: %u.%u.%u\n////\n", 
+			__TIME__, __DATE__, __GNUC__, __GNUC_MINOR__, __GNUC_PATCHLEVEL__
+		);
+else
+		Logging::GlobalLogger->SimpleLog(Logging::LogLevel::Info, 
+			"Engine info:\n////\nRunning CMEP EngineCore %s %s build\nCompiled by unknown compiler\n////\n", 
+			__TIME__, __DATE__
+		);
+#endif
 
 		//this->window = new Rendering::Window(this->windowTitle, this->windowX, this->windowY);
 		this->asset_manager = new AssetManager();
