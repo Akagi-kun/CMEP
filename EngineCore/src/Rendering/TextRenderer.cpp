@@ -1,7 +1,7 @@
 #include <assert.h>
 #include <vector>
 #include <array>
-
+#include <cstring>
 
 #include "Rendering/TextRenderer.hpp"
 #include "Rendering/Texture.hpp"

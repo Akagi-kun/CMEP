@@ -2,6 +2,7 @@
 
 #include <fstream>
 #include <sstream>
+#include <cstring>
 
 #include "Rendering/AxisRenderer.hpp"
 #include "Rendering/Texture.hpp"

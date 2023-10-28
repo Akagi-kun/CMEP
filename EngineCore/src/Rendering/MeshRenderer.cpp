@@ -1,6 +1,7 @@
 #include <assert.h>
 #include <sstream>
 #include <fstream>
+#include <cstring>
 
 #include "Rendering/MeshRenderer.hpp"
 #include "GlobalSceneManager.hpp"
