@@ -2,8 +2,7 @@
 
 #include "Logging/Logging.hpp"
 #include "Rendering/Shader.hpp"
-
-#include "glfw/glfw3.h"
+#include "Rendering/VulkanRenderingEngine.hpp"
 
 namespace Engine::Rendering
 {
