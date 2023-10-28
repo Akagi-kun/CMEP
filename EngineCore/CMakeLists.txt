@@ -37,11 +37,16 @@ set(STATIC_LIBRARIES
 	glfw3
 	lua54
 	)
-
-link_directories(${VULKAN_SDK}/Lib ./lib/)
-
+	
 add_library(EngineCore SHARED ${SRC_FILES} ${HEADER_FILES})
 
-target_include_directories(EngineCore PUBLIC include ${VULKAN_SDK}/Include)
+if(DEFINED ENV{VULKAN_SDK})
+	target_link_directories(EngineCore PUBLIC $ENV{VULKAN_SDK}/Lib lib)
+	target_include_directories(EngineCore PUBLIC include $ENV{VULKAN_SDK}/Include)
+else()
+	target_link_directories(EngineCore PUBLIC lib)
+	target_include_directories(EngineCore PUBLIC include)
+	message("Warning! Vulkan SDK environment variable not found!")
+endif()
 
 target_link_libraries(EngineCore ${STATIC_LIBRARIES})

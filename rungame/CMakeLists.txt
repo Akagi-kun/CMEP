@@ -10,7 +10,7 @@ set(STATIC_LIBRARIES
 	lua54
 	)
 
-link_directories(C:/VulkanSDK/1.3.261.1/Lib ./lib/)
+link_directories(lib)
 
 add_executable(rungame ${SRC_FILES})
 
