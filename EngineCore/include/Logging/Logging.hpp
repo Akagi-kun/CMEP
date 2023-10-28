@@ -4,6 +4,7 @@
 #include <vector>
 #include <mutex>
 #include <map>
+#include <atomic>
 
 namespace Logging
 {
