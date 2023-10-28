@@ -26,8 +26,8 @@ namespace Engine::Rendering
 
 	SpriteRenderer::~SpriteRenderer()
 	{
-		glDeleteVertexArrays(1, &this->vao);
-		glDeleteBuffers(1, &this->vbo);
+		//glDeleteVertexArrays(1, &this->vao);
+		//glDeleteBuffers(1, &this->vbo);
 	}
 
 	void SpriteRenderer::Update(glm::vec3 pos, glm::vec3 size, glm::vec3 rotation, uint_fast16_t screenx, uint_fast16_t screeny) noexcept
@@ -55,11 +55,11 @@ namespace Engine::Rendering
 
 		if (this->vbo == 0)
 		{
-			glCreateBuffers(1, &this->vbo);
+			//glCreateBuffers(1, &this->vbo);
 		}
 		if (this->vao == 0)
 		{
-			glCreateVertexArrays(1, &this->vao);
+			//glCreateVertexArrays(1, &this->vao);
 		}
 		
 		const float xs = (float)this->_size.x * 2; const float ys = (float)this->_size.y * 2;
@@ -75,7 +75,7 @@ namespace Engine::Rendering
 			0.f, 0.f
 		};
 
-		glNamedBufferData(this->vbo, sizeof(data), (void*)data, GL_STATIC_DRAW);
+		//glNamedBufferData(this->vbo, sizeof(data), (void*)data, GL_STATIC_DRAW);
 	}
 
 	void SpriteRenderer::Render(VkCommandBuffer commandBuffer, uint32_t currentFrame)
@@ -85,6 +85,7 @@ namespace Engine::Rendering
 			this->UpdateMesh();
 		}
 
+		/*
 		if (!(this->texture || this->program))
 		{
 			throw std::exception("No texture/program assigned to SpriteRenderer, cannot perform Engine::Rendering::SpriteRenderer::Render()");
@@ -114,6 +115,6 @@ namespace Engine::Rendering
 
 		glDisableVertexAttribArray(0);
 		glDisableVertexAttribArray(1);
-
+		*/
 	}
 }

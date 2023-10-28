@@ -11,10 +11,6 @@
 #include "Logging/Logging.hpp"
 #include "EventHandling.hpp"
 
-#pragma comment (lib, "glfw3.lib")
-#pragma comment (lib, "glew32.lib")
-#pragma comment (lib, "opengl32.lib")
-
 namespace Engine
 {
 	class AssetManager;

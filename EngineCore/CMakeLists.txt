@@ -34,15 +34,14 @@ set(SRC_FILES
 	)
 	
 set(STATIC_LIBRARIES
-	glew32
 	glfw3
 	lua54
 	)
 
-link_directories(C:/VulkanSDK/1.3.261.1/Lib)
+link_directories(C:/VulkanSDK/1.3.261.1/Lib ./lib/)
 
 add_library(EngineCore SHARED ${SRC_FILES} ${HEADER_FILES})
 
 target_include_directories(EngineCore PUBLIC include C:/VulkanSDK/1.3.261.1/Include)
 
-link_libraries(EngineCore ${STATIC_LIBRARIES})
+target_link_libraries(EngineCore ${STATIC_LIBRARIES})

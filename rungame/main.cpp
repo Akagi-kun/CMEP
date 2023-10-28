@@ -8,8 +8,6 @@
 
 #include "EngineCore.hpp"
 
-#pragma comment(lib, "EngineCore.lib")
-
 Engine::Engine* engine;
 const char* windowTitle = "";
 const unsigned int windowSizeX = 1200, windowSizeY = 720;
@@ -31,7 +29,7 @@ int main(int argc, char** argv)
 	}
 	catch(std::exception e)
 	{
-		printf("COULD NOT LOAD CONFIG.JSON QUITTING");
+		printf("COULD NOT LOAD CONFIG.JSON! QUITTING");
 		exit(-1);
 	}
 	//engine->RegisterEventHandler(Engine::EventHandling::EventType::ON_INIT, onInit);
