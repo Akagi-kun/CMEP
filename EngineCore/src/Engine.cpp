@@ -396,7 +396,7 @@ namespace Engine
 			"Engine info:\n////\nRunning CMEP EngineCore %s %s build\nCompiled by GCC compiler version: %u.%u.%u\n////\n", 
 			__TIME__, __DATE__, __GNUC__, __GNUC_MINOR__, __GNUC_PATCHLEVEL__
 		);
-else
+#else
 		Logging::GlobalLogger->SimpleLog(Logging::LogLevel::Info, 
 			"Engine info:\n////\nRunning CMEP EngineCore %s %s build\nCompiled by unknown compiler\n////\n", 
 			__TIME__, __DATE__
@@ -552,5 +552,5 @@ else
 		return global_engine;
 	}
 
-	__declspec(dllexport) Engine* global_engine;
+	CMEP_EXPORT Engine* global_engine;
 }
