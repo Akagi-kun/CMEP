@@ -115,7 +115,7 @@ namespace Engine
 		Rendering::VulkanRenderingEngine* GetRenderingEngine() noexcept;
 	};
 
-	__declspec(dllexport) Engine* initializeEngine(const char* windowTitle, const unsigned windowX, const unsigned windowY);
+	CMEP_EXPORT Engine* initializeEngine(const char* windowTitle, const unsigned windowX, const unsigned windowY);
 
-	extern __declspec(dllexport) Engine* global_engine;
+	extern CMEP_EXPORT Engine* global_engine;
 }
