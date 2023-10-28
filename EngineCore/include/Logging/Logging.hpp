@@ -5,6 +5,8 @@
 #include <mutex>
 #include <map>
 #include <atomic>
+#include <thread>
+#include <memory>
 
 namespace Logging
 {
