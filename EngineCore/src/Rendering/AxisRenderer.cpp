@@ -73,7 +73,8 @@ namespace Engine::Rendering
 			//glCreateVertexArrays(1, &this->vao);
 		}
 		*/
-		const GLfloat data_vert[] = {
+		/*
+		const float data_vert[] = {
 			0.0, 0.0, 0.0,
 			1.0, 0.0, 0.0,
 			0.0, 0.0, 0.0,
@@ -82,9 +83,10 @@ namespace Engine::Rendering
 			0.0, 0.0, 1.0,
 		};
 
-		const GLint data_axis[] = {
+		const int data_axis[] = {
 			1, 1, 2, 2, 3, 3
 		};
+		*/
 
 		const std::vector<RenderingVertex> vertices = {
 			{{0.0, 0.0, 0.0}, {0.0f, 1.0f, 0.0f}},

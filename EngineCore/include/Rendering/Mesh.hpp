@@ -19,7 +19,7 @@ namespace Engine::Rendering
 		std::vector<glm::vec3> mesh_tangents;
 		std::vector<glm::vec3> mesh_bitangents;
 		
-		std::vector<GLuint> matids;
+		std::vector<unsigned int> matids;
 		std::vector<tinyobj::material_t> materials;
 		std::vector<glm::vec3> mesh_ambient;
 		std::vector<glm::vec3> mesh_diffuse;

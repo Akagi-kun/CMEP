@@ -62,7 +62,7 @@ namespace Engine::Rendering
 		
 		const float xs = (float)this->_size.x * 2; const float ys = (float)this->_size.y * 2;
 		const float x = (float)this->_pos.x * 2 - 1.f; const float y = (float)this->_pos.y * 2 - 1.f;
-		const GLfloat data[] = {
+		const float data[] = {
 			x, y, 0.f,
 			0.f, 1.f,
 			xs + x, y, 0.f,

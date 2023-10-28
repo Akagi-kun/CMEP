@@ -26,7 +26,7 @@ namespace Engine::Rendering
 		this->managedStagingBuffer = true;
 	}
 
-	int Texture::InitRaw(std::vector<unsigned char> raw_data, GLenum color_format, unsigned int xsize, unsigned int ysize)
+	int Texture::InitRaw(std::vector<unsigned char> raw_data, int color_format, unsigned int xsize, unsigned int ysize)
 	{
 		int channel_count = 4;
 		/*switch (color_format)
@@ -124,7 +124,7 @@ namespace Engine::Rendering
 
 				fclose(file);
 
-				this->InitRaw(pixels, GL_RGBA, sizex, sizey);
+				this->InitRaw(pixels, 4, sizex, sizey);
 
 				return 0;
 			}
@@ -133,7 +133,7 @@ namespace Engine::Rendering
 
 		if (sizex != 0 || sizey != 0)
 		{
-			this->InitRaw(data, GL_RGB, sizex, sizey);
+			this->InitRaw(data, 3, sizex, sizey);
 		}
 		else
 		{
@@ -154,7 +154,7 @@ namespace Engine::Rendering
 		return this->data;
 	}
 	
-	GLuint Texture::GetTexture() const noexcept
+	unsigned int Texture::GetTexture() const noexcept
 	{
 		return this->texture;
 	}
@@ -163,8 +163,8 @@ namespace Engine::Rendering
 	{
 		return this->textureImage;
 	}
-
-	GLenum Texture::GetColorFormat() const noexcept
+	
+	int Texture::GetColorFormat() const noexcept
 	{
 		return this->color_fmt;
 	}
