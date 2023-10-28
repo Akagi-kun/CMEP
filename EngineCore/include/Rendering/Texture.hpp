@@ -9,11 +9,10 @@
 
 namespace Engine::Rendering
 {
-	enum class Texture_InitFiletypeEnum : unsigned int
+	typedef enum class Texture_InitFiletypeEnum : int
 	{
 		FILE_PNG = 3
-	};
-	typedef Texture_InitFiletypeEnum Texture_InitFiletype;
+	} Texture_InitFiletype;
 
 	class CMEP_EXPORT Texture final
 	{

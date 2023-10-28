@@ -5,13 +5,12 @@
 
 #include "Scripting/LuaScript.hpp"
 #include "PlatformSemantics.hpp"
+#include "Rendering/Texture.hpp"
 
 namespace Engine
 {
 	namespace Rendering
 	{
-		typedef enum class Texture_InitFiletypeEnum Texture_InitFiletype;
-		class Texture;
 		class Shader;
 		class Font;
 	}
