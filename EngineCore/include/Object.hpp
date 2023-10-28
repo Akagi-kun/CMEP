@@ -6,10 +6,11 @@
 #include "glm/matrix.hpp";
 
 #include "Rendering/IRenderer.hpp"
+#include "PlatformSemantics.hpp"
 
 namespace Engine
 {
-	class __declspec(dllexport) Object
+	class CMEP_EXPORT Object
 	{
 	protected:
 		/// <summary>

@@ -5,10 +5,11 @@
 
 #include "Rendering/tinyobjloader/tiny_obj_loader.h"
 #include "Rendering/Texture.hpp"
+#include "PlatformSemantics.hpp"
 
 namespace Engine::Rendering
 {
-	class __declspec(dllexport) Mesh final
+	class CMEP_EXPORT Mesh final
 	{
 	private:
 	public:

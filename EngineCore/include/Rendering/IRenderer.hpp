@@ -3,6 +3,7 @@
 #include "glm/vec3.hpp"
 
 #include "VulkanRenderingEngine.hpp"
+#include "PlatformSemantics.hpp"
 
 namespace Engine
 {
@@ -15,7 +16,7 @@ namespace Engine
 		/// <summary>
 		/// Interface describing GL Renderer API for renderables.
 		/// </summary>
-		class __declspec(dllexport) IRenderer
+		class CMEP_EXPORT IRenderer
 		{
 		protected:
 			/// <summary>

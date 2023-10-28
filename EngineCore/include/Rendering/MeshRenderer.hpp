@@ -5,6 +5,7 @@
 #include "glm/gtc/matrix_transform.hpp"
 #include "IRenderer.hpp"
 #include "Mesh.hpp"
+#include "PlatformSemantics.hpp"
 
 namespace Engine::Rendering
 {
@@ -15,7 +16,7 @@ namespace Engine::Rendering
 	/// Implementation of <seealso cref="IRenderer"/> for custom mesh renderables.
 	/// </summary>
 	/// <inheritdoc cref="IRenderer"/>
-	class __declspec(dllexport) MeshRenderer final : public IRenderer
+	class CMEP_EXPORT MeshRenderer final : public IRenderer
 	{
 	private:
 		/// <summary>

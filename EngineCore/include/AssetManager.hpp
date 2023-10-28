@@ -4,6 +4,7 @@
 #include <string>
 
 #include "Scripting/LuaScript.hpp"
+#include "PlatformSemantics.hpp"
 
 namespace Engine
 {
@@ -15,7 +16,7 @@ namespace Engine
 		class Font;
 	}
 
-	class __declspec(dllexport) AssetManager final
+	class CMEP_EXPORT AssetManager final
 	{
 	private:
 		std::unordered_map<std::string, Scripting::LuaScript*> luascripts;

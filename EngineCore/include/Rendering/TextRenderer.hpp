@@ -4,6 +4,7 @@
 #include <string>
 
 #include "IRenderer.hpp"
+#include "PlatformSemantics.hpp"
 
 namespace Engine::Rendering
 {
@@ -15,7 +16,7 @@ namespace Engine::Rendering
 	/// Implementation of <seealso cref="IRenderer"/> for text renderables.
 	/// </summary>
 	/// <inheritdoc cref="IRenderer"/>
-	class __declspec(dllexport) TextRenderer final : public IRenderer
+	class CMEP_EXPORT TextRenderer final : public IRenderer
 	{
 	private:
 		/// <summary>

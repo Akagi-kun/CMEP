@@ -1,8 +1,10 @@
 #pragma once
 
+#include "PlatformSemantics.hpp"
+
 namespace Engine::Rendering
 {
-	class __declspec(dllexport) Shader final
+	class CMEP_EXPORT Shader final
 	{
 	private:
 //		GLuint program = 0;

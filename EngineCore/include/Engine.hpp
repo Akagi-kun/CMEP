@@ -10,6 +10,7 @@
 #include "GlobalSceneManager.hpp"
 #include "Logging/Logging.hpp"
 #include "EventHandling.hpp"
+#include "PlatformSemantics.hpp"
 
 namespace Engine
 {
@@ -28,7 +29,7 @@ namespace Engine
 		std::optional<uint32_t> graphicsFamily;
 	};
 
-	class __declspec(dllexport) Engine final
+	class CMEP_EXPORT Engine final
 	{
 	private:
 		// Keeps internal loop running

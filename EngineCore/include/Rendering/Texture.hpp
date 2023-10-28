@@ -5,6 +5,7 @@
 #include <vector>
 
 #include "VulkanRenderingEngine.hpp"
+#include "PlatformSemantics.hpp"
 
 namespace Engine::Rendering
 {
@@ -13,7 +14,7 @@ namespace Engine::Rendering
 		FILE_PNG = 3
 	} Texture_InitFiletype;
 
-	class __declspec(dllexport) Texture final
+	class CMEP_EXPORT Texture final
 	{
 	private:
 		std::vector<unsigned char> data;

@@ -5,10 +5,11 @@
 #include <memory>
 
 #include "Object.hpp"
+#include "PlatformSemantics.hpp"
 
 namespace Engine
 {
-	class __declspec(dllexport) GlobalSceneManager final
+	class CMEP_EXPORT GlobalSceneManager final
 	{
 	private:
 		std::unordered_map<std::string, Object*> objects;

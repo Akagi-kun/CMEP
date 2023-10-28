@@ -4,6 +4,7 @@
 
 #include "EventHandling.hpp"
 #include "LuaScript.hpp"
+#include "PlatformSemantics.hpp"
 
 namespace Engine
 {
@@ -14,7 +15,7 @@ namespace Engine
 			ObjectScript
 		};
 
-		class __declspec(dllexport) LuaScriptExecutor
+		class CMEP_EXPORT LuaScriptExecutor
 		{
 		protected:
 			static void registerCallbacks(lua_State* state);

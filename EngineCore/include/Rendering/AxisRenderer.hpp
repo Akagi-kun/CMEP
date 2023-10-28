@@ -7,6 +7,7 @@
 #include "glm/gtc/matrix_transform.hpp"
 
 #include "Rendering/VulkanRenderingEngine.hpp"
+#include "PlatformSemantics.hpp"
 
 namespace Engine::Rendering
 {
@@ -17,7 +18,7 @@ namespace Engine::Rendering
 	/// Implementation of <seealso cref="IRenderer"/> for an axis.
 	/// </summary>
 	/// <inheritdoc cref="IRenderer"/>
-	class __declspec(dllexport) AxisRenderer final : public IRenderer
+	class CMEP_EXPORT AxisRenderer final : public IRenderer
 	{
 	private:
 		/// <summary>

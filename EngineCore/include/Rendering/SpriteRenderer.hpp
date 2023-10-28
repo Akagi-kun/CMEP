@@ -3,6 +3,7 @@
 #include <memory>
 
 #include "IRenderer.hpp"
+#include "PlatformSemantics.hpp"
 
 namespace Engine::Rendering
 {
@@ -13,7 +14,7 @@ namespace Engine::Rendering
 	/// Implementation of <seealso cref="IRenderer"/> for 2D sprite renderables.
 	/// </summary>
 	/// <inheritdoc cref="IRenderer"/>
-	class __declspec(dllexport) SpriteRenderer final : public IRenderer
+	class CMEP_EXPORT SpriteRenderer final : public IRenderer
 	{
 	private:
 		/// <summary>

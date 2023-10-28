@@ -4,12 +4,13 @@
 
 #include "Scripting/lualib/lua.hpp"
 #include "Logging/Logging.hpp"
+#include "PlatformSemantics.hpp"
 
 namespace Engine::Scripting
 {
 	class LuaScriptExecutor;
 
-	class __declspec(dllexport) LuaScript
+	class CMEP_EXPORT LuaScript
 	{
 	protected:
 		lua_State* state;
