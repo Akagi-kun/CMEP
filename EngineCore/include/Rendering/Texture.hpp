@@ -9,7 +9,7 @@
 
 namespace Engine::Rendering
 {
-	enum class Texture_InitFiletypeEnum : int
+	enum class Texture_InitFiletypeEnum : unsigned int
 	{
 		FILE_PNG = 3
 	};
