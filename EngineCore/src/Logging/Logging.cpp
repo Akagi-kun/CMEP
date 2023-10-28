@@ -66,7 +66,11 @@ void Logging::Logger::StartLog(Logging::LogLevel level)
 			// Get current time
 			const std::time_t tmp = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
 			std::tm cur_time = {};
+#if defined(_MSC_VER)
 			localtime_s(&cur_time, &tmp);
+#elif defined(_GNUC_)
+			localtime_r(&cur_time, &tmp);
+#endif
 
 			int16_t thread_id = std::hash<std::thread::id>{}(std::this_thread::get_id()) & 0xFFFF;
 			auto find_result = this->threadid_name_map.find(thread_id);
