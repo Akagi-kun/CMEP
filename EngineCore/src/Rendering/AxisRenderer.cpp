@@ -35,7 +35,7 @@ namespace Engine::Rendering
 		pipeline_settings.descriptorLayoutSettings.types.push_back(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER);
 		pipeline_settings.descriptorLayoutSettings.stageFlags.push_back(VK_SHADER_STAGE_VERTEX_BIT);
 
-		this->pipeline = renderer->createVulkanPipeline(pipeline_settings, "data/shaders/vulkan/axisrenderer_vert.spv", "data/shaders/vulkan/axisrenderer_frag.spv");
+		this->pipeline = renderer->createVulkanPipeline(pipeline_settings, "game/shaders/vulkan/axisrenderer_vert.spv", "game/shaders/vulkan/axisrenderer_frag.spv");
 
 		//this->program = std::make_unique<Shader>(vertsstr.str().c_str(), fragsstr.str().c_str());
 	}

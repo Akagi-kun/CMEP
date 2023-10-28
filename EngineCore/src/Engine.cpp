@@ -446,7 +446,15 @@ namespace Engine
 	{
 		auto start = std::chrono::steady_clock::now();
 
-		this->HandleConfig();
+		try
+		{
+			this->HandleConfig();
+		}
+		catch(std::exception e)
+		{
+			Logging::GlobalLogger->SimpleLog(Logging::LogLevel::Exception, "Failed handling config! e.what(): %s", e.what());
+			exit(1);
+		}
 
 		this->rendering_engine->init(this->windowX, this->windowY, this->windowTitle);
 		this->rendering_engine->SetRenderCallback(this->RenderCallback);

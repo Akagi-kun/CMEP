@@ -41,7 +41,7 @@ namespace Engine::Rendering
 		pipeline_settings.descriptorLayoutSettings.types.push_back(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
 		pipeline_settings.descriptorLayoutSettings.stageFlags.push_back(VK_SHADER_STAGE_FRAGMENT_BIT);
 
-		this->pipeline = renderer->createVulkanPipeline(pipeline_settings, "data/shaders/vulkan/meshrenderer_vert.spv", "data/shaders/vulkan/meshrenderer_frag.spv");
+		this->pipeline = renderer->createVulkanPipeline(pipeline_settings, "game/shaders/vulkan/meshrenderer_vert.spv", "game/shaders/vulkan/meshrenderer_frag.spv");
 
 		this->matMVP = glm::mat4();
 	}
@@ -171,29 +171,23 @@ namespace Engine::Rendering
 			this->vbo_vert_count = generated_mesh.size();
 			
 			std::vector<VkDescriptorImageInfo> diffuseImageBufferInfos{};
-			diffuseImageBufferInfos.resize(16);
+			diffuseImageBufferInfos.resize(this->mesh->diffuse_textures.size());
 			for (int diffuseTextureIndex = 0; diffuseTextureIndex < this->mesh->diffuse_textures.size(); diffuseTextureIndex++)
 			{
 				Logging::GlobalLogger->SimpleLog(Logging::LogLevel::Debug2, "Filling imageBufferInfos at index %u", diffuseTextureIndex);
 
-				VulkanTextureImage* currentDiffuseTextureImage = this->mesh->diffuse_textures[diffuseTextureIndex]->GetTextureImage();
-
-				if (currentDiffuseTextureImage->image != nullptr)
+				if(this->mesh->diffuse_textures[diffuseTextureIndex] != nullptr)
 				{
-					Logging::GlobalLogger->SimpleLog(Logging::LogLevel::Debug2, "Resizing imageBufferInfos to size %u", diffuseImageBufferInfos.size() + 1);
-					VkDescriptorImageInfo diffuseImageBufferInfo{};
-					diffuseImageBufferInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-					diffuseImageBufferInfo.imageView = currentDiffuseTextureImage->image->imageView;
-					diffuseImageBufferInfo.sampler = currentDiffuseTextureImage->textureSampler;
-					diffuseImageBufferInfos[diffuseTextureIndex] = diffuseImageBufferInfo;
-				}
-			}
-
-			for (int i = 0; i < diffuseImageBufferInfos.size(); i++)
-			{
-				if (diffuseImageBufferInfos[i].imageLayout != VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL)
-				{
-
+					VulkanTextureImage* currentDiffuseTextureImage = this->mesh->diffuse_textures[diffuseTextureIndex]->GetTextureImage();
+	
+					if (currentDiffuseTextureImage->image != nullptr || currentDiffuseTextureImage->textureSampler != VK_NULL_HANDLE)
+					{
+						VkDescriptorImageInfo diffuseImageBufferInfo{};
+						diffuseImageBufferInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+						diffuseImageBufferInfo.imageView = currentDiffuseTextureImage->image->imageView;
+						diffuseImageBufferInfo.sampler = currentDiffuseTextureImage->textureSampler;
+						diffuseImageBufferInfos[diffuseTextureIndex] = diffuseImageBufferInfo;
+					}
 				}
 			}
 

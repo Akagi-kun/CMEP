@@ -754,7 +754,7 @@ namespace Engine::Rendering
 		pipeline_settings.descriptorLayoutSettings.types.push_back(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER);
 		pipeline_settings.descriptorLayoutSettings.stageFlags.push_back(VK_SHADER_STAGE_VERTEX_BIT);
 
-		this->graphicsPipelineDefault = this->createVulkanPipeline(pipeline_settings, "data/shaders/vulkan/default_vert.spv", "data/shaders/vulkan/default_frag.spv");
+		this->graphicsPipelineDefault = this->createVulkanPipeline(pipeline_settings, "game/shaders/vulkan/default_vert.spv", "game/shaders/vulkan/default_frag.spv");
 	}
 
 	void VulkanRenderingEngine::createVulkanRenderPass()

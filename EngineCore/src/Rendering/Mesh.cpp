@@ -24,7 +24,7 @@ namespace Engine::Rendering
 	void Mesh::CreateMeshFromObj(std::string path)
 	{
 		tinyobj::ObjReaderConfig reader_config;
-		reader_config.mtl_search_path = "./data/models/"; // Path to material files
+		reader_config.mtl_search_path = "./game/models/"; // Path to material files
 
 		tinyobj::ObjReader reader;
 
