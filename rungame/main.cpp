@@ -4,7 +4,9 @@
 #include <cassert>
 #include <array>
 
-#include <Windows.h>
+#if defined(_MSC_VER)
+	#include <Windows.h>
+#endif
 
 #include "EngineCore.hpp"
 
@@ -14,11 +16,13 @@ const unsigned int windowSizeX = 1200, windowSizeY = 720;
 
 int main(int argc, char** argv)
 {
+#if defined(_MSC_VER)
 	HANDLE myConsole = GetStdHandle(STD_OUTPUT_HANDLE);
 	DWORD dwMode = 0;
 	GetConsoleMode(myConsole, &dwMode);
 	dwMode |= ENABLE_VIRTUAL_TERMINAL_PROCESSING;
 	SetConsoleMode(myConsole, dwMode);
+#endif
 	//Engine::Scripting::LuaScript eventHandlers = ::Engine::Scripting::LuaScript("data/scripts/eventHandlers.lua");
 
 	engine = Engine::initializeEngine(windowTitle, windowSizeX, windowSizeY);

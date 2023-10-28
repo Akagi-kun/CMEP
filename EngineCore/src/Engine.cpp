@@ -14,7 +14,9 @@
 #include "Engine.hpp"
 #include "Object.hpp"
 
+#if defined(_MSC_VER)
 #include <Windows.h>
+#endif
 
 #if defined( _WIN32 )
 	#ifndef _DEBUG
