@@ -38,7 +38,7 @@ set(STATIC_LIBRARIES
 	lua54
 	)
 
-link_directories(C:/VulkanSDK/1.3.261.1/Lib ./lib/)
+link_directories(${VULKAN_SDK}/Lib ./lib/)
 
 add_library(EngineCore SHARED ${SRC_FILES} ${HEADER_FILES})
 
