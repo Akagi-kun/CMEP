@@ -1,0 +1,233 @@
+# Blender MTL File: 'None'
+# Material Count: 21
+
+newmtl BrakeCaliper
+Ns 225.000000
+Ka 1.000000 1.000000 1.000000
+Kd 0.443406 0.443406 0.443406
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.450000
+d 1.000000
+illum 3
+map_Bump game/textures/new_ae86/BrakeCaliper_normal.png
+map_Kd game/textures/new_ae86/BrakeCaliper_color.png
+
+newmtl Brake_Disc
+Ns 692.646691
+Ka 1.000000 1.000000 1.000000
+Kd 0.800000 0.800000 0.800000
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.450000
+d 1.000000
+illum 3
+map_Kd game/textures/new_ae86/Brake_Disc_metallic.png
+
+newmtl Interior
+Ns 225.000000
+Ka 1.000000 1.000000 1.000000
+Kd 0.800000 0.800000 0.800000
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.450000
+d 1.000000
+illum 2
+map_Bump game/textures/new_ae86/Interior_Bake1_pbr_normal.png
+map_Kd game/textures/new_ae86/Interior_Bake1_pbr_diffuse.png
+
+newmtl InteriorPlastic
+Ns 225.000000
+Ka 1.000000 1.000000 1.000000
+Kd 0.011373 0.011373 0.011373
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.450000
+d 1.000000
+illum 2
+map_Bump -bm 0.500000 game/textures/new_ae86/Interior1_Normal.png
+map_Kd game/textures/new_ae86/Interior1_Base_Color.png
+
+newmtl InteriorPlastic2
+Ns 225.000000
+Ka 1.000000 1.000000 1.000000
+Kd 0.000000 0.000000 0.000000
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.450000
+d 1.000000
+illum 2
+map_Bump -bm 0.500000 game/textures/new_ae86/Interior2_Normal.png
+map_Kd game/textures/new_ae86/Interior2_Base_Color.png
+
+newmtl LicensePlate
+Ns 595.803717
+Ka 1.000000 1.000000 1.000000
+Kd 0.800000 0.800000 0.800000
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.450000
+d 1.000000
+illum 2
+map_Bump game/textures/new_ae86/LicensePlate_Normal.png
+map_Kd game/textures/new_ae86/LicensePlate_Color.png
+
+newmtl RimMaterial
+Ns 225.000000
+Ka 1.000000 1.000000 1.000000
+Kd 0.800000 0.800000 0.800000
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.450000
+d 1.000000
+illum 2
+map_Bump game/textures/new_ae86/WatanabeRim_normal.png
+map_Kd game/textures/new_ae86/WatanabeRim_metallic.png
+
+newmtl Seatbelt
+Ns 225.000000
+Ka 1.000000 1.000000 1.000000
+Kd 0.800000 0.800000 0.800000
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.450000
+d 1.000000
+illum 2
+map_Bump game/textures/new_ae86/Seatbelt_normal.png
+map_Kd game/textures/new_ae86/Seatbelt_color.png
+
+newmtl SteeringWheel
+Ns 225.000000
+Ka 1.000000 1.000000 1.000000
+Kd 0.800000 0.800000 0.800000
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.450000
+d 1.000000
+illum 2
+map_Bump game/textures/new_ae86/SteeringWheel_normal.png
+map_Kd game/textures/new_ae86/SteeringWheel_metallic.png
+
+newmtl TireMaterial
+Ns 225.000000
+Ka 1.000000 1.000000 1.000000
+Kd 0.800000 0.800000 0.800000
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.450000
+d 1.000000
+illum 2
+map_Bump game/textures/new_ae86/Tire_normal.png
+map_Kd game/textures/new_ae86/Tire_color.png
+
+newmtl Trim2
+Ns 225.000000
+Ka 1.000000 1.000000 1.000000
+Kd 0.800000 0.800000 0.800000
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.450000
+d 1.000000
+illum 2
+map_Bump game/textures/new_ae86/Trim2_normal.png
+map_Kd game/textures/new_ae86/Trim2_metalness.png
+
+newmtl TailightFrame
+Ns 0.000000
+Ka 0.722727 0.722727 0.722727
+Kd 0.000000 0.000000 0.000000
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.450000
+d 1.000000
+illum 3
+
+newmtl Secondary
+Ns 374.950945
+Ka 0.559091 0.559091 0.559091
+Kd 0.000000 0.000000 0.000000
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.450000
+d 1.000000
+illum 3
+
+newmtl Shadow
+Ns 0.000000
+Ka 1.000000 1.000000 1.000000
+Kd 0.002063 0.002063 0.002063
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.450000
+d 1.000000
+illum 3
+
+newmtl Trim1
+Ns 137.767447
+Ka 1.000000 1.000000 1.000000
+Kd 0.000000 0.000000 0.000000
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.450000
+d 1.000000
+illum 2
+
+newmtl LampCovers
+Ns 323.999994
+Ka 1.000000 1.000000 1.000000
+Kd 0.992857 0.992857 0.992857
+Ks 0.500000 0.500000 0.500000
+Ke 5.000000 4.035990 2.535120
+Ni 1.450000
+d 1.000000
+illum 2
+
+newmtl Trueno
+Ns 900.000000
+Ka 1.000000 1.000000 1.000000
+Kd 0.800000 0.800000 0.800000
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.450000
+d 1.000000
+illum 2
+
+newmtl Mirror
+Ns 900.000000
+Ka 1.000000 1.000000 1.000000
+Kd 0.800000 0.800000 0.800000
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.450000
+d 1.000000
+illum 3
+
+newmtl Primary
+Ns 374.950945
+Ka 0.559091 0.559091 0.559091
+Kd 1.000000 1.000000 1.000000
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.450000
+d 1.000000
+illum 3
+
+newmtl Reflector
+Ns 494.051664
+Ka 1.000000 1.000000 1.000000
+Kd 0.447988 0.447988 0.447988
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.450000
+d 1.000000
+illum 3
+
+newmtl Windows
+Ns 900.000000
+Ka 1.000000 1.000000 1.000000
+Kd 0.000000 0.000000 0.000000
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.450000
+d 0.253642
+illum 9

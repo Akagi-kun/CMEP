@@ -1,0 +1,8 @@
+{
+    "eventHandler.onInit": { "file": "game/scripts/eventHandlers.lua", "function": "onInit" },
+    "eventHandler.onUpdate": { "file": "game/scripts/eventHandlers.lua", "function": "onUpdate" },
+    "eventHandler.onKeyDown": { "file": "game/scripts/eventHandlers.lua", "function": "onKeyDown" },
+    "eventHandler.onMouseMoved": { "file": "game/scripts/eventHandlers.lua", "function": "onMouseMoved" },
+    "window.title": "rungame.exe running game/config.json",
+    "window.size": { "x": 1100, "y": 720 }
+}
