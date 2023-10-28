@@ -1,6 +1,7 @@
 #pragma once
 
 #include <stdint.h>
+#include "PlatformSemantics.hpp"
 
 namespace Engine::EventHandling
 {
@@ -12,7 +13,7 @@ namespace Engine::EventHandling
 		ON_MOUSEMOVED
 	};
 
-	class __declspec(dllexport) Event final
+	class CMEP_EXPORT Event final
 	{
 	private:
 	public:

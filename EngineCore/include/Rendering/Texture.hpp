@@ -9,7 +9,7 @@
 
 namespace Engine::Rendering
 {
-	typedef enum class Texture_InitFiletypeEnum
+	typedef enum Texture_InitFiletypeEnum
 	{
 		FILE_PNG = 3
 	} Texture_InitFiletype;
