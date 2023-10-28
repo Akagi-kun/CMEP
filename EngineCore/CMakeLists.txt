@@ -42,6 +42,6 @@ link_directories(${VULKAN_SDK}/Lib ./lib/)
 
 add_library(EngineCore SHARED ${SRC_FILES} ${HEADER_FILES})
 
-target_include_directories(EngineCore PUBLIC include C:/VulkanSDK/1.3.261.1/Include)
+target_include_directories(EngineCore PUBLIC include ${VULKAN_SDK}/Include)
 
 target_link_libraries(EngineCore ${STATIC_LIBRARIES})
