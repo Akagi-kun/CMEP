@@ -81,7 +81,7 @@ namespace Engine
 		void initVulkanDevice();
 		void initVulkan();
 		*/
-		static void APIENTRY debugCallbackGL(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, const void* userParam) noexcept;
+		//static void APIENTRY debugCallbackGL(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, const void* userParam) noexcept;
 		static void spinSleep(double seconds);
 
 		static void RenderCallback(VkCommandBuffer commandBuffer, uint32_t currentFrame);

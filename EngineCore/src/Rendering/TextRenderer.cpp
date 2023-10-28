@@ -9,8 +9,6 @@
 #include "Rendering/Font.hpp"
 #include "Logging/Logging.hpp"
 
-#include "Rendering/GLCommon.hpp"
-
 #include "Engine.hpp"
 
 namespace Engine::Rendering

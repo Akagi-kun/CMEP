@@ -6,8 +6,6 @@
 #include "Rendering/tinyobjloader/tiny_obj_loader.h"
 #include "Rendering/Texture.hpp"
 
-#include "Rendering/GLCommon.hpp"
-
 namespace Engine::Rendering
 {
 	class __declspec(dllexport) Mesh final

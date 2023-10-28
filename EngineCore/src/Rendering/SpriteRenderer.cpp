@@ -1,7 +1,5 @@
 #include <assert.h>
 
-#include "Rendering/GLCommon.hpp"
-
 #include "Rendering/SpriteRenderer.hpp"
 #include "Rendering/Texture.hpp"
 #include "Rendering/Shader.hpp"

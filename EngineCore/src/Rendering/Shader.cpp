@@ -71,16 +71,16 @@ namespace Engine::Rendering
 
 	Shader::Shader(const char* vert_src, const char* frag_src) noexcept
 	{
-		this->program = Shader::SetupShader(vert_src, frag_src);
+		//this->program = Shader::SetupShader(vert_src, frag_src);
 	}
 
 	GLuint Shader::GetProgram() const noexcept
 	{
-		return this->program;
+		return 0;
 	}
 
 	bool Shader::IsValid() const noexcept
 	{
-		return this->program != 0;
+		return 0;
 	}
 }

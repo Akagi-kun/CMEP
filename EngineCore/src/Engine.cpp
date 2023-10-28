@@ -24,6 +24,7 @@
 
 namespace Engine
 {
+	/*
 	void APIENTRY Engine::debugCallbackGL(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, const void* userParam) noexcept
 	{
 		const char* _source;
@@ -118,7 +119,7 @@ namespace Engine
 
 		Logging::GlobalLogger->SimpleLog(Logging::LogLevel::Debug1, "OpenGL debug message received: %d %s of %s severity, raised from %s: %s\n\n", id, _type, _severity, _source, message);
 	}
-
+*/
 	// Utility sleep function
 	void Engine::spinSleep(double seconds)
 	{

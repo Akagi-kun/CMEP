@@ -4,8 +4,6 @@
 #include "Rendering/Font.hpp"
 #include "AssetManager.hpp"
 
-#include "Rendering/GLCommon.hpp"
-
 namespace Engine
 {
 #pragma region Adding Assets

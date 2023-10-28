@@ -4,8 +4,6 @@
 #include <string>
 #include <vector>
 
-#include "Rendering/GLCommon.hpp"
-
 #include "VulkanRenderingEngine.hpp"
 
 namespace Engine::Rendering

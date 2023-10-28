@@ -9,8 +9,6 @@
 #include "ObjectFactory.hpp"
 #include "glm/vec3.hpp"
 
-#include "Rendering/GLCommon.hpp"
-
 namespace Engine::ObjectFactory
 {
 	Object* CreateImageObject(double x, double y, double sizex, double sizey, ::Engine::Rendering::Texture* image)

@@ -1,7 +1,5 @@
 #include <assert.h>
 
-#include "Rendering/GLCommon.hpp"
-
 #include <fstream>
 #include <sstream>
 

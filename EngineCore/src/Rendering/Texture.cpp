@@ -1,7 +1,6 @@
 #include <assert.h>
 #include <fstream>
 
-#include "Rendering/GLCommon.hpp"
 #include "Rendering/lodepng/lodepng.hpp"
 #include "Rendering/Texture.hpp"
 #include "Logging/Logging.hpp"
@@ -29,8 +28,8 @@ namespace Engine::Rendering
 
 	int Texture::InitRaw(std::vector<unsigned char> raw_data, GLenum color_format, unsigned int xsize, unsigned int ysize)
 	{
-		int channel_count = 0;
-		switch (color_format)
+		int channel_count = 4;
+		/*switch (color_format)
 		{
 		case GL_RED:
 			channel_count = 1;
@@ -46,7 +45,7 @@ namespace Engine::Rendering
 		case GL_RGBA:
 			channel_count = 4;
 			break;
-		}
+		}*/
 
 		//this->data = new unsigned char[(size_t)ysize * xsize  * channel_count];
 		//assert(this->data != nullptr);
