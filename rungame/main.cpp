@@ -11,7 +11,7 @@
 #pragma comment(lib, "EngineCore.lib")
 
 Engine::Engine* engine;
-const char* windowTitle = "Test Game";
+const char* windowTitle = "";
 const unsigned int windowSizeX = 1200, windowSizeY = 720;
 
 int main(int argc, char** argv)
@@ -24,7 +24,16 @@ int main(int argc, char** argv)
 	//Engine::Scripting::LuaScript eventHandlers = ::Engine::Scripting::LuaScript("data/scripts/eventHandlers.lua");
 
 	engine = Engine::initializeEngine(windowTitle, windowSizeX, windowSizeY);
-	engine->ConfigFile("data/config.json");
+	
+	try
+	{
+		engine->ConfigFile("game/config.json");
+	}
+	catch(std::exception e)
+	{
+		printf("COULD NOT LOAD CONFIG.JSON QUITTING");
+		exit(-1);
+	}
 	//engine->RegisterEventHandler(Engine::EventHandling::EventType::ON_INIT, onInit);
 	//engine->RegisterLuaEventHandler(Engine::EventHandling::EventType::ON_INIT, &eventHandlers, "onInit");
 	//engine->RegisterLuaEventHandler(Engine::EventHandling::EventType::ON_UPDATE, &eventHandlers, "onUpdate");

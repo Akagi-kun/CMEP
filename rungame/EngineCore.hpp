@@ -6,7 +6,7 @@
 
 #include "glm/gtc/matrix_transform.hpp"
 #include "glm/gtc/quaternion.hpp"
-#include "GL/glcorearb.h"
+//#include "GL/glcorearb.h"
 
 #pragma region forward decls
 
@@ -99,14 +99,14 @@ namespace Engine
 		class __declspec(dllimport) Shader final
 		{
 		private:
-			GLuint program = 0;
+			int program = 0;
 
-			static GLuint SetupShader(const char* vert, const char* frag) noexcept;
+			static int SetupShader(const char* vert, const char* frag) noexcept;
 
 		public:
 			Shader(const char* vert, const char* frag) noexcept;
 
-			GLuint GetProgram() const noexcept;
+			int GetProgram() const noexcept;
 
 			bool IsValid() const noexcept;
 		};
@@ -120,8 +120,8 @@ namespace Engine
 		private:
 			char* data = nullptr;
 			unsigned int x = 0, y = 0;
-			GLenum color_fmt = GL_RGB;
-			GLuint texture = 0;
+			int color_fmt = 0;
+			int texture = 0;
 
 		public:
 			Texture() noexcept;
@@ -131,13 +131,13 @@ namespace Engine
 			Texture& operator=(const Texture&& other) noexcept;
 			~Texture() noexcept;
 
-			int InitRaw(const char* const raw_data, GLenum color_format, unsigned int x, unsigned int y);
+			int InitRaw(const char* const raw_data, int color_format, unsigned int x, unsigned int y);
 			int InitFile(Texture_InitFiletype filetype, std::string path, unsigned int sizex = 0, unsigned int sizey = 0);
 
 			void GetSize(unsigned int& x, unsigned int& y) const noexcept;
 			char* GetData() const noexcept;
-			GLuint GetTexture() const noexcept;
-			GLenum GetColorFormat() const noexcept;
+			int GetTexture() const noexcept;
+			int GetColorFormat() const noexcept;
 		};
 
 #pragma endregion
@@ -432,7 +432,7 @@ namespace Engine
 		std::vector<std::pair<EventHandling::EventType, std::function<void(EventHandling::Event&)>>> event_handlers;
 		std::vector<std::tuple<EventHandling::EventType, Scripting::LuaScript*, std::string>> lua_event_handlers;
 
-		static void APIENTRY debugCallbackGL(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, const void* userParam) noexcept;
+		static void APIENTRY debugCallbackGL(int source, int type, int id, int severity, int length, const char* message, const void* userParam) noexcept;
 
 		static void spinSleep(double seconds);
 
