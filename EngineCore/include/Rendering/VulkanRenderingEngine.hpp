@@ -11,6 +11,7 @@
 #include <vector>
 #include <functional>
 #include <optional>
+#include <cstring>
 
 #pragma comment (lib, "vulkan-1.lib")
 
