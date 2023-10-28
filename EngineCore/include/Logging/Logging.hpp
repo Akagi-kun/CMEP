@@ -32,7 +32,7 @@ namespace Logging
 	private:
 		std::vector<LoggerInternalMapping*> outputs;
 		std::map<int16_t, std::string> threadid_name_map;
-		std::atomic_bool threadLocked;
+		std::atomic<bool> threadLocked;
 
 	public:
 		Logger() {}
