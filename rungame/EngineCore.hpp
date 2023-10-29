@@ -44,7 +44,7 @@ namespace Engine
 
 #pragma region Mesh.hpp
 
-		class __declspec(dllimport) Mesh final
+		class Mesh final
 		{
 		private:
 		public:
@@ -64,7 +64,7 @@ namespace Engine
 			int x, y, width, height, xoffset, yoffset, xadvance, page, channel;
 		};
 
-		class __declspec(dllimport) Font final
+		class Font final
 		{
 		private:
 			AssetManager* asset_manager;
@@ -96,7 +96,7 @@ namespace Engine
 
 #pragma region Shader.hpp
 
-		class __declspec(dllimport) Shader final
+		class Shader final
 		{
 		private:
 			int program = 0;
@@ -115,7 +115,7 @@ namespace Engine
 
 #pragma region Texture.hpp
 
-		class __declspec(dllimport) Texture final
+		class Texture final
 		{
 		private:
 			char* data = nullptr;
@@ -147,7 +147,7 @@ namespace Engine
 		/// <summary>
 		/// Interface describing GL Renderer API for UI renderables.
 		/// </summary>
-		class __declspec(dllimport) IRenderer
+		class IRenderer
 		{
 		protected:
 			/// <summary>
@@ -204,7 +204,7 @@ namespace Engine
 		/// Implementation of <seealso cref="IRenderer"/> for text renderables.
 		/// </summary>
 		/// <inheritdoc cref="IRenderer"/>
-		class __declspec(dllimport) TextRenderer final : public IRenderer
+		class TextRenderer final : public IRenderer
 		{
 		private:
 			/// <summary>
@@ -263,7 +263,7 @@ namespace Engine
 		/// Implementation of <seealso cref="IRenderer"/> for 2D sprite renderables.
 		/// </summary>
 		/// <inheritdoc cref="IRenderer"/>
-		class __declspec(dllimport) SpriteRenderer final : public IRenderer
+		class SpriteRenderer final : public IRenderer
 		{
 		private:
 			/// <summary>
@@ -297,7 +297,7 @@ namespace Engine
 		/// Implementation of <seealso cref="IRenderer"/> for custom mesh renderables.
 		/// </summary>
 		/// <inheritdoc cref="IRenderer"/>
-		class __declspec(dllimport) MeshRenderer final : public IRenderer
+		class MeshRenderer final : public IRenderer
 		{
 		private:
 			/// <summary>
@@ -343,7 +343,7 @@ namespace Engine
 		};
 
 #pragma region LuaScript.hpp
-		class __declspec(dllimport) LuaScript
+		class LuaScript
 		{
 		protected:
 			void* state;
@@ -359,7 +359,7 @@ namespace Engine
 #pragma endregion
 
 #pragma region LuaScriptExecutor.hpp
-		class __declspec(dllimport) LuaScriptExecutor
+		class LuaScriptExecutor
 		{
 		protected:
 			static void registerCallbacks(void* state);
@@ -386,7 +386,7 @@ namespace Engine
 			ON_MOUSEMOVED
 		};
 
-		class __declspec(dllimport) Event final
+		class Event final
 		{
 		private:
 		public:
@@ -411,7 +411,7 @@ namespace Engine
 
 #pragma region Engine.hpp
 
-	class __declspec(dllimport) Engine final
+	class Engine final
 	{
 	private:
 		// Keeps internal loop running
@@ -461,14 +461,14 @@ namespace Engine
 		AssetManager* GetAssetManager() noexcept;
 	};
 
-	__declspec(dllimport) Engine* initializeEngine(const char* windowTitle, const unsigned windowX, const unsigned windowY);
+	Engine* initializeEngine(const char* windowTitle, const unsigned windowX, const unsigned windowY);
 
-	__declspec(dllimport) Engine* global_engine;
+	Engine* global_engine;
 #pragma endregion
 
 #pragma region Object.hpp
 
-	class __declspec(dllimport) Object
+	class Object
 	{
 	protected:
 		/// <summary>
@@ -544,7 +544,7 @@ namespace Engine
 
 #pragma region AssetManager.hpp
 
-	class __declspec(dllimport) AssetManager final
+	class AssetManager final
 	{
 	private:
 		std::unordered_map<std::string, Rendering::Texture*> textures;
@@ -566,7 +566,7 @@ namespace Engine
 
 #pragma region GlobalSceneManager.hpp
 
-	class __declspec(dllimport) GlobalSceneManager final
+	class GlobalSceneManager final
 	{
 	private:
 		std::unordered_map<std::string, Object*> objects;
@@ -591,7 +591,7 @@ namespace Engine
 		void SetCameraHVRotation(glm::vec2 hvrotation);
 	};
 
-	__declspec(dllimport) GlobalSceneManager* global_scene_manager;
+	GlobalSceneManager* global_scene_manager;
 
 #pragma endregion
 
@@ -599,9 +599,9 @@ namespace Engine
 	{
 #pragma region ObjectFactory.hpp
 
-		__declspec(dllimport) Object* CreateImageObject(double x, double y, double sizex, double sizey, ::Engine::Rendering::Texture* image);
-		__declspec(dllimport) Object* CreateTextObject(double x, double y, int size, std::string text, ::Engine::Rendering::Font* font);
-		__declspec(dllimport) Object* CreateGeneric3DObject(double x, double y, double z, double sizex, double sizey, double sizez, double rotx, double roty, double rotz, ::Engine::Rendering::Mesh mesh);
+		Object* CreateImageObject(double x, double y, double sizex, double sizey, ::Engine::Rendering::Texture* image);
+		Object* CreateTextObject(double x, double y, int size, std::string text, ::Engine::Rendering::Font* font);
+		Object* CreateGeneric3DObject(double x, double y, double z, double sizex, double sizey, double sizez, double rotx, double roty, double rotz, ::Engine::Rendering::Mesh mesh);
 
 #pragma endregion
 	}
