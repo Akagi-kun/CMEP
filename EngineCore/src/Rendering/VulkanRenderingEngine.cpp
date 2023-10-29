@@ -456,8 +456,9 @@ namespace Engine::Rendering
 		}
 
 		// Create logical device
-		if (vkCreateDevice(this->vkPhysicalDevice, &createInfo, nullptr, &this->vkLogicalDevice) != VK_SUCCESS) {
-			Logging::GlobalLogger->SimpleLog(Logging::LogLevel::Error, "Vulkan logical device creation failed");
+		VkResult result = vkCreateDevice(this->vkPhysicalDevice, &createInfo, nullptr, &this->vkLogicalDevice);
+		if (result != VK_SUCCESS) {
+			Logging::GlobalLogger->SimpleLog(Logging::LogLevel::Error, "Vulkan logical device creation failed with %u code", result);
 			throw std::runtime_error("Vulkan: failed to create logical device!");
 		}
 
