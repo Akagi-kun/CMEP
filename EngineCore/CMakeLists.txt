@@ -33,11 +33,18 @@ set(SRC_FILES
 	src/Scripting/Mappings.cpp
 	)
 	
-set(STATIC_LIBRARIES
-	glfw3
-	lua54
-	)
-	
+if(WIN32)
+	set(STATIC_LIBRARIES
+		glfw3
+		lua54
+		)
+else()
+	set(STATIC_LIBRARIES
+		glfw
+		lua
+		)
+endif()
+
 add_library(EngineCore SHARED ${SRC_FILES} ${HEADER_FILES})
 
 if(DEFINED ENV{VULKAN_SDK})
