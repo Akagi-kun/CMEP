@@ -240,7 +240,7 @@ namespace Engine::Rendering
 		VkDeviceSize offsets[] = { 0 };
 		vkCmdBindVertexBuffers(commandBuffer, 0, 1, vertexBuffers, offsets);
 
-		vkCmdDraw(commandBuffer, this->vbo_vert_count, 1, 0, 0);
+		vkCmdDraw(commandBuffer, static_cast<uint32_t>(this->vbo_vert_count), 1, 0, 0);
 
 		/*if (!this->program)
 		{

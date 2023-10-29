@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.0)
 project(EngineCore CXX)
 
 if(MSVC)
-    add_compile_options(/std:c++17)
+    add_compile_options(/std:c++17 /wd4996 /wd4251)
 else()
 	add_compile_definitions("DEBUG=$<CONFIG:Debug>")
 	add_compile_options(-std=c++17 -lpthread)

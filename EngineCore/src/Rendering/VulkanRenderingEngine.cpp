@@ -87,6 +87,12 @@ namespace Engine::Rendering
 			score += 1000;
 			break;
 		case VK_PHYSICAL_DEVICE_TYPE_INTEGRATED_GPU:
+			score += 800;
+			break;
+		case VK_PHYSICAL_DEVICE_TYPE_VIRTUAL_GPU:
+			score += 600;
+			break;
+		case VK_PHYSICAL_DEVICE_TYPE_CPU:
 			score += 200;
 			break;
 		}
@@ -163,6 +169,10 @@ namespace Engine::Rendering
 
 		for (const auto& extension : availableExtensions) {
 			requiredExtensions.erase(extension.extensionName);
+		}
+
+		for (const auto& extension : requiredExtensions) {
+			Logging::GlobalLogger->SimpleLog(Logging::LogLevel::Warning, "Unsupported extension: %s", extension);
 		}
 
 		return requiredExtensions.empty();
@@ -422,17 +432,12 @@ namespace Engine::Rendering
 		vkGetPhysicalDeviceFeatures2(this->vkPhysicalDevice, &deviceFeatures2);
 		deviceFeatures2.pNext = &deviceRobustnessFeatures;
 
-		// Struct of features we're going to use
-		VkPhysicalDeviceFeatures deviceFeatures{};
-		deviceFeatures.samplerAnisotropy = VK_TRUE;
-	
 		// Logical device creation information
 		VkDeviceCreateInfo createInfo{};
 		createInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
 		createInfo.pQueueCreateInfos = queueCreateInfos.data();
 		createInfo.queueCreateInfoCount = static_cast<uint32_t>(queueCreateInfos.size());
-		//createInfo.pEnabledFeatures = &deviceFeatures;
-		createInfo.enabledExtensionCount = this->deviceExtensions.size();
+		createInfo.enabledExtensionCount = static_cast<uint32_t>(this->deviceExtensions.size());
 		createInfo.ppEnabledExtensionNames = this->deviceExtensions.data();
 		createInfo.pNext = &deviceFeatures2;
 
@@ -527,7 +532,6 @@ namespace Engine::Rendering
 		glfwExtensions = glfwGetRequiredInstanceExtensions(&glfwExtensionCount);
 
 		// Get our required extensions
-		uint32_t vkExtensionCount;
 		std::vector<const char*> vkExtensions(glfwExtensions, glfwExtensions + glfwExtensionCount);
 
 		// Enable validation layer extension if it's a debug build
@@ -1521,12 +1525,12 @@ namespace Engine::Rendering
 
 		VkDescriptorSetLayoutBindingFlagsCreateInfo layoutFlagsInfo{};
 		layoutFlagsInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_BINDING_FLAGS_CREATE_INFO;
-		layoutFlagsInfo.bindingCount = bindingFlags.size();
+		layoutFlagsInfo.bindingCount = static_cast<uint32_t>(bindingFlags.size());
 		layoutFlagsInfo.pBindingFlags = bindingFlags.data();
 
 		VkDescriptorSetLayoutCreateInfo layoutInfo{};
 		layoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
-		layoutInfo.bindingCount = bindings.size();
+		layoutInfo.bindingCount = static_cast<uint32_t>(bindings.size());
 		layoutInfo.pBindings = bindings.data();
 		layoutInfo.pNext = &layoutFlagsInfo;
 

@@ -108,7 +108,7 @@ namespace Engine::Scripting::Mappings
 
 		int engine_SetFramerateTarget(lua_State* state)
 		{
-			unsigned int framerate_target = lua_tointeger(state, 1);
+			unsigned int framerate_target = static_cast<unsigned int>(lua_tointeger(state, 1));
 
 			global_engine->SetFramerateTarget(framerate_target);
 
@@ -233,9 +233,9 @@ namespace Engine::Scripting::Mappings
 			Object* ptr_obj = *(Object**)lua_touserdata(state, -1);
 
 			glm::vec3 rotation = glm::vec3(0);
-			rotation.x = lua_tonumber(state, 2);
-			rotation.y = lua_tonumber(state, 3);
-			rotation.z = lua_tonumber(state, 4);
+			rotation.x = static_cast<float>(lua_tonumber(state, 2));
+			rotation.y = static_cast<float>(lua_tonumber(state, 3));
+			rotation.z = static_cast<float>(lua_tonumber(state, 4));
 
 			ptr_obj->Rotate(rotation);
 
@@ -319,7 +319,7 @@ namespace Engine::Scripting::Mappings
 		{
 			double x = lua_tonumber(state, 1);
 			double y = lua_tonumber(state, 2);
-			unsigned int size = lua_tointeger(state, 3);
+			int size = static_cast<int>(lua_tointeger(state, 3));
 
 			std::string text = lua_tostring(state, 4);
 

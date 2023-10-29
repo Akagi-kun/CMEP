@@ -218,7 +218,7 @@ namespace Engine::Rendering
 					descriptorWrites[1].dstBinding = 1;
 					descriptorWrites[1].dstArrayElement = 0;
 					descriptorWrites[1].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-					descriptorWrites[1].descriptorCount = diffuseImageBufferInfos.size();
+					descriptorWrites[1].descriptorCount = static_cast<uint32_t>(diffuseImageBufferInfos.size());
 					descriptorWrites[1].pImageInfo = diffuseImageBufferInfos.data();
 				}
 
@@ -374,7 +374,7 @@ namespace Engine::Rendering
 		VkDeviceSize offsets[] = { 0 };
 		vkCmdBindVertexBuffers(commandBuffer, 0, 1, vertexBuffers, offsets);
 
-		vkCmdDraw(commandBuffer, this->vbo_vert_count, 1, 0, 0);
+		vkCmdDraw(commandBuffer, static_cast<uint32_t>(this->vbo_vert_count), 1, 0, 0);
 
 		//glBindVertexArray(this->vao);
 
