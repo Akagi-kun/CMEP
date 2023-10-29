@@ -1,10 +1,9 @@
 cmake_minimum_required(VERSION 3.0)
-project(EngineCore)
+project(EngineCore CXX)
 
 if(MSVC)
     add_compile_options(/std:c++17)
 else()
-	set(CMAKE_CXX_FLAGS_DEBUG_INIT "-DDEBUG")
 	add_compile_options(-std=c++17 -lpthread)
 endif()
 

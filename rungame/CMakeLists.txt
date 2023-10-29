@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.0)
-project(rungame)
+project(rungame CXX)
 
 set(SRC_FILES
 	main.cpp
