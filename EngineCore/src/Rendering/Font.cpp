@@ -108,7 +108,7 @@ namespace Engine::Rendering
 			data += cur_offset; cur_offset = 0;
 
 			// Get the key and value
-			(void)sscanf(cur_data, "%[^=]=%s", &key, &value);
+			(void)sscanf(cur_data, "%[^=]=%s", &key[0], &value);
 
 			switch (type)
 			{
