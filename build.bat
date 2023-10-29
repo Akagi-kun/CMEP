@@ -1,2 +1,2 @@
 cmake .
-cmake --build .
+cmake --build . -j 6

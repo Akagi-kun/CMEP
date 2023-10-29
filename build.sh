@@ -1,3 +1,3 @@
 export VULKAN_SDK=*enter your vulkan sdk location here*
 cmake .
-cmake --build .
+cmake --build . -j 6
