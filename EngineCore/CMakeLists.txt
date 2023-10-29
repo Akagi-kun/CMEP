@@ -1,11 +1,12 @@
 cmake_minimum_required(VERSION 3.0)
 project(EngineCore)
 
-if (MSVC)
+if(MSVC)
     add_compile_options(/std:c++17)
 else()
-    add_compile_options(-std=c++17 -lpthread)
+    add_compile_options(-std=c++17 -lpthread -DDEBUG)
 endif()
+
 
 set(HEADER_FILES
 	)

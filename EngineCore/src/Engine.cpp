@@ -19,7 +19,7 @@
 #include <Windows.h>
 #endif
 
-#if defined( _WIN32 )
+#if defined(_MSC_VER)
 	#ifndef _DEBUG
 		#define _DEBUG 0
 	#endif
@@ -537,7 +537,7 @@ namespace Engine
 	{
 		// Set up loggre
 		Logging::GlobalLogger = std::make_unique<Logging::Logger>();
-#if _DEBUG == 1
+#if _DEBUG == 1 || defined(DEBUG)
 		Logging::GlobalLogger->AddOutputHandle(Logging::LogLevel::Debug3, stdout, true);
 #else
 		Logging::GlobalLogger->AddOutputHandle(Logging::LogLevel::Debug1, stdout, true);
