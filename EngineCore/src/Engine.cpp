@@ -25,6 +25,10 @@
 	#endif
 #endif
 
+#if defined(DEBUG)
+	#pragma message Building for debug target
+#endif
+
 namespace Engine
 {
 	/*
