@@ -4,7 +4,8 @@ project(EngineCore)
 if(MSVC)
     add_compile_options(/std:c++17)
 else()
-    add_compile_options(-std=c++17 -lpthread)
+	set(CMAKE_CXX_FLAGS_DEBUG_INIT "-DDEBUG")
+	add_compile_options(-std=c++17 -lpthread)
 endif()
 
 
