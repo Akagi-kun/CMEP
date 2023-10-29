@@ -41,7 +41,7 @@ if(WIN32)
 else()
 	set(STATIC_LIBRARIES
 		glfw
-		lua
+		lua54
 		)
 endif()
 
