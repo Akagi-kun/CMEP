@@ -35,11 +35,13 @@ set(SRC_FILES
 	
 if(WIN32)
 	set(STATIC_LIBRARIES
+		vulkan-1
 		glfw3
 		lua54
 		)
 else()
 	set(STATIC_LIBRARIES
+		vulkan-1
 		glfw
 		lua54
 		)
