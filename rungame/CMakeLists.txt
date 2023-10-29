@@ -5,10 +5,17 @@ set(SRC_FILES
 	main.cpp
 	)
 
-set(STATIC_LIBRARIES
-	glfw3
-	lua54
-	)
+if(WIN32)
+	set(STATIC_LIBRARIES
+		glfw3
+		lua54
+		)
+else()
+	set(STATIC_LIBRARIES
+		glfw
+		lua54
+		)
+endif()
 
 link_directories(lib)
 
