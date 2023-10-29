@@ -203,7 +203,7 @@ namespace Engine::Rendering
 		// Required extensions to be supported
 		const std::vector<const char*> deviceExtensions = {
 			VK_KHR_SWAPCHAIN_EXTENSION_NAME,
-			VK_EXT_DESCRIPTOR_INDEXING_EXTENSION_NAME,
+			//VK_EXT_DESCRIPTOR_INDEXING_EXTENSION_NAME,
 			VK_EXT_ROBUSTNESS_2_EXTENSION_NAME
 		};
 		// Required validation layers to be supported
