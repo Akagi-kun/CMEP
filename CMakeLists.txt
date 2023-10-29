@@ -11,5 +11,3 @@ add_subdirectory(EngineCore)
 add_subdirectory(rungame)
 
 file(COPY game DESTINATION build)
-file(COPY lib/glew32.dll DESTINATION build)
-file(COPY lib/libglfw.so DESTINATION build)
