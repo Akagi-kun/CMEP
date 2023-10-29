@@ -172,7 +172,7 @@ namespace Engine::Rendering
 		}
 
 		for (const auto& extension : requiredExtensions) {
-			Logging::GlobalLogger->SimpleLog(Logging::LogLevel::Warning, "Unsupported extension: %s", extension);
+			Logging::GlobalLogger->SimpleLog(Logging::LogLevel::Warning, "Unsupported extension: %s", extension.c_str());
 		}
 
 		return requiredExtensions.empty();
