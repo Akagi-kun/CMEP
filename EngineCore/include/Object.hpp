@@ -3,7 +3,7 @@
 #include <functional>
 #include <optional>
 
-#include "glm/matrix.hpp";
+#include "glm/matrix.hpp"
 
 #include "Rendering/IRenderer.hpp"
 #include "PlatformSemantics.hpp"

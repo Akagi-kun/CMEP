@@ -4,8 +4,11 @@
 #include "Object.hpp"
 #include "PlatformSemantics.hpp"
 
-class Engine::Rendering::Texture;
-class Engine::Rendering::Font;
+namespace Engine::Rendering
+{
+	class Texture;
+	class Font;
+}
 
 namespace Engine::ObjectFactory
 {
