@@ -4,8 +4,9 @@ project(EngineCore CXX)
 if(MSVC)
     add_compile_options(/std:c++17)
 else()
+	add_compile_definitions("DEBUG=$<CONFIG:Debug>")
 	add_compile_options(-std=c++17 -lpthread)
-endif()
+endif()	
 
 
 set(HEADER_FILES
