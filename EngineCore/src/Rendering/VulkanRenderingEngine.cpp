@@ -473,6 +473,7 @@ namespace Engine::Rendering
 			Logging::GlobalLogger->SimpleLog(Logging::LogLevel::Error, "Vulkan surface creation failed");
 			throw std::runtime_error("failed to create window surface!");
 		}
+		Logging::GlobalLogger->SimpleLog(Logging::LogLevel::Debug2, "Created glfw window surface");
 	}
 
 	bool VulkanRenderingEngine::checkVulkanValidationLayers()
@@ -584,6 +585,7 @@ namespace Engine::Rendering
 
 	void VulkanRenderingEngine::initVulkanDevice()
 	{
+		Logging::GlobalLogger->SimpleLog(Logging::LogLevel::Debug2, "Initializing vulkan device");
 		// Get physical device count
 		uint32_t deviceCount = 0;
 		vkEnumeratePhysicalDevices(this->vkInstance, &deviceCount, nullptr);
