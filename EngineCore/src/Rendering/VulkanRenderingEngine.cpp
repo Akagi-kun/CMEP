@@ -470,10 +470,10 @@ namespace Engine::Rendering
 	void VulkanRenderingEngine::createVulkanSurface()
 	{
 		if (glfwCreateWindowSurface(this->vkInstance, this->window, nullptr, &this->vkSurface) != VK_SUCCESS) {
-			Logging::GlobalLogger->SimpleLog(Logging::LogLevel::Error, "Vulkan surface creation failed");
+			Logging::GlobalLogger->SimpleLog(Logging::LogLevel::Exception, "Vulkan surface creation failed");
 			throw std::runtime_error("failed to create window surface!");
 		}
-		Logging::GlobalLogger->SimpleLog(Logging::LogLevel::Debug2, "Created glfw window surface");
+		Logging::GlobalLogger->SimpleLog(Logging::LogLevel::Debug3, "Created glfw window surface");
 	}
 
 	bool VulkanRenderingEngine::checkVulkanValidationLayers()
@@ -561,8 +561,8 @@ namespace Engine::Rendering
 		// Create an instance
 		if (vkCreateInstance(&createInfo, nullptr, &(this->vkInstance)) != VK_SUCCESS)
 		{
-			Logging::GlobalLogger->SimpleLog(Logging::LogLevel::Error, "Could not create Vulkan instance");
-			return;
+			Logging::GlobalLogger->SimpleLog(Logging::LogLevel::Exception, "Could not create Vulkan instance");
+			throw std::runtime_error("Could not create Vulkan instance");
 		}
 		Logging::GlobalLogger->SimpleLog(Logging::LogLevel::Info, "Created a Vulkan instance");
 
