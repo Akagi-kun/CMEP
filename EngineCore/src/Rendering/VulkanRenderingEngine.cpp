@@ -569,6 +569,7 @@ namespace Engine::Rendering
 		// If it's a debug build, add a debug callback to Vulkan
 		if (this->enableVkValidationLayers)
 		{
+			Logging::GlobalLogger->SimpleLog(Logging::LogLevel::Debug2, "Creating debug messenger");
 			VkDebugUtilsMessengerCreateInfoEXT debugMessengerCreateInfo{};
 			debugMessengerCreateInfo.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT;
 			debugMessengerCreateInfo.messageSeverity = VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT;
@@ -580,6 +581,7 @@ namespace Engine::Rendering
 			{
 				Logging::GlobalLogger->SimpleLog(Logging::LogLevel::Error, "Could not create a debug messenger");
 			}
+			Logging::GlobalLogger->SimpleLog(Logging::LogLevel::Debug2, "Created debug messenger");
 		}
 	}
 
