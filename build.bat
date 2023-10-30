@@ -1,2 +1,2 @@
 cmake .
-cmake --build . -j 6
+cmake --build . -j 6 --parallel
