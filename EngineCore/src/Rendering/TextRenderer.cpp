@@ -54,11 +54,15 @@ namespace Engine::Rendering
 		//glDeleteBuffers(1, &this->vbo);
 	}
 
-	void TextRenderer::Update(glm::vec3 pos, glm::vec3 size, glm::vec3 rotation, uint_fast16_t screenx, uint_fast16_t screeny) noexcept
+	void TextRenderer::Update(glm::vec3 pos, glm::vec3 size, glm::vec3 rotation, uint_fast16_t screenx, uint_fast16_t screeny, glm::vec3 parent_position, glm::vec3 parent_rotation, glm::vec3 parent_size) noexcept
 	{
 		this->_pos = pos;
 		this->_size = size;
 		this->_rotation = rotation;
+
+		this->_parent_pos = parent_position;
+		this->_parent_rotation = parent_rotation;
+		this->_parent_size = parent_size;
 
 		this->_screenx = screenx;
 		this->_screeny = screeny;

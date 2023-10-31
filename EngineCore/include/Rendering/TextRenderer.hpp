@@ -53,7 +53,7 @@ namespace Engine::Rendering
 		TextRenderer();
 		~TextRenderer();
 
-		void Update(glm::vec3 pos, glm::vec3 size, glm::vec3 rotation, uint_fast16_t screenx, uint_fast16_t screeny) noexcept override;
+		void Update(glm::vec3 pos, glm::vec3 size, glm::vec3 rotation, uint_fast16_t screenx, uint_fast16_t screeny, glm::vec3 parent_position, glm::vec3 parent_rotation, glm::vec3 parent_size) noexcept override;
 
 		/// <summary>
 		/// Update font used by renderer. See <see cref="font"/>.

@@ -81,18 +81,22 @@ onUpdate = function(event)
    local object = cmepapi.engine_FindObject("_rot_ctr");
    local h, v = cmepapi.gsm_GetCameraHVRotation();
    cmepapi.textRenderer_UpdateText(object.renderer, "RotX: "..string.format("%.4f", h)..", RotY: "..string.format("%.4f", v));
-   --[[
+
    
 	local obj3d = cmepapi.engine_FindObject("test_3d");
 	local xrot, yrot, zrot = cmepapi.object_GetRotation(obj3d);
 	yrot = yrot - 15.0 * event.deltaTime;
 	cmepapi.object_Rotate(obj3d, xrot, yrot, zrot);
    
+	 local obj3d2 = cmepapi.engine_FindObject("test_3d2");
+	 local xrot2, yrot2, zrot2 = cmepapi.object_GetRotation(obj3d2);
+	 zrot2 = zrot2 - 15.0 * event.deltaTime;
+	 cmepapi.object_Rotate(obj3d2, xrot2, yrot2, zrot2);
+
    --local sinresult = math.sin(deltaTimeAvg);
    --local obj3d = cmepapi.engine_FindObject("test_3d");
 	--cmepapi.object_Translate(obj3d, sinresult, 0, 0);
    
-   ]]
    return 0;
 end
 
@@ -113,23 +117,23 @@ onInit = function(event)
    
    -- Setup test 3D model
    local mesh3d = cmepapi.mesh_Mesh();
-   cmepapi.mesh_CreateMeshFromObj(mesh3d, "game/models/cube.obj");
+   cmepapi.mesh_CreateMeshFromObj(mesh3d, "game/models/ae86.obj");
    
-   local object3d = cmepapi.objectFactory_CreateGeneric3DObject(0, 0, 0, 1.0, 1.0, 1.0, 0.0, 0.0, 0.0, mesh3d);
+   local object3d = cmepapi.objectFactory_CreateGeneric3DObject(3, 0, 0, 1.0, 1.0, 1.0, 0.0, 0.0, 0.0, mesh3d);
    
    cmepapi.engine_AddObject("test_3d", object3d);
-   --[[
+   
    
    local mesh3d2 = cmepapi.mesh_Mesh();
-   cmepapi.mesh_CreateMeshFromObj(mesh3d2, "data/models/fd3s.obj");
+   cmepapi.mesh_CreateMeshFromObj(mesh3d2, "game/models/ae86.obj");
    
-   local object3d2 = cmepapi.objectFactory_CreateGeneric3DObject(0, 1, 0, 1.0, 1.0, 1.0, 0.0, 0.0, 0.0, mesh3d2);
+   local object3d2 = cmepapi.objectFactory_CreateGeneric3DObject(0, 3, 0, 1.0, 1.0, 1.0, 0.0, 0.0, 0.0, mesh3d2);
    
    cmepapi.engine_AddObject("test_3d2", object3d2);
    
    cmepapi.object_AddChild(object3d, object3d2);
    
-   ]]
+   
    -- Set-up camera
    cmepapi.gsm_SetCameraTransform(-5.0, 2.0, 0.0);
    cmepapi.gsm_SetCameraHVRotation(3.15, 3.5);

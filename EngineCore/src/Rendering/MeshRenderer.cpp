@@ -16,15 +16,6 @@ namespace Engine::Rendering
 {
 	MeshRenderer::MeshRenderer()
 	{
-		/*std::ifstream vert("data/shaders/meshrenderer.vert");
-		std::ifstream frag("data/shaders/meshrenderer.frag");
-		std::ostringstream vertsstr;
-		std::ostringstream fragsstr;
-		vertsstr << vert.rdbuf();
-		fragsstr << frag.rdbuf();
-
-		this->program = std::make_unique<Shader>(vertsstr.str().c_str(), fragsstr.str().c_str());*/
-
 		VulkanRenderingEngine* renderer = global_engine->GetRenderingEngine();
 
 		VulkanPipelineSettings pipeline_settings = renderer->getVulkanDefaultPipelineSettings();
@@ -49,9 +40,6 @@ namespace Engine::Rendering
 	{
 		global_engine->GetRenderingEngine()->cleanupVulkanBuffer(this->vbo);
 		global_engine->GetRenderingEngine()->cleanupVulkanPipeline(this->pipeline);
-		//glDeleteVertexArrays(1, &this->vao);
-		//glDeleteBuffers(1, &this->vbo);
-		//glDeleteBuffers(1, &this->mbo);
 	}
 
 	void MeshRenderer::AssignMesh(Mesh* new_mesh)
@@ -69,11 +57,15 @@ namespace Engine::Rendering
 		this->has_updated_mesh = false;
 	}
 
-	void MeshRenderer::Update(glm::vec3 pos, glm::vec3 size, glm::vec3 rotation, uint_fast16_t screenx, uint_fast16_t screeny) noexcept
+	void MeshRenderer::Update(glm::vec3 pos, glm::vec3 size, glm::vec3 rotation, uint_fast16_t screenx, uint_fast16_t screeny, glm::vec3 parent_position, glm::vec3 parent_rotation, glm::vec3 parent_size) noexcept
 	{
 		this->_pos = pos;
 		this->_size = size;
 		this->_rotation = rotation;
+
+		this->_parent_pos = parent_position;
+		this->_parent_rotation = parent_rotation;
+		this->_parent_size = parent_size;
 
 		this->_screenx = screenx;
 		this->_screeny = screeny;
@@ -90,24 +82,6 @@ namespace Engine::Rendering
 
 		this->has_updated_mesh = true;
 
-		// Create VBO and VAO if they arent created already
-		/*if (this->vbo == 0)
-		{
-			glCreateBuffers(1, &this->vbo);
-		}
-		if (this->vao == 0)
-		{
-			glCreateVertexArrays(1, &this->vao);
-		}
-		if (this->mbo == 0)
-		{
-			glCreateBuffers(1, &this->mbo);
-		}
-		if (this->tbbo == 0)
-		{
-			glCreateBuffers(1, &this->tbbo);
-		}*/
-
 		VulkanRenderingEngine* renderer = global_engine->GetRenderingEngine();
 
 		glm::mat4 Projection = glm::perspective(glm::radians(45.0f), (float)this->_screenx / this->_screeny, 0.1f, 100.0f);
@@ -115,12 +89,28 @@ namespace Engine::Rendering
 
 		glm::mat4 View = global_scene_manager->GetCameraViewMatrix();
 
+		if(this->_parent_size.x == 0.0f && this->_parent_size.y == 0.0f && this->_parent_size.z == 0.0f)
+		{
+			this->_parent_size = glm::vec3(1,1,1);
+		}
+
 		glm::quat ModelRotation = glm::quat(glm::radians(this->_rotation));
-		glm::mat4 Model = glm::translate(
+		glm::quat ParentRotation = glm::quat(glm::radians(this->_parent_rotation));
+		glm::mat4 Model = 
+						glm::scale(
+							glm::translate(
 								glm::scale(
-									glm::toMat4(ModelRotation),
-								this->_size),
-							this->_pos);
+									glm::translate(glm::mat4(1.0f), 
+									this->_parent_pos)
+										*
+									glm::toMat4(
+									ParentRotation),
+								this->_parent_size),
+							this->_pos)
+								*
+							glm::toMat4(
+							ModelRotation),
+						this->_size);
 
 		this->matM = Model;
 		this->matV = View;

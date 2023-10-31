@@ -5,6 +5,7 @@
 
 #include "glm/matrix.hpp"
 
+#include "Logging/Logging.hpp"
 #include "Rendering/IRenderer.hpp"
 #include "PlatformSemantics.hpp"
 
@@ -35,7 +36,7 @@ namespace Engine
 		glm::vec3 _parent_size = glm::vec3();
 		glm::vec3 _parent_rotation = glm::vec3();
 
-		Object* parent;
+		Object* parent = nullptr;
 
 		std::vector<Object*> children;
 
@@ -52,25 +53,49 @@ namespace Engine
 		{ 
 			this->screenx = screenx;
 			this->screeny = screeny;
-			if (this->renderer != nullptr) { this->renderer->Update(this->_pos, this->_size, this->_rotation, this->screenx, this->screeny); }
+			if (this->renderer != nullptr) { this->renderer->Update(this->_pos, this->_size, this->_rotation, this->screenx, this->screeny, this->_parent_pos, this->_parent_rotation, this->_parent_size); }
 		}
 
 		virtual void Translate(const glm::vec3 pos) noexcept
 		{
 			this->_pos = pos;
-			if (this->renderer != nullptr) { this->renderer->Update(this->_pos, this->_size, this->_rotation, this->screenx, this->screeny); }
+			if (this->renderer != nullptr) { this->renderer->Update(this->_pos, this->_size, this->_rotation, this->screenx, this->screeny, this->_parent_pos, this->_parent_rotation, this->_parent_size); }
+			
+			for(auto& child : this->children)
+			{
+				child->SetParentPositionRotationSize(this->_pos, this->_rotation, this->_size);
+			 	child->UpdateRenderer();
+			}
 		}
 
 		virtual void Scale(const glm::vec3 size) noexcept
 		{ 
 			this->_size = size; 
-			if (this->renderer != nullptr) { this->renderer->Update(this->_pos, this->_size, this->_rotation, this->screenx, this->screeny); }
+			if (this->renderer != nullptr) { this->renderer->Update(this->_pos, this->_size, this->_rotation, this->screenx, this->screeny, this->_parent_pos, this->_parent_rotation, this->_parent_size); }
+		
+			for(auto& child : this->children)
+			{
+				child->SetParentPositionRotationSize(this->_pos, this->_rotation, this->_size);
+			 	child->UpdateRenderer();
+			}
 		}
 
 		virtual void Rotate(const glm::vec3 rotation) noexcept 
 		{ 
 			this->_rotation = rotation;
-			if (this->renderer != nullptr) { this->renderer->Update(this->_pos, this->_size, this->_rotation, this->screenx, this->screeny); }
+			
+			if (this->renderer != nullptr) { this->renderer->Update(this->_pos, this->_size, this->_rotation, this->screenx, this->screeny, this->_parent_pos, this->_parent_rotation, this->_parent_size); }
+			
+			for(auto& child : this->children)
+			{
+				child->SetParentPositionRotationSize(this->_pos, this->_rotation, this->_size);
+			 	child->UpdateRenderer();
+			}
+		}
+
+		virtual void UpdateRenderer() noexcept
+		{
+			if (this->renderer != nullptr) { this->renderer->Update(this->_pos, this->_size, this->_rotation, this->screenx, this->screeny, this->_parent_pos, this->_parent_rotation, this->_parent_size); }
 		}
 
 		virtual int Render(VkCommandBuffer commandBuffer, uint32_t currentFrame)
@@ -91,8 +116,18 @@ namespace Engine
 		glm::vec3 size() const noexcept { return this->_size; }
 		glm::vec3 rotation() const noexcept { return this->_rotation; }
 
+		void SetParentPositionRotationSize(glm::vec3 position, glm::vec3 rotation, glm::vec3 size)
+		{
+			this->_parent_pos = position;
+			this->_parent_rotation = rotation;
+			this->_parent_size = size;
+		}
+
 		void AddChild(Object* object)
 		{
+			object->SetParent(this);
+			object->SetParentPositionRotationSize(this->_pos, this->_rotation, this->_size);
+			object->UpdateRenderer();
 			this->children.push_back(object);
 		}
 

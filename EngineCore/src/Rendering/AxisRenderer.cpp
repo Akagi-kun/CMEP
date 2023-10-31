@@ -47,11 +47,15 @@ namespace Engine::Rendering
 		//glDeleteBuffers(1, &this->vbo);
 	}
 
-	void AxisRenderer::Update(glm::vec3 pos, glm::vec3 size, glm::vec3 rotation, uint_fast16_t screenx, uint_fast16_t screeny) noexcept
+	void AxisRenderer::Update(glm::vec3 pos, glm::vec3 size, glm::vec3 rotation, uint_fast16_t screenx, uint_fast16_t screeny, glm::vec3 parent_position, glm::vec3 parent_rotation, glm::vec3 parent_size) noexcept
 	{
 		this->_pos = pos;
 		this->_size = size;
 		this->_rotation = rotation;
+
+		this->_parent_pos = parent_position;
+		this->_parent_rotation = parent_rotation;
+		this->_parent_size = parent_size;
 
 		this->_screenx = screenx;
 		this->_screeny = screeny;
@@ -62,32 +66,6 @@ namespace Engine::Rendering
 	void AxisRenderer::UpdateMesh() noexcept
 	{
 		this->has_updated_mesh = true;
-	
-		/*
-		if (this->vbo == 0)
-		{
-			//glCreateBuffers(1, &this->vbo);
-		}
-		
-		if (this->vao == 0)
-		{
-			//glCreateVertexArrays(1, &this->vao);
-		}
-		*/
-		/*
-		const float data_vert[] = {
-			0.0, 0.0, 0.0,
-			1.0, 0.0, 0.0,
-			0.0, 0.0, 0.0,
-			0.0, 1.0, 0.0,
-			0.0, 0.0, 0.0,
-			0.0, 0.0, 1.0,
-		};
-
-		const int data_axis[] = {
-			1, 1, 2, 2, 3, 3
-		};
-		*/
 
 		const std::vector<RenderingVertex> vertices = {
 			{{0.0, 0.0, 0.0}, {0.0f, 1.0f, 0.0f}},
@@ -137,10 +115,6 @@ namespace Engine::Rendering
 
 			vkUpdateDescriptorSets(renderer->GetLogicalDevice(), static_cast<uint32_t>(descriptorWrites.size()), descriptorWrites.data(), 0, nullptr);
 		}
-
-		//glNamedBufferData(this->vbo, sizeof(data_vert) + sizeof(data_axis), NULL, GL_STATIC_DRAW);
-		//glNamedBufferSubData(this->vbo, 0, sizeof(data_vert), (void*)&data_vert[0]);
-		//glNamedBufferSubData(this->vbo, sizeof(data_vert), sizeof(data_axis), (void*)&data_axis[0]);
 	}
 
 	void AxisRenderer::Render(VkCommandBuffer commandBuffer, uint32_t currentFrame)
@@ -159,29 +133,5 @@ namespace Engine::Rendering
 		vkCmdBindVertexBuffers(commandBuffer, 0, 1, vertexBuffers, offsets);
 
 		vkCmdDraw(commandBuffer, 6, 1, 0, 0);
-		
-		//GLuint shader = this->program.get()->GetProgram();
-		//assert(shader != 0);
-
-		//glUseProgram(shader);
-
-		//glBindVertexArray(this->vao);
-
-		// Vertex and texture coord data
-		//glBindBuffer(GL_ARRAY_BUFFER, this->vbo);
-		//glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, (void*)nullptr);
-		//glVertexAttribIPointer(1, 1, GL_INT, 0, (void*)(18 * sizeof(GLfloat)));
-
-		//GLuint mvp_uniform_id = glGetUniformLocation(shader, "matMVP");
-		//glUniformMatrix4fv(mvp_uniform_id, 1, GL_FALSE, &this->matMVP[0][0]);
-
-		//glEnableVertexAttribArray(0);
-		//glEnableVertexAttribArray(1);
-
-		//glLineWidth(5.0);
-		//glDrawArrays(GL_LINES, 0, 6);
-
-		//glDisableVertexAttribArray(0);
-		//glDisableVertexAttribArray(1);
 	}
 }
