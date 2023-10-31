@@ -117,7 +117,7 @@ onInit = function(event)
    
    -- Setup test 3D model
    local mesh3d = cmepapi.mesh_Mesh();
-   cmepapi.mesh_CreateMeshFromObj(mesh3d, "game/models/ae86.obj");
+   cmepapi.mesh_CreateMeshFromObj(mesh3d, "game/models/cube.obj");
    
    local object3d = cmepapi.objectFactory_CreateGeneric3DObject(3, 0, 0, 1.0, 1.0, 1.0, 0.0, 0.0, 0.0, mesh3d);
    
@@ -125,7 +125,7 @@ onInit = function(event)
    
    
    local mesh3d2 = cmepapi.mesh_Mesh();
-   cmepapi.mesh_CreateMeshFromObj(mesh3d2, "game/models/ae86.obj");
+   cmepapi.mesh_CreateMeshFromObj(mesh3d2, "game/models/cube.obj");
    
    local object3d2 = cmepapi.objectFactory_CreateGeneric3DObject(0, 3, 0, 1.0, 1.0, 1.0, 0.0, 0.0, 0.0, mesh3d2);
    

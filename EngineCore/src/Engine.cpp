@@ -207,27 +207,52 @@ namespace Engine
 		}
 
 		Scripting::LuaScript* event_handler;
-		
-		std::string setting = "eventHandler.onInit";
-		asset_manager->AddLuaScript(data[setting]["file"], data[setting]["file"]);
-		event_handler = asset_manager->GetLuaScript(data[setting]["file"]);
-		global_engine->RegisterLuaEventHandler(::Engine::EventHandling::EventType::ON_INIT, event_handler, data[setting]["function"]);
+		EventHandling::EventType eventType;
 
-		setting = "eventHandler.onUpdate";
-		asset_manager->AddLuaScript(data[setting]["file"], data[setting]["file"]);
-		event_handler = asset_manager->GetLuaScript(data[setting]["file"]);
-		global_engine->RegisterLuaEventHandler(::Engine::EventHandling::EventType::ON_UPDATE, event_handler, data[setting]["function"]);
+		for(auto& eventHandler : data["eventHandlers"])
+		{
+			if(eventHandler["type"] == std::string("onInit"))
+			{
+				eventType = EventHandling::EventType::ON_INIT;
+			}
+			else if(eventHandler["type"] == std::string("onMouseMoved"))
+			{
+				eventType = EventHandling::EventType::ON_MOUSEMOVED;
+			}
+			else if(eventHandler["type"] == std::string("onKeyDown"))
+			{
+				eventType = EventHandling::EventType::ON_KEYDOWN;
+			}
+			else if(eventHandler["type"] == std::string("onUpdate"))
+			{
+				eventType = EventHandling::EventType::ON_UPDATE;
+			}
 
-		setting = "eventHandler.onKeyDown";
-		asset_manager->AddLuaScript(data[setting]["file"], data[setting]["file"]);
-		event_handler = asset_manager->GetLuaScript(data[setting]["file"]);
-		global_engine->RegisterLuaEventHandler(::Engine::EventHandling::EventType::ON_KEYDOWN, event_handler, data[setting]["function"]);
+			Logging::GlobalLogger->SimpleLog(Logging::LogLevel::Debug3, "Event handler for type: %s", static_cast<std::string>(eventHandler["type"]).c_str());
+			asset_manager->AddLuaScript(eventHandler["file"], eventHandler["file"]);
+			event_handler = asset_manager->GetLuaScript(eventHandler["file"]);
+			global_engine->RegisterLuaEventHandler(eventType, event_handler, eventHandler["function"]);
+		}
+		// asset_manager->AddLuaScript(data[setting]["file"], data[setting]["file"]);
+		// event_handler = asset_manager->GetLuaScript(data[setting]["file"]);
+		// global_engine->RegisterLuaEventHandler(::Engine::EventHandling::EventType::ON_INIT, event_handler, data[setting]["function"]);
 
-		setting = "eventHandler.onMouseMoved";
-		asset_manager->AddLuaScript(data[setting]["file"], data[setting]["file"]);
-		event_handler = asset_manager->GetLuaScript(data[setting]["file"]);
-		global_engine->RegisterLuaEventHandler(::Engine::EventHandling::EventType::ON_MOUSEMOVED, event_handler, data[setting]["function"]);
+		// setting = "eventHandler.onUpdate";
+		// asset_manager->AddLuaScript(data[setting]["file"], data[setting]["file"]);
+		// event_handler = asset_manager->GetLuaScript(data[setting]["file"]);
+		// global_engine->RegisterLuaEventHandler(::Engine::EventHandling::EventType::ON_UPDATE, event_handler, data[setting]["function"]);
 
+		// setting = "eventHandler.onKeyDown";
+		// asset_manager->AddLuaScript(data[setting]["file"], data[setting]["file"]);
+		// event_handler = asset_manager->GetLuaScript(data[setting]["file"]);
+		// global_engine->RegisterLuaEventHandler(::Engine::EventHandling::EventType::ON_KEYDOWN, event_handler, data[setting]["function"]);
+
+		// setting = "eventHandler.onMouseMoved";
+		// asset_manager->AddLuaScript(data[setting]["file"], data[setting]["file"]);
+		// event_handler = asset_manager->GetLuaScript(data[setting]["file"]);
+		// global_engine->RegisterLuaEventHandler(::Engine::EventHandling::EventType::ON_MOUSEMOVED, event_handler, data[setting]["function"]);
+
+		std::string setting;
 		setting = "window.title";
 		this->windowTitle = data[setting];
 
