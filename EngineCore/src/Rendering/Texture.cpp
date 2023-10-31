@@ -1,7 +1,7 @@
 #include <assert.h>
 #include <fstream>
 
-#include "Rendering/lodepng/lodepng.hpp"
+#include "lodepng/lodepng.h"
 #include "Rendering/Texture.hpp"
 #include "Logging/Logging.hpp"
 

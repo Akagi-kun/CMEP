@@ -29,10 +29,10 @@ set(SRC_FILES
 	src/Rendering/TextRenderer.cpp
 	src/Rendering/Texture.cpp
 	src/Rendering/VulkanRenderingEngine.cpp
-	src/Rendering/lodepng/lodepng.cpp
 	src/Scripting/LuaScript.cpp
 	src/Scripting/LuaScriptExecutor.cpp
 	src/Scripting/Mappings.cpp
+	../external/lodepng/lodepng.cpp
 	)
 	
 if(WIN32)
@@ -53,14 +53,14 @@ add_library(EngineCore SHARED ${SRC_FILES} ${HEADER_FILES})
 if(DEFINED ENV{VULKAN_SDK})
 	if(WIN32)
 		target_link_directories(EngineCore PUBLIC $ENV{VULKAN_SDK}/Lib lib)
-		target_include_directories(EngineCore PUBLIC include $ENV{VULKAN_SDK}/Include)
+		target_include_directories(EngineCore PUBLIC ../external include $ENV{VULKAN_SDK}/Include)
 	else()
 		target_link_directories(EngineCore PUBLIC $ENV{VULKAN_SDK}/lib lib)
-		target_include_directories(EngineCore PUBLIC include $ENV{VULKAN_SDK}/include)
+		target_include_directories(EngineCore PUBLIC ../external include $ENV{VULKAN_SDK}/include)
 	endif()
 else()
 	target_link_directories(EngineCore PUBLIC lib)
-	target_include_directories(EngineCore PUBLIC include)
+	target_include_directories(EngineCore PUBLIC ../external include)
 	message("Warning! Vulkan SDK environment variable not found!")
 endif()
 
