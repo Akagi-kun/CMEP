@@ -392,6 +392,22 @@ namespace Engine::Rendering
 		return format == VK_FORMAT_D32_SFLOAT_S8_UINT || format == VK_FORMAT_D24_UNORM_S8_UINT;
 	}
 
+	VkSampleCountFlagBits VulkanRenderingEngine::getMaxUsableSampleCount()
+	{
+		VkPhysicalDeviceProperties physicalDeviceProperties;
+		vkGetPhysicalDeviceProperties(this->vkPhysicalDevice, &physicalDeviceProperties);
+
+		VkSampleCountFlags counts = physicalDeviceProperties.limits.framebufferColorSampleCounts & physicalDeviceProperties.limits.framebufferDepthSampleCounts;
+		if (counts & VK_SAMPLE_COUNT_64_BIT) { return VK_SAMPLE_COUNT_64_BIT; }
+		if (counts & VK_SAMPLE_COUNT_32_BIT) { return VK_SAMPLE_COUNT_32_BIT; }
+		if (counts & VK_SAMPLE_COUNT_16_BIT) { return VK_SAMPLE_COUNT_16_BIT; }
+		if (counts & VK_SAMPLE_COUNT_8_BIT) { return VK_SAMPLE_COUNT_8_BIT; }
+		if (counts & VK_SAMPLE_COUNT_4_BIT) { return VK_SAMPLE_COUNT_4_BIT; }
+		if (counts & VK_SAMPLE_COUNT_2_BIT) { return VK_SAMPLE_COUNT_2_BIT; }
+
+		return VK_SAMPLE_COUNT_1_BIT;
+	}
+
 ////////////////////////////////////////////////////////////////////////
 ////////////////////////    Init functions    //////////////////////////
 ////////////////////////////////////////////////////////////////////////
@@ -614,6 +630,8 @@ namespace Engine::Rendering
 		if (candidates.rbegin()->first > 0)
 		{
 			this->vkPhysicalDevice = candidates.rbegin()->second;
+			this->msaaSamples = this->getMaxUsableSampleCount();
+			Logging::GlobalLogger->SimpleLog(Logging::LogLevel::Info, "Using MSAAx%u", this->msaaSamples);
 		}
 
 		if (this->vkPhysicalDevice == VK_NULL_HANDLE)
@@ -769,23 +787,33 @@ namespace Engine::Rendering
 	{
 		VkAttachmentDescription colorAttachment{};
 		colorAttachment.format = this->vkSwapChainImageFormat;
-		colorAttachment.samples = VK_SAMPLE_COUNT_1_BIT;
+		colorAttachment.samples = this->msaaSamples;
 		colorAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
 		colorAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
 		colorAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
 		colorAttachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
 		colorAttachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-		colorAttachment.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+		colorAttachment.finalLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
 
 		VkAttachmentDescription depthAttachment{};
 		depthAttachment.format = this->findVulkanSupportedDepthFormat();
-		depthAttachment.samples = VK_SAMPLE_COUNT_1_BIT;
+		depthAttachment.samples = this->msaaSamples;
 		depthAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
 		depthAttachment.storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
 		depthAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
 		depthAttachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
 		depthAttachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
 		depthAttachment.finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+
+  		VkAttachmentDescription colorAttachmentResolve{};
+  		colorAttachmentResolve.format = this->vkSwapChainImageFormat;
+   		colorAttachmentResolve.samples = VK_SAMPLE_COUNT_1_BIT;
+   		colorAttachmentResolve.loadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+   		colorAttachmentResolve.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+		colorAttachmentResolve.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+   		colorAttachmentResolve.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+		colorAttachmentResolve.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+   		colorAttachmentResolve.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
 
 		VkAttachmentReference colorAttachmentRef{};
 		colorAttachmentRef.attachment = 0;
@@ -795,17 +823,22 @@ namespace Engine::Rendering
 		depthAttachmentRef.attachment = 1;
 		depthAttachmentRef.layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
 
+		VkAttachmentReference colorAttachmentResolveRef{};
+		colorAttachmentResolveRef.attachment = 2;
+		colorAttachmentResolveRef.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+
 		VkSubpassDescription subpass{};
 		subpass.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
 		subpass.colorAttachmentCount = 1;
 		subpass.pColorAttachments = &colorAttachmentRef;
 		subpass.pDepthStencilAttachment = &depthAttachmentRef;
+		subpass.pResolveAttachments = &colorAttachmentResolveRef;
 
-		std::array<VkAttachmentDescription, 2> attachments = { colorAttachment, depthAttachment };
+		std::array<VkAttachmentDescription, 3> attachments = { colorAttachment, depthAttachment, colorAttachmentResolve };
 
 		VkRenderPassCreateInfo renderPassInfo{};
 		renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
-		renderPassInfo.attachmentCount = 2;
+		renderPassInfo.attachmentCount = attachments.size();
 		renderPassInfo.pAttachments = attachments.data();
 		renderPassInfo.subpassCount = 1;
 		renderPassInfo.pSubpasses = &subpass;
@@ -833,16 +866,17 @@ namespace Engine::Rendering
 		this->vkSwapChainFramebuffers.resize(this->vkSwapChainImageViews.size());
 
 		for (size_t i = 0; i < vkSwapChainImageViews.size(); i++) {
-			VkImageView attachments[] = {
-				this->vkSwapChainImageViews[i],
-				this->vkDepthBuffer->imageView
+			std::array<VkImageView, 3> attachments = {
+				this->multisampledColorImage->imageView,
+				this->vkDepthBuffer->imageView,
+				this->vkSwapChainImageViews[i]
 			};
 
 			VkFramebufferCreateInfo framebufferInfo{};
 			framebufferInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
 			framebufferInfo.renderPass = this->vkRenderPass;
-			framebufferInfo.attachmentCount = 2;
-			framebufferInfo.pAttachments = attachments;
+			framebufferInfo.attachmentCount = attachments.size();
+			framebufferInfo.pAttachments = attachments.data();
 			framebufferInfo.width = this->vkSwapChainExtent.width;
 			framebufferInfo.height = this->vkSwapChainExtent.height;
 			framebufferInfo.layers = 1;
@@ -917,8 +951,17 @@ namespace Engine::Rendering
 	{
 		VkFormat depthFormat = this->findVulkanSupportedDepthFormat();
 
-		this->vkDepthBuffer = this->createVulkanImage(this->vkSwapChainExtent.width, this->vkSwapChainExtent.height, depthFormat, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
+		this->vkDepthBuffer = this->createVulkanImage(this->vkSwapChainExtent.width, this->vkSwapChainExtent.height, this->msaaSamples, depthFormat, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
 		this->vkDepthBuffer->imageView = this->createVulkanImageView(this->vkDepthBuffer->image, depthFormat, VK_IMAGE_ASPECT_DEPTH_BIT);
+	}
+
+	void VulkanRenderingEngine::createMultisampledColorResources()
+	{
+		VkFormat colorFormat = this->vkSwapChainImageFormat;
+
+		this->multisampledColorImage = this->createVulkanImage(this->vkSwapChainExtent.width, this->vkSwapChainExtent.height, this->msaaSamples, colorFormat, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
+	  	this->multisampledColorImage->imageView = this->createVulkanImageView(this->multisampledColorImage->image, this->multisampledColorImage->imageFormat, VK_IMAGE_ASPECT_COLOR_BIT);
+		
 	}
 
 ////////////////////////////////////////////////////////////////////////
@@ -928,6 +971,8 @@ namespace Engine::Rendering
 	void VulkanRenderingEngine::cleanup()
 	{
 		this->cleanupVulkanSwapChain();
+
+		this->cleanupVulkanImage(this->multisampledColorImage);
 
 		for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
 			vkDestroySemaphore(this->vkLogicalDevice, renderFinishedSemaphores[i], nullptr);
@@ -993,6 +1038,7 @@ namespace Engine::Rendering
 		this->createVulkanDefaultGraphicsPipeline();
 		this->createVulkanCommandPools();
 		this->createVulkanCommandBuffers();
+		this->createMultisampledColorResources();
 		this->createVulkanDepthResources();
 		this->createVulkanFramebuffers();
 		this->createVulkanSyncObjects();
@@ -1171,7 +1217,7 @@ namespace Engine::Rendering
 		VkPipelineMultisampleStateCreateInfo multisampling{};
 		multisampling.sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;
 		multisampling.sampleShadingEnable = VK_FALSE;
-		multisampling.rasterizationSamples = VK_SAMPLE_COUNT_1_BIT;
+		multisampling.rasterizationSamples = this->msaaSamples;
 		multisampling.minSampleShading = 1.0f; // Optional
 		multisampling.pSampleMask = nullptr; // Optional
 		multisampling.alphaToCoverageEnable = VK_FALSE; // Optional
@@ -1618,7 +1664,7 @@ namespace Engine::Rendering
 
 
 	// Image functions
-	VulkanImage* VulkanRenderingEngine::createVulkanImage(uint32_t width, uint32_t height, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties)
+	VulkanImage* VulkanRenderingEngine::createVulkanImage(uint32_t width, uint32_t height, VkSampleCountFlagBits numSamples, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties)
 	{
 		VulkanImage* new_image = new VulkanImage();
 
@@ -1642,7 +1688,7 @@ namespace Engine::Rendering
 		imageInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
 		imageInfo.usage = usage;
 		imageInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
-		imageInfo.samples = VK_SAMPLE_COUNT_1_BIT;
+		imageInfo.samples = numSamples;
 		imageInfo.flags = 0; // Optional
 
 		if (vkCreateImage(this->vkLogicalDevice, &imageInfo, nullptr, &(new_image->image)) != VK_SUCCESS)
@@ -1680,7 +1726,7 @@ namespace Engine::Rendering
 			Logging::GlobalLogger->SimpleLog(Logging::LogLevel::Warning, "Currently allocated texture image count %u, possibly leaking texture images", this->leakTextureImageCounter);
 		}
 
-		new_texture_image->image = this->createVulkanImage(width, height, format, tiling, usage, properties);
+		new_texture_image->image = this->createVulkanImage(width, height, VK_SAMPLE_COUNT_1_BIT, format, tiling, usage, properties);
 
 		this->leakTextureImageCounter += 1;
 

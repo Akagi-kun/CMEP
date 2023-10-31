@@ -146,6 +146,7 @@ namespace Engine::Rendering
 	{
 	private:
 		const uint32_t MAX_FRAMES_IN_FLIGHT = 2;
+		VkSampleCountFlagBits msaaSamples = VK_SAMPLE_COUNT_1_BIT;
 
 		GLFWwindow* window = nullptr;
 		unsigned int windowX = 0, windowY = 0;
@@ -177,6 +178,9 @@ namespace Engine::Rendering
 		VkFormat vkSwapChainImageFormat{};
 		VkExtent2D vkSwapChainExtent{};
 		std::vector<VkImageView> vkSwapChainImageViews{};
+
+		// Multisampling
+		VulkanImage* multisampledColorImage{};
 
 		// Framebuffers
 		std::vector<VkFramebuffer> vkSwapChainFramebuffers{};
@@ -231,6 +235,7 @@ namespace Engine::Rendering
 		QueueFamilyIndices findVulkanQueueFamilies(VkPhysicalDevice device);
 		bool checkVulkanDeviceExtensionSupport(VkPhysicalDevice device);
 		SwapChainSupportDetails queryVulkanSwapChainSupport(VkPhysicalDevice device);
+		VkSampleCountFlagBits getMaxUsableSampleCount();
 
 		// VkFormat functions
 		VkFormat findVulkanSupportedFormat(const std::vector<VkFormat>& candidates, VkImageTiling tiling, VkFormatFeatureFlags features);
@@ -268,6 +273,7 @@ namespace Engine::Rendering
 		void createVulkanCommandBuffers();
 		void createVulkanSyncObjects();
 		void createVulkanDepthResources();
+		void createMultisampledColorResources();
 
 	public:
 		VulkanRenderingEngine() {}
@@ -297,7 +303,7 @@ namespace Engine::Rendering
 		VulkanBuffer* createVulkanStagingBufferWithData(void* data, VkDeviceSize dataSize);
 
 		// Image functions
-		VulkanImage* createVulkanImage(uint32_t width, uint32_t height, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties);
+		VulkanImage* createVulkanImage(uint32_t width, uint32_t height, VkSampleCountFlagBits numSamples, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties);
 		VulkanTextureImage* createVulkanTextureImage(uint32_t width, uint32_t height, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties);
 		void copyVulcanBufferToImage(VkBuffer buffer, VkImage image, uint32_t width, uint32_t height);
 		void appendVulkanImageViewToVulkanTextureImage(VulkanTextureImage* teximage);
