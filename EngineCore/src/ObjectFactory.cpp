@@ -11,14 +11,14 @@
 
 namespace Engine::ObjectFactory
 {
-	Object* CreateImageObject(double x, double y, double sizex, double sizey, ::Engine::Rendering::Texture* image)
+	Object* CreateSpriteObject(double x, double y, double sizex, double sizey, ::Engine::Rendering::Texture* sprite)
 	{
-		assert(image != nullptr);
+		assert(sprite != nullptr);
 		Engine::Object* object = new Engine::Object();
 		object->renderer = new Rendering::SpriteRenderer();
 		object->Translate(glm::vec3(x, y, 0));
 		object->Scale(glm::vec3(sizex, sizey, 0));
-		((Rendering::SpriteRenderer*)object->renderer)->UpdateTexture(image);
+		((Rendering::SpriteRenderer*)object->renderer)->UpdateTexture(sprite);
 		((Rendering::SpriteRenderer*)object->renderer)->UpdateMesh();
 		
 		return object;

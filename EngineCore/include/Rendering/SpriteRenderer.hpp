@@ -3,6 +3,7 @@
 #include <memory>
 
 #include "IRenderer.hpp"
+#include "VulkanRenderingEngine.hpp"
 #include "PlatformSemantics.hpp"
 
 namespace Engine::Rendering
@@ -24,9 +25,11 @@ namespace Engine::Rendering
 		/// <summary>
 		/// GL Vertex Buffer Object
 		/// </summary>
-		unsigned int vbo = 0;
+		VulkanBuffer* vbo = nullptr;
+		//unsigned int vbo = 0;
 
-		std::unique_ptr<Rendering::Shader> program;
+		VulkanPipeline* pipeline = nullptr;
+		//std::unique_ptr<Rendering::Shader> program;
 		std::unique_ptr<const Rendering::Texture> texture;
 
 	public:

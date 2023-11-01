@@ -157,12 +157,12 @@ namespace Engine::Rendering
 				const float y = (float)this->_pos.y * 2 - 1.f + accu_y;
 
 				std::array<RenderingVertex, 6> vertices = {};
-				vertices[0] = { glm::vec3(x, ys + y, 0.f),		glm::vec3(1.f, 0.f, 0.f), glm::vec2((ch->x) / (float)texture_x, (ch->y + ch->height) / (float)texture_y) };
+				vertices[0] = { glm::vec3(x, ys + y, 0.f),		glm::vec3(1.f, 0.f, 0.f), glm::vec2((ch->x) / (float)texture_x,             (ch->y + ch->height) / (float)texture_y) };
 				vertices[1] = { glm::vec3(xs + x, ys + y, 0.f),	glm::vec3(1.f, 0.f, 0.f), glm::vec2((ch->x + ch->width) / (float)texture_x, (ch->y + ch->height) / (float)texture_y) };
-				vertices[2] = { glm::vec3(x, y, 0.f),			glm::vec3(1.f, 0.f, 0.f), glm::vec2((ch->x) / (float)texture_x, (ch->y) / (float)texture_y) };
+				vertices[2] = { glm::vec3(x, y, 0.f),			glm::vec3(1.f, 0.f, 0.f), glm::vec2((ch->x) / (float)texture_x,             (ch->y) / (float)texture_y) };
 				vertices[3] = { glm::vec3(xs + x, ys + y, 0.f),	glm::vec3(1.f, 0.f, 0.f), glm::vec2((ch->x + ch->width) / (float)texture_x, (ch->y + ch->height) / (float)texture_y) };
 				vertices[4] = { glm::vec3(xs + x, y, 0.f),		glm::vec3(1.f, 0.f, 0.f), glm::vec2((ch->x + ch->width) / (float)texture_x, (ch->y) / (float)texture_y) };
-				vertices[5] = { glm::vec3(x, y, 0.f),			glm::vec3(1.f, 0.f, 0.f), glm::vec2((ch->x) / (float)texture_x, (ch->y) / (float)texture_y) };
+				vertices[5] = { glm::vec3(x, y, 0.f),			glm::vec3(1.f, 0.f, 0.f), glm::vec2((ch->x) / (float)texture_x,             (ch->y) / (float)texture_y) };
 
 				//std::array<GLfloat, 30> data = {
 				//	x, ys + y, 0.f, /**/ (ch->x) / (float)texture_x, (ch->y) / (float)texture_y,
@@ -200,8 +200,7 @@ namespace Engine::Rendering
 			imageInfo.imageView = this->textureImage->image->imageView;
 			imageInfo.sampler = this->textureImage->textureSampler;
 
-			std::vector<VkWriteDescriptorSet> descriptorWrites{};
-			descriptorWrites.resize(2);
+			std::array<VkWriteDescriptorSet, 2> descriptorWrites{};
 
 			descriptorWrites[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
 			descriptorWrites[0].dstSet = pipeline->vkDescriptorSets[i];
