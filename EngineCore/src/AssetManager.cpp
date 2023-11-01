@@ -55,7 +55,9 @@ namespace Engine
 		else
 		{
 			Logging::GlobalLogger->SimpleLog(Logging::LogLevel::Warning, "Texture %s requested and is not loaded", name.c_str());
-			return nullptr;
+			this->AddTexture(name, name, Rendering::Texture_InitFiletype::FILE_PNG);
+			
+			return this->GetTexture(name);
 			/*
 			Rendering::Texture* texture = new Engine::Rendering::Texture();
 
