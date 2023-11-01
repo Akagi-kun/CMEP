@@ -29,6 +29,11 @@ namespace Engine
 		std::optional<uint32_t> graphicsFamily;
 	};
 
+	extern bool EngineIsWindowInFocus;
+	extern bool EngineIsWindowInContent;
+	extern double EngineMouseXPos;
+	extern double EngineMouseYPos;
+
 	class CMEP_EXPORT Engine final
 	{
 	private:
@@ -86,6 +91,10 @@ namespace Engine
 		static void spinSleep(double seconds);
 
 		static void RenderCallback(VkCommandBuffer commandBuffer, uint32_t currentFrame);
+
+		static void OnWindowFocusCallback(GLFWwindow* window, int focused);
+		static void CursorPositionCallback(GLFWwindow* window, double xpos, double ypos);
+		static void CursorEnterLeaveCallback(GLFWwindow* window, int entered);
 
 		void handleInput(const double deltaTime) noexcept;
 

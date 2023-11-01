@@ -11,6 +11,7 @@
 #include "Scripting/LuaScriptExecutor.hpp"
 #include "Scripting/LuaScript.hpp"
 
+#include "ObjectFactory.hpp"
 #include "AssetManager.hpp"
 #include "Engine.hpp"
 #include "Object.hpp"
@@ -31,6 +32,10 @@
 
 namespace Engine
 {
+	bool EngineIsWindowInFocus = false;
+	bool EngineIsWindowInContent = false;
+	double EngineMouseXPos = 0.0;
+	double EngineMouseYPos = 0.0;
 	/*
 	void APIENTRY Engine::debugCallbackGL(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, const void* userParam) noexcept
 	{
@@ -158,23 +163,28 @@ namespace Engine
 
 	void Engine::handleInput(const double deltaTime) noexcept
 	{
-		double xpos, ypos;
-
 		Rendering::GLFWwindowData windowdata = this->rendering_engine->GetWindow();
-		
-		glfwGetCursorPos(windowdata.window, &xpos, &ypos);
 
-		if (glfwGetWindowAttrib(windowdata.window, GLFW_FOCUSED))
+		double xpos = 0.0, ypos = 0.0;
+		static double lastx = (windowdata.windowX / 2), lasty = (windowdata.windowY / 2);
+
+		//glfwGetCursorPos(windowdata.window, &xpos, &ypos);
+
+		//if (glfwGetWindowAttrib(windowdata.window, GLFW_FOCUSED))
+		if (EngineIsWindowInFocus && EngineIsWindowInContent)
 		{
-			if ((windowdata.windowX / 2) - xpos != 0 || (windowdata.windowY / 2) - ypos != 0)
+			if ((EngineMouseXPos - lastx) != 0.0 || (EngineMouseYPos - lasty) != 0.0)
 			{
 				EventHandling::Event event = EventHandling::Event(EventHandling::EventType::ON_MOUSEMOVED);
-				event.mouse.x = xpos;
-				event.mouse.y = ypos;
+				event.mouse.x = EngineMouseXPos - lastx;
+				event.mouse.y = EngineMouseYPos - lasty;
 				event.deltaTime = deltaTime;
 				this->FireEvent(event);
 
-				glfwSetCursorPos(this->rendering_engine->GetWindow().window, this->windowX / 2, this->windowY / 2);
+				lastx = EngineMouseXPos;
+				lasty = EngineMouseYPos;
+
+				//glfwSetCursorPos(this->rendering_engine->GetWindow().window, this->windowX / 2, this->windowY / 2);
 			}
 		}
 
@@ -233,24 +243,6 @@ namespace Engine
 			event_handler = asset_manager->GetLuaScript(eventHandler["file"]);
 			global_engine->RegisterLuaEventHandler(eventType, event_handler, eventHandler["function"]);
 		}
-		// asset_manager->AddLuaScript(data[setting]["file"], data[setting]["file"]);
-		// event_handler = asset_manager->GetLuaScript(data[setting]["file"]);
-		// global_engine->RegisterLuaEventHandler(::Engine::EventHandling::EventType::ON_INIT, event_handler, data[setting]["function"]);
-
-		// setting = "eventHandler.onUpdate";
-		// asset_manager->AddLuaScript(data[setting]["file"], data[setting]["file"]);
-		// event_handler = asset_manager->GetLuaScript(data[setting]["file"]);
-		// global_engine->RegisterLuaEventHandler(::Engine::EventHandling::EventType::ON_UPDATE, event_handler, data[setting]["function"]);
-
-		// setting = "eventHandler.onKeyDown";
-		// asset_manager->AddLuaScript(data[setting]["file"], data[setting]["file"]);
-		// event_handler = asset_manager->GetLuaScript(data[setting]["file"]);
-		// global_engine->RegisterLuaEventHandler(::Engine::EventHandling::EventType::ON_KEYDOWN, event_handler, data[setting]["function"]);
-
-		// setting = "eventHandler.onMouseMoved";
-		// asset_manager->AddLuaScript(data[setting]["file"], data[setting]["file"]);
-		// event_handler = asset_manager->GetLuaScript(data[setting]["file"]);
-		// global_engine->RegisterLuaEventHandler(::Engine::EventHandling::EventType::ON_MOUSEMOVED, event_handler, data[setting]["function"]);
 
 		std::string setting;
 		setting = "window.title";
@@ -266,11 +258,7 @@ namespace Engine
 		{
 			try
 			{
-				// Reset topology to triangles before each object render
-				//global_engine->GetRenderingEngine()->SelectCurrentTopology(commandBuffer, Rendering::VULKAN_RENDERING_ENGINE_TOPOLOGY_TRIANGLE_LIST);
-
 				ptr->renderer->Render(commandBuffer, currentFrame);
-				//glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 			}
 			catch (const std::exception& e)
 			{
@@ -278,12 +266,46 @@ namespace Engine
 				exit(1);
 			}
 		}
-		
-		//VkBuffer vertexBuffers[] = { global_engine->GetRenderingEngine()->GetVertexBuffer()->buffer };
-		//VkDeviceSize offsets[] = { 0 };
-		//vkCmdBindVertexBuffers(commandBuffer, 0, 1, vertexBuffers, offsets);
+	}
+	
+	void Engine::OnWindowFocusCallback(GLFWwindow* window, int focused)
+	{
+		if(focused)
+		{
+			EngineIsWindowInFocus = true;
+		}
+		else
+		{
+			EngineIsWindowInFocus = false;
+		}
+	}
 
-		//vkCmdDraw(commandBuffer, 3, 1, 0, 0);
+	void Engine::CursorPositionCallback(GLFWwindow* window, double xpos, double ypos)
+	{
+		if(EngineIsWindowInFocus)
+		{
+			EngineMouseXPos = xpos;
+			EngineMouseYPos = ypos;
+		}	
+		else
+		{
+			EngineMouseXPos = 0.0;
+			EngineMouseYPos = 0.0;
+		}
+	}
+
+	void Engine::CursorEnterLeaveCallback(GLFWwindow* window, int entered)
+	{
+		if(EngineIsWindowInFocus)
+		{
+			EngineIsWindowInContent = true;
+			glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+		}
+		else
+		{
+			EngineIsWindowInContent = false;
+			glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+		}
 	}
 
 	void Engine::engineLoop()
@@ -299,6 +321,10 @@ namespace Engine
 		((Rendering::AxisRenderer*)object->renderer)->UpdateMesh();
 		global_scene_manager->AddObject("_axis", object);
 		
+		// Object* sprite_test = ObjectFactory::CreateSpriteObject(0.0, 0.0, 0.5, 0.5, this->asset_manager->GetTexture("game/fonts/myfont/myfont_0.png"));
+		// global_scene_manager->AddObject("testpng", sprite_test);
+
+
 		//glEnable(GL_MULTISAMPLE);
 		//glEnable(GL_DEPTH_TEST);
 		//glEnable(GL_BLEND);
@@ -504,6 +530,11 @@ namespace Engine
 		this->rendering_engine->init(this->windowX, this->windowY, this->windowTitle);
 		this->rendering_engine->SetRenderCallback(this->RenderCallback);
 
+		Rendering::GLFWwindowData windowdata = this->rendering_engine->GetWindow();
+		glfwSetWindowFocusCallback(windowdata.window, Engine::OnWindowFocusCallback);
+		glfwSetCursorPosCallback(windowdata.window, Engine::CursorPositionCallback);
+		glfwSetCursorEnterCallback(windowdata.window, Engine::CursorEnterLeaveCallback);
+		
 		// Fire ON_INIT event
 		EventHandling::Event onInitEvent = EventHandling::Event(EventHandling::EventType::ON_INIT);
 		this->FireEvent(onInitEvent);
