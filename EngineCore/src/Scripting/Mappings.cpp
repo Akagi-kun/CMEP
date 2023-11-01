@@ -315,6 +315,44 @@ namespace Engine::Scripting::Mappings
 
 #pragma region ObjectFactory
 
+		int objectFactory_CreateSpriteObject(lua_State* state)
+		{
+			double x = lua_tonumber(state, 1);
+			double y = lua_tonumber(state, 2);
+			int sizex = static_cast<int>(lua_tointeger(state, 3));
+			int sizey = static_cast<int>(lua_tointeger(state, 4));
+
+			lua_getfield(state, 5, "_pointer");
+			Rendering::Texture* sprite = *(Rendering::Texture**)lua_touserdata(state, -1);
+
+			Object* obj = ObjectFactory::CreateSpriteObject(x, y, sizex, sizey, sprite);
+
+			if (obj != nullptr)
+			{
+				// Generate object table
+				lua_newtable(state);
+
+				Object** ptr_obj = (Object**)lua_newuserdata(state, sizeof(Object*));
+				(*ptr_obj) = obj;
+				lua_setfield(state, -2, "_pointer");
+
+				// Generate renderer table
+				lua_newtable(state);
+				Rendering::IRenderer** ptr_renderer = (Rendering::IRenderer**)lua_newuserdata(state, sizeof(Rendering::IRenderer*));
+				(*ptr_renderer) = obj->renderer;
+				lua_setfield(state, -2, "_pointer");
+				lua_setfield(state, -2, "renderer");
+			}
+			else
+			{
+				Logging::GlobalLogger->SimpleLog(Logging::LogLevel::Warning, "Lua: Object creation failed, ObjectFactory::CreateSpriteObject returned nullptr! Params: %f %f %f %f", x, y, sizex, sizey);
+
+				lua_pushnil(state);
+			}
+
+			return 1;
+		}
+
 		int objectFactory_CreateTextObject(lua_State* state)
 		{
 			double x = lua_tonumber(state, 1);
@@ -452,6 +490,7 @@ namespace Engine::Scripting::Mappings
 		"assetManager_GetTexture",
 		"assetManager_AddTexture",
 
+		"objectFactory_CreateSpriteObject",
 		"objectFactory_CreateTextObject",
 		"objectFactory_CreateGeneric3DObject",
 
@@ -484,6 +523,7 @@ namespace Engine::Scripting::Mappings
 		Functions::assetManager_GetTexture,
 		Functions::assetManager_AddTexture,
 
+		Functions::objectFactory_CreateSpriteObject,
 		Functions::objectFactory_CreateTextObject,
 		Functions::objectFactory_CreateGeneric3DObject,
 

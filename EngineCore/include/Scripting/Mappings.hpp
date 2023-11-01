@@ -30,6 +30,7 @@ namespace Engine::Scripting::Mappings
 		int assetManager_GetTexture(lua_State* state);
 		int assetManager_AddTexture(lua_State* state);
 
+		int objectFactory_CreateSpriteObject(lua_State* state);
 		int objectFactory_CreateTextObject(lua_State* state);
 		int objectFactory_CreateGeneric3DObject(lua_State* state);
 
