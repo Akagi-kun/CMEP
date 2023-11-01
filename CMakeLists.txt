@@ -9,5 +9,4 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE ${builddir} CACHE PATH "Build directo
 
 add_subdirectory(EngineCore)
 add_subdirectory(rungame)
-
-file(COPY game DESTINATION build)
+add_subdirectory(examples)
