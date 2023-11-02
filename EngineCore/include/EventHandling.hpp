@@ -10,6 +10,7 @@ namespace Engine::EventHandling
 		ON_INIT,
 		ON_UPDATE,
 		ON_KEYDOWN,
+		ON_KEYUP,
 		ON_MOUSEMOVED
 	};
 
@@ -22,7 +23,7 @@ namespace Engine::EventHandling
 		double deltaTime = 0.0;
 		union
 		{
-			uint16_t keycode = 0; // ON_KEYDOWN event
+			uint16_t keycode = 0; // ON_KEYDOWN/ON_KEYUP events
 			struct {
 				double x;
 				double y;

@@ -14,6 +14,9 @@ namespace Engine::Scripting::Mappings
 		int gsm_SetCameraTransform(lua_State* state);
 		int gsm_GetLightTransform(lua_State* state);
 		int gsm_SetLightTransform(lua_State* state);
+		int gsm_AddObject(lua_State* state);
+		int gsm_FindObject(lua_State* state);
+		int gsm_RemoveObject(lua_State* state);
 
 		int engine_AddObject(lua_State* state);
 		int engine_FindObject(lua_State* state);
@@ -38,9 +41,8 @@ namespace Engine::Scripting::Mappings
 		int mesh_CreateMeshFromObj(lua_State* state);
 	}
 
-	const uint32_t countMappings = 22;
+	const uint32_t countMappings = 26;
 
 	extern const char* nameMappings[];
-
 	extern lua_CFunction functionMappings[];
 }
