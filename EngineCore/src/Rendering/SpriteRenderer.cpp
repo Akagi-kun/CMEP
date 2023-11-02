@@ -85,18 +85,10 @@ namespace Engine::Rendering
 			this->vbo = nullptr;
 		}
 		
-		const float xs = (float)this->_size.x * 2; const float ys = (float)this->_size.y * 2;
-		const float x = (float)this->_pos.x * 2 - 1.f; const float y = (float)this->_pos.y * 2 - 1.f;
-		const float data[] = {
-			x, y, 0.f,
-			0.f, 1.f,
-			xs + x, y, 0.f,
-			1.f, 1.f,
-			xs + x, ys + y, 0.f,
-			1.f, 0.f,
-			x, ys + y, 0.f,
-			0.f, 0.f
-		};
+		const float xs = (float)this->_size.x * 2.0f;
+		const float ys = (float)this->_size.y * 2.0f;
+		const float x = (float)this->_pos.x * 2.0f - 1.0f;
+		const float y = (float)this->_pos.y * 2.0f - 1.0f;
 
 		const std::vector<RenderingVertex> vertices = {
 			{{x, y + ys, 0.0},      {0.0, 0.0, 0.0}, {0.0, 1.0}},
