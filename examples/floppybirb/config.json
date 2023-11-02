@@ -3,6 +3,7 @@
         { "type": "onInit", "file": "game/scripts/eventHandlers.lua", "function": "onInit" },
         { "type": "onUpdate", "file": "game/scripts/eventHandlers.lua", "function": "onUpdate" },
         { "type": "onKeyDown", "file": "game/scripts/eventHandlers.lua", "function": "onKeyDown" },
+        { "type": "onKeyUp", "file": "game/scripts/eventHandlers.lua", "function": "onKeyUp" },
         { "type": "onMouseMoved", "file": "game/scripts/eventHandlers.lua", "function": "onMouseMoved" }
     ],
     "window.title": "rungame.exe running game/config.json",
