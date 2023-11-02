@@ -233,6 +233,10 @@ namespace Engine
 			{
 				eventType = EventHandling::EventType::ON_KEYDOWN;
 			}
+			else if(eventHandler["type"] == std::string("onKeyUp"))
+			{
+				eventType = EventHandling::EventType::ON_KEYUP;
+			}
 			else if(eventHandler["type"] == std::string("onUpdate"))
 			{
 				eventType = EventHandling::EventType::ON_UPDATE;
@@ -307,6 +311,24 @@ namespace Engine
 			glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
 		}
 	}
+	
+	void Engine::OnKeyEventCallback(GLFWwindow* window, int key, int scancode, int action, int mods)
+	{
+		if (action == GLFW_PRESS)
+		{
+			EventHandling::Event event = EventHandling::Event(EventHandling::EventType::ON_KEYDOWN);
+			event.keycode = key;
+			event.deltaTime = global_engine->GetLastDeltaTime();
+			global_engine->FireEvent(event);
+		}
+		else if(action == GLFW_RELEASE)
+		{
+			EventHandling::Event event = EventHandling::Event(EventHandling::EventType::ON_KEYUP);
+			event.keycode = key;
+			event.deltaTime = global_engine->GetLastDeltaTime();
+			global_engine->FireEvent(event);
+		}
+	}
 
 	void Engine::engineLoop()
 	{
@@ -350,9 +372,10 @@ namespace Engine
 				//printf("current frame time: %.2lf ms (%.1lf fps)\n", deltaTime * 1e3, (1 / (deltaTime)));
 				counter = 0;
 			}
+			this->lastDeltaTime = deltaTime;
 
 			// Handle input
-			this->handleInput(deltaTime);
+			//this->handleInput(deltaTime);
 
 			// Update deltaTime of premade ON_UPDATE event and fire it
 			premadeOnUpdateEvent.deltaTime = deltaTime;
@@ -415,6 +438,11 @@ namespace Engine
 				this->script_executor->CallIntoScript(Scripting::ExecuteType::EventHandler, std::get<1>(handler), std::get<2>(handler), &event);
 			}
 		}
+	}
+
+	double Engine::GetLastDeltaTime()
+	{
+		return this->lastDeltaTime;
 	}
 
 	Engine::Engine(const char* windowTitle, const unsigned windowX, const unsigned windowY) noexcept : windowTitle(windowTitle), windowX(windowX), windowY(windowY), framerateTarget(30) {}
@@ -534,6 +562,7 @@ namespace Engine
 		glfwSetWindowFocusCallback(windowdata.window, Engine::OnWindowFocusCallback);
 		glfwSetCursorPosCallback(windowdata.window, Engine::CursorPositionCallback);
 		glfwSetCursorEnterCallback(windowdata.window, Engine::CursorEnterLeaveCallback);
+		glfwSetKeyCallback(windowdata.window, Engine::OnKeyEventCallback);
 		
 		// Fire ON_INIT event
 		EventHandling::Event onInitEvent = EventHandling::Event(EventHandling::EventType::ON_INIT);
@@ -559,28 +588,6 @@ namespace Engine
 	void Engine::RegisterLuaEventHandler(EventHandling::EventType event_type, Scripting::LuaScript* script, std::string function)
 	{
 		this->lua_event_handlers.push_back(std::make_tuple(event_type, script, function));
-	}
-
-	[[deprecated]]
-	void Engine::AddObject(std::string name, Object* ptr)
-	{
-		if (ptr != nullptr)
-		{
-			ptr->ScreenSizeInform(this->windowX, this->windowY);
-			global_scene_manager->AddObject(name, ptr);
-		}
-	}
-
-	[[deprecated]]
-	Object* Engine::FindObject(std::string name)
-	{
-		return global_scene_manager->FindObject(name);
-	}
-
-	[[deprecated]]
-	size_t Engine::RemoveObject(std::string name) noexcept
-	{
-		return global_scene_manager->RemoveObject(name);
 	}
 
 	AssetManager* Engine::GetAssetManager() noexcept

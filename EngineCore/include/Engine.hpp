@@ -48,6 +48,8 @@ namespace Engine
 		std::string windowTitle;
 		unsigned int framerateTarget = 30;
 
+		double lastDeltaTime = 0.0;
+
 		/*
 		// Vulcan info
 		VkInstance vkInstance = VK_NULL_HANDLE;
@@ -95,6 +97,7 @@ namespace Engine
 		static void OnWindowFocusCallback(GLFWwindow* window, int focused);
 		static void CursorPositionCallback(GLFWwindow* window, double xpos, double ypos);
 		static void CursorEnterLeaveCallback(GLFWwindow* window, int entered);
+		static void Engine::OnKeyEventCallback(GLFWwindow* window, int key, int scancode, int action, int mods);
 
 		void handleInput(const double deltaTime) noexcept;
 
@@ -102,7 +105,6 @@ namespace Engine
 
 		void HandleConfig();
 
-		void FireEvent(EventHandling::Event& event);
 	public:
 		Engine(const char* windowTitle, const unsigned windowX, const unsigned windowY) noexcept;
 		~Engine() noexcept;
@@ -115,11 +117,11 @@ namespace Engine
 		void ConfigFile(std::string path);
 		void RegisterEventHandler(EventHandling::EventType event_type, std::function<void(EventHandling::Event&)> function);
 		void RegisterLuaEventHandler(EventHandling::EventType event_type, Scripting::LuaScript* script, std::string function);
-
-		void AddObject(std::string name, Object* ptr);
-		Object* FindObject(std::string name);
-		size_t RemoveObject(std::string name) noexcept;
 		
+		void FireEvent(EventHandling::Event& event);
+
+		double GetLastDeltaTime();
+
 		AssetManager* GetAssetManager() noexcept;
 		Rendering::VulkanRenderingEngine* GetRenderingEngine() noexcept;
 	};
