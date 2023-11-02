@@ -1,3 +1,3 @@
-export VULKAN_SDK=*enter your vulkan sdk location here*
+export VULKAN_SDK=/home/itzexpoexpo/build/1.3.268.0/x86_64
 cmake .
 cmake --build . -j 6 --parallel --target rungame
