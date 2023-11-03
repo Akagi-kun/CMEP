@@ -57,6 +57,8 @@ jobs:
 
     - name: Initialize submodules
       run: git submodule init
+    
+    - name: Update submodules
       run: git submodule update
 
     - name: Configure CMake
