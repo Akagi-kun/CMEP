@@ -21,4 +21,6 @@ link_directories(../build/ ../external/lua/)
 
 add_executable(rungame ${SRC_FILES})
 
-target_link_libraries(rungame EngineCore ${STATIC_LIBRARIES})
+target_link_libraries(rungame EngineCore)
+
+target_link_libraries(rungame ${STATIC_LIBRARIES})
