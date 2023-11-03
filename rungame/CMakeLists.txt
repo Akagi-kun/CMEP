@@ -19,6 +19,7 @@ endif()
 
 link_directories(../build/ ../external/lua/)
 
+message(${builddir})
 add_executable(rungame ${SRC_FILES})
 
 target_link_libraries(rungame EngineCore)

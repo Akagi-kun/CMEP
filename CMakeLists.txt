@@ -13,5 +13,6 @@ add_subdirectory(EngineCore)
 add_dependencies(EngineCore glfw)
 
 add_subdirectory(rungame)
+add_dependencies(rungame glfw)
 
 add_subdirectory(examples)
