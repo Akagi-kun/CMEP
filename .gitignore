@@ -373,3 +373,4 @@ CMakeCache.txt
 .vscode
 build
 game
+*.spv
