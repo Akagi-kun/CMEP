@@ -65,7 +65,7 @@ jobs:
       shell: bash
       run: |
          if [ "$RUNNER_OS" == "Linux" ]; then
-              sudo apt install build-tools
+              sudo apt install xorg
          fi
 
     - name: Configure CMake
