@@ -1,2 +1,2 @@
 # CMEP
-![Builds](https://github.com/CMEP/github/workflows/cmake-multi-platform.yml/badge.svg)
+![Builds](https://github.com/Snezhnaya-chan/CMEP/github/workflows/cmake-multi-platform.yml/badge.svg)
