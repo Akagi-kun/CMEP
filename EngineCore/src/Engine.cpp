@@ -4,7 +4,7 @@
 #include <thread>
 #include <chrono>
 
-#include "nlohmann-json/json.hpp"
+#include "nlohmann-json/single_include/nlohmann/json.hpp"
 
 #include "Rendering/AxisRenderer.hpp"
 
