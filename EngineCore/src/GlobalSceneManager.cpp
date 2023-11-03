@@ -59,8 +59,9 @@ namespace Engine
 	{
 		Object* object = this->FindObject(name);
 		
-		if(!object)
+		if(object)
 		{
+			Logging::GlobalLogger->SimpleLog(Logging::LogLevel::Info, "Removing object \"%s\" from globally managed scene, deleting object", name.c_str());
 			delete object;
 		}
 
