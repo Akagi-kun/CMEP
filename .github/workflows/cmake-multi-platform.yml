@@ -65,7 +65,7 @@ jobs:
       shell: bash
       run: |
          if [ "$RUNNER_OS" == "Linux" ]; then
-              sudo apt install libx11-dev
+              sudo apt install libx11-dev libxrandr-dev
          fi
 
     - name: Configure CMake
