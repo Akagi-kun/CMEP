@@ -65,7 +65,7 @@ jobs:
       shell: bash
       run: |
          if [ "$RUNNER_OS" == "Linux" ]; then
-              apt install build-tools
+              sudo apt install sbuild-tools
          fi
 
     - name: Configure CMake
