@@ -376,3 +376,5 @@ build
 game
 *.spv
 Makefile
+*.so
+*.a
