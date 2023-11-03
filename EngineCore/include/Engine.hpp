@@ -97,7 +97,7 @@ namespace Engine
 		static void OnWindowFocusCallback(GLFWwindow* window, int focused);
 		static void CursorPositionCallback(GLFWwindow* window, double xpos, double ypos);
 		static void CursorEnterLeaveCallback(GLFWwindow* window, int entered);
-		static void Engine::OnKeyEventCallback(GLFWwindow* window, int key, int scancode, int action, int mods);
+		static void OnKeyEventCallback(GLFWwindow* window, int key, int scancode, int action, int mods);
 
 		void handleInput(const double deltaTime) noexcept;
 
