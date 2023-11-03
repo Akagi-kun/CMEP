@@ -370,6 +370,7 @@ FodyWeavers.xsd
 CMakeFiles
 *.cmake
 CMakeCache.txt
+.vs
 .vscode
 build
 game
