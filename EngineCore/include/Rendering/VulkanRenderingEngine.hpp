@@ -2,7 +2,7 @@
 
 #define GLFW_INCLUDE_NONE
 #define GLFW_INCLUDE_VULKAN
-#include "glfw/glfw3.h"
+#include "glfw/include/GLFW/glfw3.h"
 
 #include "glm/glm.hpp"
 
@@ -12,8 +12,6 @@
 #include <functional>
 #include <optional>
 #include <cstring>
-
-#pragma comment (lib, "vulkan-1.lib")
 
 namespace Engine::Rendering
 {

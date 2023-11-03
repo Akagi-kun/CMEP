@@ -712,7 +712,8 @@ namespace Engine::Rendering
 		// If window is minimized, wait for it to show up again
 		int width = 0, height = 0;
 		glfwGetFramebufferSize(window, &width, &height);
-		while (width == 0 || height == 0) {
+		while (width == 0 || height == 0)
+		{
 			glfwGetFramebufferSize(window, &width, &height);
 			glfwWaitEvents();
 		}
@@ -723,8 +724,10 @@ namespace Engine::Rendering
 
 		// Clean up old swap chain
 		this->cleanupVulkanSwapChain();
+		this->cleanupVulkanImage(this->multisampledColorImage);
 
 		// Create a new swap chain
+		this->createMultisampledColorResources();
 		this->createVulkanSwapChain();
 		this->createVulkanSwapChainViews();
 		this->createVulkanFramebuffers();

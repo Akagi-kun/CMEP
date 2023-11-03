@@ -1,6 +1,7 @@
 #include "GlobalSceneManager.hpp"
 #include "Logging/Logging.hpp"
 #include "glm/common.hpp"
+#include "Engine.hpp"
 
 namespace Engine
 {
@@ -38,6 +39,8 @@ namespace Engine
 		Logging::GlobalLogger->SimpleLog(Logging::LogLevel::Info, "Adding object \"%s\" to globally managed scene", name.c_str());
 		if (ptr != nullptr)
 		{
+			Rendering::GLFWwindowData data = global_engine->GetRenderingEngine()->GetWindow();
+			ptr->ScreenSizeInform(data.windowX, data.windowY);
 			this->objects.emplace(name, ptr);
 		}
 	}
@@ -54,6 +57,14 @@ namespace Engine
 
 	size_t GlobalSceneManager::RemoveObject(std::string name) noexcept
 	{
+		Object* object = this->FindObject(name);
+		
+		if(object)
+		{
+			Logging::GlobalLogger->SimpleLog(Logging::LogLevel::Info, "Removing object \"%s\" from globally managed scene, deleting object", name.c_str());
+			delete object;
+		}
+
 		return this->objects.erase(name);
 	}
 

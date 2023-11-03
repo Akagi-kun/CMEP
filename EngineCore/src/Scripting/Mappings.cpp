@@ -79,6 +79,60 @@ namespace Engine::Scripting::Mappings
 
 			return 0;
 		}
+
+		int gsm_AddObject(lua_State* state)
+		{
+			std::string name = lua_tostring(state, 1);
+			
+			lua_getfield(state, 2, "_pointer");
+			Object* obj = *(Object**)lua_touserdata(state, -1);
+
+			global_scene_manager->AddObject(name, obj);
+
+			return 0;
+		}
+
+		int gsm_FindObject(lua_State* state)
+		{
+			std::string obj_name = lua_tostring(state, 1);
+			lua_pop(state, 1);
+
+			Object* obj = global_scene_manager->FindObject(obj_name);
+
+			if (obj != nullptr)
+			{
+				// Generate object table
+				lua_newtable(state);
+
+				Object** ptr_obj = (Object**)lua_newuserdata(state, sizeof(Object*));
+				(*ptr_obj) = obj;
+				lua_setfield(state, -2, "_pointer");
+
+				// Generate renderer table
+				lua_newtable(state);
+				Rendering::IRenderer** ptr_renderer = (Rendering::IRenderer**)lua_newuserdata(state, sizeof(Rendering::IRenderer*));
+				(*ptr_renderer) = obj->renderer;
+				lua_setfield(state, -2, "_pointer");
+				lua_setfield(state, -2, "renderer");
+			}
+			else
+			{
+				Logging::GlobalLogger->SimpleLog(Logging::LogLevel::Warning, "Lua: Object %s requested but returned nullptr!", obj_name.c_str());
+
+				lua_pushnil(state);
+			}
+
+			return 1;
+		}
+
+		int gsm_RemoveObject(lua_State* state)
+		{
+			std::string name = lua_tostring(state, 1);
+
+			global_scene_manager->RemoveObject(name);
+
+			return 0;
+		}
 #pragma endregion
 
 #pragma region Engine
@@ -113,51 +167,6 @@ namespace Engine::Scripting::Mappings
 			global_engine->SetFramerateTarget(framerate_target);
 
 			return 0;
-		}
-
-		int engine_AddObject(lua_State* state)
-		{
-			std::string name = lua_tostring(state, 1);
-
-			lua_getfield(state, 2, "_pointer");
-			Object* ptr_am = *(Object**)lua_touserdata(state, -1);
-
-			global_engine->AddObject(name, ptr_am);
-
-			return 0;
-		}
-
-		int engine_FindObject(lua_State* state)
-		{
-			std::string obj_name = lua_tostring(state, 1);
-			lua_pop(state, 1);
-
-			Object* obj = global_engine->FindObject(obj_name);
-
-			if (obj != nullptr)
-			{
-				// Generate object table
-				lua_newtable(state);
-
-				Object** ptr_obj = (Object**)lua_newuserdata(state, sizeof(Object*));
-				(*ptr_obj) = obj;
-				lua_setfield(state, -2, "_pointer");
-
-				// Generate renderer table
-				lua_newtable(state);
-				Rendering::IRenderer** ptr_renderer = (Rendering::IRenderer**)lua_newuserdata(state, sizeof(Rendering::IRenderer*));
-				(*ptr_renderer) = obj->renderer;
-				lua_setfield(state, -2, "_pointer");
-				lua_setfield(state, -2, "renderer");
-			}
-			else
-			{
-				Logging::GlobalLogger->SimpleLog(Logging::LogLevel::Warning, "Lua: Object %s requested but returned nullptr!", obj_name.c_str());
-
-				lua_pushnil(state);
-			}
-
-			return 1;
 		}
 
 #pragma endregion
@@ -242,6 +251,36 @@ namespace Engine::Scripting::Mappings
 			return 0;
 		}
 
+		int object_GetPosition(lua_State* state)
+		{
+			lua_getfield(state, 1, "_pointer");
+			Object* ptr_obj = *(Object**)lua_touserdata(state, -1);
+
+			glm::vec3 rotation = ptr_obj->position();
+
+			lua_pushnumber(state, rotation.x);
+			lua_pushnumber(state, rotation.y);
+			lua_pushnumber(state, rotation.z);
+
+			return 3;
+		}
+
+		int object_Translate(lua_State* state)
+		{
+			lua_getfield(state, 1, "_pointer");
+
+			Object* ptr_obj = *(Object**)lua_touserdata(state, -1);
+
+			glm::vec3 position = glm::vec3(0);
+			position.x = static_cast<float>(lua_tonumber(state, 2));
+			position.y = static_cast<float>(lua_tonumber(state, 3));
+			position.z = static_cast<float>(lua_tonumber(state, 4));
+
+			ptr_obj->Translate(position);
+
+			return 0;
+		}
+
 #pragma endregion
 
 #pragma region AssetManager
@@ -314,6 +353,44 @@ namespace Engine::Scripting::Mappings
 #pragma endregion
 
 #pragma region ObjectFactory
+
+		int objectFactory_CreateSpriteObject(lua_State* state)
+		{
+			double x = lua_tonumber(state, 1);
+			double y = lua_tonumber(state, 2);
+			double sizex = lua_tonumber(state, 3);
+			double sizey = lua_tonumber(state, 4);
+
+			lua_getfield(state, 5, "_pointer");
+			Rendering::Texture* sprite = *(Rendering::Texture**)lua_touserdata(state, -1);
+
+			Object* obj = ObjectFactory::CreateSpriteObject(x, y, sizex, sizey, sprite);
+
+			if (obj != nullptr)
+			{
+				// Generate object table
+				lua_newtable(state);
+
+				Object** ptr_obj = (Object**)lua_newuserdata(state, sizeof(Object*));
+				(*ptr_obj) = obj;
+				lua_setfield(state, -2, "_pointer");
+
+				// Generate renderer table
+				lua_newtable(state);
+				Rendering::IRenderer** ptr_renderer = (Rendering::IRenderer**)lua_newuserdata(state, sizeof(Rendering::IRenderer*));
+				(*ptr_renderer) = obj->renderer;
+				lua_setfield(state, -2, "_pointer");
+				lua_setfield(state, -2, "renderer");
+			}
+			else
+			{
+				Logging::GlobalLogger->SimpleLog(Logging::LogLevel::Warning, "Lua: Object creation failed, ObjectFactory::CreateSpriteObject returned nullptr! Params: %f %f %f %f", x, y, sizex, sizey);
+
+				lua_pushnil(state);
+			}
+
+			return 1;
+		}
 
 		int objectFactory_CreateTextObject(lua_State* state)
 		{
@@ -434,10 +511,11 @@ namespace Engine::Scripting::Mappings
 		"gsm_SetCameraTransform",
 		"gsm_GetLightTransform",
 		"gsm_SetLightTransform",
+		"gsm_AddObject",
+		"gsm_FindObject",
+		"gsm_RemoveObject",
 
 		"engine_GetAssetManager",
-		"engine_AddObject",
-		"engine_FindObject",
 		"engine_SetFramerateTarget",
 
 		"textRenderer_UpdateText",
@@ -447,11 +525,14 @@ namespace Engine::Scripting::Mappings
 		"object_AddChild",
 		"object_GetRotation",
 		"object_Rotate",
+		"object_GetPosition",
+		"object_Translate",
 
 		"assetManager_GetFont",
 		"assetManager_GetTexture",
 		"assetManager_AddTexture",
 
+		"objectFactory_CreateSpriteObject",
 		"objectFactory_CreateTextObject",
 		"objectFactory_CreateGeneric3DObject",
 
@@ -466,10 +547,11 @@ namespace Engine::Scripting::Mappings
 		Functions::gsm_SetCameraTransform,
 		Functions::gsm_GetLightTransform,
 		Functions::gsm_SetLightTransform,
+		Functions::gsm_AddObject,
+		Functions::gsm_FindObject,
+		Functions::gsm_RemoveObject,
 
 		Functions::engine_GetAssetManager,
-		Functions::engine_AddObject,
-		Functions::engine_FindObject,
 		Functions::engine_SetFramerateTarget,
 
 		Functions::textRenderer_UpdateText,
@@ -479,11 +561,14 @@ namespace Engine::Scripting::Mappings
 		Functions::object_AddChild,
 		Functions::object_GetRotation,
 		Functions::object_Rotate,
+		Functions::object_GetPosition,
+		Functions::object_Translate,
 
 		Functions::assetManager_GetFont,
 		Functions::assetManager_GetTexture,
 		Functions::assetManager_AddTexture,
 
+		Functions::objectFactory_CreateSpriteObject,
 		Functions::objectFactory_CreateTextObject,
 		Functions::objectFactory_CreateGeneric3DObject,
 

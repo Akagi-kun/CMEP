@@ -1,7 +1,7 @@
 #pragma once
 
 #if defined(_MSC_VER)
-    //  Microsoft 
+    //  MSVC
     #define CMEP_EXPORT __declspec(dllexport)
 #elif defined(__GNUC__)
     //  GCC
