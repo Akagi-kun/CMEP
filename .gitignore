@@ -376,5 +376,7 @@ build
 game
 *.spv
 Makefile
-*.so
-*.a
+build/*.so
+build/*.a
+external/glfw/**/*.so
+external/glfw/**/*.a
