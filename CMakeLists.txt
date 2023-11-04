@@ -16,7 +16,7 @@ add_subdirectory(rungame)
 add_dependencies(rungame glfw)
 
 add_subdirectory(runtest)
-add_dependencies(runtest glfw)
+#add_dependencies(runtest glfw)
 
 add_subdirectory(examples)
 
