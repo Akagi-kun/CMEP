@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.0)
+cmake_minimum_required(VERSION 3.5)
 project(CMEP)
 
 set(builddir ${CMAKE_CURRENT_SOURCE_DIR}/build/)
@@ -14,6 +14,9 @@ add_dependencies(EngineCore glfw)
 
 add_subdirectory(rungame)
 add_dependencies(rungame glfw)
+
+add_subdirectory(runtest)
+add_dependencies(runtest glfw)
 
 add_subdirectory(examples)
 

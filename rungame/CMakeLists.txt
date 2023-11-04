@@ -1,8 +1,8 @@
-cmake_minimum_required(VERSION 3.0)
+cmake_minimum_required(VERSION 3.5)
 project(rungame CXX)
 
 set(SRC_FILES
-	main.cpp
+	src/main.cpp
 	)
 
 if(WIN32)
@@ -17,10 +17,12 @@ else()
 		)
 endif()
 
-link_directories(../build/ ../external/lua/)
 
 message(${builddir})
 add_executable(rungame ${SRC_FILES})
+
+target_link_directories(rungame PUBLIC ../build/ ../external/lua/)
+target_include_directories(rungame PUBLIC include/)
 
 target_link_libraries(rungame EngineCore)
 
