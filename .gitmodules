@@ -7,3 +7,6 @@
 [submodule "external/glfw"]
 	path = external/glfw
 	url = https://github.com/glfw/glfw.git
+[submodule "external/vulkan-sdk-install"]
+	path = external/vulkan-sdk-install
+	url = https://github.com/humbletim/install-vulkan-sdk.git
