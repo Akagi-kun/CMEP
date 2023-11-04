@@ -1,12 +1,12 @@
 basedir=$PWD
-runner_os=${RUNNER_OS:-`uname -s`}
+runner_os=$(RUNNER_OS:-`uname -s`)
 case $runner_os in
   macOS|Darwin) os=mac ;;
   Linux) os=linux ;;
   Windows|MINGW*) os=windows ; basedir=$(pwd -W) ;;
   *) echo "unknown runner_os: $runner_os" ; exit 7 ; ;;
 esac
-version=${VULKAN_SDK_VERSION:-${{ inputs.version }}}
+version=${VULKAN_SDK_VERSION:"latest"}
 sdk_dir=${VULKAN_SDK:-$basedir/VULKAN_SDK}
 test -d $sdk_dir || mkdir -pv $sdk_dir
 if [[ $version == 'latest' ]] ; then
