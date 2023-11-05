@@ -1,13 +1,6 @@
 cmake_minimum_required(VERSION 3.5)
 project(CMEP)
 
-if(MSVC)
-    add_compile_options(/std:c++17 /wd4996 /wd4251)
-else()
-	add_compile_definitions("DEBUG=$<CONFIG:Debug>")
-	add_compile_options(-std=c++17 -lpthread)
-endif()
-
 set(builddir ${CMAKE_CURRENT_SOURCE_DIR}/build/)
 message(${builddir})
 set(EXECUTABLE_OUTPUT_PATH ${builddir} CACHE PATH "Build directory" FORCE)
@@ -16,6 +9,15 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_DEBUG ${builddir} CACHE PATH "Build directory
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE ${builddir} CACHE PATH "Build directory" FORCE)
 
 add_subdirectory(external/glfw)
+
+
+if(MSVC)
+    add_compile_options(/std:c++17 /wd4996 /wd4251)
+else()
+	add_compile_definitions("DEBUG=$<CONFIG:Debug>")
+	add_compile_options(-std=c++17 -lpthread)
+endif()
+
 add_subdirectory(EngineCore)
 add_dependencies(EngineCore glfw)
 
