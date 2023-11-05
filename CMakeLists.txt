@@ -1,8 +1,6 @@
 cmake_minimum_required(VERSION 3.5)
 project(CMEP)
 
-include(CTEST)
-
 if(MSVC)
     add_compile_options(/std:c++17 /wd4996 /wd4251)
 else()
@@ -24,6 +22,7 @@ add_dependencies(EngineCore glfw)
 add_subdirectory(rungame)
 add_dependencies(rungame glfw)
 
+enable_testing()
 add_subdirectory(runtest)
 add_test(NAME vulkan_test COMMAND test_vulkan)
 #add_dependencies(runtest glfw)
