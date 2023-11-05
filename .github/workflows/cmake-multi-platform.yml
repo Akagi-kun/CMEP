@@ -24,7 +24,7 @@ jobs:
       # To add more build types (Release, Debug, RelWithDebInfo, etc.) customize the build_type list.
       matrix:
         os: [ubuntu-latest, windows-latest]
-        build_type: [Release]
+        build_type: [Debug]
         c_compiler: [gcc, clang, cl]
         include:
           - os: windows-latest
@@ -64,7 +64,7 @@ jobs:
     - name: Update submodules
       run: git submodule update
 
-    - name: Install build tools
+    - name: Install build tools for glfw
       shell: bash
       run: |
          if [ "$RUNNER_OS" == "Linux" ]; then
@@ -89,7 +89,7 @@ jobs:
       working-directory: ${{ steps.strings.outputs.build-output-dir }}
       # Execute tests defined by the CMake configuration. Note that --build-config is needed because the default Windows generator is a multi-config generator (Visual Studio generator).
       # See https://cmake.org/cmake/help/latest/manual/ctest.1.html for more detail
-      run: ctest --build-config ${{ matrix.build_type }}
+      run: ctest --build-config ${{ matrix.build_type }} --output-on-failure .
 
     - name: Upload coverage reports to Codecov
       uses: codecov/codecov-action@v3
