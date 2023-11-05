@@ -19,7 +19,11 @@ int main(int argc, char** argv)
 		test_name = std::string(argv[1]);
 	}
 
+	printf("Running test: %s\n\r", test_name.c_str());
+
 	Logging::GlobalLogger = std::make_unique<Logging::Logger>();
+
+	printf("Init'd GlobalLogger: %s\n\r", test_name.c_str());
 
 	auto test = test_map.find(test_name);
 
@@ -28,6 +32,8 @@ int main(int argc, char** argv)
 		int returns = 0;
 		for(auto test : test_map)
 		{
+			
+			printf("Running subtest: %s of test '%s'\n\r", test_name.c_str(), test_name.c_str());
 			returns += test.second();
 		}
 		return returns;
