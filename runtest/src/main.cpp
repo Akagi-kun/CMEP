@@ -33,7 +33,7 @@ int main(int argc, char** argv)
 		for(auto test : test_map)
 		{
 			
-			printf("Running subtest: %s of test '%s'\n\r", test_name.c_str(), test_name.c_str());
+			printf("Running subtest: %s of test '%s'\n\r", test.first.c_str(), test_name.c_str());
 			returns += test.second();
 		}
 		return returns;
