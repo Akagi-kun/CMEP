@@ -17,7 +17,7 @@ if(MSVC)
     add_compile_options(/std:c++17 /wd4996 /wd4251)
 else()
 	add_compile_definitions("DEBUG=$<CONFIG:Debug>")
-	add_compile_options(-std=c++17 -lpthread)
+	add_compile_options(-std=c++17 -lpthread --coverage)
 endif()
 
 add_subdirectory(EngineCore)
