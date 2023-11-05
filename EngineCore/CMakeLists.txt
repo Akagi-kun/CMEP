@@ -1,17 +1,6 @@
 cmake_minimum_required(VERSION 3.5)
 project(EngineCore CXX)
 
-if(MSVC)
-    add_compile_options(/std:c++17 /wd4996 /wd4251)
-else()
-	add_compile_definitions("DEBUG=$<CONFIG:Debug>")
-	add_compile_options(-std=c++17 -lpthread)
-endif()
-
-
-set(HEADER_FILES
-	)
-
 set(SRC_FILES
 	src/AssetManager.cpp
 	src/dllmain.cpp
@@ -34,7 +23,7 @@ set(SRC_FILES
 	src/Scripting/Mappings.cpp
 	../external/lodepng/lodepng.cpp
 	)
-	
+
 if(WIN32)
 	set(STATIC_LIBRARIES
 		vulkan-1
@@ -49,15 +38,15 @@ else()
 		)
 endif()
 
-add_library(EngineCore SHARED ${SRC_FILES} ${HEADER_FILES})
+add_library(EngineCore SHARED ${SRC_FILES})
 
 if(DEFINED ENV{VULKAN_SDK})
 	if(WIN32)
 		target_link_directories(EngineCore PUBLIC $ENV{VULKAN_SDK}/Lib lib ../build/Debug ../build ../external/lua)
-		target_include_directories(EngineCore PUBLIC ../external ../external/lua/include include $ENV{VULKAN_SDK}/Include)
+		target_include_directories(EngineCore PUBLIC include ../external ../external/lua/include $ENV{VULKAN_SDK}/Include)
 	else()
 		target_link_directories(EngineCore PUBLIC $ENV{VULKAN_SDK}/lib lib ../build/Debug ../build ../external/lua)
-		target_include_directories(EngineCore PUBLIC ../external ../external/lua/include include $ENV{VULKAN_SDK}/include)
+		target_include_directories(EngineCore PUBLIC include ../external ../external/lua/include $ENV{VULKAN_SDK}/include)
 	endif()
 else()
 	target_link_directories(EngineCore PUBLIC lib ../build/Debug ../build ../external/lua)

@@ -380,3 +380,5 @@ build/*.so
 build/*.a
 external/glfw/**/*.so
 external/glfw/**/*.a
+Testing
+**/DartConfiguration.tcl

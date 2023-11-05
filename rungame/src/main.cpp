@@ -23,8 +23,6 @@ int main(int argc, char** argv)
 	dwMode |= ENABLE_VIRTUAL_TERMINAL_PROCESSING;
 	SetConsoleMode(myConsole, dwMode);
 #endif
-	//Engine::Scripting::LuaScript eventHandlers = ::Engine::Scripting::LuaScript("data/scripts/eventHandlers.lua");
-
 	engine = Engine::initializeEngine(windowTitle, windowSizeX, windowSizeY);
 	
 	try
@@ -36,11 +34,7 @@ int main(int argc, char** argv)
 		printf("COULD NOT LOAD CONFIG.JSON! QUITTING");
 		exit(-1);
 	}
-	//engine->RegisterEventHandler(Engine::EventHandling::EventType::ON_INIT, onInit);
-	//engine->RegisterLuaEventHandler(Engine::EventHandling::EventType::ON_INIT, &eventHandlers, "onInit");
-	//engine->RegisterLuaEventHandler(Engine::EventHandling::EventType::ON_UPDATE, &eventHandlers, "onUpdate");
-	//engine->RegisterLuaEventHandler(Engine::EventHandling::EventType::ON_KEYDOWN, &eventHandlers, "onKeyDown");
-	//engine->RegisterLuaEventHandler(Engine::EventHandling::EventType::ON_MOUSEMOVED, &eventHandlers, "onMouseMoved");
+	
 	engine->Run();
 
 	return 0;

@@ -155,7 +155,7 @@ onUpdate = function(event)
 end
 
 onInit = function(event)
-	cmepapi.engine_SetFramerateTarget(0); -- VSYNC enabled
+	cmepapi.engine_SetFramerateTarget(60); -- VSYNC enabled
 
 	-- Get asset manager
 	local asset_manager = cmepapi.engine_GetAssetManager();
