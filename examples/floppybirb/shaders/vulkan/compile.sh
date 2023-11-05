@@ -1,7 +1,5 @@
 #!/bin/bash
 
-./cleanup.sh
-
 $VULKAN_SDK/bin/glslc textrenderer.vert -o textrenderer_vert.spv
 $VULKAN_SDK/bin/glslc textrenderer.frag -o textrenderer_frag.spv
 

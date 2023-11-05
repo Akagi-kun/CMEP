@@ -1,5 +1,3 @@
-call cleanup.bat
-
 C:/VulkanSDK/1.3.261.1/Bin/glslc.exe textrenderer.vert -o textrenderer_vert.spv
 C:/VulkanSDK/1.3.261.1/Bin/glslc.exe textrenderer.frag -o textrenderer_frag.spv
 
