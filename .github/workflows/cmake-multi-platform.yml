@@ -64,7 +64,7 @@ jobs:
     - name: Update submodules
       run: git submodule update
 
-    - name: Install build tools
+    - name: Install build tools for glfw
       shell: bash
       run: |
          if [ "$RUNNER_OS" == "Linux" ]; then
@@ -92,6 +92,7 @@ jobs:
       run: ctest --build-config ${{ matrix.build_type }}
 
     - name: Upload coverage reports to Codecov
+      if: runner.os == "Linux"
       uses: codecov/codecov-action@v3
       env:
         CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
