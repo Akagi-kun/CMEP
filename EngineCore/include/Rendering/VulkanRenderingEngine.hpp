@@ -322,8 +322,6 @@ namespace Engine::Rendering
 		void createVulkanUniformBuffers(VulkanPipeline* pipeline);
 		void createVulkanDescriptorPool(VulkanPipeline* pipeline, VulkanDescriptorLayoutSettings settings);
 		void createVulkanDescriptorSets(VulkanPipeline* pipeline, VulkanDescriptorLayoutSettings settings);
-		/*void updateVulkanDescriptorSets(VulkanPipeline* pipeline, std::vector<VkWriteDescriptorSet> descriptorWrites);
-		void updateVulkanDescriptorSetsVulkanTextureImage(VulkanPipeline* pipeline, VulkanTextureImage* teximage);*/
 
 		// Getters
 		VkDevice GetLogicalDevice();
