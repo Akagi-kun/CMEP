@@ -93,6 +93,3 @@ jobs:
       shell: bash
       run: ./build.sh
 
-    - name: Coveralls
-      uses: coverallsapp/github-action@v2
-      
