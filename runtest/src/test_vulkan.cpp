@@ -8,6 +8,7 @@ Engine::Rendering::VulkanRenderingEngine* rendering_engine;
 
 static int boilerplate_rendering_engine_init()
 {
+	printf("boilerplate_rendering_engine_init\n");
 	rendering_engine = new Engine::Rendering::VulkanRenderingEngine();
 	
 	rendering_engine->init(300, 300, std::string("TESTING"));
@@ -17,6 +18,7 @@ static int boilerplate_rendering_engine_init()
 
 static int boilerplate_rendering_engine_cleanup()
 {
+	printf("boilerplate_rendering_engine_cleanup\n");
 	rendering_engine->cleanup();
 
 	delete rendering_engine;
