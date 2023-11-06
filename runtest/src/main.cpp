@@ -23,6 +23,8 @@ int main(int argc, char** argv)
 
 	Logging::GlobalLogger = std::make_unique<Logging::Logger>();
 
+	Logging::GlobalLogger->SimpleLog(Logging::LogLevel::Info, "testlog");
+	Logging::GlobalLogger->AddOutputHandle(Logging::LogLevel::Debug3, stdout, true);
 	printf("Init'd GlobalLogger\n");
 
 	auto test = test_map.find(test_name);
