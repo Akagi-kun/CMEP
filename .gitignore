@@ -382,3 +382,5 @@ external/glfw/**/*.so
 external/glfw/**/*.a
 Testing
 **/DartConfiguration.tcl
+cov-int
+*.lzma
