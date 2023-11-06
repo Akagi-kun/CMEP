@@ -384,3 +384,5 @@ Testing
 **/DartConfiguration.tcl
 cov-int
 *.lzma
+/external/lua-5.4.6
+/external/lua-5.4.6.tar.gz

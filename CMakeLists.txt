@@ -23,6 +23,11 @@ else()
 	endif()
 endif()
 
+if(APPLE)
+	add_custom_target(NAME lua-build COMMAND ./external/build_lua.sh macosx WORKING_DIRECTORY .)
+	add_dependencies(EngineCore lua-build)
+endif()
+
 add_subdirectory(EngineCore)
 add_dependencies(EngineCore glfw)
 
@@ -42,5 +47,12 @@ endforeach()
 
 add_subdirectory(examples)
 
-file(COPY external/lua/lua54.dll DESTINATION build)
-file(COPY external/lua/liblua54.so DESTINATION build)
+if(MSVC)
+	file(COPY external/lua-prebuilt/lua54.dll DESTINATION build)
+endif()
+
+if(NOT APPLE)
+	file(COPY external/lua-prebuilt/liblua54.so DESTINATION build)
+else()
+	file(COPY external/lua-5.4.6/src/lua54.so DESTINATION build/liblua54.so)
+endif()
