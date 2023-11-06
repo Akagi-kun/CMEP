@@ -1,4 +1,4 @@
-name: Linux
+name: MacOS
 
 on:
   push:
@@ -15,14 +15,14 @@ jobs:
       fail-fast: false
 
       matrix:
-        os: [ubuntu-latest]
+        os: [macos-latest]
         build_type: [Debug]
         c_compiler: [gcc, clang]
         include:
-          - os: ubuntu-latest
+          - os: macos-latest
             c_compiler: gcc
             cpp_compiler: g++
-          - os: ubuntu-latest
+          - os: macos-latest
             c_compiler: clang
             cpp_compiler: clang++
 
@@ -45,11 +45,6 @@ jobs:
     
     - name: Update submodules
       run: git submodule update
-
-    - name: Install build tools for glfw
-      shell: bash
-      if: ${{matrix.os == 'ubuntu-latest'}}
-      run: sudo apt install libxrandr-dev libxinerama-dev libxcursor-dev libxi-dev libxext-dev wayland-protocols libwayland-dev libxkbcommon-dev
 
     - name: Configure CMake
       run: >

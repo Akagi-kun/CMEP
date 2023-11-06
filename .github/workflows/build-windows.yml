@@ -1,4 +1,4 @@
-name: Linux
+name: Windows
 
 on:
   push:
@@ -15,16 +15,16 @@ jobs:
       fail-fast: false
 
       matrix:
-        os: [ubuntu-latest]
+        os: [windows-latest]
         build_type: [Debug]
-        c_compiler: [gcc, clang]
+        c_compiler: [cl, mingw]
         include:
-          - os: ubuntu-latest
-            c_compiler: gcc
-            cpp_compiler: g++
-          - os: ubuntu-latest
-            c_compiler: clang
-            cpp_compiler: clang++
+          - os: windows-latest
+            c_compiler: mingw
+            cpp_compiler: mingw++
+          - os: windows-latest
+            c_compiler: cl
+            cpp_compiler: cl
 
     steps:
     - uses: actions/checkout@v3
@@ -45,11 +45,6 @@ jobs:
     
     - name: Update submodules
       run: git submodule update
-
-    - name: Install build tools for glfw
-      shell: bash
-      if: ${{matrix.os == 'ubuntu-latest'}}
-      run: sudo apt install libxrandr-dev libxinerama-dev libxcursor-dev libxi-dev libxext-dev wayland-protocols libwayland-dev libxkbcommon-dev
 
     - name: Configure CMake
       run: >
