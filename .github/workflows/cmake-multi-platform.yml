@@ -85,7 +85,7 @@ jobs:
       # Build your program with the given configuration. Note that --config is needed because the default Windows generator is a multi-config generator (Visual Studio generator).
       #run: cmake --build ${{ steps.strings.outputs.build-output-dir }} --config ${{ matrix.build_type }} --target rungame runtest floppybirb
       shell: bash
-      run: ./build.sh
+      run: ./build.sh && cmake --build . --target floppybirb
 
     - name: Test
       working-directory: ${{ steps.strings.outputs.build-output-dir }}
