@@ -23,7 +23,7 @@ jobs:
       #
       # To add more build types (Release, Debug, RelWithDebInfo, etc.) customize the build_type list.
       matrix:
-        os: [ubuntu-latest, windows-latest]
+        os: [ubuntu-latest, windows-latest, macos-latest]
         build_type: [Debug]
         c_compiler: [gcc, clang, cl]
         include:
@@ -66,6 +66,7 @@ jobs:
 
     - name: Install build tools for glfw
       shell: bash
+      if: matrix.os == "linux-latest"
       run: |
          if [ "$RUNNER_OS" == "Linux" ]; then
               sudo apt install libxrandr-dev libxinerama-dev libxcursor-dev libxi-dev libxext-dev wayland-protocols libwayland-dev libxkbcommon-dev
