@@ -1009,9 +1009,9 @@ namespace Engine::Rendering
 		this->windowTitle = title;
 
 		// Initialize GLFW
-		if (!glfwInit())
+		if (glfwInit() == GLFW_FALSE)
 		{
-			Logging::GlobalLogger->SimpleLog(Logging::LogLevel::Error, "glfwInit returned 0!");
+			Logging::GlobalLogger->SimpleLog(Logging::LogLevel::Error, "glfwInit returned GLFW_FALSE!");
 			exit(1);
 		}
 		Logging::GlobalLogger->SimpleLog(Logging::LogLevel::Info, "GLFW initialized");

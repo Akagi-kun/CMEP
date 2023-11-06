@@ -1,6 +1,7 @@
 #include <string>
 
 #include "Rendering/VulkanRenderingEngine.hpp"
+#include "Logging/Logging.hpp"
 
 #define TEST_BUFFER_SIZE 0xffff
 
@@ -23,6 +24,7 @@ static int boilerplate_rendering_engine_cleanup()
 	rendering_engine->cleanup();
 
 	delete rendering_engine;
+	Logging::GlobalLogger->SimpleLog(Logging::LogLevel::Info, "testlog");
 	printf("boilerplate_rendering_engine_cleanup end\n");
 	
 	return 0;
