@@ -23,12 +23,11 @@ else()
 	endif()
 endif()
 
-
 add_subdirectory(EngineCore)
 add_dependencies(EngineCore glfw)
 
 if(APPLE)
-	add_custom_target(lua_build COMMAND ./external/build_lua.sh macosx WORKING_DIRECTORY .)
+	add_custom_target(lua_build COMMAND ./external/build_lua.sh macosx)
 	add_dependencies(EngineCore lua_build)
 endif()
 
