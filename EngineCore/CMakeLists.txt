@@ -37,11 +37,11 @@ elseif(APPLE)
 		lua
 		)
 else()
-set(STATIC_LIBRARIES
-	vulkan
-	glfw
-	lua54
-	)
+	set(STATIC_LIBRARIES
+		vulkan
+		glfw
+		lua54
+		)
 endif()
 
 add_library(EngineCore SHARED ${SRC_FILES})

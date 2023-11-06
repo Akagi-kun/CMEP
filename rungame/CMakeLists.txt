@@ -5,10 +5,16 @@ set(SRC_FILES
 	src/main.cpp
 	)
 
+
 if(WIN32)
 	set(STATIC_LIBRARIES
 		glfw3
 		lua54
+		)
+elseif(APPLE)
+	set(STATIC_LIBRARIES
+		glfw
+		lua
 		)
 else()
 	set(STATIC_LIBRARIES
@@ -17,20 +23,26 @@ else()
 		)
 endif()
 
-include_directories(EngineCore PUBLIC ../external ../external/lua/include include ../common_include ../EngineCore/include)
+add_executable(rungame ${SRC_FILES})
+
+include_directories(rungame PUBLIC ../external ../external/lua-prebuilt/include include ../common_include ../EngineCore/include)
 if(DEFINED ENV{VULKAN_SDK})
 	if(WIN32)
-		link_directories(EngineCore PUBLIC $ENV{VULKAN_SDK}/Lib lib ../build/Debug ../build ../external/lua)
-		include_directories(EngineCore PUBLIC $ENV{VULKAN_SDK}/include)
+		target_link_directories(rungame PUBLIC $ENV{VULKAN_SDK}/Lib lib ../build/Debug ../build ../external/lua-prebuilt)
+		target_include_directories(rungame PUBLIC $ENV{VULKAN_SDK}/Include)
 	else()
-		link_directories(EngineCore PUBLIC $ENV{VULKAN_SDK}/lib lib ../build/Debug ../build ../external/lua)
-		include_directories(EngineCore PUBLIC $ENV{VULKAN_SDK}/include)
+		if(APPLE)
+				target_link_directories(rungame PUBLIC $ENV{VULKAN_SDK}/lib lib ../build/Debug ../build ../external/lua-5.4.6/src)
+			target_include_directories(rungame PUBLIC $ENV{VULKAN_SDK}/include)
+		else()
+			target_link_directories(rungame PUBLIC $ENV{VULKAN_SDK}/lib lib ../build/Debug ../build ../external/lua-prebuilt)
+			target_include_directories(rungame PUBLIC $ENV{VULKAN_SDK}/include)
+		endif()
 	endif()
 else()
-	link_directories(EngineCore PUBLIC lib ../build/Debug ../build ../external/lua)
+	link_directories(rungame PUBLIC lib ../build/Debug ../build ../external/lua)
 	message("Warning! Vulkan SDK environment variable not found!")
 endif()
 
-add_executable(rungame ${SRC_FILES})
 
 target_link_libraries(rungame EngineCore ${STATIC_LIBRARIES})
