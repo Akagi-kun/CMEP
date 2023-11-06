@@ -23,7 +23,7 @@ int main(int argc, char** argv)
 
 	Logging::GlobalLogger = std::make_unique<Logging::Logger>();
 
-	printf("Init'd GlobalLogger: %s\n", test_name.c_str());
+	printf("Init'd GlobalLogger\n");
 
 	auto test = test_map.find(test_name);
 
