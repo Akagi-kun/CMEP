@@ -12,6 +12,7 @@ static int boilerplate_rendering_engine_init()
 	printf("boilerplate_rendering_engine_init start\n");
 	rendering_engine = new Engine::Rendering::VulkanRenderingEngine();
 	
+	Logging::GlobalLogger->SimpleLog(Logging::LogLevel::Info, "testlog");
 	rendering_engine->init(300, 300, std::string("TESTING"));
 	printf("boilerplate_rendering_engine_init end\n");
 
@@ -24,7 +25,6 @@ static int boilerplate_rendering_engine_cleanup()
 	rendering_engine->cleanup();
 
 	delete rendering_engine;
-	Logging::GlobalLogger->SimpleLog(Logging::LogLevel::Info, "testlog");
 	printf("boilerplate_rendering_engine_cleanup end\n");
 	
 	return 0;
