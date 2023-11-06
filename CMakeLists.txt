@@ -23,13 +23,14 @@ else()
 	endif()
 endif()
 
+
+add_subdirectory(EngineCore)
+add_dependencies(EngineCore glfw)
+
 if(APPLE)
 	add_custom_target(NAME lua-build COMMAND ./external/build_lua.sh macosx WORKING_DIRECTORY .)
 	add_dependencies(EngineCore lua-build)
 endif()
-
-add_subdirectory(EngineCore)
-add_dependencies(EngineCore glfw)
 
 add_subdirectory(rungame)
 add_dependencies(rungame glfw)
