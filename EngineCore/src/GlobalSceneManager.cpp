@@ -113,13 +113,13 @@ namespace Engine
 
 	void GlobalSceneManager::SetCameraHVRotation(glm::vec2 hvrotation)
 	{
-		if (hvrotation.y < 1.7)
+		if (hvrotation.y < 1.7f)
 		{
-			hvrotation.y = 1.7;
+			hvrotation.y = 1.7f;
 		}
-		else if (hvrotation.y > 4.5)
+		else if (hvrotation.y > 4.5f)
 		{
-			hvrotation.y = 4.5;
+			hvrotation.y = 4.5f;
 		}
 
 		this->cameraHVRotation = hvrotation;

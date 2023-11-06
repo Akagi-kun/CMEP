@@ -53,19 +53,19 @@ namespace Engine::Rendering
 		TextRenderer();
 		~TextRenderer();
 
-		void Update(glm::vec3 pos, glm::vec3 size, glm::vec3 rotation, uint_fast16_t screenx, uint_fast16_t screeny, glm::vec3 parent_position, glm::vec3 parent_rotation, glm::vec3 parent_size) noexcept override;
+		void Update(glm::vec3 pos, glm::vec3 size, glm::vec3 rotation, uint_fast16_t screenx, uint_fast16_t screeny, glm::vec3 parent_position, glm::vec3 parent_rotation, glm::vec3 parent_size) override;
 
 		/// <summary>
 		/// Update font used by renderer. See <see cref="font"/>.
 		/// </summary>
 		/// <param name="font">New font.</param>
-		int UpdateFont(Rendering::Font* const font) noexcept;
+		int UpdateFont(Rendering::Font* const font);
 		
 		/// <summary>
 		/// Update rendered text.
 		/// </summary>
 		/// <param name="text">New text.</param>
-		int UpdateText(const std::string text) noexcept;
+		int UpdateText(const std::string text);
 		
 		void UpdateMesh() override;
 		void Render(VkCommandBuffer commandBuffer, uint32_t currentFrame) override;

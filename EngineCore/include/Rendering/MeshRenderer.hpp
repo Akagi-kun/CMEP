@@ -62,9 +62,9 @@ namespace Engine::Rendering
 
 		void AssignMesh(Mesh* new_mesh);
 
-		void UpdateTexture(const Rendering::Texture* texture) noexcept;
-		void Update(glm::vec3 pos, glm::vec3 size, glm::vec3 rotation, uint_fast16_t screenx, uint_fast16_t screeny, glm::vec3 parent_position, glm::vec3 parent_rotation, glm::vec3 parent_size) noexcept override;
-		void UpdateMesh() noexcept override;
+		void UpdateTexture(const Rendering::Texture* texture);
+		void Update(glm::vec3 pos, glm::vec3 size, glm::vec3 rotation, uint_fast16_t screenx, uint_fast16_t screeny, glm::vec3 parent_position, glm::vec3 parent_rotation, glm::vec3 parent_size) override;
+		void UpdateMesh() override;
 
 		void Render(VkCommandBuffer commandBuffer, uint32_t currentFrame) override;
 	};

@@ -54,7 +54,7 @@ namespace Engine::Rendering
 		//glDeleteBuffers(1, &this->vbo);
 	}
 
-	void TextRenderer::Update(glm::vec3 pos, glm::vec3 size, glm::vec3 rotation, uint_fast16_t screenx, uint_fast16_t screeny, glm::vec3 parent_position, glm::vec3 parent_rotation, glm::vec3 parent_size) noexcept
+	void TextRenderer::Update(glm::vec3 pos, glm::vec3 size, glm::vec3 rotation, uint_fast16_t screenx, uint_fast16_t screeny, glm::vec3 parent_position, glm::vec3 parent_rotation, glm::vec3 parent_size)
 	{
 		this->_pos = pos;
 		this->_size = size;
@@ -70,7 +70,7 @@ namespace Engine::Rendering
 		this->has_updated_mesh = false;
 	}
 
-	int TextRenderer::UpdateFont(Rendering::Font* const font) noexcept
+	int TextRenderer::UpdateFont(Rendering::Font* const font)
 	{
 		this->font.reset(font);
 
@@ -80,7 +80,7 @@ namespace Engine::Rendering
 
 	}
 
-	int TextRenderer::UpdateText(const std::string text) noexcept
+	int TextRenderer::UpdateText(const std::string text)
 	{
 		this->text.assign(text);
 		

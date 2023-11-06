@@ -38,7 +38,7 @@ namespace Logging
 		std::atomic<bool> threadLocked;
 
 	public:
-		Logger() {}
+		Logger() : threadLocked(false) {}
 
 		void AddOutputHandle(LogLevel min_level, FILE* handle, bool useColors = false);
 		void MapCurrentThreadToName(std::string name);

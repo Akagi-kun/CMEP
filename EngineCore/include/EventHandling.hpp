@@ -7,11 +7,12 @@ namespace Engine::EventHandling
 {
 	enum class EventType
 	{
-		ON_INIT,
-		ON_UPDATE,
-		ON_KEYDOWN,
-		ON_KEYUP,
-		ON_MOUSEMOVED
+		ON_INIT = 0x1,
+		ON_UPDATE = 0x2,
+		ON_KEYDOWN = 0x4,
+		ON_KEYUP = 0x8,
+		ON_MOUSEMOVED = 0x10,
+		EVENT_UNDEFINED = 0xffff
 	};
 
 	class CMEP_EXPORT Event final

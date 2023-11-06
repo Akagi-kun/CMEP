@@ -92,7 +92,7 @@ namespace Engine
 
 				if (setting_class == "eventHandler")
 				{
-					::Engine::EventHandling::EventType event_type;
+					::Engine::EventHandling::EventType event_type = ::Engine::EventHandling::EventType::EVENT_UNDEFINED;
 
 					if (setting_name.compare("onInit") == 0)
 					{
@@ -110,6 +110,8 @@ namespace Engine
 					{
 						event_type = ::Engine::EventHandling::EventType::ON_MOUSEMOVED;
 					}
+
+					assert(event_type != ::Engine::EventHandling::EventType::EVENT_UNDEFINED);
 
 					AssetManager* asset_manager = ::Engine::global_engine->GetAssetManager();
 					if (asset_manager->GetLuaScript(std::get<1>(setting)) == nullptr)

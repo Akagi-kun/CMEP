@@ -59,7 +59,7 @@ namespace Engine
 			/// <param name="size">Size of renderable.</param>
 			/// <param name="screenx">X size of screen.</param>
 			/// <param name="screeny">Y size of screen.</param>
-			virtual void Update(glm::vec3 pos, glm::vec3 size, glm::vec3 rotation, uint_fast16_t screenx, uint_fast16_t screeny, glm::vec3 parent_position, glm::vec3 parent_rotation, glm::vec3 parent_size) noexcept = 0;
+			virtual void Update(glm::vec3 pos, glm::vec3 size, glm::vec3 rotation, uint_fast16_t screenx, uint_fast16_t screeny, glm::vec3 parent_position, glm::vec3 parent_rotation, glm::vec3 parent_size) = 0;
 			
 			/// <summary>
 			/// Updates mesh of renderable.

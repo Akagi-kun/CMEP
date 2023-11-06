@@ -47,7 +47,7 @@ namespace Engine::Rendering
 		//glDeleteBuffers(1, &this->vbo);
 	}
 
-	void AxisRenderer::Update(glm::vec3 pos, glm::vec3 size, glm::vec3 rotation, uint_fast16_t screenx, uint_fast16_t screeny, glm::vec3 parent_position, glm::vec3 parent_rotation, glm::vec3 parent_size) noexcept
+	void AxisRenderer::Update(glm::vec3 pos, glm::vec3 size, glm::vec3 rotation, uint_fast16_t screenx, uint_fast16_t screeny, glm::vec3 parent_position, glm::vec3 parent_rotation, glm::vec3 parent_size)
 	{
 		this->_pos = pos;
 		this->_size = size;
@@ -63,7 +63,7 @@ namespace Engine::Rendering
 		this->has_updated_mesh = false;
 	}
 
-	void AxisRenderer::UpdateMesh() noexcept
+	void AxisRenderer::UpdateMesh()
 	{
 		this->has_updated_mesh = true;
 

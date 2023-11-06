@@ -45,11 +45,15 @@ namespace Engine::Rendering
 
 	SpriteRenderer::~SpriteRenderer()
 	{
+		VulkanRenderingEngine* renderer = global_engine->GetRenderingEngine();
+
+		renderer->cleanupVulkanBuffer(this->vbo);
+		renderer->cleanupVulkanPipeline(this->pipeline);
 		//glDeleteVertexArrays(1, &this->vao);
 		//glDeleteBuffers(1, &this->vbo);
 	}
 
-	void SpriteRenderer::Update(glm::vec3 pos, glm::vec3 size, glm::vec3 rotation, uint_fast16_t screenx, uint_fast16_t screeny, glm::vec3 parent_position, glm::vec3 parent_rotation, glm::vec3 parent_size) noexcept
+	void SpriteRenderer::Update(glm::vec3 pos, glm::vec3 size, glm::vec3 rotation, uint_fast16_t screenx, uint_fast16_t screeny, glm::vec3 parent_position, glm::vec3 parent_rotation, glm::vec3 parent_size)
 	{
 		this->_pos = pos;
 		this->_size = size;
@@ -65,14 +69,14 @@ namespace Engine::Rendering
 		this->has_updated_mesh = false;
 	}
 
-	void SpriteRenderer::UpdateTexture(const Rendering::Texture* texture) noexcept
+	void SpriteRenderer::UpdateTexture(const Rendering::Texture* texture)
 	{
 		this->texture.reset(texture);
 
 		this->has_updated_mesh = false;
 	}
 
-	void SpriteRenderer::UpdateMesh() noexcept
+	void SpriteRenderer::UpdateMesh()
 	{
 		this->has_updated_mesh = true;
 

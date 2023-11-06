@@ -119,8 +119,8 @@ namespace Engine
 			exit(1);
 		}
 
-		Scripting::LuaScript* event_handler;
-		EventHandling::EventType eventType;
+		Scripting::LuaScript* event_handler = nullptr;
+		EventHandling::EventType eventType = EventHandling::EventType::EVENT_UNDEFINED;
 
 		for(auto& eventHandler : data["eventHandlers"])
 		{
@@ -144,6 +144,8 @@ namespace Engine
 			{
 				eventType = EventHandling::EventType::ON_UPDATE;
 			}
+
+			assert(eventType != EventHandling::EventType::EVENT_UNDEFINED);
 
 			Logging::GlobalLogger->SimpleLog(Logging::LogLevel::Debug3, "Event handler for type: %s", static_cast<std::string>(eventHandler["type"]).c_str());
 			asset_manager->AddLuaScript(eventHandler["file"], eventHandler["file"]);
