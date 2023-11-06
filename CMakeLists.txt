@@ -12,13 +12,12 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE ${builddir} CACHE PATH "Build directo
 
 add_subdirectory(external/glfw)
 
-
 if(MSVC)
     add_compile_options(/std:c++17 /wd4996 /wd4251)
 else()
 	add_compile_definitions("DEBUG=$<CONFIG:Debug>")
-	add_compile_options(-std=c++17)
-	add_link_options(-lpthread)
+	add_compile_options(-std=c++17 --coverage)
+	add_link_options(-lpthread -lgcov --coverage)
 endif()
 
 add_subdirectory(EngineCore)
