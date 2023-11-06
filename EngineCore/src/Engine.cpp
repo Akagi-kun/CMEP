@@ -314,9 +314,9 @@ namespace Engine
 			glfwPollEvents();
 			
 			// spin sleep if framerate locked
-			if(this->framerateTarget != 0)
+			if(this->framerateTarget == 0)
 			{
-				this->framerateTarget = 60;
+				this->framerateTarget = 5000;
 			}
 
 			const auto frameClock = std::chrono::steady_clock::now();

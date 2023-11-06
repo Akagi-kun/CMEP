@@ -3,7 +3,7 @@
 
 namespace Engine::Scripting
 {
-	LuaScript::LuaScript(std::string path) : path(path)
+	LuaScript::LuaScript(std::string path) : path(std::move(path))
 	{
 		this->state = luaL_newstate();
 		luaL_openlibs(this->state);

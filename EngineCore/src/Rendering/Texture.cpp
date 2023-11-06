@@ -56,7 +56,7 @@ namespace Engine::Rendering
 		this->x = xsize;
 		this->y = ysize;
 
-		VkDeviceSize memory_size = xsize * ysize * channel_count;
+		VkDeviceSize memory_size = static_cast<VkDeviceSize>(xsize) * static_cast<VkDeviceSize>(ysize) * channel_count;
 
 		VulkanRenderingEngine* renderer = global_engine->GetRenderingEngine();
 
@@ -116,15 +116,13 @@ namespace Engine::Rendering
 		{
 			case Texture_InitFiletype::FILE_PNG:
 			{
-				std::vector<unsigned char> pixels;
-
-				unsigned error = lodepng::decode(pixels, sizex, sizey, path.c_str());
+				unsigned error = lodepng::decode(data, sizex, sizey, path.c_str());
 
 				Logging::GlobalLogger->SimpleLog(Logging::LogLevel::Debug1, "Decoded png file %s width %u height %u", path.c_str(), sizex, sizey);
 
 				fclose(file);
 
-				this->InitRaw(pixels, 4, sizex, sizey);
+				this->InitRaw(std::move(data), 4, sizex, sizey);
 
 				return 0;
 			}
@@ -133,7 +131,7 @@ namespace Engine::Rendering
 
 		if (sizex != 0 || sizey != 0)
 		{
-			this->InitRaw(data, 3, sizex, sizey);
+			this->InitRaw(std::move(data), 3, sizex, sizey);
 		}
 		else
 		{
@@ -149,7 +147,7 @@ namespace Engine::Rendering
 		y = this->y;
 	}
 
-	const std::vector<unsigned char> Texture::GetData() const noexcept
+	const std::vector<unsigned char> Texture::GetData() const
 	{
 		return this->data;
 	}

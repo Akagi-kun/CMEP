@@ -87,7 +87,7 @@ namespace Engine::Scripting::Mappings
 			lua_getfield(state, 2, "_pointer");
 			Object* obj = *(Object**)lua_touserdata(state, -1);
 
-			global_scene_manager->AddObject(name, obj);
+			global_scene_manager->AddObject(std::move(name), obj);
 
 			return 0;
 		}
@@ -129,7 +129,7 @@ namespace Engine::Scripting::Mappings
 		{
 			std::string name = lua_tostring(state, 1);
 
-			global_scene_manager->RemoveObject(name);
+			global_scene_manager->RemoveObject(std::move(name));
 
 			return 0;
 		}
@@ -292,7 +292,7 @@ namespace Engine::Scripting::Mappings
 
 			std::string path = lua_tostring(state, 2);
 
-			Rendering::Font* font = ptr_am->GetFont(path);
+			Rendering::Font* font = ptr_am->GetFont(std::move(path));
 
 			if (font != nullptr)
 			{
@@ -318,7 +318,7 @@ namespace Engine::Scripting::Mappings
 
 			std::string path = lua_tostring(state, 2);
 
-			Rendering::Texture* texture = ptr_am->GetTexture(path);
+			Rendering::Texture* texture = ptr_am->GetTexture(std::move(path));
 
 			if (texture != nullptr)
 			{
@@ -345,7 +345,7 @@ namespace Engine::Scripting::Mappings
 			std::string name = lua_tostring(state, 2);
 			std::string path = lua_tostring(state, 3);
 
-			ptr_am->AddTexture(name, path, Rendering::Texture_InitFiletype::FILE_PNG);
+			ptr_am->AddTexture(std::move(name), std::move(path), Rendering::Texture_InitFiletype::FILE_PNG);
 
 			return 1;
 		}
@@ -496,7 +496,7 @@ namespace Engine::Scripting::Mappings
 
 			std::string path = lua_tostring(state, 2);
 
-			(*mesh)->CreateMeshFromObj(path);
+			(*mesh)->CreateMeshFromObj(std::move(path));
 
 			return 0;
 		}

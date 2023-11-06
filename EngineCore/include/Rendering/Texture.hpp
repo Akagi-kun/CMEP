@@ -36,7 +36,7 @@ namespace Engine::Rendering
 		int InitFile(Texture_InitFiletype filetype, std::string path, unsigned int sizex = 0, unsigned int sizey = 0);
 
 		void GetSize(unsigned int& x, unsigned int& y) const noexcept;
-		const std::vector<unsigned char> GetData() const noexcept;
+		const std::vector<unsigned char> GetData() const;
 		unsigned int GetTexture() const noexcept;
 		VulkanTextureImage* GetTextureImage() const noexcept;
 		int GetColorFormat() const noexcept;

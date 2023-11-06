@@ -197,7 +197,7 @@ namespace Engine::Rendering
 		VkRenderPass vkRenderPass = VK_NULL_HANDLE;
 
 		// Depth buffers
-		VulkanImage* vkDepthBuffer;
+		VulkanImage* vkDepthBuffer = nullptr;
 
 		// External callback for rendering
 		std::function<void(VkCommandBuffer, uint32_t)> external_callback;
@@ -314,8 +314,8 @@ namespace Engine::Rendering
 
 		// Pipeline functions
 		VulkanPipelineSettings getVulkanDefaultPipelineSettings();
-		VulkanPipeline* createVulkanPipelineFromPrealloc(VulkanPipeline* pipeline, VulkanPipelineSettings settings, std::string vert_path, std::string frag_path);
-		VulkanPipeline* createVulkanPipeline(VulkanPipelineSettings settings, std::string vert_path, std::string frag_path);
+		VulkanPipeline* createVulkanPipelineFromPrealloc(VulkanPipeline* pipeline, VulkanPipelineSettings& settings, std::string vert_path, std::string frag_path);
+		VulkanPipeline* createVulkanPipeline(VulkanPipelineSettings& settings, std::string vert_path, std::string frag_path);
 
 		// Pipeline descriptor functions
 		void createVulkanDescriptorSetLayout(VulkanPipeline* pipeline, VulkanDescriptorLayoutSettings settings);

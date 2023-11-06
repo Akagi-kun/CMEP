@@ -1015,7 +1015,7 @@ namespace Engine::Rendering
 	{
 		this->windowX = xsize;
 		this->windowY = ysize;
-		this->windowTitle = title;
+		this->windowTitle = std::move(title);
 
 		// Initialize GLFW
 		if (glfwInit() == GLFW_FALSE)
@@ -1284,7 +1284,7 @@ namespace Engine::Rendering
 		return default_settings;
 	}
 
-	VulkanPipeline* VulkanRenderingEngine::createVulkanPipelineFromPrealloc(VulkanPipeline* pipeline, VulkanPipelineSettings settings, std::string vert_path, std::string frag_path)
+	VulkanPipeline* VulkanRenderingEngine::createVulkanPipelineFromPrealloc(VulkanPipeline* pipeline, VulkanPipelineSettings& settings, std::string vert_path, std::string frag_path)
 	{
 		if (this->leakPipelineCounter > 300)
 		{
@@ -1293,8 +1293,8 @@ namespace Engine::Rendering
 
 		settings.colorBlending.pAttachments = &settings.colorBlendAttachment;
 
-		auto vertShaderCode = VulkanRenderingEngine::readShaderFile(vert_path);
-		auto fragShaderCode = VulkanRenderingEngine::readShaderFile(frag_path);
+		auto vertShaderCode = VulkanRenderingEngine::readShaderFile(std::move(vert_path));
+		auto fragShaderCode = VulkanRenderingEngine::readShaderFile(std::move(frag_path));
 
 		VkShaderModule vertShaderModule = this->createVulkanShaderModule(vertShaderCode);
 		VkShaderModule fragShaderModule = this->createVulkanShaderModule(fragShaderCode);
@@ -1385,11 +1385,11 @@ namespace Engine::Rendering
 		return pipeline;
 	}
 
-	VulkanPipeline* VulkanRenderingEngine::createVulkanPipeline(VulkanPipelineSettings settings, std::string vert_path, std::string frag_path)
+	VulkanPipeline* VulkanRenderingEngine::createVulkanPipeline(VulkanPipelineSettings& settings, std::string vert_path, std::string frag_path)
 	{
 		VulkanPipeline* new_pipeline = new VulkanPipeline();
 
-		this->createVulkanPipelineFromPrealloc(new_pipeline, settings, vert_path, frag_path);
+		this->createVulkanPipelineFromPrealloc(new_pipeline, settings, std::move(vert_path), std::move(frag_path));
 
 		return new_pipeline;
 	}

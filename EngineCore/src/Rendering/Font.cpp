@@ -46,12 +46,15 @@ namespace Engine::Rendering
 		int cur_offset = 0;
 		char cur_data[16] = {};
 		char* data = new char[256];
+
+		assert(data);
+
 		while (feof(file) == 0)
 		{
-			memset(data, 0, 256);
+			memset(data, 0, 255);
 
 			// Get a line from file
-			fgets(data, 256, file);
+			fgets(data, 255, file);
 
 			// Remove trailing newline
 			data[strcspn(data, "\n")] = 0;
