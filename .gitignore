@@ -392,3 +392,4 @@ cov-int
 /*.png
 /*.css
 **.html
+*.info
