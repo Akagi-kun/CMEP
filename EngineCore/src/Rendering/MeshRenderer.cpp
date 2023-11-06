@@ -169,13 +169,16 @@ namespace Engine::Rendering
 				{
 					VulkanTextureImage* currentDiffuseTextureImage = this->mesh->diffuse_textures[diffuseTextureIndex]->GetTextureImage();
 	
-					if (currentDiffuseTextureImage->image != nullptr || currentDiffuseTextureImage->textureSampler != VK_NULL_HANDLE)
+					if(currentDiffuseTextureImage != nullptr)
 					{
-						VkDescriptorImageInfo diffuseImageBufferInfo{};
-						diffuseImageBufferInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-						diffuseImageBufferInfo.imageView = currentDiffuseTextureImage->image->imageView;
-						diffuseImageBufferInfo.sampler = currentDiffuseTextureImage->textureSampler;
-						diffuseImageBufferInfos[diffuseTextureIndex] = diffuseImageBufferInfo;
+						if (currentDiffuseTextureImage->image != nullptr || currentDiffuseTextureImage->textureSampler != VK_NULL_HANDLE)
+						{
+							VkDescriptorImageInfo diffuseImageBufferInfo{};
+							diffuseImageBufferInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+							diffuseImageBufferInfo.imageView = currentDiffuseTextureImage->image->imageView;
+							diffuseImageBufferInfo.sampler = currentDiffuseTextureImage->textureSampler;
+							diffuseImageBufferInfos[diffuseTextureIndex] = diffuseImageBufferInfo;
+						}
 					}
 				}
 			}
@@ -213,7 +216,7 @@ namespace Engine::Rendering
 				}
 
 				Logging::GlobalLogger->SimpleLog(Logging::LogLevel::Debug3, "Descriptor set 0x%x write of index 1 has binding %u, descriptorWrite size is %u",
-					pipeline->vkDescriptorSets[i], descriptorWrites[1].dstBinding, descriptorWrites.size());
+					pipeline->vkDescriptorSets[i], descriptorWrites[1].dstBinding, static_cast<unsigned int>(descriptorWrites.size()));
 
 				vkUpdateDescriptorSets(renderer->GetLogicalDevice(), static_cast<uint32_t>(descriptorWrites.size()), descriptorWrites.data(), 0, nullptr);
 			}

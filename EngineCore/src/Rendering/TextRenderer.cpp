@@ -114,6 +114,8 @@ namespace Engine::Rendering
 
 		int fontsize = std::stoi(this->font.get()->GetFontInfoParameter("size")->c_str(), nullptr, 10);
 
+		assert(fontsize > 0);
+		
 		//std::vector<GLfloat> generated_mesh = {};
 		std::vector<RenderingVertex> generated_mesh = {};
 

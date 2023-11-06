@@ -32,7 +32,7 @@ namespace Engine::ObjectFactory
 		object->Translate(glm::vec3(x, y, 0));
 		object->Scale(glm::vec3(size, size, 0));
 		((Rendering::TextRenderer*)object->renderer)->UpdateFont(font);
-		((Rendering::TextRenderer*)object->renderer)->UpdateText(text);
+		((Rendering::TextRenderer*)object->renderer)->UpdateText(std::move(text));
 		((Rendering::TextRenderer*)object->renderer)->UpdateMesh();
 		
 		return object;

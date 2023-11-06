@@ -26,21 +26,17 @@ namespace Engine
 			std::unordered_map<int, Texture*> pages;
 			std::unordered_map<int, FontChar> chars;
 
-			void EvalBmfont(FILE* file) noexcept;
-			void EvalBmfontLine(int type, char* data) noexcept;
+			void EvalBmfont(FILE* file);
+			void EvalBmfontLine(int type, char* data);
 		public:
-			Font(AssetManager* managed_by = nullptr) noexcept;
-			Font(const Font& other) noexcept = delete;
-			Font(const Font&& other) noexcept = delete;
-			Font& operator=(const Font& other) noexcept = delete;
-			Font& operator=(const Font&& other) noexcept = delete;
-			~Font() noexcept;
+			Font(AssetManager* managed_by = nullptr);
+			~Font();
 
-			int Init(std::string path) noexcept;
+			int Init(std::string path);
 
-			FontChar* GetChar(char ch) noexcept;
-			Texture* GetPageTexture(int page) noexcept;
-			std::string* GetFontInfoParameter(std::string name) noexcept;
+			FontChar* GetChar(char ch);
+			Texture* GetPageTexture(int page);
+			std::string* GetFontInfoParameter(std::string name);
 		};
 	}
 }

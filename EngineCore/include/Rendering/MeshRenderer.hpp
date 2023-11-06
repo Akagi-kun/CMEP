@@ -41,11 +41,11 @@ namespace Engine::Rendering
 		VulkanPipeline* pipeline = nullptr;
 		VulkanBuffer* vbo = nullptr;
 
-		glm::mat4 matM;
-		glm::mat4 matV;
-		glm::mat4 matMV;
-		glm::mat3 matMV3x3;
-		glm::mat4 matMVP;
+		glm::mat4 matM{};
+		glm::mat4 matV{};
+		glm::mat4 matMV{};
+		glm::mat3 matMV3x3{};
+		glm::mat4 matMVP{};
 
 		/// <summary>
 		/// Currently used shader
@@ -55,7 +55,7 @@ namespace Engine::Rendering
 
 		bool has_updated_meshdata = false;
 
-		Mesh* mesh;
+		Mesh* mesh = nullptr;
 	public:
 		MeshRenderer();
 		~MeshRenderer();

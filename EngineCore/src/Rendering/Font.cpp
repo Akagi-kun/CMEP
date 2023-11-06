@@ -10,16 +10,16 @@
 
 namespace Engine::Rendering
 {
-	Font::Font(AssetManager* managed_by) noexcept
+	Font::Font(AssetManager* managed_by)
 	{
 		this->asset_manager = managed_by;
 	}
 
-	Font::~Font() noexcept 
+	Font::~Font() 
 	{
 	}
 
-	int Font::Init(std::string path) noexcept
+	int Font::Init(std::string path)
 	{
 		// Opens the bmfont file
 		this->fntfile = path;
@@ -41,7 +41,7 @@ namespace Engine::Rendering
 		return 0;
 	}
 
-	void Font::EvalBmfont(FILE* file) noexcept
+	void Font::EvalBmfont(FILE* file)
 	{
 		int cur_offset = 0;
 		char cur_data[16] = {};
@@ -63,6 +63,8 @@ namespace Engine::Rendering
 			{
 				break;
 			}
+
+			assert(cur_offset < 255);
 
 			// Send EvalBmfontLine the correct type value
 			if (strncmp("info", cur_data, 4) == 0)
@@ -94,7 +96,7 @@ namespace Engine::Rendering
 		
 	}
 
-	void Font::EvalBmfontLine(int type, char* data) noexcept
+	void Font::EvalBmfontLine(int type, char* data)
 	{
 		// Temporary storage arrays
 		char cur_data[48] = {};
@@ -208,7 +210,7 @@ namespace Engine::Rendering
 		}
 	}
 
-	FontChar* Font::GetChar(char ch) noexcept
+	FontChar* Font::GetChar(char ch)
 	{
 		auto find_ret = this->chars.find(ch);
 		if (find_ret != this->chars.end())
@@ -218,7 +220,7 @@ namespace Engine::Rendering
 		return nullptr;
 	}
 
-	Texture* Font::GetPageTexture(int page) noexcept
+	Texture* Font::GetPageTexture(int page)
 	{
 		auto find_ret = this->pages.find(page);
 		if (find_ret != this->pages.end())
@@ -228,7 +230,7 @@ namespace Engine::Rendering
 		return nullptr;
 	}
 
-	std::string* Font::GetFontInfoParameter(std::string name) noexcept
+	std::string* Font::GetFontInfoParameter(std::string name)
 	{
 		auto find_ret = this->info.find(name);
 		if (find_ret != this->info.end())

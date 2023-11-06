@@ -1138,7 +1138,7 @@ namespace Engine::Rendering
 
 	void VulkanRenderingEngine::SetRenderCallback(std::function<void(VkCommandBuffer, uint32_t)> callback)
 	{
-		this->external_callback = callback;
+		this->external_callback = std::move(callback);
 	}
 
 	void VulkanRenderingEngine::SignalFramebufferResizeGLFW()
@@ -1510,7 +1510,7 @@ namespace Engine::Rendering
 	{
 		VulkanBuffer* staging_buffer;
 
-		Logging::GlobalLogger->SimpleLog(Logging::LogLevel::Debug2, "Creating a staging buffer with size of %u", dataSize);
+		Logging::GlobalLogger->SimpleLog(Logging::LogLevel::Debug2, "Creating a staging buffer with size of %u", static_cast<unsigned int>(dataSize));
 
 		staging_buffer = this->createVulkanBuffer(dataSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
 

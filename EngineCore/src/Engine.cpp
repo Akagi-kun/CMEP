@@ -69,7 +69,7 @@ namespace Engine
 		Rendering::GLFWwindowData windowdata = this->rendering_engine->GetWindow();
 
 		double xpos = 0.0, ypos = 0.0;
-		static double lastx = (windowdata.windowX / 2), lasty = (windowdata.windowY / 2);
+		static double lastx = (windowdata.windowX / 2.0), lasty = (windowdata.windowY / 2.0);
 
 		//glfwGetCursorPos(windowdata.window, &xpos, &ypos);
 
@@ -92,16 +92,16 @@ namespace Engine
 		}
 
 		// Handle keyboard + mouse buttons
-		for (uint16_t i = 1; i < 256; i++)
-		{
-			if (glfwGetKey(windowdata.window, i))
-			{
-				EventHandling::Event event = EventHandling::Event(EventHandling::EventType::ON_KEYDOWN);
-				event.keycode = i;
-				event.deltaTime = deltaTime;
-				this->FireEvent(event);
-			}
-		}
+		// for (uint16_t i = 1; i < 256; i++)
+		// {
+		// 	if (glfwGetKey(windowdata.window, i))
+		// 	{
+		// 		EventHandling::Event event = EventHandling::Event(EventHandling::EventType::ON_KEYDOWN);
+		// 		event.keycode = i;
+		// 		event.deltaTime = deltaTime;
+		// 		this->FireEvent(event);
+		// 	}
+		// }
 	}
 
 	void Engine::HandleConfig()
@@ -314,6 +314,11 @@ namespace Engine
 			glfwPollEvents();
 			
 			// spin sleep if framerate locked
+			if(this->framerateTarget != 0)
+			{
+				this->framerateTarget = 60;
+			}
+
 			const auto frameClock = std::chrono::steady_clock::now();
 			const double sleepSecs = 1.0 / this->framerateTarget - (frameClock - nextClock).count() / 1e9;
 			if (sleepSecs > 0 && framerateTarget != 0)
@@ -482,7 +487,7 @@ namespace Engine
 
 	void Engine::ConfigFile(std::string path)
 	{
-		this->config_path = path;
+		this->config_path = std::move(path);
 	}
 
 	void Engine::RegisterEventHandler(EventHandling::EventType event_type, std::function<void(EventHandling::Event&)> function)

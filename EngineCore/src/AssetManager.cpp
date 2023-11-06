@@ -31,14 +31,15 @@ namespace Engine
 	void AssetManager::AddFont(std::string name, std::string path)
 	{
 		Rendering::Font* font = new Engine::Rendering::Font(this);
-		font->Init(path);
+		
+		font->Init(std::move(path));
 
 		this->fonts.emplace(name, font);
 	}
 
 	void AssetManager::AddLuaScript(std::string name, std::string path)
 	{
-		Scripting::LuaScript* script = new Scripting::LuaScript(path);
+		Scripting::LuaScript* script = new Scripting::LuaScript(std::move(path));
 
 		this->luascripts.emplace(name, script);
 	}

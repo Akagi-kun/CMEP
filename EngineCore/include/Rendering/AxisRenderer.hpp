@@ -33,9 +33,9 @@ namespace Engine::Rendering
 		VulkanPipeline* pipeline = nullptr;
 		VulkanBuffer* vbo = nullptr;
 
-		glm::mat4 matMVP;
+		glm::mat4 matMVP{};
 
-		std::unique_ptr<Rendering::Shader> program;
+		std::unique_ptr<Rendering::Shader> program{};
 
 	public:
 		AxisRenderer();
