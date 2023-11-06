@@ -8,6 +8,8 @@
 #include "Rendering/Font.hpp"
 #include "AssetManager.hpp"
 
+#include "PlatformIndependentUtils.hpp"
+
 namespace Engine::Rendering
 {
 	Font::Font(AssetManager* managed_by)
@@ -62,12 +64,12 @@ namespace Engine::Rendering
 			memset(cur_data, 0, 16);
 			(void)sscanf(data, "%s %n", cur_data, &cur_offset);
 
-			if (strnlen(cur_data, 16) == 0)
+			if (strnlen(cur_data, ARRAY_SIZEOF(cur_data)) == 0)
 			{
 				break;
 			}
 
-			assert(cur_offset < 255);
+			assert(0 < cur_offset && cur_offset < 255);
 
 			// Send EvalBmfontLine the correct type value
 			if (strncmp("info", cur_data, 4) == 0)
@@ -132,6 +134,17 @@ namespace Engine::Rendering
 				// Last key should always be chnl
 				if (strncmp("chnl", key, 4) == 0)
 				{
+					assert(pairs.find("id") != pairs.end());
+					assert(pairs.find("x") != pairs.end());
+					assert(pairs.find("y") != pairs.end());
+					assert(pairs.find("width") != pairs.end());
+					assert(pairs.find("height") != pairs.end());
+					assert(pairs.find("xoffset") != pairs.end());
+					assert(pairs.find("yoffset") != pairs.end());
+					assert(pairs.find("xadvance") != pairs.end());
+					assert(pairs.find("page") != pairs.end());
+					assert(pairs.find("chnl") != pairs.end());
+
 					FontChar c = {};
 					int id = 0;
 					id = std::stoi(pairs.find("id")->second.c_str(), nullptr, 10);

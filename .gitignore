@@ -387,4 +387,5 @@ cov-int
 /external/lua-5.4.6
 /external/lua-5.4.6.tar.gz
 *.o
-cmep.zip
+*.zip
+*.xz

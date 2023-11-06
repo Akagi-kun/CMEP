@@ -116,13 +116,17 @@ namespace Engine::Rendering
 		{
 			case Texture_InitFiletype::FILE_PNG:
 			{
-				unsigned error = lodepng::decode(data, sizex, sizey, path.c_str());
+				unsigned int xs, ys;
+				unsigned error = lodepng::decode(data, xs, ys, path.c_str());
 
-				Logging::GlobalLogger->SimpleLog(Logging::LogLevel::Debug1, "Decoded png file %s width %u height %u", path.c_str(), sizex, sizey);
+				Logging::GlobalLogger->SimpleLog(Logging::LogLevel::Debug1, "Decoded png file %s width %u height %u", path.c_str(), xs, ys);
 
 				fclose(file);
 
-				this->InitRaw(std::move(data), 4, sizex, sizey);
+				assert(0 < xs && xs < 0x3fff);
+				assert(0 < ys && ys < 0x3fff);
+
+				this->InitRaw(std::move(data), 4, xs, ys);
 
 				return 0;
 			}
