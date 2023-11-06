@@ -8,20 +8,22 @@ Engine::Rendering::VulkanRenderingEngine* rendering_engine;
 
 static int boilerplate_rendering_engine_init()
 {
-	printf("boilerplate_rendering_engine_init\n");
+	printf("boilerplate_rendering_engine_init start\n");
 	rendering_engine = new Engine::Rendering::VulkanRenderingEngine();
 	
 	rendering_engine->init(300, 300, std::string("TESTING"));
+	printf("boilerplate_rendering_engine_init end\n");
 
 	return 0;
 }
 
 static int boilerplate_rendering_engine_cleanup()
 {
-	printf("boilerplate_rendering_engine_cleanup\n");
+	printf("boilerplate_rendering_engine_cleanup start\n");
 	rendering_engine->cleanup();
 
 	delete rendering_engine;
+	printf("boilerplate_rendering_engine_cleanup end\n");
 	
 	return 0;
 }
