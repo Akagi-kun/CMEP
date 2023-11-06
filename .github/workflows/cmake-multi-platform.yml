@@ -68,7 +68,7 @@ jobs:
       shell: bash
       run: |
          if [ "$RUNNER_OS" == "Linux" ]; then
-              sudo apt install libx11-dev libxrandr-dev libxinerama-dev libxcursor-dev libxi-dev
+              sudo apt install llibxrandr-dev libxinerama-dev libxcursor-dev libxi-dev libxext-dev wayland-protocols libwayland-dev libxkbcommon-dev
          fi
 
     - name: Configure CMake
@@ -85,4 +85,4 @@ jobs:
       # Build your program with the given configuration. Note that --config is needed because the default Windows generator is a multi-config generator (Visual Studio generator).
       #run: cmake --build ${{ steps.strings.outputs.build-output-dir }} --config ${{ matrix.build_type }} --target rungame runtest floppybirb
       shell: bash
-      run: ./build.sh && cmake --build . --target floppybirb
+      run: ./build.sh
