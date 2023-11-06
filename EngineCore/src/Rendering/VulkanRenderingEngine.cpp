@@ -973,9 +973,12 @@ namespace Engine::Rendering
 
 	void VulkanRenderingEngine::cleanup()
 	{
+		vkDeviceWaitIdle(this->vkLogicalDevice);
+
 		this->cleanupVulkanSwapChain();
 
 		this->cleanupVulkanImage(this->multisampledColorImage);
+		this->cleanupVulkanImage(this->vkDepthBuffer);
 
 		for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
 			vkDestroySemaphore(this->vkLogicalDevice, renderFinishedSemaphores[i], nullptr);
@@ -996,6 +999,12 @@ namespace Engine::Rendering
 			DestroyDebugUtilsMessengerEXT(this->vkInstance, this->vkDebugMessenger, nullptr);
 		}
 		vkDestroyInstance(this->vkInstance, nullptr);
+
+		assert(this->leakUniformBufferCounter == 0);
+		assert(this->leakBufferCounter == 0);
+		assert(this->leakTextureImageCounter == 0);
+		assert(this->leakImageCounter == 0);
+		assert(this->leakPipelineCounter == 0);
 
 		// Clean up GLFW
 		glfwDestroyWindow(this->window);
@@ -1178,6 +1187,7 @@ namespace Engine::Rendering
 	}
 
 	// Pipelines
+
 	VulkanPipelineSettings VulkanRenderingEngine::getVulkanDefaultPipelineSettings()
 	{
 		VkPipelineInputAssemblyStateCreateInfo inputAssembly{};
@@ -1390,12 +1400,14 @@ namespace Engine::Rendering
 			vkDestroyBuffer(this->vkLogicalDevice, this->graphicsPipelineDefault->uniformBuffers[i]->buffer, nullptr);
 			vkFreeMemory(this->vkLogicalDevice, this->graphicsPipelineDefault->uniformBuffers[i]->bufferMemory, nullptr);
 			this->leakUniformBufferCounter -= 1;
+			this->leakBufferCounter -= 1;
 		}
 
 		vkDestroyDescriptorPool(this->vkLogicalDevice, this->graphicsPipelineDefault->vkDescriptorPool, nullptr);
 		vkDestroyDescriptorSetLayout(this->vkLogicalDevice, this->graphicsPipelineDefault->vkDescriptorSetLayout, nullptr);
 
 		vkDestroyPipeline(this->vkLogicalDevice, pipeline->pipeline, nullptr);
+		vkDestroyPipelineLayout(this->vkLogicalDevice, pipeline->vkPipelineLayout, nullptr);
 
 		this->leakPipelineCounter -= 1;
 
