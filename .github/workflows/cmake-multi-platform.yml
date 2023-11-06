@@ -92,3 +92,7 @@ jobs:
       #run: cmake --build ${{ steps.strings.outputs.build-output-dir }} --config ${{ matrix.build_type }} --target rungame runtest floppybirb
       shell: bash
       run: ./build.sh
+
+    - name: Coveralls
+      uses: coverallsapp/github-action@v2
+      
