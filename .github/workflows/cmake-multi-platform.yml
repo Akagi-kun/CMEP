@@ -66,7 +66,7 @@ jobs:
 
     - name: Install build tools for glfw
       shell: bash
-      if: ${{matrix.os == "linux-latest"}}
+      if: ${{matrix.os == linux-latest}}
       run: sudo apt install libxrandr-dev libxinerama-dev libxcursor-dev libxi-dev libxext-dev wayland-protocols libwayland-dev libxkbcommon-dev
 
     - name: Configure CMake
