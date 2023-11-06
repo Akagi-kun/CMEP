@@ -389,3 +389,6 @@ cov-int
 *.o
 *.zip
 *.xz
+/*.png
+/*.css
+**.html
