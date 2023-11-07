@@ -74,11 +74,12 @@ add_executable(runtest ${SRC_FILES})
 
 if(MSVC)
     add_custom_target(testgame-compile-shaders compile.bat WORKING_DIRECTORY testgame\\shaders\\vulkan)
-    add_custom_target(testgame xcopy /s /e /i /y runtest\\testgame ..\\build\\game WORKING_DIRECTORY ..)
+    add_custom_target(testgame xcopy /s /e /i /y runtest\\testgame build\\game WORKING_DIRECTORY ..)
 else()
     add_custom_target(testgame-compile-shaders ./compile.sh WORKING_DIRECTORY testgame/shaders/vulkan)
     add_custom_target(testgame cp -r runtest/testgame build COMMAND mv build/testgame build/game WORKING_DIRECTORY ..)
 endif()
+add_dependencies(testgame testgame-compile-shaders)
 
 add_dependencies(runtest testgame)
 

@@ -331,13 +331,14 @@ namespace Engine
 		}
 	}
 
-	void Engine::FireEvent(EventHandling::Event& event)
+	int Engine::FireEvent(EventHandling::Event& event)
 	{
+		int sum = 0;
 		for (auto handler : this->event_handlers)
 		{
 			if (handler.first == event.event_type)
 			{
-				handler.second(event);
+				sum += handler.second(event);
 			}
 		}
 
@@ -345,9 +346,11 @@ namespace Engine
 		{
 			if (std::get<0>(handler) == event.event_type)
 			{
-				this->script_executor->CallIntoScript(Scripting::ExecuteType::EventHandler, std::get<1>(handler), std::get<2>(handler), &event);
+				sum += this->script_executor->CallIntoScript(Scripting::ExecuteType::EventHandler, std::get<1>(handler), std::get<2>(handler), &event);
 			}
 		}
+		printf("%u ", sum);
+		return sum;
 	}
 
 	double Engine::GetLastDeltaTime()
@@ -373,7 +376,7 @@ namespace Engine
 
 	void Engine::Init()
 	{
-		Logging::GlobalLogger->MapCurrentThreadToName("main");
+		Logging::GlobalLogger->MapCurrentThreadToName("engine");
 
 		// Not workib
 		//SetConsoleMode(GetStdHandle(STD_OUTPUT_HANDLE), ENABLE_PROCESSED_OUTPUT);
@@ -476,7 +479,10 @@ namespace Engine
 		
 		// Fire ON_INIT event
 		EventHandling::Event onInitEvent = EventHandling::Event(EventHandling::EventType::ON_INIT);
-		this->FireEvent(onInitEvent);
+		if(this->FireEvent(onInitEvent) != 0)
+		{
+			return;
+		}
 
 		// Measure and log ON_INIT time
 		double total = (std::chrono::steady_clock::now() - start).count() / 1e6;
@@ -490,7 +496,7 @@ namespace Engine
 		this->config_path = std::move(path);
 	}
 
-	void Engine::RegisterEventHandler(EventHandling::EventType event_type, std::function<void(EventHandling::Event&)> function)
+	void Engine::RegisterEventHandler(EventHandling::EventType event_type, std::function<int(EventHandling::Event&)> function)
 	{
 		this->event_handlers.push_back(std::make_pair(event_type, function));
 	}

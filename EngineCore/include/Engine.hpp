@@ -73,7 +73,7 @@ namespace Engine
 		Scripting::LuaScriptExecutor* script_executor = nullptr;
 
 		// Event handler storage
-		std::vector<std::pair<EventHandling::EventType, std::function<void(EventHandling::Event&)>>> event_handlers;
+		std::vector<std::pair<EventHandling::EventType, std::function<int(EventHandling::Event&)>>> event_handlers;
 		std::vector<std::tuple<EventHandling::EventType, Scripting::LuaScript*, std::string>> lua_event_handlers;
 		/*
 		// Vulcan physical device functions
@@ -115,10 +115,10 @@ namespace Engine
 		void Run();
 
 		void ConfigFile(std::string path);
-		void RegisterEventHandler(EventHandling::EventType event_type, std::function<void(EventHandling::Event&)> function);
+		void RegisterEventHandler(EventHandling::EventType event_type, std::function<int(EventHandling::Event&)> function);
 		void RegisterLuaEventHandler(EventHandling::EventType event_type, Scripting::LuaScript* script, std::string function);
 		
-		void FireEvent(EventHandling::Event& event);
+		int FireEvent(EventHandling::Event& event);
 
 		double GetLastDeltaTime();
 

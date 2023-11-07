@@ -23,7 +23,7 @@ namespace Engine
 			lua_setglobal(state, "cmepapi");
 		}
 
-		void LuaScriptExecutor::CallIntoScript(ExecuteType etype, LuaScript* script, std::string function, void* data)
+		int LuaScriptExecutor::CallIntoScript(ExecuteType etype, LuaScript* script, std::string function, void* data)
 		{
 			// Get script state
 			lua_State* state = script->GetState();
@@ -62,9 +62,10 @@ namespace Engine
 					script->path.c_str(), function.c_str(), errcall, errormsg);
 			}
 
-			int64_t ret = lua_tointeger(state, -1);
+			lua_Integer ret = lua_tointeger(state, -1);
 			lua_pop(state, 1);
 
+			return static_cast<int>(ret);
 			//Logging::GlobalLogger->SimpleLog(Logging::LogLevel::Debug2,
 			//	"Running lua script '%s', called function '%d' returned %llu",
 			//	script->path.c_str(), function.c_str(), ret);

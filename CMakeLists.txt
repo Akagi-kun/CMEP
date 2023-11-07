@@ -44,6 +44,8 @@ set(TESTS_TO_RUN
 	logging_log
 	logging_simplelog
 	logging_map_thread_simplelog
+
+	engine
 	)
 
 add_subdirectory(runtest)
