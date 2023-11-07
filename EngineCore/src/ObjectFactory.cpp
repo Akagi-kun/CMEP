@@ -4,7 +4,6 @@
 #include "Rendering/MeshRenderer.hpp"
 #include "Rendering/TextRenderer.hpp"
 #include "Rendering/Texture.hpp"
-#include "Rendering/Shader.hpp"
 #include "Rendering/Font.hpp"
 #include "ObjectFactory.hpp"
 #include "glm/vec3.hpp"

@@ -4,6 +4,7 @@
 
 #include "IRenderer.hpp"
 
+#include "glm/glm.hpp"
 #include "glm/gtc/matrix_transform.hpp"
 
 #include "Rendering/VulkanRenderingEngine.hpp"
@@ -34,8 +35,6 @@ namespace Engine::Rendering
 		VulkanBuffer* vbo = nullptr;
 
 		glm::mat4 matMVP{};
-
-		std::unique_ptr<Rendering::Shader> program{};
 
 	public:
 		AxisRenderer();

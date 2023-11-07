@@ -7,7 +7,6 @@
 #include "GlobalSceneManager.hpp"
 #include "Rendering/Texture.hpp"
 #include <glm/gtx/quaternion.hpp>
-#include "Rendering/Shader.hpp"
 #include "Logging/Logging.hpp"
 
 #include "Engine.hpp"

@@ -1,5 +1,4 @@
 #include "Rendering/Texture.hpp"
-#include "Rendering/Shader.hpp"
 #include "Logging/Logging.hpp"
 #include "Rendering/Font.hpp"
 #include "AssetManager.hpp"
@@ -7,12 +6,6 @@
 namespace Engine
 {
 #pragma region Adding Assets
-	void AssetManager::AddShader(std::string name, std::string vert_source, std::string frag_source)
-	{
-		this->shaders.emplace(name, new Engine::Rendering::Shader(vert_source.c_str(), frag_source.c_str()));
-		Logging::GlobalLogger->SimpleLog(Logging::LogLevel::Debug2, "Added shader %s", name.c_str());
-	}
-
 	void AssetManager::AddTexture(std::string name, std::string path, Rendering::Texture_InitFiletype filetype)
 	{
 		Rendering::Texture* texture = new Engine::Rendering::Texture();
@@ -71,20 +64,6 @@ namespace Engine
 			this->textures.emplace(path, texture);
 			return texture;
 			*/
-		}
-	}
-	
-
-	Rendering::Shader* AssetManager::GetShader(std::string name)
-	{
-		Logging::GlobalLogger->SimpleLog(Logging::LogLevel::Debug2, "Shader %s requested", name.c_str());
-		if (this->shaders.find(name) != this->shaders.end())
-		{
-			return this->shaders.at(name);
-		}
-		else
-		{
-			return nullptr;
 		}
 	}
 

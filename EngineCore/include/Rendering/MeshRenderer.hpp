@@ -2,6 +2,7 @@
 
 #include <memory>
 
+#include "glm/glm.hpp"
 #include "glm/gtc/matrix_transform.hpp"
 #include "IRenderer.hpp"
 #include "Mesh.hpp"
@@ -50,7 +51,6 @@ namespace Engine::Rendering
 		/// <summary>
 		/// Currently used shader
 		/// </summary>
-		std::unique_ptr<Shader> program;
 		std::unique_ptr<const Rendering::Texture> texture;
 
 		bool has_updated_meshdata = false;

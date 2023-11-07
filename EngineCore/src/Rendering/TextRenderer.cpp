@@ -5,7 +5,6 @@
 
 #include "Rendering/TextRenderer.hpp"
 #include "Rendering/Texture.hpp"
-#include "Rendering/Shader.hpp"
 #include "Rendering/Font.hpp"
 #include "Logging/Logging.hpp"
 

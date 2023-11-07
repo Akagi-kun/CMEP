@@ -9,7 +9,6 @@
 namespace Engine::Rendering
 {
 	class Texture;
-	class Shader;
 	class Font;
 
 	/// <summary>
@@ -40,10 +39,6 @@ namespace Engine::Rendering
 		VulkanTextureImage* textureImage = nullptr;
 		VulkanBuffer* vbo = nullptr;
 
-		/// <summary>
-		/// Currently used shader
-		/// </summary>
-		std::unique_ptr<Rendering::Shader> program;
 		/// <summary>
 		/// Currently used font
 		/// </summary>

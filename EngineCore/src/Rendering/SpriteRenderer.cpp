@@ -1,9 +1,9 @@
 #include <assert.h>
 #include <cstring>
 
+#include "glm/glm.hpp"
 #include "Rendering/SpriteRenderer.hpp"
 #include "Rendering/Texture.hpp"
-#include "Rendering/Shader.hpp"
 #include "Object.hpp"
 
 #include "Engine.hpp"
@@ -12,18 +12,6 @@ namespace Engine::Rendering
 {
 	SpriteRenderer::SpriteRenderer()
 	{
-		// static const char* vertex_shader_source =
-		// 	"#version 400 core\n"
-		// 	"layout(location = 0) in vec3 pos; layout(location = 1) in vec2 texCord; out vec2 fragTexCord;"
-		// 	"void main() { gl_Position = vec4(pos, 1.0f); fragTexCord = texCord; }";
-
-		// static const char* fragment_shader_source =
-		// 	"#version 400 core\n"
-		// 	"out vec4 color; in vec2 fragTexCord; uniform sampler2D texture0;"
-		// 	"void main() { color = texture(texture0, fragTexCord); }";
-
-		// this->program = std::make_unique<Rendering::Shader>(vertex_shader_source, fragment_shader_source);
-		
 		VulkanRenderingEngine* renderer = global_engine->GetRenderingEngine();
 
 		VulkanPipelineSettings pipeline_settings = renderer->getVulkanDefaultPipelineSettings();

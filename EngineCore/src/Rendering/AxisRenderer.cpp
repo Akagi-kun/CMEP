@@ -6,7 +6,6 @@
 
 #include "Rendering/AxisRenderer.hpp"
 #include "Rendering/Texture.hpp"
-#include "Rendering/Shader.hpp"
 #include "Object.hpp"
 #include "GlobalSceneManager.hpp"
 #include "Logging/Logging.hpp"

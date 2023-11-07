@@ -18,7 +18,6 @@ set(SRC_FILES
 	../EngineCore/src/Rendering/AxisRenderer.cpp
 	../EngineCore/src/Rendering/Mesh.cpp
 	../EngineCore/src/Rendering/MeshRenderer.cpp
-	../EngineCore/src/Rendering/Shader.cpp
 	../EngineCore/src/Rendering/SpriteRenderer.cpp
 	../EngineCore/src/Rendering/TextRenderer.cpp
 	../EngineCore/src/Rendering/Texture.cpp

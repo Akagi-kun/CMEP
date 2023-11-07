@@ -13,7 +13,6 @@ set(SRC_FILES
 	src/Rendering/AxisRenderer.cpp
 	src/Rendering/Mesh.cpp
 	src/Rendering/MeshRenderer.cpp
-	src/Rendering/Shader.cpp
 	src/Rendering/SpriteRenderer.cpp
 	src/Rendering/TextRenderer.cpp
 	src/Rendering/Texture.cpp
