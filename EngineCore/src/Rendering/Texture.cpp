@@ -100,7 +100,7 @@ namespace Engine::Rendering
 		if ((file = fopen(path.c_str(), "rb")) == NULL)
 		{
 			Logging::GlobalLogger->SimpleLog(Logging::LogLevel::Exception, "File %s could not be found, initializing texture not possible!", path.c_str());
-			exit(1);
+			throw std::runtime_error("Could not find texture!");
 		}
 
 		Logging::GlobalLogger->SimpleLog(Logging::LogLevel::Debug2, "Initializing texture from file %s", path.c_str());

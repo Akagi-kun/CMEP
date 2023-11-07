@@ -4,6 +4,9 @@ current_directory=$(pwd)
 
 shopt -s globstar
 
+./build.sh
+cmake --build . --target runtest
+
 lcov --directory . --zerocounters
 
 cd build
