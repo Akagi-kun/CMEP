@@ -5,6 +5,7 @@ set(SRC_FILES
 	src/main.cpp
 	src/test_vulkan.cpp
 	src/test_logging.cpp
+	src/test_engine.cpp
 	
 	../EngineCore/src/Rendering/VulkanRenderingEngine.cpp
 	../EngineCore/src/Logging/Logging.cpp
@@ -48,26 +49,37 @@ else()
 		)
 endif()
 
-add_executable(runtest ${SRC_FILES})
 
-target_include_directories(runtest PUBLIC ../external ../external/lua-prebuilt/include include ../common_include ../EngineCore/include)
-target_link_directories(runtest PUBLIC lib ../build/Debug ../build)
+include_directories(../external ../external/lua-prebuilt/include include ../common_include ../EngineCore/include)
+link_directories(lib ../build/Debug ../build)
 if(DEFINED ENV{VULKAN_SDK})
 	if(WIN32)
-		target_link_directories(runtest PUBLIC $ENV{VULKAN_SDK}/Lib ../external/lua-prebuilt)
-		target_include_directories(runtest PUBLIC $ENV{VULKAN_SDK}/Include)
+		link_directories($ENV{VULKAN_SDK}/Lib ../external/lua-prebuilt)
+		include_directories($ENV{VULKAN_SDK}/Include)
 	else()
 		if(APPLE)
-			target_link_directories(runtest PUBLIC $ENV{VULKAN_SDK}/lib ../external/lua-5.4.6/src)
-			target_include_directories(runtest PUBLIC $ENV{VULKAN_SDK}/include)
+			link_directories($ENV{VULKAN_SDK}/lib ../external/lua-5.4.6/src)
+			include_directories($ENV{VULKAN_SDK}/include)
 		else()
-			target_link_directories(runtest PUBLIC $ENV{VULKAN_SDK}/lib ../external/lua-prebuilt)
-			target_include_directories(runtest PUBLIC $ENV{VULKAN_SDK}/include)
+			link_directories($ENV{VULKAN_SDK}/lib ../external/lua-prebuilt)
+			include_directories($ENV{VULKAN_SDK}/include)
 		endif()
 	endif()
 else()
-	target_link_directories(runtest PUBLIC ../external/lua-prebuilt)
+	link_directories(../external/lua-prebuilt)
 	message("Warning! Vulkan SDK environment variable not found!")
 endif()
+
+add_executable(runtest ${SRC_FILES})
+
+if(MSVC)
+    add_custom_target(testgame-compile-shaders compile.bat WORKING_DIRECTORY testgame\\shaders\\vulkan)
+    add_custom_target(testgame xcopy /s /e /i /y runtest\\testgame ..\\build\\game WORKING_DIRECTORY ..)
+else()
+    add_custom_target(testgame-compile-shaders ./compile.sh WORKING_DIRECTORY testgame/shaders/vulkan)
+    add_custom_target(testgame cp -r runtest/testgame build COMMAND mv build/testgame build/game WORKING_DIRECTORY ..)
+endif()
+
+add_dependencies(runtest testgame)
 
 target_link_libraries(runtest ${STATIC_LIBRARIES})

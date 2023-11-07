@@ -18,8 +18,6 @@ namespace Engine::Scripting::Mappings
 		int gsm_FindObject(lua_State* state);
 		int gsm_RemoveObject(lua_State* state);
 
-		int engine_AddObject(lua_State* state);
-		int engine_FindObject(lua_State* state);
 		int engine_GetAssetManager(lua_State* state);
 		int engine_SetFramerateTarget(lua_State* state);
 

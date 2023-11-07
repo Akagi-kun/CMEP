@@ -23,8 +23,6 @@ namespace Engine
 			LuaScriptExecutor() {};
 			~LuaScriptExecutor() {};
 
-			static void ConfigScriptLoad(LuaScript* script);
-
 			static void CallIntoScript(ExecuteType etype, LuaScript* script, std::string function, void* data);
 
 			static int LoadAndCompileScript(LuaScript* script);
