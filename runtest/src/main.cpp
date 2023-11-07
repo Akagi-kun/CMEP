@@ -4,11 +4,18 @@
 #include "Logging/Logging.hpp"
 
 #include "test_vulkan.hpp"
+#include "test_logging.hpp"
 
 std::map<std::string, int(*)(void)> test_map = {
 	{"vulkan_init_cleanup", test_vulkan_init_cleanup},
 	{"vulkan_draw_frame", test_vulkan_draw_frame},
-	{"vulkan_buffer_create_cleanup", test_vulkan_buffer_create_cleanup}
+	{"vulkan_buffer_create_cleanup", test_vulkan_buffer_create_cleanup},
+
+	
+	{"logging_init_release", test_logging_init_release},
+	{"logging_log", test_logging_log},
+	{"logging_simplelog", test_logging_simplelog},
+	{"logging_map_thread_simplelog", test_logging_map_thread_simplelog}
 };
 
 int main(int argc, char** argv)
@@ -23,7 +30,6 @@ int main(int argc, char** argv)
 
 	Logging::GlobalLogger = std::make_unique<Logging::Logger>();
 
-	Logging::GlobalLogger->SimpleLog(Logging::LogLevel::Info, "testlog");
 	Logging::GlobalLogger->AddOutputHandle(Logging::LogLevel::Debug3, stdout, true);
 	printf("Init'd GlobalLogger\n");
 

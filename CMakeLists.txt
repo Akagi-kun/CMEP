@@ -39,6 +39,11 @@ set(TESTS_TO_RUN
 	vulkan_init_cleanup
 	vulkan_draw_frame
 	vulkan_buffer_create_cleanup
+
+	logging_init_release
+	logging_log
+	logging_simplelog
+	logging_map_thread_simplelog
 	)
 
 add_subdirectory(runtest)

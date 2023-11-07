@@ -4,6 +4,8 @@ project(CMEP CXX)
 set(SRC_FILES
 	src/main.cpp
 	src/test_vulkan.cpp
+	src/test_logging.cpp
+	
 	../EngineCore/src/Rendering/VulkanRenderingEngine.cpp
 	../EngineCore/src/Logging/Logging.cpp
 	../EngineCore/src/Logging/ConsoleColors.cpp

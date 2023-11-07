@@ -2,29 +2,28 @@
 
 #include "Rendering/VulkanRenderingEngine.hpp"
 #include "Logging/Logging.hpp"
+#include "boilerplate.hpp"
 
 #define TEST_BUFFER_SIZE 0xffff
 
 Engine::Rendering::VulkanRenderingEngine* rendering_engine;
 
-static int boilerplate_rendering_engine_init()
+int boilerplate_rendering_engine_init()
 {
-	printf("boilerplate_rendering_engine_init start\n");
+	boilerplate_logger_init();
 	rendering_engine = new Engine::Rendering::VulkanRenderingEngine();
 	
 	rendering_engine->init(300, 300, std::string("TESTING"));
-	printf("boilerplate_rendering_engine_init end\n");
 
 	return 0;
 }
 
-static int boilerplate_rendering_engine_cleanup()
-{
-	printf("boilerplate_rendering_engine_cleanup start\n");
+int boilerplate_rendering_engine_cleanup()
+{	
+	boilerplate_logger_release();
 	rendering_engine->cleanup();
 
 	delete rendering_engine;
-	printf("boilerplate_rendering_engine_cleanup end\n");
 	
 	return 0;
 }
