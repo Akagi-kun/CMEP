@@ -189,11 +189,11 @@ namespace Engine::Rendering
 
 					Logging::GlobalLogger->SimpleLog(Logging::LogLevel::Debug3, "Font page index %u is %s", page_idx, whole_filename.c_str());
 
-					Texture* texture = nullptr;
+					std::shared_ptr<Texture> texture = nullptr;
 					if (this->asset_manager == nullptr)
 					{
 						Logging::GlobalLogger->SimpleLog(Logging::LogLevel::Debug3, "A Font is not managed by a AssetManager, this may be unintentional");
-						texture = new Texture();
+						texture = std::make_shared<Texture>();
 						if (texture->InitFile(Texture_InitFiletype::FILE_PNG, whole_filename.c_str()) != 0)
 						{
 							Logging::GlobalLogger->SimpleLog(Logging::LogLevel::Error, "Failed initializing texture\n");
@@ -210,7 +210,7 @@ namespace Engine::Rendering
 					}
 
 					// Add page and it's texture to map
-					this->pages.insert(std::pair<int, Texture*>(page_idx, texture));
+					this->pages.insert(std::pair<int, std::shared_ptr<Texture>>(page_idx, texture));
 					page_idx++;
 				}
 				break;
@@ -241,7 +241,7 @@ namespace Engine::Rendering
 		auto find_ret = this->pages.find(page);
 		if (find_ret != this->pages.end())
 		{
-			return find_ret->second;
+			return find_ret->second.get();
 		}
 		return nullptr;
 	}

@@ -23,7 +23,7 @@ namespace Engine
 
 			// Data from fnt file
 			std::unordered_map<std::string, std::string> info;
-			std::unordered_map<int, Texture*> pages;
+			std::unordered_map<int, std::shared_ptr<Texture>> pages;
 			std::unordered_map<int, FontChar> chars;
 
 			void EvalBmfont(FILE* file);

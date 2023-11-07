@@ -13,24 +13,14 @@ onKeyUp = function(event)
 	return 0;
 end
 
-deltaTimeAvg = 0.0;
-deltaTimeCount = 0;
-
 -- ON_UPDATE event
 onUpdate = function(event)
-	deltaTimeAvg = deltaTimeAvg + event.deltaTime;
-	deltaTimeCount = deltaTimeCount + 1;
-
-	-- Update frametime counter, recommend to leave this here for debugging purposes
-	if deltaTimeCount >= 30 then
-		-- local object = cmepapi.gsm_FindObject("_debug_info");
-		-- cmepapi.textRenderer_UpdateText(object.renderer, "FT: "..tostring(deltaTimeAvg / deltaTimeCount * 1000).." ms");
-
-		deltaTimeAvg = 0;
-		deltaTimeCount = 0;
-	end
-
-	return 0;
+	cmepapi.gsm_RemoveObject("3DObject");
+	cmepapi.gsm_RemoveObject("3DObject2");
+	cmepapi.gsm_RemoveObject("birb");
+	cmepapi.gsm_RemoveObject("_debug_info");
+	
+	return 1;
 end
 
 onInit = function(event)
@@ -66,11 +56,6 @@ onInit = function(event)
 	local x, y, z = cmepapi.object_GetRotation(object3d);
 	cmepapi.object_Rotate(birb, x, y, z);
 
-	cmepapi.gsm_RemoveObject("3DObject");
-	cmepapi.gsm_RemoveObject("3DObject2");
-	cmepapi.gsm_RemoveObject("birb");
-	cmepapi.gsm_RemoveObject("_debug_info");
-
 	-- Set-up camera
 	local cx, cy, cz = cmepapi.gsm_GetCameraTransform();
 	cmepapi.gsm_SetCameraTransform(-5.0, 0.0, 0.0);
@@ -81,5 +66,5 @@ onInit = function(event)
 	local lx, ly, lz = cmepapi.gsm_GetLightTransform();
 	cmepapi.gsm_SetLightTransform(-1,1,0);
 
-	return 1;
+	return 0;
 end

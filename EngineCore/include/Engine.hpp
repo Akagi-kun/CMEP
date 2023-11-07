@@ -50,23 +50,6 @@ namespace Engine
 
 		double lastDeltaTime = 0.0;
 
-		/*
-		// Vulcan info
-		VkInstance vkInstance = VK_NULL_HANDLE;
-		VkDebugUtilsMessengerEXT vkDebugMessenger = VK_NULL_HANDLE;
-		VkPhysicalDevice vkPhysicalDevice = VK_NULL_HANDLE;
-		VkDevice vkLogicalDevice = VK_NULL_HANDLE;
-		const std::vector<const char*> vkValidationLayers = {
-			"VK_LAYER_KHRONOS_validation"
-		};
-
-#ifndef _DEBUG
-		const bool enableVkValidationLayers = false;
-#else
-		const bool enableVkValidationLayers = true;
-#endif
-		*/
-
 		// Engine parts
 		Rendering::VulkanRenderingEngine* rendering_engine = nullptr;
 		AssetManager* asset_manager = nullptr;
@@ -75,21 +58,8 @@ namespace Engine
 		// Event handler storage
 		std::vector<std::pair<EventHandling::EventType, std::function<int(EventHandling::Event&)>>> event_handlers;
 		std::vector<std::tuple<EventHandling::EventType, Scripting::LuaScript*, std::string>> lua_event_handlers;
-		/*
-		// Vulcan physical device functions
-		int checkVulkanPhysicalDeviceSuitability(VkPhysicalDevice device);
-		QueueFamilyIndices findVulkanQueueFamilies(VkPhysicalDevice device);
-
-		// Vulcan logical device functions
-		void createVulkanLogicalDevice();
-
-		// Vulcan init functions
-		bool checkVulkanValidationLayers();
-		void initVulkanInstance();
-		void initVulkanDevice();
-		void initVulkan();
-		*/
-		//static void APIENTRY debugCallbackGL(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, const void* userParam) noexcept;
+		
+		
 		static void spinSleep(double seconds);
 
 		static void RenderCallback(VkCommandBuffer commandBuffer, uint32_t currentFrame);
@@ -127,6 +97,8 @@ namespace Engine
 	};
 
 	CMEP_EXPORT Engine* initializeEngine(const char* windowTitle, const unsigned windowX, const unsigned windowY);
+
+	CMEP_EXPORT int deinitializeEngine();
 
 	extern CMEP_EXPORT Engine* global_engine;
 }

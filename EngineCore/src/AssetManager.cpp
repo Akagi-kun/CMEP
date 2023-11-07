@@ -39,7 +39,7 @@ namespace Engine
 #pragma endregion
 
 #pragma region Getting Assets
-	Rendering::Texture* AssetManager::GetTexture(std::string name)
+	std::shared_ptr<Rendering::Texture> AssetManager::GetTexture(std::string name)
 	{
 		if (this->textures.find(name) != this->textures.end())
 		{

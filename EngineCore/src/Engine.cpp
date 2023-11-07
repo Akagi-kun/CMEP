@@ -284,7 +284,10 @@ namespace Engine
 
 			// Update deltaTime of premade ON_UPDATE event and fire it
 			premadeOnUpdateEvent.deltaTime = deltaTime;
-			this->FireEvent(premadeOnUpdateEvent);
+			if(this->FireEvent(premadeOnUpdateEvent) != 0)
+			{
+				break;
+			}
 
 			// Clear screen
 			//glClearColor(0.1, 0.13, 0.2, 1.0);
@@ -365,8 +368,9 @@ namespace Engine
 		this->rendering_engine->cleanup();
 		
 		//delete this->window;
-		delete this->rendering_engine;
 		delete this->asset_manager;
+		delete this->script_executor;
+		delete this->rendering_engine;
 	}
 
 	void Engine::SetFramerateTarget(unsigned framerate) noexcept
@@ -377,10 +381,6 @@ namespace Engine
 	void Engine::Init()
 	{
 		Logging::GlobalLogger->MapCurrentThreadToName("engine");
-
-		// Not workib
-		//SetConsoleMode(GetStdHandle(STD_OUTPUT_HANDLE), ENABLE_PROCESSED_OUTPUT);
-		//SetConsoleMode(GetStdHandle(STD_OUTPUT_HANDLE), ENABLE_VIRTUAL_TERMINAL_PROCESSING);
 
 		// Engine info printout
 #if defined(_MSC_VER)
@@ -404,54 +404,6 @@ namespace Engine
 		this->asset_manager = new AssetManager();
 		this->script_executor = new Scripting::LuaScriptExecutor();
 		this->rendering_engine = new Rendering::VulkanRenderingEngine();
-
-		//if (!glfwInit())
-		//{
-		//	Logging::GlobalLogger->SimpleLog(Logging::LogLevel::Error, "glfwInit returned 0!");
-		//	exit(1);
-		//}
-		//Logging::GlobalLogger->SimpleLog(Logging::LogLevel::Info, "GLFW initialized");
-
-		////glfwWindowHint(GLFW_SAMPLES, 4);
-		////glfwWindowHint(GLFW_DEPTH_BITS, 16);
-		////glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
-		////glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6);
-		////glfwWindowHint(GLFW_VISIBLE, GL_FALSE);
-		////glfwWindowHint(GLFW_RESIZABLE, GL_FALSE);
-		////glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-
-		//glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
-		//glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
-		//glfwWindowHint(GLFW_VISIBLE, GL_FALSE);
-
-		//this->window = glfwCreateWindow(this->windowX, this->windowY, this->windowTitle.c_str(), NULL, NULL);
-
-		//uint32_t extensionCount = 0;
-		//vkEnumerateInstanceExtensionProperties(nullptr, &extensionCount, nullptr);
-
-		//glfwMakeContextCurrent(this->window);
-		//glfwSwapInterval(1);
-		//
-		//if (glewInit() != GLEW_OK)
-		//{
-		//	Logging::GlobalLogger->SimpleLog(Logging::LogLevel::Error, "glewInit returned 0!");
-		//	exit(1);
-		//}
-		//Logging::GlobalLogger->SimpleLog(Logging::LogLevel::Info, "GLEW initialized");
-		//
-		//GLint maxTextures;
-		//glGetIntegerv(GL_MAX_TEXTURE_IMAGE_UNITS, &maxTextures);
-		//Logging::GlobalLogger->SimpleLog(Logging::LogLevel::Debug1, "Texture limit: %i", maxTextures);
-		//
-		//// OpenGL info printout
-		//Logging::GlobalLogger->SimpleLog(Logging::LogLevel::Info, "OpenGL info:\n---------- OpenGL ----------\n Vendor: %s\n Renderer: %s\n Version: %s\n----------------------------\n",
-		//	(char*)glGetString(GL_VENDOR), (char*)glGetString(GL_RENDERER), (char*)glGetString(GL_VERSION)
-		//);
-		//
-		//glEnable(GL_DEBUG_OUTPUT);
-		//glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
-		//Logging::GlobalLogger->SimpleLog(Logging::LogLevel::Info, "Setting OpenGL debug callback");
-		//glDebugMessageCallback(Engine::debugCallbackGL, nullptr);
 	}
 
 	void Engine::Run()
@@ -479,14 +431,16 @@ namespace Engine
 		
 		// Fire ON_INIT event
 		EventHandling::Event onInitEvent = EventHandling::Event(EventHandling::EventType::ON_INIT);
-		if(this->FireEvent(onInitEvent) != 0)
-		{
-			return;
-		}
+		int onInitEventRet = this->FireEvent(onInitEvent);
 
 		// Measure and log ON_INIT time
 		double total = (std::chrono::steady_clock::now() - start).count() / 1e6;
 		Logging::GlobalLogger->SimpleLog(Logging::LogLevel::Debug1, "Handling ON_INIT took %.3lf ms total", total);
+		
+		if(onInitEventRet != 0)
+		{
+			return;
+		}
 
 		this->engineLoop();
 	}
@@ -534,6 +488,14 @@ namespace Engine
 		global_engine->Init();
 
 		return global_engine;
+	}
+
+	int deinitializeEngine()
+	{
+		delete global_scene_manager;	
+		delete global_engine;
+
+		return 0;
 	}
 
 	CMEP_EXPORT Engine* global_engine;

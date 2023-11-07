@@ -318,7 +318,7 @@ namespace Engine::Scripting::Mappings
 
 			std::string path = lua_tostring(state, 2);
 
-			Rendering::Texture* texture = ptr_am->GetTexture(std::move(path));
+			Rendering::Texture* texture = ptr_am->GetTexture(std::move(path)).get();
 
 			if (texture != nullptr)
 			{

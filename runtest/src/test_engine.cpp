@@ -16,10 +16,11 @@ int test_engine()
 	{
 		engine->ConfigFile("game/config.json");
 		engine->Run();
-        return 0;
+		return Engine::deinitializeEngine();
 	}
 	catch(std::exception e)
 	{
 		return 1;
 	}
+
 }

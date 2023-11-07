@@ -29,6 +29,7 @@ int main(int argc, char** argv)
 	{
 		engine->ConfigFile("game/config.json");
 		engine->Run();
+		
 	}
 	catch(std::exception e)
 	{
