@@ -36,13 +36,13 @@ namespace Engine::Rendering
 		std::string text = "";
 
 		VulkanPipeline* pipeline = nullptr;
-		VulkanTextureImage* textureImage = nullptr;
 		VulkanBuffer* vbo = nullptr;
+		VulkanTextureImage* textureImage = nullptr;
 
 		/// <summary>
 		/// Currently used font
 		/// </summary>
-		std::unique_ptr<Rendering::Font> font;
+		Rendering::Font* font;
 
 	public:
 		TextRenderer();

@@ -19,7 +19,7 @@ namespace Engine
 	private:
 		std::unordered_map<std::string, Scripting::LuaScript*> luascripts;
 		std::unordered_map<std::string, std::shared_ptr<Rendering::Texture>> textures;
-		std::unordered_map<std::string, Rendering::Font*> fonts;
+		std::unordered_map<std::string, std::shared_ptr<Rendering::Font>> fonts;
 	public:
 		AssetManager() {};
 
@@ -28,7 +28,7 @@ namespace Engine
 		void AddLuaScript(std::string name, std::string path);
 
 		std::shared_ptr<Rendering::Texture> GetTexture(std::string name);
-		Rendering::Font* GetFont(std::string name);
+		std::shared_ptr<Rendering::Font> GetFont(std::string name);
 		Scripting::LuaScript* GetLuaScript(std::string name);
 	};
 }

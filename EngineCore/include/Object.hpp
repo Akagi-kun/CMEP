@@ -48,6 +48,11 @@ namespace Engine
 		Rendering::IRenderer* renderer = nullptr;
 		
 		Object() noexcept {}
+		~Object() noexcept
+		{
+			Logging::GlobalLogger->SimpleLog(Logging::LogLevel::Debug3, "Object deleted");
+			delete this->renderer;
+		}
 
 		void ScreenSizeInform(unsigned int screenx, unsigned int screeny) noexcept
 		{ 

@@ -51,6 +51,7 @@ namespace Engine
 
 		public:
 			IRenderer() {};
+			virtual ~IRenderer() {};
 
 			/// <summary>
 			/// Updates data for renderer.

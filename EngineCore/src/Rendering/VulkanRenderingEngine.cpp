@@ -988,6 +988,7 @@ namespace Engine::Rendering
 
 		vkDestroyCommandPool(this->vkLogicalDevice, this->vkCommandPool, nullptr);
 
+		Logging::GlobalLogger->SimpleLog(Logging::LogLevel::Debug3, "Cleaning up default vulkan pipeline");
 		this->cleanupVulkanPipeline(this->graphicsPipelineDefault);
 
 		vkDestroyRenderPass(this->vkLogicalDevice, this->vkRenderPass, nullptr);
@@ -1000,11 +1001,11 @@ namespace Engine::Rendering
 		}
 		vkDestroyInstance(this->vkInstance, nullptr);
 
+		assert(this->leakPipelineCounter == 0);
 		assert(this->leakUniformBufferCounter == 0);
 		assert(this->leakBufferCounter == 0);
 		assert(this->leakTextureImageCounter == 0);
 		assert(this->leakImageCounter == 0);
-		assert(this->leakPipelineCounter == 0);
 
 		// Clean up GLFW
 		glfwDestroyWindow(this->window);
@@ -1396,15 +1397,17 @@ namespace Engine::Rendering
 
 	void VulkanRenderingEngine::cleanupVulkanPipeline(VulkanPipeline* pipeline)
 	{
+		Logging::GlobalLogger->SimpleLog(Logging::LogLevel::Debug3, "Cleaning up vulkan pipeline");
+
 		for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
-			vkDestroyBuffer(this->vkLogicalDevice, this->graphicsPipelineDefault->uniformBuffers[i]->buffer, nullptr);
-			vkFreeMemory(this->vkLogicalDevice, this->graphicsPipelineDefault->uniformBuffers[i]->bufferMemory, nullptr);
+			vkDestroyBuffer(this->vkLogicalDevice, pipeline->uniformBuffers[i]->buffer, nullptr);
+			vkFreeMemory(this->vkLogicalDevice, pipeline->uniformBuffers[i]->bufferMemory, nullptr);
 			this->leakUniformBufferCounter -= 1;
 			this->leakBufferCounter -= 1;
 		}
 
-		vkDestroyDescriptorPool(this->vkLogicalDevice, this->graphicsPipelineDefault->vkDescriptorPool, nullptr);
-		vkDestroyDescriptorSetLayout(this->vkLogicalDevice, this->graphicsPipelineDefault->vkDescriptorSetLayout, nullptr);
+		vkDestroyDescriptorPool(this->vkLogicalDevice, pipeline->vkDescriptorPool, nullptr);
+		vkDestroyDescriptorSetLayout(this->vkLogicalDevice, pipeline->vkDescriptorSetLayout, nullptr);
 
 		vkDestroyPipeline(this->vkLogicalDevice, pipeline->pipeline, nullptr);
 		vkDestroyPipelineLayout(this->vkLogicalDevice, pipeline->vkPipelineLayout, nullptr);
@@ -1546,6 +1549,8 @@ namespace Engine::Rendering
 	void VulkanRenderingEngine::cleanupVulkanBuffer(VulkanBuffer* buffer)
 	{
 		this->leakBufferCounter -= 1;
+
+		Logging::GlobalLogger->SimpleLog(Logging::LogLevel::Debug3, "Cleaning up vulkan buffer");
 
 		vkDestroyBuffer(this->vkLogicalDevice, buffer->buffer, nullptr);
 		vkFreeMemory(this->vkLogicalDevice, buffer->bufferMemory, nullptr);

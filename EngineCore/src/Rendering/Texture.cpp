@@ -12,7 +12,6 @@ namespace Engine::Rendering
 	Texture::Texture() {}
 	Texture::~Texture()
 	{
-		Logging::GlobalLogger->SimpleLog(Logging::LogLevel::Debug3, "Called texture destructor");
 		VulkanRenderingEngine* renderer = global_engine->GetRenderingEngine();
 
 		renderer->cleanupVulkanTextureImage(this->textureImage);

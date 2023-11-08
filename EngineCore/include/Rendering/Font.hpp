@@ -35,7 +35,7 @@ namespace Engine
 			int Init(std::string path);
 
 			FontChar* GetChar(char ch);
-			Texture* GetPageTexture(int page);
+			std::shared_ptr<Texture> GetPageTexture(int page);
 			std::string* GetFontInfoParameter(std::string name);
 		};
 	}

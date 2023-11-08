@@ -292,7 +292,7 @@ namespace Engine::Scripting::Mappings
 
 			std::string path = lua_tostring(state, 2);
 
-			Rendering::Font* font = ptr_am->GetFont(std::move(path));
+			std::shared_ptr<Rendering::Font> font = ptr_am->GetFont(std::move(path));
 
 			if (font != nullptr)
 			{
@@ -300,7 +300,7 @@ namespace Engine::Scripting::Mappings
 				lua_newtable(state);
 
 				Rendering::Font** ptr = (Rendering::Font**)lua_newuserdata(state, sizeof(Rendering::Font*));
-				(*ptr) = font;
+				(*ptr) = font.get();
 				lua_setfield(state, -2, "_pointer");
 			}
 			else

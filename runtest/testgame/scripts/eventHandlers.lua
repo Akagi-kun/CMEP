@@ -15,8 +15,8 @@ end
 
 -- ON_UPDATE event
 onUpdate = function(event)
-	cmepapi.gsm_RemoveObject("3DObject");
 	cmepapi.gsm_RemoveObject("3DObject2");
+	cmepapi.gsm_RemoveObject("3DObject");
 	cmepapi.gsm_RemoveObject("birb");
 	cmepapi.gsm_RemoveObject("_debug_info");
 	

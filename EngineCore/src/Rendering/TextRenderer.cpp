@@ -13,19 +13,7 @@
 namespace Engine::Rendering
 {
 	TextRenderer::TextRenderer()
-	{/*
-		static const char* vertex_shader_source =
-			"#version 400 core\n"
-			"layout(location = 0) in vec3 pos; layout(location = 1) in vec2 texCord; out vec2 fragTexCord;"
-			"void main() { gl_Position = vec4(pos, 1.0f); fragTexCord = texCord; }";
-
-		static const char* fragment_shader_source =
-			"#version 400 core\n"
-			"out vec4 color; in vec2 fragTexCord; uniform sampler2D texture0;"
-			"void main() { color = texture(texture0, fragTexCord); }";
-
-		this->program = std::make_unique<Rendering::Shader>(vertex_shader_source, fragment_shader_source);*/
-	
+	{
 		VulkanRenderingEngine* renderer = global_engine->GetRenderingEngine();
 
 		VulkanPipelineSettings pipeline_settings = renderer->getVulkanDefaultPipelineSettings();
@@ -47,10 +35,9 @@ namespace Engine::Rendering
 
 	TextRenderer::~TextRenderer()
 	{
+		Logging::GlobalLogger->SimpleLog(Logging::LogLevel::Debug3, "Cleaning up text renderer");
 		global_engine->GetRenderingEngine()->cleanupVulkanBuffer(this->vbo);
 		global_engine->GetRenderingEngine()->cleanupVulkanPipeline(this->pipeline);
-		//glDeleteVertexArrays(1, &this->vao);
-		//glDeleteBuffers(1, &this->vbo);
 	}
 
 	void TextRenderer::Update(glm::vec3 pos, glm::vec3 size, glm::vec3 rotation, uint_fast16_t screenx, uint_fast16_t screeny, glm::vec3 parent_position, glm::vec3 parent_rotation, glm::vec3 parent_size)
@@ -71,7 +58,7 @@ namespace Engine::Rendering
 
 	int TextRenderer::UpdateFont(Rendering::Font* const font)
 	{
-		this->font.reset(font);
+		this->font = font;
 
 		this->has_updated_mesh = false;
 
@@ -111,7 +98,7 @@ namespace Engine::Rendering
 			this->vbo = nullptr;
 		}
 
-		int fontsize = std::stoi(this->font.get()->GetFontInfoParameter("size")->c_str(), nullptr, 10);
+		int fontsize = std::stoi(this->font->GetFontInfoParameter("size")->c_str(), nullptr, 10);
 
 		assert(fontsize > 0);
 		
@@ -146,7 +133,7 @@ namespace Engine::Rendering
 
 				// Get texture
 				unsigned int texture_x = 0, texture_y = 0;
-				const Rendering::Texture* const texture = this->font->GetPageTexture(ch->page);
+				const std::shared_ptr<Texture> const texture = this->font->GetPageTexture(ch->page);
 				assert(texture != nullptr);
 				texture->GetSize(texture_x, texture_y);
 				assert(texture_x > 0 && texture_y > 0);

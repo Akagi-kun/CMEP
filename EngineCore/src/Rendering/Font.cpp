@@ -2,6 +2,7 @@
 #include <cstdio>
 #include <string>
 #include <cstring>
+#include <stdexcept>
 
 #include "Rendering/Texture.hpp"
 #include "Logging/Logging.hpp"
@@ -19,6 +20,7 @@ namespace Engine::Rendering
 
 	Font::~Font() 
 	{
+		Logging::GlobalLogger->SimpleLog(Logging::LogLevel::Debug3, "Deleting font");
 	}
 
 	int Font::Init(std::string path)
@@ -196,8 +198,8 @@ namespace Engine::Rendering
 						texture = std::make_shared<Texture>();
 						if (texture->InitFile(Texture_InitFiletype::FILE_PNG, whole_filename.c_str()) != 0)
 						{
-							Logging::GlobalLogger->SimpleLog(Logging::LogLevel::Error, "Failed initializing texture\n");
-							assert(0);
+							Logging::GlobalLogger->SimpleLog(Logging::LogLevel::Exception, "Failed initializing texture");
+							throw std::runtime_error("Failed initializing texture!");
 						}
 					}
 					else
@@ -236,12 +238,12 @@ namespace Engine::Rendering
 		return nullptr;
 	}
 
-	Texture* Font::GetPageTexture(int page)
+	std::shared_ptr<Texture> Font::GetPageTexture(int page)
 	{
 		auto find_ret = this->pages.find(page);
 		if (find_ret != this->pages.end())
 		{
-			return find_ret->second.get();
+			return find_ret->second;
 		}
 		return nullptr;
 	}

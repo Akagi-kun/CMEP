@@ -67,7 +67,7 @@ namespace Engine
 		}
 	}
 
-	Rendering::Font* AssetManager::GetFont(std::string name)
+	std::shared_ptr<Rendering::Font> AssetManager::GetFont(std::string name)
 	{
 		Logging::GlobalLogger->SimpleLog(Logging::LogLevel::Debug2, "Font %s requested", name.c_str());
 		if (this->fonts.find(name) != this->fonts.end())
@@ -76,11 +76,10 @@ namespace Engine
 		}
 		else
 		{
-			Rendering::Font* font = new Engine::Rendering::Font(this);
+			std::shared_ptr<Rendering::Font> font = std::make_shared<Rendering::Font>(this);
 			
 			if (font->Init(name) != 0)
 			{
-				delete font;
 				return nullptr;
 			}
 			

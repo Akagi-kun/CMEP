@@ -40,6 +40,7 @@ namespace Engine::Rendering
 
 	AxisRenderer::~AxisRenderer()
 	{
+		Logging::GlobalLogger->SimpleLog(Logging::LogLevel::Debug3, "Destructing up axis renderer");
 		global_engine->GetRenderingEngine()->cleanupVulkanBuffer(this->vbo);
 		global_engine->GetRenderingEngine()->cleanupVulkanPipeline(this->pipeline);
 		//glDeleteVertexArrays(1, &this->vao);

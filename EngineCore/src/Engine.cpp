@@ -239,14 +239,14 @@ namespace Engine
 	{
 		Logging::GlobalLogger->MapCurrentThreadToName("game");
 		
-		Object* object = new Object();
-		object->renderer = new Rendering::AxisRenderer();
-		object->Translate(glm::vec3(0, 0, 0));
-		object->Scale(glm::vec3(1, 1, 1));
-		object->Rotate(glm::vec3(0, 0, 0));
-		object->ScreenSizeInform(this->windowX, this->windowY);
-		((Rendering::AxisRenderer*)object->renderer)->UpdateMesh();
-		global_scene_manager->AddObject("_axis", object);
+		//Object* object = new Object();
+		//object->renderer = new Rendering::AxisRenderer();
+		//object->Translate(glm::vec3(0, 0, 0));
+		//object->Scale(glm::vec3(1, 1, 1));
+		//object->Rotate(glm::vec3(0, 0, 0));
+		//object->ScreenSizeInform(this->windowX, this->windowY);
+		//((Rendering::AxisRenderer*)object->renderer)->UpdateMesh();
+		//global_scene_manager->AddObject("_axis", object);
 		
 		// Object* sprite_test = ObjectFactory::CreateSpriteObject(0.0, 0.0, 0.5, 0.5, this->asset_manager->GetTexture("game/fonts/myfont/myfont_0.png"));
 		// global_scene_manager->AddObject("testpng", sprite_test);
@@ -352,7 +352,6 @@ namespace Engine
 				sum += this->script_executor->CallIntoScript(Scripting::ExecuteType::EventHandler, std::get<1>(handler), std::get<2>(handler), &event);
 			}
 		}
-		printf("%u ", sum);
 		return sum;
 	}
 
@@ -365,11 +364,12 @@ namespace Engine
 
 	Engine::~Engine() noexcept
 	{
-		this->rendering_engine->cleanup();
-		
-		//delete this->window;
 		delete this->asset_manager;
+
+		this->rendering_engine->cleanup();
+
 		delete this->script_executor;
+
 		delete this->rendering_engine;
 	}
 
@@ -435,7 +435,7 @@ namespace Engine
 
 		// Measure and log ON_INIT time
 		double total = (std::chrono::steady_clock::now() - start).count() / 1e6;
-		Logging::GlobalLogger->SimpleLog(Logging::LogLevel::Debug1, "Handling ON_INIT took %.3lf ms total", total);
+		Logging::GlobalLogger->SimpleLog(Logging::LogLevel::Debug1, "Handling ON_INIT took %.3lf ms total and returned %i", total, onInitEventRet);
 		
 		if(onInitEventRet != 0)
 		{
@@ -492,7 +492,7 @@ namespace Engine
 
 	int deinitializeEngine()
 	{
-		delete global_scene_manager;	
+		delete global_scene_manager;
 		delete global_engine;
 
 		return 0;
