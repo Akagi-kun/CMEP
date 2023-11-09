@@ -36,15 +36,15 @@ onInit = function(event)
 	cmepapi.gsm_AddObject("_debug_info", debugobject);
 	
 	-- Add birb
-	local sprite = cmepapi.assetManager_GetTexture(asset_manager, "game/textures/birb.png");
-	local birb = cmepapi.objectFactory_CreateSpriteObject(0.2, (720 / 2) / 720, 48 / 1100, 33 / 720, sprite);
+	-- local sprite = cmepapi.assetManager_GetTexture(asset_manager, "game/textures/birb.png");
+	local birb = cmepapi.objectFactory_CreateSpriteObject(0.2, (720 / 2) / 720, 48 / 1100, 33 / 720, asset_manager, "game/textures/birb.png");
 	cmepapi.gsm_AddObject("birb", birb);
 
-	local mesh = cmepapi.mesh_Mesh();
-	cmepapi.mesh_CreateMeshFromObj(mesh, "game/models/cube.obj");
-	local object3d = cmepapi.objectFactory_CreateGeneric3DObject(0.0, 0.0, 0.0, 1.0, 1.0, 1.0, 0.0, 0.0, 0.0, mesh)
+	--local mesh = cmepapi.mesh_Mesh();
+	--cmepapi.mesh_CreateMeshFromObj(mesh, "game/models/cube.obj");
+	local object3d = cmepapi.objectFactory_CreateGeneric3DObject(0.0, 0.0, 0.0, 1.0, 1.0, 1.0, 0.0, 0.0, 0.0, "game/models/cube.obj")
 	cmepapi.gsm_AddObject("3DObject", object3d);
-	local object3d2 = cmepapi.objectFactory_CreateGeneric3DObject(0.0, 2.0, 0.0, 1.0, 1.0, 1.0, 0.0, 0.0, 0.0, mesh)
+	local object3d2 = cmepapi.objectFactory_CreateGeneric3DObject(0.0, 2.0, 0.0, 1.0, 1.0, 1.0, 0.0, 0.0, 0.0, "game/models/cube.obj")
 	cmepapi.gsm_AddObject("3DObject2", object3d2);
 	cmepapi.object_AddChild(object3d, object3d2);
 

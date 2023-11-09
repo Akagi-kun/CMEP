@@ -41,7 +41,7 @@ namespace Engine::Rendering
 		global_engine->GetRenderingEngine()->cleanupVulkanPipeline(this->pipeline);
 	}
 
-	void MeshRenderer::AssignMesh(Mesh* new_mesh)
+	void MeshRenderer::AssignMesh(std::shared_ptr<Mesh> new_mesh)
 	{
 		this->mesh = new_mesh;
 

@@ -5,6 +5,18 @@
 
 namespace Engine
 {
+	AssetManager::~AssetManager()
+	{
+		for(auto& texture : this->textures)
+		{
+			Logging::GlobalLogger->SimpleLog(Logging::LogLevel::Debug3, "Texture %s use_count: %u", texture.first.c_str(), texture.second.use_count());
+		}
+
+		this->textures.clear();
+
+		Logging::GlobalLogger->SimpleLog(Logging::LogLevel::Debug3, "Deleting asset manager");
+	}
+
 #pragma region Adding Assets
 	void AssetManager::AddTexture(std::string name, std::string path, Rendering::Texture_InitFiletype filetype)
 	{

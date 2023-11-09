@@ -362,9 +362,11 @@ namespace Engine::Scripting::Mappings
 			double sizey = lua_tonumber(state, 4);
 
 			lua_getfield(state, 5, "_pointer");
-			Rendering::Texture* sprite = *(Rendering::Texture**)lua_touserdata(state, -1);
+			AssetManager* ptr_am = *(AssetManager**)lua_touserdata(state, -1);
+			std::string sprite_name = lua_tostring(state, 6);
+			//Rendering::Texture* sprite = *(Rendering::Texture**)lua_touserdata(state, -1);
 
-			Object* obj = ObjectFactory::CreateSpriteObject(x, y, sizex, sizey, sprite);
+			Object* obj = ObjectFactory::CreateSpriteObject(x, y, sizex, sizey, ptr_am->GetTexture(sprite_name));
 
 			if (obj != nullptr)
 			{
@@ -443,8 +445,10 @@ namespace Engine::Scripting::Mappings
 			double yrot = lua_tonumber(state, 8);
 			double zrot = lua_tonumber(state, 9);
 
-			lua_getfield(state, 10, "_self");
-			Rendering::Mesh* mesh = *(Rendering::Mesh**)lua_touserdata(state, -1);
+			std::shared_ptr<Rendering::Mesh> mesh = std::make_shared<Rendering::Mesh>();
+			mesh->CreateMeshFromObj(std::string(lua_tostring(state, 10)));
+			//lua_getfield(state, 10, "_self");
+			//Rendering::Mesh* mesh = *(Rendering::Mesh**)lua_touserdata(state, -1);
 
 			Object* obj = ObjectFactory::CreateGeneric3DObject(x, y, z, xsize, ysize, zsize, xrot, yrot, zrot, mesh);
 

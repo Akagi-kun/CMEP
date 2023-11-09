@@ -22,6 +22,7 @@ namespace Engine
 		std::unordered_map<std::string, std::shared_ptr<Rendering::Font>> fonts;
 	public:
 		AssetManager() {};
+		~AssetManager();
 
 		void AddTexture(std::string name, std::string path, Rendering::Texture_InitFiletype filetype);
 		void AddFont(std::string name, std::string path);

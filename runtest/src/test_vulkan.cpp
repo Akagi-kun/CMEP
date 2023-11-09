@@ -20,8 +20,8 @@ int boilerplate_rendering_engine_init()
 
 int boilerplate_rendering_engine_cleanup()
 {	
-	boilerplate_logger_release();
 	rendering_engine->cleanup();
+	boilerplate_logger_release();
 
 	delete rendering_engine;
 	

@@ -10,7 +10,7 @@
 
 namespace Engine::ObjectFactory
 {
-	Object* CreateSpriteObject(double x, double y, double sizex, double sizey, ::Engine::Rendering::Texture* sprite)
+	Object* CreateSpriteObject(double x, double y, double sizex, double sizey, std::shared_ptr<::Engine::Rendering::Texture> sprite)
 	{
 		assert(sprite != nullptr);
 		Engine::Object* object = new Engine::Object();
@@ -37,7 +37,7 @@ namespace Engine::ObjectFactory
 		return object;
 	}
 
-	Object* CreateGeneric3DObject(double x, double y, double z, double sizex, double sizey, double sizez, double rotx, double roty, double rotz, ::Engine::Rendering::Mesh* mesh)
+	Object* CreateGeneric3DObject(double x, double y, double z, double sizex, double sizey, double sizez, double rotx, double roty, double rotz, std::shared_ptr<::Engine::Rendering::Mesh> mesh)
 	{
 		Engine::Object* object = new Engine::Object();
 		object->renderer = new Rendering::MeshRenderer();

@@ -27,7 +27,7 @@ namespace Engine::Rendering
 	{
 		// Opens the bmfont file
 		this->fntfile = path;
-		//printf("%s\n", path.c_str());
+		
 		FILE* file = nullptr;
 		if ((file = fopen(path.c_str(), "r")) == NULL)
 		{
@@ -191,7 +191,7 @@ namespace Engine::Rendering
 
 					Logging::GlobalLogger->SimpleLog(Logging::LogLevel::Debug3, "Font page index %u is %s", page_idx, whole_filename.c_str());
 
-					std::shared_ptr<Texture> texture = nullptr;
+					std::shared_ptr<Texture> texture{};
 					if (this->asset_manager == nullptr)
 					{
 						Logging::GlobalLogger->SimpleLog(Logging::LogLevel::Debug3, "A Font is not managed by a AssetManager, this may be unintentional");
@@ -204,7 +204,8 @@ namespace Engine::Rendering
 					}
 					else
 					{
-						if ((texture = this->asset_manager->GetTexture(whole_filename)) == nullptr)
+						texture = this->asset_manager->GetTexture(whole_filename);
+						if (texture == nullptr)
 						{
 							this->asset_manager->AddTexture(whole_filename, whole_filename, Texture_InitFiletype::FILE_PNG);
 							texture = this->asset_manager->GetTexture(whole_filename);
@@ -212,7 +213,7 @@ namespace Engine::Rendering
 					}
 
 					// Add page and it's texture to map
-					this->pages.insert(std::pair<int, std::shared_ptr<Texture>>(page_idx, texture));
+					this->pages.insert(std::pair<int, std::shared_ptr<Texture>>(page_idx, std::move(texture)));
 					page_idx++;
 				}
 				break;

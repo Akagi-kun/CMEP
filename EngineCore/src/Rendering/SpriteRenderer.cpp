@@ -33,6 +33,7 @@ namespace Engine::Rendering
 
 	SpriteRenderer::~SpriteRenderer()
 	{
+		Logging::GlobalLogger->SimpleLog(Logging::LogLevel::Debug3, "Cleaning up sprite renderer");
 		VulkanRenderingEngine* renderer = global_engine->GetRenderingEngine();
 
 		renderer->cleanupVulkanBuffer(this->vbo);
@@ -57,9 +58,9 @@ namespace Engine::Rendering
 		this->has_updated_mesh = false;
 	}
 
-	void SpriteRenderer::UpdateTexture(const Rendering::Texture* texture)
+	void SpriteRenderer::UpdateTexture(std::shared_ptr<Rendering::Texture> texture)
 	{
-		this->texture.reset(texture);
+		this->texture = texture;
 
 		this->has_updated_mesh = false;
 	}

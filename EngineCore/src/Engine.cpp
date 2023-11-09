@@ -366,9 +366,9 @@ namespace Engine
 	{
 		delete this->asset_manager;
 
-		this->rendering_engine->cleanup();
-
 		delete this->script_executor;
+
+		this->rendering_engine->cleanup();
 
 		delete this->rendering_engine;
 	}

@@ -14,9 +14,9 @@ namespace Engine::Rendering
 	{
 		VulkanRenderingEngine* renderer = global_engine->GetRenderingEngine();
 
+		Logging::GlobalLogger->SimpleLog(Logging::LogLevel::Debug3, "Deleting texture");
 		renderer->cleanupVulkanTextureImage(this->textureImage);
 		this->textureImage = nullptr;
-		//glDeleteTextures(1, &this->texture);
 	}
 
 	void Texture::UsePremadeStagingBuffer(VulkanBuffer* staging_buffer)
@@ -28,27 +28,7 @@ namespace Engine::Rendering
 	int Texture::InitRaw(std::vector<unsigned char> raw_data, int color_format, unsigned int xsize, unsigned int ysize)
 	{
 		int channel_count = 4;
-		/*switch (color_format)
-		{
-		case GL_RED:
-			channel_count = 1;
-			break;
-		case GL_RG:
-			channel_count = 2;
-			break;
-		case GL_BGR:
-		case GL_RGB:
-			channel_count = 3;
-			break;
-		case GL_BGRA:
-		case GL_RGBA:
-			channel_count = 4;
-			break;
-		}*/
-
-		//this->data = new unsigned char[(size_t)ysize * xsize  * channel_count];
-		//assert(this->data != nullptr);
-		//memcpy(this->data, raw_data, (size_t)ysize * xsize * channel_count);
+		
 		this->data = raw_data;
 
 		this->color_fmt = color_format;
@@ -79,16 +59,6 @@ namespace Engine::Rendering
 
 		renderer->appendVulkanImageViewToVulkanTextureImage(this->textureImage);
 		renderer->appendVulkanSamplerToVulkanTextureImage(this->textureImage);
-
-		//glCreateTextures(GL_TEXTURE_2D, 1, &this->texture);
-
-		//glTextureStorage2D(this->texture, 1, GL_RGBA8, this->x, this->y);
-		//glTextureSubImage2D(this->texture, 0, 0, 0, this->x, this->y, color_format, GL_UNSIGNED_BYTE, &this->data[0]);
-
-		//glTextureParameteri(this->texture, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-		//glTextureParameteri(this->texture, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-		//glTextureParameteri(this->texture, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-		//glTextureParameteri(this->texture, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 
 		return 0;
 	}

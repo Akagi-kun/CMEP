@@ -975,6 +975,8 @@ namespace Engine::Rendering
 	{
 		vkDeviceWaitIdle(this->vkLogicalDevice);
 
+		Logging::GlobalLogger->SimpleLog(Logging::LogLevel::Info, "VulkanRenderingEngine: cleaning up");
+
 		this->cleanupVulkanSwapChain();
 
 		this->cleanupVulkanImage(this->multisampledColorImage);
@@ -1732,6 +1734,8 @@ namespace Engine::Rendering
 
 		vkBindImageMemory(this->vkLogicalDevice, new_image->image, new_image->imageMemory, 0);
 
+		Logging::GlobalLogger->SimpleLog(Logging::LogLevel::Success, "Created vulkan image with handle 0x%x", new_image->image);
+
 		this->leakImageCounter += 1;
 
 		return new_image;
@@ -1896,6 +1900,8 @@ namespace Engine::Rendering
 	void VulkanRenderingEngine::cleanupVulkanTextureImage(VulkanTextureImage* image)
 	{
 		this->leakTextureImageCounter -= 1;
+
+		Logging::GlobalLogger->SimpleLog(Logging::LogLevel::Debug3, "Cleaning up Vulkan texture image");
 
 		vkDestroySampler(this->vkLogicalDevice, image->textureSampler, nullptr);
 		
