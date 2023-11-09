@@ -5,8 +5,10 @@
 #include <memory>
 #include <vector>
 #include <optional>
-#include <glfw/include/GLFW/glfw3.h>
-#include <vulkan/vulkan.h>
+
+#define GLFW_INCLUDE_NONE
+#define GLFW_INCLUDE_VULKAN
+#include "glfw/include/GLFW/glfw3.h"
 
 #include "glm/gtc/matrix_transform.hpp"
 #include "glm/gtc/quaternion.hpp"
