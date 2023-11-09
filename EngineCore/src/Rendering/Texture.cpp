@@ -44,7 +44,7 @@ namespace Engine::Rendering
 			this->staging_buffer = renderer->createVulkanStagingBufferPreMapped(memory_size);
 		}
 
-		memcpy(this->staging_buffer->mappedMemory, raw_data.data(), static_cast<size_t>(memory_size));
+		memcpy(this->staging_buffer->allocationInfo.pMappedData, raw_data.data(), static_cast<size_t>(std::min(memory_size, this->staging_buffer->allocationInfo.size)));
 
 		this->textureImage = renderer->createVulkanTextureImage(xsize, ysize, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
 		

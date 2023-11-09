@@ -25,10 +25,6 @@ namespace Engine
 		class LuaScript;
 	}
 
-	struct QueueFamilyIndices {
-		std::optional<uint32_t> graphicsFamily;
-	};
-
 	extern bool EngineIsWindowInFocus;
 	extern bool EngineIsWindowInContent;
 	extern double EngineMouseXPos;

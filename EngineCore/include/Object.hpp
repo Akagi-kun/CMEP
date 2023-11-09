@@ -109,14 +109,6 @@ namespace Engine
 			return 0; 
 		}
 
-		void RegisterOnClick(std::function<void(Object*)> f) noexcept { this->_onClick = f; };
-		void onClick()
-		{ 
-			try { this->_onClick(this); } 
-			// std::bad_function_call is thrown when this->_onClick has no function assigned, ignore
-			catch(std::bad_function_call e) { /* exception ignored */ }
-		}
-
 		glm::vec3 position() const noexcept { return this->_pos; }
 		glm::vec3 size() const noexcept { return this->_size; }
 		glm::vec3 rotation() const noexcept { return this->_rotation; }

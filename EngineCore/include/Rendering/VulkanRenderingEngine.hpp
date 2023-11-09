@@ -4,6 +4,8 @@
 #define GLFW_INCLUDE_VULKAN
 #include "glfw/include/GLFW/glfw3.h"
 
+#include "VulkanMemoryAllocator/include/vk_mem_alloc.h"
+
 #include "glm/glm.hpp"
 
 #include <string>
@@ -40,14 +42,15 @@ namespace Engine::Rendering
 	struct VulkanBuffer
 	{
 		VkBuffer buffer;
-		VkDeviceMemory bufferMemory;
-		void* mappedMemory;
+		VmaAllocation allocation;
+		VmaAllocationInfo allocationInfo;
 	};
 
 	struct VulkanImage
 	{
 		VkImage image;
-		VkDeviceMemory imageMemory;
+		VmaAllocation allocation;
+		VmaAllocationInfo allocationInfo;
 		VkFormat imageFormat;
 		VkImageView imageView;
 	};
@@ -199,6 +202,9 @@ namespace Engine::Rendering
 		// Depth buffers
 		VulkanImage* vkDepthBuffer = nullptr;
 
+		// Memory management 
+		VmaAllocator vmaAllocator;
+
 		// External callback for rendering
 		std::function<void(VkCommandBuffer, uint32_t)> external_callback;
 
@@ -272,6 +278,7 @@ namespace Engine::Rendering
 		void createVulkanSyncObjects();
 		void createVulkanDepthResources();
 		void createMultisampledColorResources();
+		void createVulkanMemoryAllocator();
 
 	public:
 		VulkanRenderingEngine() {}

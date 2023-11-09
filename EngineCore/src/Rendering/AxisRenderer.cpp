@@ -86,14 +86,10 @@ namespace Engine::Rendering
 
 		VulkanRenderingEngine* renderer = global_engine->GetRenderingEngine();
 
-		if (this->vbo != nullptr)
+		if (this->vbo == nullptr)
 		{
-			vkDeviceWaitIdle(renderer->GetLogicalDevice());
-			renderer->cleanupVulkanBuffer(this->vbo);
-			this->vbo = nullptr;
+			this->vbo = global_engine->GetRenderingEngine()->createVulkanVertexBufferFromData(vertices);
 		}
-
-		this->vbo = global_engine->GetRenderingEngine()->createVulkanVertexBufferFromData(vertices);
 
 		for (size_t i = 0; i < renderer->GetMaxFramesInFlight(); i++)
 		{
@@ -124,7 +120,7 @@ namespace Engine::Rendering
 			this->UpdateMesh();
 		}
 
-		memcpy(this->pipeline->uniformBuffers[currentFrame]->mappedMemory, &this->matMVP, sizeof(glm::mat4));
+		memcpy(this->pipeline->uniformBuffers[currentFrame]->allocationInfo.deviceMemory, &this->matMVP, sizeof(glm::mat4));
 		vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, this->pipeline->vkPipelineLayout, 0, 1, &this->pipeline->vkDescriptorSets[currentFrame], 0, nullptr);
 
 		vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, this->pipeline->pipeline);

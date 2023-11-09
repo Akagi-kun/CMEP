@@ -173,7 +173,7 @@ namespace Engine::Rendering
 			this->UpdateMesh();
 		}
 
-		memcpy(this->pipeline->uniformBuffers[currentFrame]->mappedMemory, &this->matMVP, sizeof(glm::mat4));
+		memcpy(this->pipeline->uniformBuffers[currentFrame]->allocationInfo.deviceMemory, &this->matMVP, sizeof(glm::mat4));
 		vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, this->pipeline->vkPipelineLayout, 0, 1, &this->pipeline->vkDescriptorSets[currentFrame], 0, nullptr);
 
 		vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, this->pipeline->pipeline);
