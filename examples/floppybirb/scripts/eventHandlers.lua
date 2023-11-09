@@ -67,18 +67,16 @@ onUpdate = function(event)
 	end
 
 	-- We can use the math library in here!
-	local offset = -100 + math.random(-100, 100);
+	local offset = -100 + math.random(-150, 150);
 
 	local asset_manager = cmepapi.engine_GetAssetManager();
 	if gameIsGameOver == false then
 		if spawnPipeSinceLast > spawnPipeEvery then
 			-- Spawn new pipes
-			local sprite1 = cmepapi.assetManager_GetTexture(asset_manager, "game/textures/pipe_down.png");
-			local object1 = cmepapi.objectFactory_CreateSpriteObject(1.0, offset / 720, 80 / 1100, 400 / 720, sprite1);
+			local object1 = cmepapi.objectFactory_CreateSpriteObject(1.0, offset / 720, 80 / 1100, 400 / 720, asset_manager, "game/textures/pipe_down.png");
 			cmepapi.gsm_AddObject("sprite_pipe_down"..tostring(spawnPipeLastIdx + 1), object1);
 
-			local sprite2 = cmepapi.assetManager_GetTexture(asset_manager, "game/textures/pipe_up.png");
-			local object2 = cmepapi.objectFactory_CreateSpriteObject(1.0, (400 + 200 + offset) / 720, 80 / 1100, 400 / 720, sprite2);
+			local object2 = cmepapi.objectFactory_CreateSpriteObject(1.0, (400 + 200 + offset) / 720, 80 / 1100, 400 / 720, asset_manager, "game/textures/pipe_up.png");
 			cmepapi.gsm_AddObject("sprite_pipe_up"..tostring(spawnPipeLastIdx + 1), object2);
 
 			spawnPipeLastIdx = spawnPipeLastIdx + 1;
@@ -170,9 +168,8 @@ onInit = function(event)
 	cmepapi.gsm_AddObject("text_score", object);
 
 	-- Add birb
-	local sprite = cmepapi.assetManager_GetTexture(asset_manager, "game/textures/birb.png");
-	local object = cmepapi.objectFactory_CreateSpriteObject(0.2, (720 / 2) / 720, 48 / 1100, 33 / 720, sprite);
-	cmepapi.gsm_AddObject("birb", object);
+	local birb = cmepapi.objectFactory_CreateSpriteObject(0.2, (720 / 2) / 720, 48 / 1100, 33 / 720, asset_manager, "game/textures/birb.png");
+	cmepapi.gsm_AddObject("birb", birb);
 
 	-- Set-up camera
 	cmepapi.gsm_SetCameraTransform(-5.0, 0.0, 0.0);

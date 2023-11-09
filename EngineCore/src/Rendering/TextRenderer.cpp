@@ -127,7 +127,7 @@ namespace Engine::Rendering
 				assert(ch != nullptr);
 				if (ch == nullptr)
 				{
-					assert(false);
+					Logging::GlobalLogger->SimpleLog(Logging::LogLevel::Error, "Char 0x%x is not found in set font", this->text[i]);
 					continue;
 				}
 

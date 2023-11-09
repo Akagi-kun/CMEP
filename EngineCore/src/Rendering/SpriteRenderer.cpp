@@ -1,7 +1,10 @@
 #include <assert.h>
 #include <cstring>
 
-#include "glm/glm.hpp"
+#include <glm/glm.hpp>
+#include <glm/gtx/quaternion.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+
 #include "Rendering/SpriteRenderer.hpp"
 #include "Rendering/Texture.hpp"
 #include "Object.hpp"
@@ -15,7 +18,8 @@ namespace Engine::Rendering
 		VulkanRenderingEngine* renderer = global_engine->GetRenderingEngine();
 
 		VulkanPipelineSettings pipeline_settings = renderer->getVulkanDefaultPipelineSettings();
-		pipeline_settings.inputAssembly.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_FAN;
+		pipeline_settings.inputAssembly.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
+		//pipeline_settings.rasterizer.cullMode = VK_CULL_MODE_BACK_BIT;
 
 		pipeline_settings.descriptorLayoutSettings.binding.push_back(0);
 		pipeline_settings.descriptorLayoutSettings.descriptorCount.push_back(1);
@@ -27,7 +31,7 @@ namespace Engine::Rendering
 		pipeline_settings.descriptorLayoutSettings.types.push_back(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
 		pipeline_settings.descriptorLayoutSettings.stageFlags.push_back(VK_SHADER_STAGE_FRAGMENT_BIT);
 
-		this->pipeline = renderer->createVulkanPipeline(pipeline_settings, "game/shaders/vulkan/textrenderer_vert.spv", "game/shaders/vulkan/textrenderer_frag.spv");
+		this->pipeline = renderer->createVulkanPipeline(pipeline_settings, "game/shaders/vulkan/spriterenderer_vert.spv", "game/shaders/vulkan/spriterenderer_frag.spv");
 
 	}
 
@@ -36,6 +40,7 @@ namespace Engine::Rendering
 		Logging::GlobalLogger->SimpleLog(Logging::LogLevel::Debug3, "Cleaning up sprite renderer");
 		VulkanRenderingEngine* renderer = global_engine->GetRenderingEngine();
 
+		vkDeviceWaitIdle(renderer->GetLogicalDevice());
 		renderer->cleanupVulkanBuffer(this->vbo);
 		renderer->cleanupVulkanPipeline(this->pipeline);
 		//glDeleteVertexArrays(1, &this->vao);
@@ -71,27 +76,60 @@ namespace Engine::Rendering
 
 		VulkanRenderingEngine* renderer = global_engine->GetRenderingEngine();
 
-		if (this->vbo != nullptr)
+		if (this->vbo == nullptr)
 		{
-			vkDeviceWaitIdle(renderer->GetLogicalDevice());
-			renderer->cleanupVulkanBuffer(this->vbo);
-			this->vbo = nullptr;
+			//vkDeviceWaitIdle(renderer->GetLogicalDevice());
+			//renderer->cleanupVulkanBuffer(this->vbo);
+			//this->vbo = nullptr;
+		
+			const float xs = 1.0f;//(float)this->_size.x * 2.0f;
+			const float ys = 1.0f;//(float)this->_size.y * 2.0f;
+			//const float x = (float)this->_pos.x * 2.0f - 1.0f;
+			//const float y = (float)this->_pos.y * 2.0f - 1.0f;
+	
+			const float x = 0.f, y = 0.f;
+	
+			std::array<RenderingVertex, 6> vertices = {};
+			vertices[0] = { glm::vec3(0.0, 1.0, 0.0), glm::vec3(1.f, 0.f, 0.f), glm::vec2(0.0, 1.0) };
+			vertices[1] = { glm::vec3(1.0, 1.0, 0.0), glm::vec3(1.f, 0.f, 0.f), glm::vec2(1.0, 1.0) };
+			vertices[2] = { glm::vec3(0.0, 0.0, 0.0), glm::vec3(1.f, 0.f, 0.f), glm::vec2(0.0, 0.0) };
+			vertices[3] = { glm::vec3(1.0, 1.0, 0.0), glm::vec3(1.f, 0.f, 0.f), glm::vec2(1.0, 1.0) };
+			vertices[4] = { glm::vec3(1.0, 0.0, 0.0), glm::vec3(1.f, 0.f, 0.f), glm::vec2(1.0, 0.0) };
+			vertices[5] = { glm::vec3(0.0, 0.0, 0.0), glm::vec3(1.f, 0.f, 0.f), glm::vec2(0.0, 0.0) };
+	
+			std::vector<RenderingVertex> generated_mesh{};
+			generated_mesh.insert(generated_mesh.end(), vertices.begin(), vertices.end());
+
+			this->vbo = renderer->createVulkanVertexBufferFromData(generated_mesh);
 		}
-		
-		const float xs = (float)this->_size.x * 2.0f;
-		const float ys = (float)this->_size.y * 2.0f;
-		const float x = (float)this->_pos.x * 2.0f - 1.0f;
-		const float y = (float)this->_pos.y * 2.0f - 1.0f;
 
-		const std::vector<RenderingVertex> vertices = {
-			{{x, y + ys, 0.0},      {0.0, 0.0, 0.0}, {0.0, 1.0}},
-			{{x + xs, y + ys, 0.0}, {0.0, 0.0, 0.0}, {1.0, 1.0}},
-			{{x + xs, y, 0.0},      {0.0, 0.0, 0.0}, {1.0, 0.0}},
-			{{x, y, 0.0},           {0.0, 0.0, 0.0}, {0.0, 0.0}},
-		};
+		glm::mat4 Projection = glm::ortho(0.0f, 1.0f, 0.0f, 1.0f);
 
-		this->vbo = renderer->createVulkanVertexBufferFromData(vertices);
-		
+		if(this->_parent_size.x == 0.0f && this->_parent_size.y == 0.0f && this->_parent_size.z == 0.0f)
+		{
+			this->_parent_size = glm::vec3(1,1,1);
+		}
+
+		glm::quat ModelRotation = glm::quat(glm::radians(this->_rotation));
+		glm::quat ParentRotation = glm::quat(glm::radians(this->_parent_rotation));
+		glm::mat4 Model = 
+						glm::scale(
+							glm::translate(
+								glm::scale(
+									glm::translate(glm::mat4(1.0f), 
+									this->_parent_pos)
+										*
+									glm::toMat4(
+									ParentRotation),
+								this->_parent_size),
+							this->_pos)
+								*
+							glm::toMat4(
+							ModelRotation),
+						this->_size);
+
+		this->matMVP = Projection * Model;
+
 		VulkanTextureImage* textureImage = this->texture->GetTextureImage();
 		for (size_t i = 0; i < renderer->GetMaxFramesInFlight(); i++)
 		{
@@ -135,6 +173,7 @@ namespace Engine::Rendering
 			this->UpdateMesh();
 		}
 
+		memcpy(this->pipeline->uniformBuffers[currentFrame]->mappedMemory, &this->matMVP, sizeof(glm::mat4));
 		vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, this->pipeline->vkPipelineLayout, 0, 1, &this->pipeline->vkDescriptorSets[currentFrame], 0, nullptr);
 
 		vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, this->pipeline->pipeline);
@@ -142,7 +181,7 @@ namespace Engine::Rendering
 		VkDeviceSize offsets[] = { 0 };
 		vkCmdBindVertexBuffers(commandBuffer, 0, 1, vertexBuffers, offsets);
 
-		vkCmdDraw(commandBuffer, 4, 1, 0, 0);
+		vkCmdDraw(commandBuffer, 6, 1, 0, 0);
 
 		/*
 		if (!(this->texture || this->program))

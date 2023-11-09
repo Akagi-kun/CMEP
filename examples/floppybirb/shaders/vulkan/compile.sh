@@ -9,5 +9,8 @@ $VULKAN_SDK/bin/glslc axisrenderer.frag -o axisrenderer_frag.spv
 $VULKAN_SDK/bin/glslc meshrenderer.vert -o meshrenderer_vert.spv
 $VULKAN_SDK/bin/glslc meshrenderer.frag -o meshrenderer_frag.spv
 
+$VULKAN_SDK/bin/glslc spriterenderer.vert -o spriterenderer_vert.spv
+$VULKAN_SDK/bin/glslc spriterenderer.frag -o spriterenderer_frag.spv
+
 $VULKAN_SDK/bin/glslc default.vert -o default_vert.spv
 $VULKAN_SDK/bin/glslc default.frag -o default_frag.spv

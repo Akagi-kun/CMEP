@@ -71,9 +71,6 @@ namespace Engine
 		double xpos = 0.0, ypos = 0.0;
 		static double lastx = (windowdata.windowX / 2.0), lasty = (windowdata.windowY / 2.0);
 
-		//glfwGetCursorPos(windowdata.window, &xpos, &ypos);
-
-		//if (glfwGetWindowAttrib(windowdata.window, GLFW_FOCUSED))
 		if (EngineIsWindowInFocus && EngineIsWindowInContent)
 		{
 			if ((EngineMouseXPos - lastx) != 0.0 || (EngineMouseYPos - lasty) != 0.0)
@@ -86,22 +83,8 @@ namespace Engine
 
 				lastx = EngineMouseXPos;
 				lasty = EngineMouseYPos;
-
-				//glfwSetCursorPos(this->rendering_engine->GetWindow().window, this->windowX / 2, this->windowY / 2);
 			}
 		}
-
-		// Handle keyboard + mouse buttons
-		// for (uint16_t i = 1; i < 256; i++)
-		// {
-		// 	if (glfwGetKey(windowdata.window, i))
-		// 	{
-		// 		EventHandling::Event event = EventHandling::Event(EventHandling::EventType::ON_KEYDOWN);
-		// 		event.keycode = i;
-		// 		event.deltaTime = deltaTime;
-		// 		this->FireEvent(event);
-		// 	}
-		// }
 	}
 
 	void Engine::HandleConfig()
@@ -239,26 +222,15 @@ namespace Engine
 	{
 		Logging::GlobalLogger->MapCurrentThreadToName("game");
 		
-		//Object* object = new Object();
-		//object->renderer = new Rendering::AxisRenderer();
-		//object->Translate(glm::vec3(0, 0, 0));
-		//object->Scale(glm::vec3(1, 1, 1));
-		//object->Rotate(glm::vec3(0, 0, 0));
-		//object->ScreenSizeInform(this->windowX, this->windowY);
-		//((Rendering::AxisRenderer*)object->renderer)->UpdateMesh();
-		//global_scene_manager->AddObject("_axis", object);
+		Object* object = new Object();
+		object->renderer = new Rendering::AxisRenderer();
+		object->Translate(glm::vec3(0, 0, 0));
+		object->Scale(glm::vec3(1, 1, 1));
+		object->Rotate(glm::vec3(0, 0, 0));
+		object->ScreenSizeInform(this->windowX, this->windowY);
+		((Rendering::AxisRenderer*)object->renderer)->UpdateMesh();
+		global_scene_manager->AddObject("_axis", object);
 		
-		// Object* sprite_test = ObjectFactory::CreateSpriteObject(0.0, 0.0, 0.5, 0.5, this->asset_manager->GetTexture("game/fonts/myfont/myfont_0.png"));
-		// global_scene_manager->AddObject("testpng", sprite_test);
-
-
-		//glEnable(GL_MULTISAMPLE);
-		//glEnable(GL_DEPTH_TEST);
-		//glEnable(GL_BLEND);
-		//glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
-		//glViewport(0, 0, this->windowX, this->windowY);
-
 		// Pre-make ON_UPDATE event so we don't have to create it over and over again in hot loop
 		EventHandling::Event premadeOnUpdateEvent = EventHandling::Event(EventHandling::EventType::ON_UPDATE);
 		
@@ -279,36 +251,12 @@ namespace Engine
 			}
 			this->lastDeltaTime = deltaTime;
 
-			// Handle input
-			//this->handleInput(deltaTime);
-
 			// Update deltaTime of premade ON_UPDATE event and fire it
 			premadeOnUpdateEvent.deltaTime = deltaTime;
 			if(this->FireEvent(premadeOnUpdateEvent) != 0)
 			{
 				break;
 			}
-
-			// Clear screen
-			//glClearColor(0.1, 0.13, 0.2, 1.0);
-			//glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-			// Render every object
-			/*
-			for (auto& [name, ptr] : *global_scene_manager->GetAllObjects())
-			{
-				try
-				{
-					ptr->renderer->Render();
-					//glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-				}
-				catch (const std::exception& e)
-				{
-					Logging::GlobalLogger->SimpleLog(Logging::LogLevel::Exception, "Caught exception while rendering object %s: %s", name.c_str(), e.what());
-					exit(1);
-				}
-			}
-			*/
 
 			// Render
 			this->rendering_engine->drawFrame();

@@ -27,6 +27,8 @@ namespace Engine::Rendering
 		/// </summary>
 		VulkanBuffer* vbo = nullptr;
 		//unsigned int vbo = 0;
+		
+		glm::mat4 matMVP{};
 
 		VulkanPipeline* pipeline = nullptr;
 		//std::unique_ptr<Rendering::Shader> program;
