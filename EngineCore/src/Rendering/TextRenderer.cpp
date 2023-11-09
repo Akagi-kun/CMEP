@@ -133,7 +133,7 @@ namespace Engine::Rendering
 
 				// Get texture
 				unsigned int texture_x = 0, texture_y = 0;
-				const std::shared_ptr<Texture> const texture = this->font->GetPageTexture(ch->page);
+				std::shared_ptr<Texture> texture = this->font->GetPageTexture(ch->page);
 				assert(texture != nullptr);
 				texture->GetSize(texture_x, texture_y);
 				assert(texture_x > 0 && texture_y > 0);
