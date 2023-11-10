@@ -151,7 +151,8 @@ namespace Engine
 
 	void Engine::RenderCallback(VkCommandBuffer commandBuffer, uint32_t currentFrame)
 	{
-		for (auto& [name, ptr] : *global_scene_manager->GetAllObjects())
+		std::shared_ptr<GlobalSceneManager> scene_manager = std::make_shared<GlobalSceneManager>(global_scene_manager);
+		for (auto& [name, ptr] : (scene_manager->GetAllObjects()))
 		{
 			try
 			{
@@ -363,6 +364,9 @@ namespace Engine
 		this->asset_manager->lua_executor = this->script_executor;
 		//this->asset_manager->UpdateEngine(this);
 
+		this->scene_manager = std::make_shared<GlobalSceneManager>();
+		this->scene_manager->logger = this->logger;
+
 		this->rendering_engine = new Rendering::VulkanRenderingEngine();
 		this->rendering_engine->logger = this->logger;
 	}
@@ -429,6 +433,13 @@ namespace Engine
 	Rendering::VulkanRenderingEngine* Engine::GetRenderingEngine() noexcept
 	{
 		return this->rendering_engine;
+	}
+
+	std::weak_ptr<GlobalSceneManager> Engine::GetSceneManager() noexcept
+	{
+		std::weak_ptr<GlobalSceneManager> weakSceneManager = this->scene_manager;
+		
+		return weakSceneManager;
 	}
 
 	Engine* initializeEngine(EngineConfig config)

@@ -42,10 +42,10 @@ namespace Engine::Scripting::Mappings
 		int mesh_CreateMeshFromObj(lua_State* state);
 	}
 
-	const uint32_t countMappings = 24;
+	// const uint32_t countMappings = 24;
 
 	extern std::unordered_map<std::string, lua_CFunction> mappings;
 
-	extern const char* nameMappings[];
-	extern lua_CFunction functionMappings[];
+	// extern const char* nameMappings[];
+	// extern lua_CFunction functionMappings[];
 }

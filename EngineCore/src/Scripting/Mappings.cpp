@@ -82,22 +82,45 @@ namespace Engine::Scripting::Mappings
 
 		int gsm_AddObject(lua_State* state)
 		{
-			std::string name = lua_tostring(state, 1);
+			lua_getfield(state, 1, "_smart_pointer");
+			std::weak_ptr<GlobalSceneManager> scene_manager = *(std::weak_ptr<GlobalSceneManager>*)lua_touserdata(state, -1);
+
+			std::string name = lua_tostring(state, 2);
 			
-			lua_getfield(state, 2, "_pointer");
+			lua_getfield(state, 3, "_pointer");
 			Object* obj = *(Object**)lua_touserdata(state, -1);
 
-			global_scene_manager->AddObject(std::move(name), obj);
+
+			if(auto& locked_scene_manager = scene_manager.lock())
+			{
+				locked_scene_manager->AddObject(std::move(name), obj);
+			}
+			else
+			{
+				return 1;
+			}
 
 			return 0;
 		}
 
 		int gsm_FindObject(lua_State* state)
 		{
-			std::string obj_name = lua_tostring(state, 1);
+			lua_getfield(state, 1, "_smart_pointer");
+			std::weak_ptr<GlobalSceneManager> scene_manager = *(std::weak_ptr<GlobalSceneManager>*)lua_touserdata(state, -1);
+
+			std::string obj_name = lua_tostring(state, 2);
 			lua_pop(state, 1);
 
-			Object* obj = global_scene_manager->FindObject(obj_name);
+			Object* obj;
+			if(auto& locked_scene_manager = scene_manager.lock())
+			{
+				obj = locked_scene_manager->FindObject(obj_name);
+			}
+			else
+			{
+				return 1;
+			}
+
 
 			if (obj != nullptr)
 			{
@@ -153,6 +176,31 @@ namespace Engine::Scripting::Mappings
 			else
 			{
 				Logging::GlobalLogger->SimpleLog(Logging::LogLevel::Warning, "Lua: AssetManager requested but returned nullptr!");
+
+				lua_pushnil(state);
+			}
+
+			return 1;
+		}
+
+		int engine_GetSceneManager(lua_State* state)
+		{
+			std::weak_ptr<GlobalSceneManager> scene_manager = global_engine->GetSceneManager();
+
+			if (!scene_manager.expired())
+			{
+				// Generate scene_manager table
+				lua_newtable(state);
+
+				void* ptr_obj = lua_newuserdata(state, sizeof(std::weak_ptr<GlobalSceneManager>));
+				//(*ptr_obj) = scene_manager;
+				new(ptr_obj) std::weak_ptr<GlobalSceneManager>(scene_manager);
+				
+				lua_setfield(state, -2, "_smart_pointer");
+			}
+			else
+			{
+				Logging::GlobalLogger->SimpleLog(Logging::LogLevel::Warning, "Lua: SceneManager requested but is expired!");
 
 				lua_pushnil(state);
 			}
@@ -519,6 +567,7 @@ namespace Engine::Scripting::Mappings
 
 		CMEP_LUAMAPPING_DEFINE(engine_GetAssetManager),
 		CMEP_LUAMAPPING_DEFINE(engine_SetFramerateTarget),
+		CMEP_LUAMAPPING_DEFINE(engine_GetSceneManager),
 
 		CMEP_LUAMAPPING_DEFINE(textRenderer_UpdateText),
 
@@ -540,71 +589,71 @@ namespace Engine::Scripting::Mappings
 		CMEP_LUAMAPPING_DEFINE(objectFactory_CreateGeneric3DObject)
 	};
 
-	const char* nameMappings[] = {
-		"gsm_GetCameraHVRotation",
-		"gsm_SetCameraHVRotation",
-		"gsm_GetCameraTransform",
-		"gsm_SetCameraTransform",
-		"gsm_GetLightTransform",
-		"gsm_SetLightTransform",
-		"gsm_AddObject",
-		"gsm_FindObject",
-		"gsm_RemoveObject",
+	// const char* nameMappings[] = {
+	// 	"gsm_GetCameraHVRotation",
+	// 	"gsm_SetCameraHVRotation",
+	// 	"gsm_GetCameraTransform",
+	// 	"gsm_SetCameraTransform",
+	// 	"gsm_GetLightTransform",
+	// 	"gsm_SetLightTransform",
+	// 	"gsm_AddObject",
+	// 	"gsm_FindObject",
+	// 	"gsm_RemoveObject",
 
-		"engine_GetAssetManager",
-		"engine_SetFramerateTarget",
+	// 	"engine_GetAssetManager",
+	// 	"engine_SetFramerateTarget",
 
-		"textRenderer_UpdateText",
+	// 	"textRenderer_UpdateText",
 
-		"meshRenderer_UpdateTexture",
+	// 	"meshRenderer_UpdateTexture",
 
-		"object_AddChild",
-		"object_GetRotation",
-		"object_Rotate",
-		"object_GetPosition",
-		"object_Translate",
+	// 	"object_AddChild",
+	// 	"object_GetRotation",
+	// 	"object_Rotate",
+	// 	"object_GetPosition",
+	// 	"object_Translate",
 
-		"assetManager_GetFont",
-		"assetManager_GetTexture",
-		"assetManager_AddTexture",
-		"assetManager_GetModel",
+	// 	"assetManager_GetFont",
+	// 	"assetManager_GetTexture",
+	// 	"assetManager_AddTexture",
+	// 	"assetManager_GetModel",
 
-		"objectFactory_CreateSpriteObject",
-		"objectFactory_CreateTextObject",
-		"objectFactory_CreateGeneric3DObject"
-	};
+	// 	"objectFactory_CreateSpriteObject",
+	// 	"objectFactory_CreateTextObject",
+	// 	"objectFactory_CreateGeneric3DObject"
+	// };
 
-	lua_CFunction functionMappings[] = {
-		Functions::gsm_GetCameraHVRotation,
-		Functions::gsm_SetCameraHVRotation,
-		Functions::gsm_GetCameraTransform,
-		Functions::gsm_SetCameraTransform,
-		Functions::gsm_GetLightTransform,
-		Functions::gsm_SetLightTransform,
-		Functions::gsm_AddObject,
-		Functions::gsm_FindObject,
-		Functions::gsm_RemoveObject,
+	// lua_CFunction functionMappings[] = {
+	// 	Functions::gsm_GetCameraHVRotation,
+	// 	Functions::gsm_SetCameraHVRotation,
+	// 	Functions::gsm_GetCameraTransform,
+	// 	Functions::gsm_SetCameraTransform,
+	// 	Functions::gsm_GetLightTransform,
+	// 	Functions::gsm_SetLightTransform,
+	// 	Functions::gsm_AddObject,
+	// 	Functions::gsm_FindObject,
+	// 	Functions::gsm_RemoveObject,
 
-		Functions::engine_GetAssetManager,
-		Functions::engine_SetFramerateTarget,
+	// 	Functions::engine_GetAssetManager,
+	// 	Functions::engine_SetFramerateTarget,
 
-		Functions::textRenderer_UpdateText,
+	// 	Functions::textRenderer_UpdateText,
 
-		Functions::meshRenderer_UpdateTexture,
+	// 	Functions::meshRenderer_UpdateTexture,
 
-		Functions::object_AddChild,
-		Functions::object_GetRotation,
-		Functions::object_Rotate,
-		Functions::object_GetPosition,
-		Functions::object_Translate,
+	// 	Functions::object_AddChild,
+	// 	Functions::object_GetRotation,
+	// 	Functions::object_Rotate,
+	// 	Functions::object_GetPosition,
+	// 	Functions::object_Translate,
 
-		Functions::assetManager_GetFont,
-		Functions::assetManager_GetTexture,
-		Functions::assetManager_AddTexture,
-		Functions::assetManager_GetModel,
+	// 	Functions::assetManager_GetFont,
+	// 	Functions::assetManager_GetTexture,
+	// 	Functions::assetManager_AddTexture,
+	// 	Functions::assetManager_GetModel,
 
-		Functions::objectFactory_CreateSpriteObject,
-		Functions::objectFactory_CreateTextObject,
-		Functions::objectFactory_CreateGeneric3DObject
-	};
+	// 	Functions::objectFactory_CreateSpriteObject,
+	// 	Functions::objectFactory_CreateTextObject,
+	// 	Functions::objectFactory_CreateGeneric3DObject
+	// };
 }

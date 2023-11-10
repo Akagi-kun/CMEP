@@ -60,7 +60,6 @@ namespace Engine
 		std::string config_path = "";
 
 		// Window
-		
 		unsigned int windowX = 0, windowY = 0;
 		std::string windowTitle;
 		unsigned int framerateTarget = 30;
@@ -71,12 +70,12 @@ namespace Engine
 		Rendering::VulkanRenderingEngine* rendering_engine = nullptr;
 		AssetManager* asset_manager = nullptr;
 		Scripting::LuaScriptExecutor* script_executor = nullptr;
+		std::shared_ptr<GlobalSceneManager> scene_manager{};
         std::shared_ptr<Logging::Logger> logger{};
 
 		// Event handler storage
 		std::vector<std::pair<EventHandling::EventType, std::function<int(EventHandling::Event&)>>> event_handlers;
 		std::vector<std::tuple<EventHandling::EventType, std::shared_ptr<Scripting::LuaScript>, std::string>> lua_event_handlers;
-		
 		
 		static void spinSleep(double seconds);
 
@@ -112,6 +111,7 @@ namespace Engine
 
 		AssetManager* GetAssetManager() noexcept;
 		Rendering::VulkanRenderingEngine* GetRenderingEngine() noexcept;
+		std::weak_ptr<GlobalSceneManager> GetSceneManager() noexcept;
 	};
 
 	CMEP_EXPORT Engine* initializeEngine(EngineConfig config);
