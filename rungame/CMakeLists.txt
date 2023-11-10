@@ -14,7 +14,7 @@ if(WIN32)
 elseif(APPLE)
 	set(STATIC_LIBRARIES
 		glfw
-		lua
+		lua54
 		)
 else()
 	set(STATIC_LIBRARIES
