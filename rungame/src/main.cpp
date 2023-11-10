@@ -28,14 +28,24 @@ int main(int argc, char** argv)
 	try
 	{
 		engine->ConfigFile("game/config.json");
-		engine->Run();
 		
 	}
 	catch(std::exception e)
 	{
-		printf("Exception loading config and running engine!");
-		exit(-1);
+		printf("Exception loading config! %s\n", e.what());
+		throw e;
 	}
+	
+	// try
+	// {
+		engine->Run();
+		
+	// }
+	// catch(std::exception e)
+	// {
+	// 	printf("Exception running engine! %s\n", e.what());
+	// 	throw e;
+	// }
 	
 	return 0;
 }
