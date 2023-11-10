@@ -7,15 +7,13 @@
 
 int boilerplate_logger_init()
 {
-	Logging::GlobalLogger = std::make_unique<Logging::Logger>();
+	Logging::GlobalLogger = std::make_shared<Logging::Logger>();
 
     return 0;
 }
 
 int boilerplate_logger_release()
 {
-    Logging::GlobalLogger.release();
-
     return 0;
 }
 

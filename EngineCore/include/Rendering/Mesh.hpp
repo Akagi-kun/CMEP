@@ -6,10 +6,11 @@
 #include "Rendering/tinyobjloader/tiny_obj_loader.h"
 #include "Rendering/Texture.hpp"
 #include "PlatformSemantics.hpp"
+#include "InternalEngineObject.hpp"
 
 namespace Engine::Rendering
 {
-	class CMEP_EXPORT Mesh final
+	class CMEP_EXPORT Mesh final : public InternalEngineObject
 	{
 	private:
 	public:

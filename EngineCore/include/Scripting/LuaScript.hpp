@@ -18,7 +18,7 @@ namespace Engine::Scripting
 	public:
 		std::string path;
 
-		LuaScript(std::string path);
+		LuaScript(LuaScriptExecutor* executor, std::string path);
 		~LuaScript()
 		{
 			lua_close(this->state);

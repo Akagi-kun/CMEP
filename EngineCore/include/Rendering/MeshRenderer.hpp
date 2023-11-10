@@ -20,23 +20,6 @@ namespace Engine::Rendering
 	class CMEP_EXPORT MeshRenderer final : public IRenderer
 	{
 	private:
-		/// <summary>
-		/// GL Vertex Array Object
-		/// </summary>
-		//unsigned int vao = 0;
-		/// <summary>
-		/// GL Vertex Buffer Object
-		/// </summary>
-		//unsigned int vbo = 0;
-		/// <summary>
-		/// GL Material Buffer Object
-		/// </summary>
-		//unsigned int mbo = 0;
-		/// <summary>
-		/// GL Tan/Bitan Buffer Object
-		/// </summary>
-		//unsigned int tbbo = 0;
-
 		size_t vbo_vert_count = 0;
 
 		VulkanPipeline* pipeline = nullptr;

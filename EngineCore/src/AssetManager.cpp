@@ -1,4 +1,3 @@
-#include "Rendering/Texture.hpp"
 #include "Logging/Logging.hpp"
 #include "Rendering/Font.hpp"
 #include "AssetManager.hpp"
@@ -9,34 +8,36 @@ namespace Engine
 	{
 		for(auto& texture : this->textures)
 		{
-			Logging::GlobalLogger->SimpleLog(Logging::LogLevel::Debug3, "Texture %s use_count: %u", texture.first.c_str(), texture.second.use_count());
+			this->logger->SimpleLog(Logging::LogLevel::Debug3, "Texture %s use_count: %u", texture.first.c_str(), texture.second.use_count());
 		}
 
 		this->textures.clear();
 
-		Logging::GlobalLogger->SimpleLog(Logging::LogLevel::Debug3, "Deleting asset manager");
+		this->logger->SimpleLog(Logging::LogLevel::Debug3, "Deleting asset manager");
 	}
 
 #pragma region Adding Assets
 	void AssetManager::AddTexture(std::string name, std::string path, Rendering::Texture_InitFiletype filetype)
 	{
-		Rendering::Texture* texture = new Engine::Rendering::Texture();
+		std::shared_ptr<Rendering::Texture> texture = std::make_shared<Rendering::Texture>();
+
+		texture->UpdateHeldLogger(this->logger);			
 
 		if (texture->InitFile(filetype, path) != 0)
 		{
-			delete texture;
-			Logging::GlobalLogger->SimpleLog(Logging::LogLevel::Error, "Error occured when adding Texture %s as %s, this may be unintentional", path.c_str(), name.c_str());
+			this->logger->SimpleLog(Logging::LogLevel::Error, "Error occured when adding Texture %s as %s, this may be unintentional", path.c_str(), name.c_str());
 			return;
 		}
 
 		this->textures.emplace(name, texture);
-		Logging::GlobalLogger->SimpleLog(Logging::LogLevel::Debug2, "Added texture %s as %s", path.c_str(), name.c_str());
+		this->logger->SimpleLog(Logging::LogLevel::Debug2, "Added texture %s as %s", path.c_str(), name.c_str());
 	}
 
 	void AssetManager::AddFont(std::string name, std::string path)
 	{
-		Rendering::Font* font = new Engine::Rendering::Font(this);
+		std::shared_ptr<Rendering::Font> font = std::make_shared<Rendering::Font>(this);
 		
+		font->UpdateHeldLogger(this->logger);
 		font->Init(std::move(path));
 
 		this->fonts.emplace(name, font);
@@ -44,9 +45,19 @@ namespace Engine
 
 	void AssetManager::AddLuaScript(std::string name, std::string path)
 	{
-		Scripting::LuaScript* script = new Scripting::LuaScript(std::move(path));
-
+		Scripting::LuaScript* script = new Scripting::LuaScript(this->lua_executor, std::move(path));
+		
 		this->luascripts.emplace(name, script);
+	}
+
+	void AssetManager::AddModel(std::string name, std::string path)
+	{
+		std::shared_ptr<Rendering::Mesh> mesh = std::make_shared<Rendering::Mesh>();
+		mesh->UpdateHeldLogger(this->logger);
+		
+		mesh->CreateMeshFromObj(path);
+
+		this->models.emplace(name, std::move(mesh));
 	}
 #pragma endregion
 
@@ -55,33 +66,21 @@ namespace Engine
 	{
 		if (this->textures.find(name) != this->textures.end())
 		{
-			Logging::GlobalLogger->SimpleLog(Logging::LogLevel::Debug2, "Texture %s requested and is loaded", name.c_str());
+			this->logger->SimpleLog(Logging::LogLevel::Debug2, "Texture %s requested and is loaded", name.c_str());
 			return this->textures.at(name);
 		}
 		else
 		{
-			Logging::GlobalLogger->SimpleLog(Logging::LogLevel::Warning, "Texture %s requested and is not loaded", name.c_str());
+			this->logger->SimpleLog(Logging::LogLevel::Debug1, "Texture %s requested and is not loaded", name.c_str());
 			this->AddTexture(name, name, Rendering::Texture_InitFiletype::FILE_PNG);
 			
 			return this->GetTexture(name);
-			/*
-			Rendering::Texture* texture = new Engine::Rendering::Texture();
-
-			if (texture->InitFile(Rendering::Texture_InitFiletype::FILE_NETPBM, path) != 0)
-			{
-				delete texture;
-				return nullptr;
-			}
-
-			this->textures.emplace(path, texture);
-			return texture;
-			*/
 		}
 	}
 
 	std::shared_ptr<Rendering::Font> AssetManager::GetFont(std::string name)
 	{
-		Logging::GlobalLogger->SimpleLog(Logging::LogLevel::Debug2, "Font %s requested", name.c_str());
+		this->logger->SimpleLog(Logging::LogLevel::Debug2, "Font %s requested", name.c_str());
 		if (this->fonts.find(name) != this->fonts.end())
 		{
 			return this->fonts.at(name);
@@ -90,6 +89,7 @@ namespace Engine
 		{
 			std::shared_ptr<Rendering::Font> font = std::make_shared<Rendering::Font>(this);
 			
+			font->UpdateHeldLogger(this->logger);
 			if (font->Init(name) != 0)
 			{
 				return nullptr;
@@ -100,15 +100,30 @@ namespace Engine
 		}
 	}
 
-	Scripting::LuaScript* AssetManager::GetLuaScript(std::string name)
+	std::shared_ptr<Scripting::LuaScript> AssetManager::GetLuaScript(std::string name)
 	{
-		Logging::GlobalLogger->SimpleLog(Logging::LogLevel::Debug2, "LuaScript %s requested", name.c_str());
+		this->logger->SimpleLog(Logging::LogLevel::Debug2, "LuaScript %s requested", name.c_str());
 		if (this->luascripts.find(name) != this->luascripts.end())
 		{
 			return this->luascripts.at(name);
 		}
 		else
 		{
+			return nullptr;
+		}
+	}
+
+	std::shared_ptr<Rendering::Mesh> AssetManager::GetModel(std::string name)
+	{
+		this->logger->SimpleLog(Logging::LogLevel::Debug2, "Model %s requested", name.c_str());
+		if (this->models.find(name) != this->models.end())
+		{
+			return this->models.at(name);
+		}
+		else
+		{
+			this->logger->SimpleLog(Logging::LogLevel::Debug1, "Model %s requested and is not loaded", name.c_str());
+			this->AddModel(name, name);
 			return nullptr;
 		}
 	}

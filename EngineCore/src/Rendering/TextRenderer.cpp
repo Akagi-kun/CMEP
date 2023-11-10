@@ -35,7 +35,7 @@ namespace Engine::Rendering
 
 	TextRenderer::~TextRenderer()
 	{
-		Logging::GlobalLogger->SimpleLog(Logging::LogLevel::Debug3, "Cleaning up text renderer");
+		this->logger->SimpleLog(Logging::LogLevel::Debug3, "Cleaning up text renderer");
 		global_engine->GetRenderingEngine()->cleanupVulkanBuffer(this->vbo);
 		global_engine->GetRenderingEngine()->cleanupVulkanPipeline(this->pipeline);
 	}

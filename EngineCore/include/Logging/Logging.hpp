@@ -50,5 +50,5 @@ namespace Logging
 		void SimpleLog(LogLevel level, const char* format, ...);
 	};
 
-	extern std::unique_ptr<Logger> GlobalLogger;
+	extern std::shared_ptr<Logger> GlobalLogger;
 }

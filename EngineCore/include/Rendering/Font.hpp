@@ -1,7 +1,9 @@
 #pragma once
 
-#include <unordered_map>
+#include "InternalEngineObject.hpp"
 #include "PlatformSemantics.hpp"
+
+#include <unordered_map>
 
 namespace Engine
 {
@@ -14,7 +16,7 @@ namespace Engine
 			int x, y, width, height, xoffset, yoffset, xadvance, page, channel;
 		};
 
-		class CMEP_EXPORT Font final
+		class CMEP_EXPORT Font final : public InternalEngineObject
 		{
 		private:
 			AssetManager* asset_manager;

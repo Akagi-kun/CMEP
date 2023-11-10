@@ -57,9 +57,8 @@ endforeach()
 
 add_subdirectory(examples)
 
-if(MSVC)
-	file(COPY external/lua-prebuilt/lua54.dll DESTINATION build)
-endif()
+file(COPY external/lua-prebuilt/lua54.dll DESTINATION build)
+
 
 #if(NOT APPLE)
 #	file(COPY external/lua-prebuilt/liblua54.so DESTINATION build)

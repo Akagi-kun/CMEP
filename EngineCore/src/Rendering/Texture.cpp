@@ -14,7 +14,7 @@ namespace Engine::Rendering
 	{
 		VulkanRenderingEngine* renderer = global_engine->GetRenderingEngine();
 
-		Logging::GlobalLogger->SimpleLog(Logging::LogLevel::Debug3, "Deleting texture");
+		this->logger->SimpleLog(Logging::LogLevel::Debug3, "Deleting texture");
 		renderer->cleanupVulkanTextureImage(this->textureImage);
 		this->textureImage = nullptr;
 	}
@@ -41,10 +41,12 @@ namespace Engine::Rendering
 
 		if (!managedStagingBuffer)
 		{
-			this->staging_buffer = renderer->createVulkanStagingBufferPreMapped(memory_size);
+			this->staging_buffer = renderer->createVulkanBuffer(static_cast<size_t>(memory_size), VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, 0);
+			//this->staging_buffer = renderer->createVulkanStagingBufferPreMapped(memory_size);
 		}
+		vkMapMemory(renderer->GetLogicalDevice(), this->staging_buffer->allocationInfo.deviceMemory, this->staging_buffer->allocationInfo.offset, this->staging_buffer->allocationInfo.size, 0, &this->staging_buffer->mappedData);
 
-		memcpy(this->staging_buffer->mappedMemory, raw_data.data(), static_cast<size_t>(memory_size));
+		memcpy(this->staging_buffer->mappedData, raw_data.data(), static_cast<size_t>(memory_size));
 
 		this->textureImage = renderer->createVulkanTextureImage(xsize, ysize, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
 		
@@ -52,6 +54,7 @@ namespace Engine::Rendering
 		renderer->copyVulcanBufferToImage(this->staging_buffer->buffer, this->textureImage->image->image, static_cast<uint32_t>(xsize), static_cast<uint32_t>(ysize));
 		renderer->transitionVulkanImageLayout(this->textureImage->image->image, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 
+		vkUnmapMemory(renderer->GetLogicalDevice(), this->staging_buffer->allocationInfo.deviceMemory);
 		if (!managedStagingBuffer)
 		{
 			renderer->cleanupVulkanBuffer(this->staging_buffer);
@@ -68,11 +71,11 @@ namespace Engine::Rendering
 		FILE* file = nullptr;
 		if ((file = fopen(path.c_str(), "rb")) == NULL)
 		{
-			Logging::GlobalLogger->SimpleLog(Logging::LogLevel::Exception, "File %s could not be found, initializing texture not possible!", path.c_str());
+			this->logger->SimpleLog(Logging::LogLevel::Exception, "File %s could not be found, initializing texture not possible!", path.c_str());
 			throw std::runtime_error("Could not find texture!");
 		}
 
-		Logging::GlobalLogger->SimpleLog(Logging::LogLevel::Debug2, "Initializing texture from file %s", path.c_str());
+		this->logger->SimpleLog(Logging::LogLevel::Debug2, "Initializing texture from file %s", path.c_str());
 
 		// Get size
 		fseek(file, 0, SEEK_END);
@@ -88,7 +91,7 @@ namespace Engine::Rendering
 				unsigned int xs, ys;
 				unsigned error = lodepng::decode(data, xs, ys, path.c_str());
 
-				Logging::GlobalLogger->SimpleLog(Logging::LogLevel::Debug1, "Decoded png file %s width %u height %u", path.c_str(), xs, ys);
+				this->logger->SimpleLog(Logging::LogLevel::Debug1, "Decoded png file %s width %u height %u", path.c_str(), xs, ys);
 
 				fclose(file);
 

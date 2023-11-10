@@ -10,35 +10,41 @@
 #define GLFW_INCLUDE_VULKAN
 #include "glfw/include/GLFW/glfw3.h"
 
+#include "vma/vk_mem_alloc.h"
+
 #include "glm/gtc/matrix_transform.hpp"
 #include "glm/gtc/quaternion.hpp"
-//#include "GL/glcorearb.h"
+#include "../EngineCore/include/Rendering/tinyobjloader/tiny_obj_loader.h"
+#include "lua.hpp"
 
 #pragma region forward decls
 
 namespace Engine
 {
 	class AssetManager;
-	class ImageObject;
-	class TextObject;
-	class Generic3DObject;
 	class Object;
 	namespace Rendering
 	{
-		typedef enum class Texture_InitFiletypeEnum
+		struct VulkanBuffer;
+		struct VulkanImage;
+		struct VulkanTextureImage;
+		struct VulkanPipeline;
+
+		typedef enum class Texture_InitFiletypeEnum : int
 		{
-			FILE_RAW = 1,
-			FILE_NETPBM = 2,
 			FILE_PNG = 3
 		} Texture_InitFiletype;
 
-		class Renderer;
+		class TextRenderer;
+		class SpriteRenderer;
+		class MeshRenderer;
+		class AxisRenderer;
 		class Texture;
-		class Window;
-		class Shader;
+		class VulkanRenderingEngine;
 		class Font;
 		class Mesh;
 	}
+	class GlobalSceneManager;
 }
 
 #pragma endregion
@@ -50,16 +56,35 @@ namespace Engine
 
 #pragma region Mesh.hpp
 
-		class Mesh final
-		{
-		private:
-		public:
-			std::vector<glm::vec3> mesh_vertices;
-			std::vector<glm::vec2> mesh_uvs;
-			std::vector<glm::vec3> mesh_normals;
+	class Mesh final
+	{
+	private:
+	public:
+		std::vector<glm::vec3> mesh_vertices;
+		std::vector<glm::vec2> mesh_uvs;
+		std::vector<glm::vec3> mesh_normals;
 
-			void CreateMeshFromObj(std::string path);
-		};
+		std::vector<glm::vec3> mesh_tangents;
+		std::vector<glm::vec3> mesh_bitangents;
+		
+		std::vector<unsigned int> matids;
+		std::vector<tinyobj::material_t> materials;
+		std::vector<glm::vec3> mesh_ambient;
+		std::vector<glm::vec3> mesh_diffuse;
+		std::vector<glm::vec3> mesh_specular;
+		std::vector<float> mesh_dissolve;
+		std::vector<glm::vec3> mesh_emission;
+
+		std::vector<std::shared_ptr<Rendering::Texture>> diffuse_textures;
+		// std::vector<std::shared_ptr<Rendering::Texture>> bump_textures;
+		// std::vector<std::shared_ptr<Rendering::Texture>> roughness_textures;
+		// std::vector<std::shared_ptr<Rendering::Texture>> reflective_textures;
+
+		Mesh();
+		~Mesh();
+
+		void CreateMeshFromObj(std::string path);
+	};
 
 #pragma endregion
 
@@ -79,42 +104,20 @@ namespace Engine
 
 			// Data from fnt file
 			std::unordered_map<std::string, std::string> info;
-			std::unordered_map<int, Texture*> pages;
+			std::unordered_map<int, std::shared_ptr<Texture>> pages;
 			std::unordered_map<int, FontChar> chars;
 
-			void EvalBmfont(FILE* file) noexcept;
-			void EvalBmfontLine(int type, char* data) noexcept;
+			void EvalBmfont(FILE* file);
+			void EvalBmfontLine(int type, char* data);
 		public:
-			Font() noexcept;
-			Font(const Font& other) noexcept = delete;
-			Font(const Font&& other) noexcept = delete;
-			Font& operator=(const Font& other) noexcept = delete;
-			Font& operator=(const Font&& other) noexcept = delete;
-			~Font() noexcept;
+			Font(AssetManager* managed_by = nullptr);
+			~Font();
 
-			int Init(std::string path) noexcept;
+			int Init(std::string path);
 
-			FontChar* GetChar(char ch) noexcept;
-			Texture* GetPageTexture(int page) noexcept;
-		};
-
-#pragma endregion
-
-#pragma region Shader.hpp
-
-		class Shader final
-		{
-		private:
-			int program = 0;
-
-			static int SetupShader(const char* vert, const char* frag) noexcept;
-
-		public:
-			Shader(const char* vert, const char* frag) noexcept;
-
-			int GetProgram() const noexcept;
-
-			bool IsValid() const noexcept;
+			FontChar* GetChar(char ch);
+			std::shared_ptr<Texture> GetPageTexture(int page);
+			std::string* GetFontInfoParameter(std::string name);
 		};
 
 #pragma endregion
@@ -124,25 +127,28 @@ namespace Engine
 		class Texture final
 		{
 		private:
-			char* data = nullptr;
+			std::vector<unsigned char> data;
 			unsigned int x = 0, y = 0;
-			int color_fmt = 0;
-			int texture = 0;
+			int color_fmt = 4;
+			unsigned int texture = 0;
+
+			VulkanBuffer* staging_buffer = nullptr;
+			bool managedStagingBuffer = false;
+			VulkanTextureImage* textureImage = nullptr;
 
 		public:
-			Texture() noexcept;
-			Texture(const Texture& other) noexcept;
-			Texture(const Texture&& other) noexcept;
-			Texture& operator=(const Texture& other) noexcept;
-			Texture& operator=(const Texture&& other) noexcept;
-			~Texture() noexcept;
+			Texture();
+			~Texture();
 
-			int InitRaw(const char* const raw_data, int color_format, unsigned int x, unsigned int y);
+			void UsePremadeStagingBuffer(VulkanBuffer* staging_buffer);
+
+			int InitRaw(std::vector<unsigned char> raw_data, int color_format, unsigned int xsize, unsigned int ysize);
 			int InitFile(Texture_InitFiletype filetype, std::string path, unsigned int sizex = 0, unsigned int sizey = 0);
 
 			void GetSize(unsigned int& x, unsigned int& y) const noexcept;
-			char* GetData() const noexcept;
-			int GetTexture() const noexcept;
+			const std::vector<unsigned char> GetData() const;
+			unsigned int GetTexture() const noexcept;
+			VulkanTextureImage* GetTextureImage() const noexcept;
 			int GetColorFormat() const noexcept;
 		};
 
@@ -150,56 +156,30 @@ namespace Engine
 
 #pragma region IRenderer.hpp
 
-		/// <summary>
-		/// Interface describing GL Renderer API for UI renderables.
-		/// </summary>
 		class IRenderer
 		{
 		protected:
-			/// <summary>
-			/// Renderable's position.
-			/// </summary>
 			glm::vec3 _pos = glm::vec3();
-			/// <summary>
-			/// Renderable's size.
-			/// </summary>
 			glm::vec3 _size = glm::vec3();
-			/// <summary>
-			/// Renderable's rotation.
-			/// </summary>
 			glm::vec3 _rotation = glm::vec3();
+			
+			glm::vec3 _parent_pos = glm::vec3();
+			glm::vec3 _parent_size = glm::vec3();
+			glm::vec3 _parent_rotation = glm::vec3();
 
-			/// <summary>
-			/// Screen size as reported by <seealso cref="Object"/>.
-			/// </summary>
 			uint_fast16_t _screenx = 0, _screeny = 0;
 
-			/// <summary>
-			/// Used by <seealso cref="UpdateMesh"/> to optimize Updates to when necessary.
-			/// </summary>
 			bool has_updated_mesh = false;
 
 		public:
 			IRenderer() {};
+			virtual ~IRenderer() {};
 
-			/// <summary>
-			/// Updates data for renderer.
-			/// </summary>
-			/// <param name="pos">Position of renderable.</param>
-			/// <param name="size">Size of renderable.</param>
-			/// <param name="screenx">X size of screen.</param>
-			/// <param name="screeny">Y size of screen.</param>
-			virtual void Update(glm::vec3 pos, glm::vec3 size, glm::vec3 rotation, uint_fast16_t screenx, uint_fast16_t screeny) noexcept = 0;
-
-			/// <summary>
-			/// Updates mesh of renderable.
-			/// </summary>
+			virtual void Update(glm::vec3 pos, glm::vec3 size, glm::vec3 rotation, uint_fast16_t screenx, uint_fast16_t screeny, glm::vec3 parent_position, glm::vec3 parent_rotation, glm::vec3 parent_size) = 0;
+			
 			virtual void UpdateMesh() = 0;
-
-			/// <summary>
-			/// Render the renderable represented by this <seealso cref="Renderer"/>.
-			/// </summary>
-			virtual void Render() = 0;
+			
+			virtual void Render(VkCommandBuffer commandBuffer, uint32_t currentFrame) = 0;
 		};
 
 #pragma endregion
@@ -210,56 +190,32 @@ namespace Engine
 		/// Implementation of <seealso cref="IRenderer"/> for text renderables.
 		/// </summary>
 		/// <inheritdoc cref="IRenderer"/>
-		class TextRenderer final : public IRenderer
-		{
-		private:
-			/// <summary>
-			/// GL Vertex Array Object
-			/// </summary>
-			unsigned int vao = 0;
-			/// <summary>
-			/// GL Vertex Buffer Object
-			/// </summary>
-			unsigned int vbo = 0;
-			/// <summary>
-			/// Count of vertices in Vertex Buffer Object
-			/// </summary>
-			size_t vbo_vert_count = 0;
-			/// <summary>
-			/// Text to be rendered
-			/// </summary>
-			std::string text = "";
+	class TextRenderer final : public IRenderer
+	{
+	private:
+		size_t vbo_vert_count = 0;
 
-			/// <summary>
-			/// Currently used shader
-			/// </summary>
-			std::unique_ptr<Rendering::Shader> program;
-			/// <summary>
-			/// Currently used font
-			/// </summary>
-			std::unique_ptr<Rendering::Font> font;
+		std::string text = "";
 
-		public:
-			TextRenderer();
-			~TextRenderer();
+		VulkanPipeline* pipeline = nullptr;
+		VulkanBuffer* vbo = nullptr;
+		VulkanTextureImage* textureImage = nullptr;
 
-			void Update(glm::vec3 pos, glm::vec3 size, glm::vec3 rotation, uint_fast16_t screenx, uint_fast16_t screeny) noexcept override;
+		Rendering::Font* font;
 
-			/// <summary>
-			/// Update font used by renderer. See <see cref="font"/>.
-			/// </summary>
-			/// <param name="font">New font.</param>
-			int UpdateFont(Rendering::Font* const font) noexcept;
+	public:
+		TextRenderer();
+		~TextRenderer();
 
-			/// <summary>
-			/// Update rendered text.
-			/// </summary>
-			/// <param name="text">New text.</param>
-			int UpdateText(const std::string text) noexcept;
+		void Update(glm::vec3 pos, glm::vec3 size, glm::vec3 rotation, uint_fast16_t screenx, uint_fast16_t screeny, glm::vec3 parent_position, glm::vec3 parent_rotation, glm::vec3 parent_size) override;
 
-			void UpdateMesh() override;
-			void Render() override;
-		};
+		int UpdateFont(Rendering::Font* const font);
+		
+		int UpdateText(const std::string text);
+		
+		void UpdateMesh() override;
+		void Render(VkCommandBuffer commandBuffer, uint32_t currentFrame) override;
+	};
 
 #pragma endregion
 		
@@ -279,20 +235,24 @@ namespace Engine
 			/// <summary>
 			/// GL Vertex Buffer Object
 			/// </summary>
-			unsigned int vbo = 0;
+			VulkanBuffer* vbo = nullptr;
+			//unsigned int vbo = 0;
 
-			std::unique_ptr<Rendering::Shader> program;
-			std::unique_ptr<const Rendering::Texture> texture;
+			glm::mat4 matMVP{};
+
+			VulkanPipeline* pipeline = nullptr;
+			//std::unique_ptr<Rendering::Shader> program;
+			std::shared_ptr<const Rendering::Texture> texture;
 
 		public:
 			SpriteRenderer();
 			~SpriteRenderer();
 
-			void Update(glm::vec3 pos, glm::vec3 size, glm::vec3 rotation, uint_fast16_t screenx, uint_fast16_t screeny) noexcept override;
-			void UpdateTexture(const Rendering::Texture* texture) noexcept;
-			void UpdateMesh() noexcept override;
+			void Update(glm::vec3 pos, glm::vec3 size, glm::vec3 rotation, uint_fast16_t screenx, uint_fast16_t screeny, glm::vec3 parent_position, glm::vec3 parent_rotation, glm::vec3 parent_size) override;
+			void UpdateTexture(std::shared_ptr<Rendering::Texture> texture);
+			void UpdateMesh() override;
 
-			void Render() override;
+			void Render(VkCommandBuffer commandBuffer, uint32_t currentFrame) override;
 		};
 
 #pragma endregion
@@ -306,35 +266,36 @@ namespace Engine
 		class MeshRenderer final : public IRenderer
 		{
 		private:
-			/// <summary>
-			/// GL Vertex Array Object
-			/// </summary>
-			unsigned int vao = 0;
-			/// <summary>
-			/// GL Vertex Buffer Object
-			/// </summary>
-			unsigned int vbo = 0;
+			size_t vbo_vert_count = 0;
 
-			glm::mat4 MVP;
+			VulkanPipeline* pipeline = nullptr;
+			VulkanBuffer* vbo = nullptr;
+
+			glm::mat4 matM{};
+			glm::mat4 matV{};
+			glm::mat4 matMV{};
+			glm::mat3 matMV3x3{};
+			glm::mat4 matMVP{};
 
 			/// <summary>
 			/// Currently used shader
 			/// </summary>
-			std::unique_ptr<Shader> program;
 			std::unique_ptr<const Rendering::Texture> texture;
 
-			std::unique_ptr<Mesh> mesh;
+			bool has_updated_meshdata = false;
+
+			std::shared_ptr<Mesh> mesh;
 		public:
 			MeshRenderer();
 			~MeshRenderer();
 
-			void AssignMesh(Mesh& new_mesh);
+			void AssignMesh(std::shared_ptr<Mesh> new_mesh);
 
-			void UpdateTexture(const Rendering::Texture* texture) noexcept;
-			void Update(glm::vec3 pos, glm::vec3 size, glm::vec3 rotation, uint_fast16_t screenx, uint_fast16_t screeny) noexcept override;
-			void UpdateMesh() noexcept override;
+			void UpdateTexture(const Rendering::Texture* texture);
+			void Update(glm::vec3 pos, glm::vec3 size, glm::vec3 rotation, uint_fast16_t screenx, uint_fast16_t screeny, glm::vec3 parent_position, glm::vec3 parent_rotation, glm::vec3 parent_size) override;
+			void UpdateMesh() override;
 
-			void Render() override;
+			void Render(VkCommandBuffer commandBuffer, uint32_t currentFrame) override;
 		};
 
 #pragma endregion
@@ -525,6 +486,9 @@ namespace Engine
 		// Depth buffers
 		VulkanImage* vkDepthBuffer = nullptr;
 
+		// Memory management 
+		VmaAllocator vmaAllocator;
+
 		// External callback for rendering
 		std::function<void(VkCommandBuffer, uint32_t)> external_callback;
 
@@ -598,6 +562,7 @@ namespace Engine
 		void createVulkanSyncObjects();
 		void createVulkanDepthResources();
 		void createMultisampledColorResources();
+		void createVulkanMemoryAllocator();
 
 	public:
 		VulkanRenderingEngine() {}
@@ -620,10 +585,9 @@ namespace Engine
 		void SetRenderCallback(std::function<void(VkCommandBuffer, uint32_t)> callback);
 		
 		// Buffer functions
-		VulkanBuffer* createVulkanBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties);
+		VulkanBuffer* createVulkanBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VmaAllocationCreateFlags vmaAllocFlags);
 		void bufferVulkanTransferCopy(VulkanBuffer* src, VulkanBuffer* dest, VkDeviceSize size);
 		VulkanBuffer* createVulkanVertexBufferFromData(std::vector<RenderingVertex> vertices);
-		VulkanBuffer* createVulkanStagingBufferPreMapped(VkDeviceSize dataSize);
 		VulkanBuffer* createVulkanStagingBufferWithData(void* data, VkDeviceSize dataSize);
 
 		// Image functions
@@ -673,44 +637,52 @@ namespace Engine
 		class LuaScript
 		{
 		protected:
-			void* state;
+			lua_State* state;
 
 		public:
 			std::string path;
 
 			LuaScript(std::string path);
-			~LuaScript();
+			~LuaScript()
+			{
+				lua_close(this->state);
+			}
 
-			void* GetState();
+			lua_State* GetState() { return this->state; }
 		};
 #pragma endregion
 
 #pragma region LuaScriptExecutor.hpp
+
 		class LuaScriptExecutor
 		{
 		protected:
-			static void registerCallbacks(void* state);
+			static void registerCallbacks(lua_State* state);
 		public:
 			LuaScriptExecutor() {};
 			~LuaScriptExecutor() {};
 
-			static void CallIntoScript(ExecuteType etype, LuaScript* script, std::string function, void* data);
+			static int CallIntoScript(ExecuteType etype, std::shared_ptr<LuaScript> script, std::string function, void* data);
 
 			static int LoadAndCompileScript(LuaScript* script);
 		};
 #pragma endregion
+	
 	}
-
-#pragma region EventHandling.hpp
 
 	namespace EventHandling
 	{
+
+#pragma region EventHandling.hpp
+
 		enum class EventType
 		{
-			ON_INIT,
-			ON_UPDATE,
-			ON_KEYDOWN,
-			ON_MOUSEMOVED
+			ON_INIT = 0x1,
+			ON_UPDATE = 0x2,
+			ON_KEYDOWN = 0x4,
+			ON_KEYUP = 0x8,
+			ON_MOUSEMOVED = 0x10,
+			EVENT_UNDEFINED = 0xffff
 		};
 
 		class Event final
@@ -722,21 +694,43 @@ namespace Engine
 			double deltaTime = 0.0;
 			union
 			{
-				unsigned char keycode = 0; // ON_KEYDOWN event
+				uint16_t keycode = 0; // ON_KEYDOWN/ON_KEYUP events
 				struct {
-					uint32_t x;
-					uint32_t y;
+					double x;
+					double y;
 				} mouse; // ON_MOUSEMOVED event
 			};
 
 			Event(const EventType eventtype) : event_type(eventtype) {};
 			~Event() {};
 		};
-	}
 
 #pragma endregion
 
+	}
+
 #pragma region Engine.hpp
+
+	typedef struct structEngineConfig
+	{
+		struct
+		{
+			unsigned int sizeX = 0;
+			unsigned int sizeY = 0;
+			std::string windowTitle = "I am an title!";
+		} window;
+
+		struct {
+			unsigned int framerateTarget = 0;
+		} rendering;
+
+		struct {
+			std::string textures;
+			std::string models;
+			std::string scripts;
+			std::string scenes; 
+		} lookup;
+	} EngineConfig;
 
 	class Engine final
 	{
@@ -747,7 +741,7 @@ namespace Engine
 		std::string config_path = "";
 
 		// Window
-		//GLFWwindow* window = nullptr;
+		
 		unsigned int windowX = 0, windowY = 0;
 		std::string windowTitle;
 		unsigned int framerateTarget = 30;
@@ -761,7 +755,7 @@ namespace Engine
 
 		// Event handler storage
 		std::vector<std::pair<EventHandling::EventType, std::function<int(EventHandling::Event&)>>> event_handlers;
-		std::vector<std::tuple<EventHandling::EventType, Scripting::LuaScript*, std::string>> lua_event_handlers;
+		std::vector<std::tuple<EventHandling::EventType, std::shared_ptr<Scripting::LuaScript>, std::string>> lua_event_handlers;
 		
 		
 		static void spinSleep(double seconds);
@@ -780,7 +774,7 @@ namespace Engine
 		void HandleConfig();
 
 	public:
-		Engine(const char* windowTitle, const unsigned windowX, const unsigned windowY) noexcept;
+		Engine(std::string windowTitle, const unsigned windowX, const unsigned windowY) noexcept;
 		~Engine() noexcept;
 
 		void SetFramerateTarget(unsigned framerate) noexcept;
@@ -790,7 +784,7 @@ namespace Engine
 
 		void ConfigFile(std::string path);
 		void RegisterEventHandler(EventHandling::EventType event_type, std::function<int(EventHandling::Event&)> function);
-		void RegisterLuaEventHandler(EventHandling::EventType event_type, Scripting::LuaScript* script, std::string function);
+		void RegisterLuaEventHandler(EventHandling::EventType event_type, std::shared_ptr<Scripting::LuaScript> script, std::string function);
 		
 		int FireEvent(EventHandling::Event& event);
 
@@ -800,7 +794,7 @@ namespace Engine
 		Rendering::VulkanRenderingEngine* GetRenderingEngine() noexcept;
 	};
 
-	Engine* initializeEngine(const char* windowTitle, const unsigned windowX, const unsigned windowY);
+	Engine* initializeEngine(EngineConfig config);
 
 	int deinitializeEngine();
 
@@ -827,58 +821,50 @@ namespace Engine
 		/// </summary>
 		glm::vec3 _rotation = glm::vec3();
 
+		/// <summary>
+		/// Parent pos size and rot
+		/// </summary>
+		glm::vec3 _parent_pos = glm::vec3();
+		glm::vec3 _parent_size = glm::vec3();
+		glm::vec3 _parent_rotation = glm::vec3();
+
+		Object* parent = nullptr;
+
+		std::vector<Object*> children;
+
 		unsigned int screenx = 0, screeny = 0;
 
 		std::function<void(Object*)> _onClick = nullptr;
 
 	public:
 		Rendering::IRenderer* renderer = nullptr;
+		
+		Object() noexcept;
+		~Object() noexcept;
 
-		Object() noexcept {}
+		void ScreenSizeInform(unsigned int screenx, unsigned int screeny) noexcept;
 
-		void ScreenSizeInform(unsigned int screenx, unsigned int screeny) noexcept
-		{
-			this->screenx = screenx;
-			this->screeny = screeny;
-			if (this->renderer != nullptr) { this->renderer->Update(this->_pos, this->_size, this->_rotation, this->screenx, this->screeny); }
-		}
+		virtual void Translate(const glm::vec3 pos) noexcept;
 
-		virtual void UpdatePosition(const glm::vec3 pos) noexcept
-		{
-			this->_pos = pos;
-			if (this->renderer != nullptr) { this->renderer->Update(this->_pos, this->_size, this->_rotation, this->screenx, this->screeny); }
-		}
+		virtual void Scale(const glm::vec3 size) noexcept;
 
-		virtual void UpdateSize(const glm::vec3 size) noexcept
-		{
-			this->_size = size;
-			if (this->renderer != nullptr) { this->renderer->Update(this->_pos, this->_size, this->_rotation, this->screenx, this->screeny); }
-		}
+		virtual void Rotate(const glm::vec3 rotation) noexcept;
 
-		virtual void Rotate(const glm::vec3 rotation) noexcept
-		{
-			this->_rotation = rotation;
-			if (this->renderer != nullptr) { this->renderer->Update(this->_pos, this->_size, this->_rotation, this->screenx, this->screeny); }
-		}
+		virtual void UpdateRenderer() noexcept;
 
-		virtual int Render()
-		{
-			if (this->renderer != nullptr) { this->renderer->Render(); }
-			return 0;
-		}
+		virtual int Render(VkCommandBuffer commandBuffer, uint32_t currentFrame);
 
-		void RegisterOnClick(std::function<void(Object*)> f) noexcept { this->_onClick = f; };
-		void onClick()
-		{
-			try { this->_onClick(this); }
-			// std::bad_function_call is thrown when this->_onClick has no function assigned, ignore
-			catch (std::bad_function_call e) { /* exception ignored */ }
-		}
+		glm::vec3 position() const noexcept;
+		glm::vec3 size() const noexcept;
+		glm::vec3 rotation() const noexcept;
 
-		glm::vec3 pos() const noexcept { return this->_pos; }
-		glm::vec3 size() const noexcept { return this->_size; }
-		glm::vec3 rotation() const noexcept { return this->_rotation; }
+		void SetParentPositionRotationSize(glm::vec3 position, glm::vec3 rotation, glm::vec3 size);
 
+		void AddChild(Object* object);
+
+		void RemoveChildren();
+
+		void SetParent(Object* object);
 	};
 
 #pragma endregion
@@ -888,19 +874,20 @@ namespace Engine
 	class AssetManager final
 	{
 	private:
-		std::unordered_map<std::string, Rendering::Texture*> textures;
-		std::unordered_map<std::string, Rendering::Shader*> shaders;
-		std::unordered_map<std::string, Rendering::Font*> fonts;
+		std::unordered_map<std::string, std::shared_ptr<Scripting::LuaScript>> luascripts;
+		std::unordered_map<std::string, std::shared_ptr<Rendering::Texture>> textures;
+		std::unordered_map<std::string, std::shared_ptr<Rendering::Font>> fonts;
 	public:
 		AssetManager() {};
+		~AssetManager();
 
-		void AddShader(std::string name, std::string vert_source, std::string frag_source);
 		void AddTexture(std::string name, std::string path, Rendering::Texture_InitFiletype filetype);
 		void AddFont(std::string name, std::string path);
+		void AddLuaScript(std::string name, std::string path);
 
-		Rendering::Shader* GetShader(std::string path);
-		Rendering::Texture* GetTexture(std::string path);
-		Rendering::Font* GetFont(std::string path);
+		std::shared_ptr<Rendering::Texture> GetTexture(std::string name);
+		std::shared_ptr<Rendering::Font> GetFont(std::string name);
+		std::shared_ptr<Scripting::LuaScript> GetLuaScript(std::string name);
 	};
 
 #pragma endregion
@@ -912,8 +899,12 @@ namespace Engine
 	private:
 		std::unordered_map<std::string, Object*> objects;
 
-		glm::vec3 cameraTransform; // XYZ position
-		glm::vec2 cameraHVRotation; // Horizontal and Vertical rotation
+		glm::vec3 cameraTransform{}; // XYZ position
+		glm::vec2 cameraHVRotation{}; // Horizontal and Vertical rotation
+
+		glm::vec3 lightPosition{};
+
+		void CameraUpdated();
 	public:
 		GlobalSceneManager();
 		~GlobalSceneManager();
@@ -923,6 +914,9 @@ namespace Engine
 		void AddObject(std::string name, Object* ptr);
 		Object* FindObject(std::string name);
 		size_t RemoveObject(std::string name) noexcept;
+
+		glm::vec3 GetLightTransform();
+		void SetLightTransform(glm::vec3 newpos);
 
 		glm::vec3 GetCameraTransform();
 		glm::vec2 GetCameraHVRotation();
@@ -940,9 +934,9 @@ namespace Engine
 	{
 #pragma region ObjectFactory.hpp
 
-		Object* CreateImageObject(double x, double y, double sizex, double sizey, ::Engine::Rendering::Texture* image);
+		Object* CreateSpriteObject(double x, double y, double sizex, double sizey, std::shared_ptr<::Engine::Rendering::Texture> sprite);
 		Object* CreateTextObject(double x, double y, int size, std::string text, ::Engine::Rendering::Font* font);
-		Object* CreateGeneric3DObject(double x, double y, double z, double sizex, double sizey, double sizez, double rotx, double roty, double rotz, ::Engine::Rendering::Mesh mesh);
+		Object* CreateGeneric3DObject(double x, double y, double z, double sizex, double sizey, double sizez, double rotx, double roty, double rotz, std::shared_ptr<::Engine::Rendering::Mesh> mesh);
 
 #pragma endregion
 	}

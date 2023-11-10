@@ -36,11 +36,13 @@ namespace Engine
 	
 	void GlobalSceneManager::AddObject(std::string name, Object* ptr)
 	{
-		Logging::GlobalLogger->SimpleLog(Logging::LogLevel::Info, "Adding object \"%s\" to globally managed scene", name.c_str());
+		this->logger->SimpleLog(Logging::LogLevel::Info, "Adding object \"%s\" to globally managed scene", name.c_str());
 		if (ptr != nullptr)
 		{
 			Rendering::GLFWwindowData data = global_engine->GetRenderingEngine()->GetWindow();
 			ptr->ScreenSizeInform(data.windowX, data.windowY);
+			ptr->UpdateHeldLogger(this->logger);
+			ptr->renderer->UpdateHeldLogger(this->logger);
 			this->objects.emplace(name, ptr);
 		}
 	}
@@ -61,7 +63,7 @@ namespace Engine
 		
 		if(object)
 		{
-			Logging::GlobalLogger->SimpleLog(Logging::LogLevel::Info, "Removing object \"%s\" from globally managed scene, deleting object", name.c_str());
+			this->logger->SimpleLog(Logging::LogLevel::Info, "Removing object \"%s\" from globally managed scene, deleting object", name.c_str());
 			delete object;
 		}
 
@@ -124,6 +126,11 @@ namespace Engine
 
 		this->cameraHVRotation = hvrotation;
 		this->CameraUpdated();
+	}
+
+	void GlobalSceneManager::UpdateHeldLogger(std::shared_ptr<Logging::Logger> new_logger)
+	{
+		this->logger = new_logger;
 	}
 
 	CMEP_EXPORT GlobalSceneManager* global_scene_manager = nullptr;

@@ -8,10 +8,11 @@
 #include "Logging/Logging.hpp"
 #include "Rendering/IRenderer.hpp"
 #include "PlatformSemantics.hpp"
+#include "InternalEngineObject.hpp"
 
 namespace Engine
 {
-	class CMEP_EXPORT Object
+	class CMEP_EXPORT Object : public InternalEngineObject
 	{
 	protected:
 		/// <summary>
@@ -50,7 +51,7 @@ namespace Engine
 		Object() noexcept {}
 		~Object() noexcept
 		{
-			Logging::GlobalLogger->SimpleLog(Logging::LogLevel::Debug3, "Object deleted");
+			this->logger->SimpleLog(Logging::LogLevel::Debug3, "Object deleted");
 			delete this->renderer;
 		}
 
@@ -107,14 +108,6 @@ namespace Engine
 		{ 
 			if (this->renderer != nullptr) { this->renderer->Render(commandBuffer, currentFrame); }
 			return 0; 
-		}
-
-		void RegisterOnClick(std::function<void(Object*)> f) noexcept { this->_onClick = f; };
-		void onClick()
-		{ 
-			try { this->_onClick(this); } 
-			// std::bad_function_call is thrown when this->_onClick has no function assigned, ignore
-			catch(std::bad_function_call e) { /* exception ignored */ }
 		}
 
 		glm::vec3 position() const noexcept { return this->_pos; }

@@ -82,22 +82,45 @@ namespace Engine::Scripting::Mappings
 
 		int gsm_AddObject(lua_State* state)
 		{
-			std::string name = lua_tostring(state, 1);
+			lua_getfield(state, 1, "_smart_pointer");
+			std::weak_ptr<GlobalSceneManager> scene_manager = *(std::weak_ptr<GlobalSceneManager>*)lua_touserdata(state, -1);
+
+			std::string name = lua_tostring(state, 2);
 			
-			lua_getfield(state, 2, "_pointer");
+			lua_getfield(state, 3, "_pointer");
 			Object* obj = *(Object**)lua_touserdata(state, -1);
 
-			global_scene_manager->AddObject(std::move(name), obj);
+
+			if(auto& locked_scene_manager = scene_manager.lock())
+			{
+				locked_scene_manager->AddObject(std::move(name), obj);
+			}
+			else
+			{
+				return 1;
+			}
 
 			return 0;
 		}
 
 		int gsm_FindObject(lua_State* state)
 		{
-			std::string obj_name = lua_tostring(state, 1);
+			lua_getfield(state, 1, "_smart_pointer");
+			std::weak_ptr<GlobalSceneManager> scene_manager = *(std::weak_ptr<GlobalSceneManager>*)lua_touserdata(state, -1);
+
+			std::string obj_name = lua_tostring(state, 2);
 			lua_pop(state, 1);
 
-			Object* obj = global_scene_manager->FindObject(obj_name);
+			Object* obj;
+			if(auto& locked_scene_manager = scene_manager.lock())
+			{
+				obj = locked_scene_manager->FindObject(obj_name);
+			}
+			else
+			{
+				return 1;
+			}
+
 
 			if (obj != nullptr)
 			{
@@ -153,6 +176,31 @@ namespace Engine::Scripting::Mappings
 			else
 			{
 				Logging::GlobalLogger->SimpleLog(Logging::LogLevel::Warning, "Lua: AssetManager requested but returned nullptr!");
+
+				lua_pushnil(state);
+			}
+
+			return 1;
+		}
+
+		int engine_GetSceneManager(lua_State* state)
+		{
+			std::weak_ptr<GlobalSceneManager> scene_manager = global_engine->GetSceneManager();
+
+			if (!scene_manager.expired())
+			{
+				// Generate scene_manager table
+				lua_newtable(state);
+
+				void* ptr_obj = lua_newuserdata(state, sizeof(std::weak_ptr<GlobalSceneManager>));
+				//(*ptr_obj) = scene_manager;
+				new(ptr_obj) std::weak_ptr<GlobalSceneManager>(scene_manager);
+				
+				lua_setfield(state, -2, "_smart_pointer");
+			}
+			else
+			{
+				Logging::GlobalLogger->SimpleLog(Logging::LogLevel::Warning, "Lua: SceneManager requested but is expired!");
 
 				lua_pushnil(state);
 			}
@@ -350,6 +398,35 @@ namespace Engine::Scripting::Mappings
 			return 1;
 		}
 
+		int assetManager_GetModel(lua_State* state)
+		{
+			lua_getfield(state, 1, "_pointer");
+			AssetManager* ptr_am = *(AssetManager**)lua_touserdata(state, -1);
+
+			std::string path = lua_tostring(state, 2);
+
+			std::shared_ptr<Rendering::Mesh> model = ptr_am->GetModel(std::move(path));
+
+			if (model != nullptr)
+			{
+				// Generate object table
+				lua_newtable(state);
+
+				void* ptr = lua_newuserdata(state, sizeof(std::shared_ptr<Rendering::Mesh>));
+				//(*ptr) = model.get();
+				
+				new(ptr) std::shared_ptr<Rendering::Mesh>(model);
+				
+				lua_setfield(state, -2, "_pointer");
+			}
+			else
+			{
+				lua_pushnil(state);
+			}
+
+			return 1;
+		}
+
 #pragma endregion
 
 #pragma region ObjectFactory
@@ -447,8 +524,6 @@ namespace Engine::Scripting::Mappings
 
 			std::shared_ptr<Rendering::Mesh> mesh = std::make_shared<Rendering::Mesh>();
 			mesh->CreateMeshFromObj(std::string(lua_tostring(state, 10)));
-			//lua_getfield(state, 10, "_self");
-			//Rendering::Mesh* mesh = *(Rendering::Mesh**)lua_touserdata(state, -1);
 
 			Object* obj = ObjectFactory::CreateGeneric3DObject(x, y, z, xsize, ysize, zsize, xrot, yrot, zrot, mesh);
 
@@ -477,106 +552,108 @@ namespace Engine::Scripting::Mappings
 		}
 #pragma endregion
 	
-#pragma region Mesh
-
-		int mesh_Mesh(lua_State* state)
-		{
-			Rendering::Mesh* mesh = new Rendering::Mesh();
-
-			// Generate table
-			lua_newtable(state);
-
-			Rendering::Mesh** ptr_mesh = (Rendering::Mesh**)lua_newuserdata(state, sizeof(Rendering::Mesh*));
-			(*ptr_mesh) = mesh;
-			lua_setfield(state, -2, "_self");
-
-			return 1;
-		}
-
-		int mesh_CreateMeshFromObj(lua_State* state)
-		{
-			lua_getfield(state, 1, "_self");
-			Rendering::Mesh** mesh = (Rendering::Mesh**)lua_touserdata(state, -1);
-
-			std::string path = lua_tostring(state, 2);
-
-			(*mesh)->CreateMeshFromObj(std::move(path));
-
-			return 0;
-		}
-
-#pragma endregion
 	}
 
-	const char* nameMappings[] = {
-		"gsm_GetCameraHVRotation",
-		"gsm_SetCameraHVRotation",
-		"gsm_GetCameraTransform",
-		"gsm_SetCameraTransform",
-		"gsm_GetLightTransform",
-		"gsm_SetLightTransform",
-		"gsm_AddObject",
-		"gsm_FindObject",
-		"gsm_RemoveObject",
+	std::unordered_map<std::string, lua_CFunction> mappings = {
+		CMEP_LUAMAPPING_DEFINE(gsm_GetCameraHVRotation),
+		CMEP_LUAMAPPING_DEFINE(gsm_SetCameraHVRotation),
+		CMEP_LUAMAPPING_DEFINE(gsm_GetCameraTransform),
+		CMEP_LUAMAPPING_DEFINE(gsm_SetCameraTransform),
+		CMEP_LUAMAPPING_DEFINE(gsm_GetLightTransform),
+		CMEP_LUAMAPPING_DEFINE(gsm_SetLightTransform),
+		CMEP_LUAMAPPING_DEFINE(gsm_AddObject),
+		CMEP_LUAMAPPING_DEFINE(gsm_FindObject),
+		CMEP_LUAMAPPING_DEFINE(gsm_RemoveObject),
 
-		"engine_GetAssetManager",
-		"engine_SetFramerateTarget",
+		CMEP_LUAMAPPING_DEFINE(engine_GetAssetManager),
+		CMEP_LUAMAPPING_DEFINE(engine_SetFramerateTarget),
+		CMEP_LUAMAPPING_DEFINE(engine_GetSceneManager),
 
-		"textRenderer_UpdateText",
+		CMEP_LUAMAPPING_DEFINE(textRenderer_UpdateText),
 
-		"meshRenderer_UpdateTexture",
+		CMEP_LUAMAPPING_DEFINE(meshRenderer_UpdateTexture),
 
-		"object_AddChild",
-		"object_GetRotation",
-		"object_Rotate",
-		"object_GetPosition",
-		"object_Translate",
+		CMEP_LUAMAPPING_DEFINE(object_AddChild),
+		CMEP_LUAMAPPING_DEFINE(object_GetRotation),
+		CMEP_LUAMAPPING_DEFINE(object_Rotate),
+		CMEP_LUAMAPPING_DEFINE(object_GetPosition),
+		CMEP_LUAMAPPING_DEFINE(object_Translate),
 
-		"assetManager_GetFont",
-		"assetManager_GetTexture",
-		"assetManager_AddTexture",
+		CMEP_LUAMAPPING_DEFINE(assetManager_GetFont),
+		CMEP_LUAMAPPING_DEFINE(assetManager_GetTexture),
+		CMEP_LUAMAPPING_DEFINE(assetManager_AddTexture),
+		CMEP_LUAMAPPING_DEFINE(assetManager_GetModel),
 
-		"objectFactory_CreateSpriteObject",
-		"objectFactory_CreateTextObject",
-		"objectFactory_CreateGeneric3DObject",
-
-		"mesh_Mesh",
-		"mesh_CreateMeshFromObj"
+		CMEP_LUAMAPPING_DEFINE(objectFactory_CreateSpriteObject),
+		CMEP_LUAMAPPING_DEFINE(objectFactory_CreateTextObject),
+		CMEP_LUAMAPPING_DEFINE(objectFactory_CreateGeneric3DObject)
 	};
 
-	lua_CFunction functionMappings[] = {
-		Functions::gsm_GetCameraHVRotation,
-		Functions::gsm_SetCameraHVRotation,
-		Functions::gsm_GetCameraTransform,
-		Functions::gsm_SetCameraTransform,
-		Functions::gsm_GetLightTransform,
-		Functions::gsm_SetLightTransform,
-		Functions::gsm_AddObject,
-		Functions::gsm_FindObject,
-		Functions::gsm_RemoveObject,
+	// const char* nameMappings[] = {
+	// 	"gsm_GetCameraHVRotation",
+	// 	"gsm_SetCameraHVRotation",
+	// 	"gsm_GetCameraTransform",
+	// 	"gsm_SetCameraTransform",
+	// 	"gsm_GetLightTransform",
+	// 	"gsm_SetLightTransform",
+	// 	"gsm_AddObject",
+	// 	"gsm_FindObject",
+	// 	"gsm_RemoveObject",
 
-		Functions::engine_GetAssetManager,
-		Functions::engine_SetFramerateTarget,
+	// 	"engine_GetAssetManager",
+	// 	"engine_SetFramerateTarget",
 
-		Functions::textRenderer_UpdateText,
+	// 	"textRenderer_UpdateText",
 
-		Functions::meshRenderer_UpdateTexture,
+	// 	"meshRenderer_UpdateTexture",
 
-		Functions::object_AddChild,
-		Functions::object_GetRotation,
-		Functions::object_Rotate,
-		Functions::object_GetPosition,
-		Functions::object_Translate,
+	// 	"object_AddChild",
+	// 	"object_GetRotation",
+	// 	"object_Rotate",
+	// 	"object_GetPosition",
+	// 	"object_Translate",
 
-		Functions::assetManager_GetFont,
-		Functions::assetManager_GetTexture,
-		Functions::assetManager_AddTexture,
+	// 	"assetManager_GetFont",
+	// 	"assetManager_GetTexture",
+	// 	"assetManager_AddTexture",
+	// 	"assetManager_GetModel",
 
-		Functions::objectFactory_CreateSpriteObject,
-		Functions::objectFactory_CreateTextObject,
-		Functions::objectFactory_CreateGeneric3DObject,
+	// 	"objectFactory_CreateSpriteObject",
+	// 	"objectFactory_CreateTextObject",
+	// 	"objectFactory_CreateGeneric3DObject"
+	// };
 
-		Functions::mesh_Mesh,
-		Functions::mesh_CreateMeshFromObj
-	};
+	// lua_CFunction functionMappings[] = {
+	// 	Functions::gsm_GetCameraHVRotation,
+	// 	Functions::gsm_SetCameraHVRotation,
+	// 	Functions::gsm_GetCameraTransform,
+	// 	Functions::gsm_SetCameraTransform,
+	// 	Functions::gsm_GetLightTransform,
+	// 	Functions::gsm_SetLightTransform,
+	// 	Functions::gsm_AddObject,
+	// 	Functions::gsm_FindObject,
+	// 	Functions::gsm_RemoveObject,
+
+	// 	Functions::engine_GetAssetManager,
+	// 	Functions::engine_SetFramerateTarget,
+
+	// 	Functions::textRenderer_UpdateText,
+
+	// 	Functions::meshRenderer_UpdateTexture,
+
+	// 	Functions::object_AddChild,
+	// 	Functions::object_GetRotation,
+	// 	Functions::object_Rotate,
+	// 	Functions::object_GetPosition,
+	// 	Functions::object_Translate,
+
+	// 	Functions::assetManager_GetFont,
+	// 	Functions::assetManager_GetTexture,
+	// 	Functions::assetManager_AddTexture,
+	// 	Functions::assetManager_GetModel,
+
+	// 	Functions::objectFactory_CreateSpriteObject,
+	// 	Functions::objectFactory_CreateTextObject,
+	// 	Functions::objectFactory_CreateGeneric3DObject
+	// };
 }

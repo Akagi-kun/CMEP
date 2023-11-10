@@ -5,6 +5,7 @@
 #include "EventHandling.hpp"
 #include "LuaScript.hpp"
 #include "PlatformSemantics.hpp"
+#include "InternalEngineObject.hpp"
 
 namespace Engine
 {
@@ -15,17 +16,17 @@ namespace Engine
 			ObjectScript
 		};
 
-		class CMEP_EXPORT LuaScriptExecutor
+		class CMEP_EXPORT LuaScriptExecutor : public InternalEngineObject
 		{
 		protected:
-			static void registerCallbacks(lua_State* state);
+			void registerCallbacks(lua_State* state);
 		public:
 			LuaScriptExecutor() {};
 			~LuaScriptExecutor() {};
 
-			static int CallIntoScript(ExecuteType etype, LuaScript* script, std::string function, void* data);
+			int CallIntoScript(ExecuteType etype, std::shared_ptr<LuaScript> script, std::string function, void* data);
 
-			static int LoadAndCompileScript(LuaScript* script);
+			int LoadAndCompileScript(LuaScript* script);
 		};
 	}
 }

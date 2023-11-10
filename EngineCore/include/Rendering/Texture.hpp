@@ -4,6 +4,7 @@
 #include <string>
 #include <vector>
 
+#include "InternalEngineObject.hpp"
 #include "VulkanRenderingEngine.hpp"
 #include "PlatformSemantics.hpp"
 
@@ -14,7 +15,7 @@ namespace Engine::Rendering
 		FILE_PNG = 3
 	} Texture_InitFiletype;
 
-	class CMEP_EXPORT Texture final
+	class CMEP_EXPORT Texture final : public InternalEngineObject
 	{
 	private:
 		std::vector<unsigned char> data;

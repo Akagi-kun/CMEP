@@ -3,6 +3,11 @@
 #include <stdint.h>
 #include "PlatformSemantics.hpp"
 
+namespace Engine
+{
+	class Engine;
+}
+
 namespace Engine::EventHandling
 {
 	enum class EventType
@@ -20,6 +25,8 @@ namespace Engine::EventHandling
 	private:
 	public:
 		const EventType event_type;
+
+		Engine* raisedFrom;
 
 		double deltaTime = 0.0;
 		union

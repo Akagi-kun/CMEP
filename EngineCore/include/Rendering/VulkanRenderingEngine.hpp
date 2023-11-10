@@ -4,6 +4,10 @@
 #define GLFW_INCLUDE_VULKAN
 #include "glfw/include/GLFW/glfw3.h"
 
+#include "VulkanMemoryAllocator/include/vk_mem_alloc.h"
+
+#include "Logging/Logging.hpp"
+
 #include "glm/glm.hpp"
 
 #include <string>
@@ -40,14 +44,16 @@ namespace Engine::Rendering
 	struct VulkanBuffer
 	{
 		VkBuffer buffer;
-		VkDeviceMemory bufferMemory;
-		void* mappedMemory;
+		VmaAllocation allocation;
+		VmaAllocationInfo allocationInfo;
+		void* mappedData;
 	};
 
 	struct VulkanImage
 	{
 		VkImage image;
-		VkDeviceMemory imageMemory;
+		VmaAllocation allocation;
+		VmaAllocationInfo allocationInfo;
 		VkFormat imageFormat;
 		VkImageView imageView;
 	};
@@ -199,6 +205,9 @@ namespace Engine::Rendering
 		// Depth buffers
 		VulkanImage* vkDepthBuffer = nullptr;
 
+		// Memory management 
+		VmaAllocator vmaAllocator;
+
 		// External callback for rendering
 		std::function<void(VkCommandBuffer, uint32_t)> external_callback;
 
@@ -272,8 +281,11 @@ namespace Engine::Rendering
 		void createVulkanSyncObjects();
 		void createVulkanDepthResources();
 		void createMultisampledColorResources();
+		void createVulkanMemoryAllocator();
 
 	public:
+		std::shared_ptr<Logging::Logger> logger;
+
 		VulkanRenderingEngine() {}
 
 		// Signaling function for framebuffer resize
@@ -294,10 +306,9 @@ namespace Engine::Rendering
 		void SetRenderCallback(std::function<void(VkCommandBuffer, uint32_t)> callback);
 		
 		// Buffer functions
-		VulkanBuffer* createVulkanBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties);
+		VulkanBuffer* createVulkanBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VmaAllocationCreateFlags vmaAllocFlags);
 		void bufferVulkanTransferCopy(VulkanBuffer* src, VulkanBuffer* dest, VkDeviceSize size);
 		VulkanBuffer* createVulkanVertexBufferFromData(std::vector<RenderingVertex> vertices);
-		VulkanBuffer* createVulkanStagingBufferPreMapped(VkDeviceSize dataSize);
 		VulkanBuffer* createVulkanStagingBufferWithData(void* data, VkDeviceSize dataSize);
 
 		// Image functions

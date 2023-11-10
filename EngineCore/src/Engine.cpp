@@ -98,11 +98,10 @@ namespace Engine
 		}
 		catch(std::exception& e)
 		{
-			Logging::GlobalLogger->SimpleLog(Logging::LogLevel::Exception, "Error parsing config json '%s', what: %s", this->config_path.c_str(), e.what());
+			this->logger->SimpleLog(Logging::LogLevel::Exception, "Error parsing config json '%s', what: %s", this->config_path.c_str(), e.what());
 			exit(1);
 		}
 
-		Scripting::LuaScript* event_handler = nullptr;
 		EventHandling::EventType eventType = EventHandling::EventType::EVENT_UNDEFINED;
 
 		for(auto& eventHandler : data["eventHandlers"])
@@ -130,9 +129,15 @@ namespace Engine
 
 			assert(eventType != EventHandling::EventType::EVENT_UNDEFINED);
 
-			Logging::GlobalLogger->SimpleLog(Logging::LogLevel::Debug3, "Event handler for type: %s", static_cast<std::string>(eventHandler["type"]).c_str());
-			asset_manager->AddLuaScript(eventHandler["file"], eventHandler["file"]);
-			event_handler = asset_manager->GetLuaScript(eventHandler["file"]);
+			this->logger->SimpleLog(Logging::LogLevel::Debug3, "Event handler for type: %s", static_cast<std::string>(eventHandler["type"]).c_str());
+			std::shared_ptr<Scripting::LuaScript> event_handler = asset_manager->GetLuaScript(eventHandler["file"]);
+			
+			if(event_handler == nullptr)
+			{
+				asset_manager->AddLuaScript(eventHandler["file"], eventHandler["file"]);
+				event_handler = asset_manager->GetLuaScript(eventHandler["file"]);
+			}
+			
 			global_engine->RegisterLuaEventHandler(eventType, event_handler, eventHandler["function"]);
 		}
 
@@ -146,7 +151,8 @@ namespace Engine
 
 	void Engine::RenderCallback(VkCommandBuffer commandBuffer, uint32_t currentFrame)
 	{
-		for (auto& [name, ptr] : *global_scene_manager->GetAllObjects())
+		std::shared_ptr<GlobalSceneManager> scene_manager = std::make_shared<GlobalSceneManager>(global_scene_manager);
+		for (auto& [name, ptr] : *(scene_manager->GetAllObjects()))
 		{
 			try
 			{
@@ -154,7 +160,7 @@ namespace Engine
 			}
 			catch (const std::exception& e)
 			{
-				Logging::GlobalLogger->SimpleLog(Logging::LogLevel::Exception, "Caught exception while rendering object %s: %s", name.c_str(), e.what());
+				ptr->renderer->logger->SimpleLog(Logging::LogLevel::Exception, "Caught exception while rendering object %s: %s", name.c_str(), e.what());
 				exit(1);
 			}
 		}
@@ -207,6 +213,7 @@ namespace Engine
 			EventHandling::Event event = EventHandling::Event(EventHandling::EventType::ON_KEYDOWN);
 			event.keycode = key;
 			event.deltaTime = global_engine->GetLastDeltaTime();
+			event.raisedFrom = global_engine;
 			global_engine->FireEvent(event);
 		}
 		else if(action == GLFW_RELEASE)
@@ -214,14 +221,13 @@ namespace Engine
 			EventHandling::Event event = EventHandling::Event(EventHandling::EventType::ON_KEYUP);
 			event.keycode = key;
 			event.deltaTime = global_engine->GetLastDeltaTime();
+			event.raisedFrom = global_engine;
 			global_engine->FireEvent(event);
 		}
 	}
 
 	void Engine::engineLoop()
-	{
-		Logging::GlobalLogger->MapCurrentThreadToName("game");
-		
+	{		
 		Object* object = new Object();
 		object->renderer = new Rendering::AxisRenderer();
 		object->Translate(glm::vec3(0, 0, 0));
@@ -233,6 +239,7 @@ namespace Engine
 		
 		// Pre-make ON_UPDATE event so we don't have to create it over and over again in hot loop
 		EventHandling::Event premadeOnUpdateEvent = EventHandling::Event(EventHandling::EventType::ON_UPDATE);
+		premadeOnUpdateEvent.raisedFrom = this;
 		
 		glfwShowWindow(this->rendering_engine->GetWindow().window);
 
@@ -308,7 +315,7 @@ namespace Engine
 		return this->lastDeltaTime;
 	}
 
-	Engine::Engine(const char* windowTitle, const unsigned windowX, const unsigned windowY) noexcept : windowTitle(windowTitle), windowX(windowX), windowY(windowY), framerateTarget(30) {}
+	Engine::Engine(std::shared_ptr<Logging::Logger> logger, std::string windowTitle, const unsigned windowX, const unsigned windowY) noexcept : logger(logger), windowTitle(windowTitle), windowX(windowX), windowY(windowY), framerateTarget(30) {}
 
 	Engine::~Engine() noexcept
 	{
@@ -328,30 +335,40 @@ namespace Engine
 
 	void Engine::Init()
 	{
-		Logging::GlobalLogger->MapCurrentThreadToName("engine");
+		this->logger->MapCurrentThreadToName("engine");
 
 		// Engine info printout
 #if defined(_MSC_VER)
-		Logging::GlobalLogger->SimpleLog(Logging::LogLevel::Info, 
+		this->logger->SimpleLog(Logging::LogLevel::Info, 
 			"Engine info:\n////\nRunning CMEP EngineCore %s %s build, configured %s\nCompiled by MSVC compiler version: %u.%u\n////\n", 
 			__TIME__, __DATE__, _DEBUG ? "DEBUG" : "RELEASE", _MSC_FULL_VER, _MSC_BUILD
 		);
 #elif defined(__GNUC__)
-		Logging::GlobalLogger->SimpleLog(Logging::LogLevel::Info, 
+		this->logger->SimpleLog(Logging::LogLevel::Info, 
 			"Engine info:\n////\nRunning CMEP EngineCore %s %s build\nCompiled by GCC compiler version: %u.%u.%u\n////\n", 
 			__TIME__, __DATE__, __GNUC__, __GNUC_MINOR__, __GNUC_PATCHLEVEL__
 		);
 #else
-		Logging::GlobalLogger->SimpleLog(Logging::LogLevel::Info, 
+		this->logger->SimpleLog(Logging::LogLevel::Info, 
 			"Engine info:\n////\nRunning CMEP EngineCore %s %s build\nCompiled by unknown compiler\n////\n", 
 			__TIME__, __DATE__
 		);
 #endif
 
 		//this->window = new Rendering::Window(this->windowTitle, this->windowX, this->windowY);
-		this->asset_manager = new AssetManager();
 		this->script_executor = new Scripting::LuaScriptExecutor();
+		this->script_executor->UpdateHeldLogger(this->logger);
+
+		this->asset_manager = new AssetManager();
+		this->asset_manager->logger = this->logger;
+		this->asset_manager->lua_executor = this->script_executor;
+		//this->asset_manager->UpdateEngine(this);
+
+		this->scene_manager = std::make_shared<GlobalSceneManager>();
+		this->scene_manager->logger = this->logger;
+
 		this->rendering_engine = new Rendering::VulkanRenderingEngine();
+		this->rendering_engine->logger = this->logger;
 	}
 
 	void Engine::Run()
@@ -364,7 +381,7 @@ namespace Engine
 		}
 		catch(std::exception e)
 		{
-			Logging::GlobalLogger->SimpleLog(Logging::LogLevel::Exception, "Failed handling config! e.what(): %s", e.what());
+			this->logger->SimpleLog(Logging::LogLevel::Exception, "Failed handling config! e.what(): %s", e.what());
 			exit(1);
 		}
 
@@ -383,7 +400,7 @@ namespace Engine
 
 		// Measure and log ON_INIT time
 		double total = (std::chrono::steady_clock::now() - start).count() / 1e6;
-		Logging::GlobalLogger->SimpleLog(Logging::LogLevel::Debug1, "Handling ON_INIT took %.3lf ms total and returned %i", total, onInitEventRet);
+		this->logger->SimpleLog(Logging::LogLevel::Debug1, "Handling ON_INIT took %.3lf ms total and returned %i", total, onInitEventRet);
 		
 		if(onInitEventRet != 0)
 		{
@@ -403,7 +420,7 @@ namespace Engine
 		this->event_handlers.push_back(std::make_pair(event_type, function));
 	}
 
-	void Engine::RegisterLuaEventHandler(EventHandling::EventType event_type, Scripting::LuaScript* script, std::string function)
+	void Engine::RegisterLuaEventHandler(EventHandling::EventType event_type, std::shared_ptr<Scripting::LuaScript> script, std::string function)
 	{
 		this->lua_event_handlers.push_back(std::make_tuple(event_type, script, function));
 	}
@@ -418,21 +435,29 @@ namespace Engine
 		return this->rendering_engine;
 	}
 
-	Engine* initializeEngine(const char* windowTitle, const unsigned windowX, const unsigned windowY)
+	std::weak_ptr<GlobalSceneManager> Engine::GetSceneManager() noexcept
+	{
+		std::weak_ptr<GlobalSceneManager> weakSceneManager = this->scene_manager;
+		
+		return weakSceneManager;
+	}
+
+	Engine* initializeEngine(EngineConfig config)
 	{
 		// Set up loggre
-		Logging::GlobalLogger = std::make_unique<Logging::Logger>();
+		std::shared_ptr<Logging::Logger> myLogger = std::make_shared<Logging::Logger>();
 #if _DEBUG == 1 || defined(DEBUG)
-		Logging::GlobalLogger->AddOutputHandle(Logging::LogLevel::Debug3, stdout, true);
+		myLogger->AddOutputHandle(Logging::LogLevel::Debug3, stdout, true);
 #else
-		Logging::GlobalLogger->AddOutputHandle(Logging::LogLevel::Debug1, stdout, true);
+		myLogger->AddOutputHandle(Logging::LogLevel::Debug1, stdout, true);
 #endif
 
 		// Set up global scene
 		global_scene_manager = new GlobalSceneManager();
+		global_scene_manager->logger = myLogger;
 		
 		// Initialize engine
-		global_engine = new Engine(windowTitle, windowX, windowY);
+		global_engine = new Engine(myLogger, config.window.title, config.window.sizeX, config.window.sizeY);
 		global_engine->Init();
 
 		return global_engine;

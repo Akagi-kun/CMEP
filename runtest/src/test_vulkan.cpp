@@ -51,7 +51,7 @@ int test_vulkan_buffer_create_cleanup()
 {
 	assert(!boilerplate_rendering_engine_init());
 
-	Engine::Rendering::VulkanBuffer* test_buffer = rendering_engine->createVulkanBuffer(TEST_BUFFER_SIZE, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+	Engine::Rendering::VulkanBuffer* test_buffer = rendering_engine->createVulkanBuffer(TEST_BUFFER_SIZE, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, 0);
 	
 	rendering_engine->cleanupVulkanBuffer(test_buffer);
 	
