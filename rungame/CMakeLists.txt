@@ -25,7 +25,7 @@ endif()
 
 add_executable(rungame ${SRC_FILES})
 
-include_directories(rungame PUBLIC ../external ../external/lua-prebuilt/include include ../common_include ../EngineCore/include)
+include_directories(rungame PUBLIC ../external ../external/lua-prebuilt/include include ../common_include ../EngineCore/include ../external/VulkanMemoryAllocator/include)
 if(DEFINED ENV{VULKAN_SDK})
 	if(WIN32)
 		target_link_directories(rungame PUBLIC $ENV{VULKAN_SDK}/Lib lib ../build/Debug ../build ../external/lua-prebuilt)

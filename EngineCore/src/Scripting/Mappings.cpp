@@ -17,7 +17,14 @@ namespace Engine::Scripting::Mappings
 
 		int gsm_GetCameraHVRotation(lua_State* state)
 		{
-			glm::vec2 hvrot = global_scene_manager->GetCameraHVRotation();
+			lua_getfield(state, 1, "_smart_pointer");
+			std::weak_ptr<GlobalSceneManager> scene_manager = *(std::weak_ptr<GlobalSceneManager>*)lua_touserdata(state, -1);
+
+			glm::vec2 hvrot;
+			if(auto locked_scene_manager = scene_manager.lock())
+			{
+				hvrot = locked_scene_manager->GetCameraHVRotation();
+			}
 
 			lua_pushnumber(state, hvrot.x);
 			lua_pushnumber(state, hvrot.y);
@@ -27,17 +34,31 @@ namespace Engine::Scripting::Mappings
 
 		int gsm_SetCameraHVRotation(lua_State* state)
 		{
+			lua_getfield(state, 1, "_smart_pointer");
+			std::weak_ptr<GlobalSceneManager> scene_manager = *(std::weak_ptr<GlobalSceneManager>*)lua_touserdata(state, -1);
+
 			double h = lua_tonumber(state, 1);
 			double v = lua_tonumber(state, 2);
 
-			global_scene_manager->SetCameraHVRotation(glm::vec2(h, v));
+			if(auto locked_scene_manager = scene_manager.lock())
+			{
+				locked_scene_manager->SetCameraHVRotation(glm::vec2(h, v));
+			}
 
 			return 0;
 		}
 
 		int gsm_GetCameraTransform(lua_State* state)
 		{
-			glm::vec3 transform = global_scene_manager->GetCameraTransform();
+			lua_getfield(state, 1, "_smart_pointer");
+			std::weak_ptr<GlobalSceneManager> scene_manager = *(std::weak_ptr<GlobalSceneManager>*)lua_touserdata(state, -1);
+
+			glm::vec3 transform;
+			
+			if(auto locked_scene_manager = scene_manager.lock())
+			{
+				locked_scene_manager->GetCameraTransform();
+			} 	
 
 			lua_pushnumber(state, transform.x);
 			lua_pushnumber(state, transform.y);
@@ -48,18 +69,31 @@ namespace Engine::Scripting::Mappings
 
 		int gsm_SetCameraTransform(lua_State* state)
 		{
+			lua_getfield(state, 1, "_smart_pointer");
+			std::weak_ptr<GlobalSceneManager> scene_manager = *(std::weak_ptr<GlobalSceneManager>*)lua_touserdata(state, -1);
+
 			double x = lua_tonumber(state, 1);
 			double y = lua_tonumber(state, 2);
 			double z = lua_tonumber(state, 3);
 
-			global_scene_manager->SetCameraTransform(glm::vec3(x, y, z));
+			if(auto locked_scene_manager = scene_manager.lock())
+			{
+				locked_scene_manager->SetCameraTransform(glm::vec3(x, y, z));
+			}
 
 			return 0;
 		}
 
 		int gsm_GetLightTransform(lua_State* state)
 		{
-			glm::vec3 transform = global_scene_manager->GetLightTransform();
+			lua_getfield(state, 1, "_smart_pointer");
+			std::weak_ptr<GlobalSceneManager> scene_manager = *(std::weak_ptr<GlobalSceneManager>*)lua_touserdata(state, -1);
+
+			glm::vec3 transform;
+			if(auto locked_scene_manager = scene_manager.lock())
+			{
+				transform = locked_scene_manager->GetLightTransform();
+			}
 
 			lua_pushnumber(state, transform.x);
 			lua_pushnumber(state, transform.y);
@@ -71,11 +105,17 @@ namespace Engine::Scripting::Mappings
 
 		int gsm_SetLightTransform(lua_State* state)
 		{
+			lua_getfield(state, 1, "_smart_pointer");
+			std::weak_ptr<GlobalSceneManager> scene_manager = *(std::weak_ptr<GlobalSceneManager>*)lua_touserdata(state, -1);
+
 			double x = lua_tonumber(state, 1);
 			double y = lua_tonumber(state, 2);
 			double z = lua_tonumber(state, 3);
 
-			global_scene_manager->SetLightTransform(glm::vec3(x, y, z));
+			if(auto locked_scene_manager = scene_manager.lock())
+			{
+				locked_scene_manager->SetLightTransform(glm::vec3(x, y, z));
+			}
 
 			return 0;
 		}
@@ -90,8 +130,7 @@ namespace Engine::Scripting::Mappings
 			lua_getfield(state, 3, "_pointer");
 			Object* obj = *(Object**)lua_touserdata(state, -1);
 
-
-			if(auto& locked_scene_manager = scene_manager.lock())
+			if(auto locked_scene_manager = scene_manager.lock())
 			{
 				locked_scene_manager->AddObject(std::move(name), obj);
 			}
@@ -112,13 +151,13 @@ namespace Engine::Scripting::Mappings
 			lua_pop(state, 1);
 
 			Object* obj;
-			if(auto& locked_scene_manager = scene_manager.lock())
+			if(auto locked_scene_manager = scene_manager.lock())
 			{
 				obj = locked_scene_manager->FindObject(obj_name);
 			}
 			else
 			{
-				return 1;
+				return 0;
 			}
 
 
@@ -150,9 +189,15 @@ namespace Engine::Scripting::Mappings
 
 		int gsm_RemoveObject(lua_State* state)
 		{
-			std::string name = lua_tostring(state, 1);
+			lua_getfield(state, 1, "_smart_pointer");
+			std::weak_ptr<GlobalSceneManager> scene_manager = *(std::weak_ptr<GlobalSceneManager>*)lua_touserdata(state, -1);
 
-			global_scene_manager->RemoveObject(std::move(name));
+			std::string name = lua_tostring(state, 2);
+
+			if(auto locked_scene_manager = scene_manager.lock())
+			{
+				locked_scene_manager->RemoveObject(std::move(name));
+			}
 
 			return 0;
 		}
@@ -433,17 +478,20 @@ namespace Engine::Scripting::Mappings
 
 		int objectFactory_CreateSpriteObject(lua_State* state)
 		{
-			double x = lua_tonumber(state, 1);
-			double y = lua_tonumber(state, 2);
-			double sizex = lua_tonumber(state, 3);
-			double sizey = lua_tonumber(state, 4);
+			lua_getfield(state, 1, "_smart_pointer");
+			std::weak_ptr<GlobalSceneManager> scene_manager = *(std::weak_ptr<GlobalSceneManager>*)lua_touserdata(state, -1);
 
-			lua_getfield(state, 5, "_pointer");
+			double x = lua_tonumber(state, 2);
+			double y = lua_tonumber(state, 3);
+			double sizex = lua_tonumber(state, 4);
+			double sizey = lua_tonumber(state, 5);
+
+			lua_getfield(state, 6, "_pointer");
 			AssetManager* ptr_am = *(AssetManager**)lua_touserdata(state, -1);
-			std::string sprite_name = lua_tostring(state, 6);
+			std::string sprite_name = lua_tostring(state, 7);
 			//Rendering::Texture* sprite = *(Rendering::Texture**)lua_touserdata(state, -1);
 
-			Object* obj = ObjectFactory::CreateSpriteObject(x, y, sizex, sizey, ptr_am->GetTexture(sprite_name));
+			Object* obj = ObjectFactory::CreateSpriteObject(scene_manager, x, y, sizex, sizey, ptr_am->GetTexture(sprite_name));
 
 			if (obj != nullptr)
 			{
@@ -473,16 +521,19 @@ namespace Engine::Scripting::Mappings
 
 		int objectFactory_CreateTextObject(lua_State* state)
 		{
-			double x = lua_tonumber(state, 1);
-			double y = lua_tonumber(state, 2);
-			int size = static_cast<int>(lua_tointeger(state, 3));
+			lua_getfield(state, 1, "_smart_pointer");
+			std::weak_ptr<GlobalSceneManager> scene_manager = *(std::weak_ptr<GlobalSceneManager>*)lua_touserdata(state, -1);
 
-			std::string text = lua_tostring(state, 4);
+			double x = lua_tonumber(state, 2);
+			double y = lua_tonumber(state, 3);
+			int size = static_cast<int>(lua_tointeger(state, 4));
 
-			lua_getfield(state, 5, "_pointer");
+			std::string text = lua_tostring(state, 5);
+
+			lua_getfield(state, 6, "_pointer");
 			Rendering::Font* font = *(Rendering::Font**)lua_touserdata(state, -1);
 
-			Object* obj = ObjectFactory::CreateTextObject(x, y, size, text, font);
+			Object* obj = ObjectFactory::CreateTextObject(scene_manager, x, y, size, text, font);
 
 			if (obj != nullptr)
 			{
@@ -512,20 +563,23 @@ namespace Engine::Scripting::Mappings
 
 		int objectFactory_CreateGeneric3DObject(lua_State* state)
 		{
-			double x = lua_tonumber(state, 1);
-			double y = lua_tonumber(state, 2);
-			double z = lua_tonumber(state, 3);
-			double xsize = lua_tonumber(state, 4);
-			double ysize = lua_tonumber(state, 5);
-			double zsize = lua_tonumber(state, 6);
-			double xrot = lua_tonumber(state, 7);
-			double yrot = lua_tonumber(state, 8);
-			double zrot = lua_tonumber(state, 9);
+			lua_getfield(state, 1, "_smart_pointer");
+			std::weak_ptr<GlobalSceneManager> scene_manager = *(std::weak_ptr<GlobalSceneManager>*)lua_touserdata(state, -1);
+
+			double x = lua_tonumber(state, 2);
+			double y = lua_tonumber(state, 3);
+			double z = lua_tonumber(state, 4);
+			double xsize = lua_tonumber(state, 5);
+			double ysize = lua_tonumber(state, 6);
+			double zsize = lua_tonumber(state, 7);
+			double xrot = lua_tonumber(state, 8);
+			double yrot = lua_tonumber(state, 9);
+			double zrot = lua_tonumber(state, 10);
 
 			std::shared_ptr<Rendering::Mesh> mesh = std::make_shared<Rendering::Mesh>();
-			mesh->CreateMeshFromObj(std::string(lua_tostring(state, 10)));
+			mesh->CreateMeshFromObj(std::string(lua_tostring(state, 11)));
 
-			Object* obj = ObjectFactory::CreateGeneric3DObject(x, y, z, xsize, ysize, zsize, xrot, yrot, zrot, mesh);
+			Object* obj = ObjectFactory::CreateGeneric3DObject(scene_manager, x, y, z, xsize, ysize, zsize, xrot, yrot, zrot, mesh);
 
 			if (obj != nullptr)
 			{

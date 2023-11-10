@@ -151,8 +151,8 @@ namespace Engine
 
 	void Engine::RenderCallback(VkCommandBuffer commandBuffer, uint32_t currentFrame)
 	{
-		std::shared_ptr<GlobalSceneManager> scene_manager = std::make_shared<GlobalSceneManager>(global_scene_manager);
-		for (auto& [name, ptr] : *(scene_manager->GetAllObjects()))
+		
+		for (auto& [name, ptr] : *(global_engine->scene_manager->GetAllObjects()))
 		{
 			try
 			{
@@ -235,7 +235,8 @@ namespace Engine
 		object->Rotate(glm::vec3(0, 0, 0));
 		object->ScreenSizeInform(this->windowX, this->windowY);
 		((Rendering::AxisRenderer*)object->renderer)->UpdateMesh();
-		global_scene_manager->AddObject("_axis", object);
+		((Rendering::AxisRenderer*)object->renderer)->scene_manager = this->scene_manager;
+		this->scene_manager->AddObject("_axis", object);
 		
 		// Pre-make ON_UPDATE event so we don't have to create it over and over again in hot loop
 		EventHandling::Event premadeOnUpdateEvent = EventHandling::Event(EventHandling::EventType::ON_UPDATE);
@@ -452,10 +453,6 @@ namespace Engine
 		myLogger->AddOutputHandle(Logging::LogLevel::Debug1, stdout, true);
 #endif
 
-		// Set up global scene
-		global_scene_manager = new GlobalSceneManager();
-		global_scene_manager->logger = myLogger;
-		
 		// Initialize engine
 		global_engine = new Engine(myLogger, config.window.title, config.window.sizeX, config.window.sizeY);
 		global_engine->Init();
@@ -465,7 +462,6 @@ namespace Engine
 
 	int deinitializeEngine()
 	{
-		delete global_scene_manager;
 		delete global_engine;
 
 		return 0;

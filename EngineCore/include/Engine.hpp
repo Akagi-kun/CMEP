@@ -70,7 +70,6 @@ namespace Engine
 		Rendering::VulkanRenderingEngine* rendering_engine = nullptr;
 		AssetManager* asset_manager = nullptr;
 		Scripting::LuaScriptExecutor* script_executor = nullptr;
-		std::shared_ptr<GlobalSceneManager> scene_manager{};
         std::shared_ptr<Logging::Logger> logger{};
 
 		// Event handler storage
@@ -93,6 +92,8 @@ namespace Engine
 		void HandleConfig();
 
 	public:
+		std::shared_ptr<GlobalSceneManager> scene_manager{};
+		
 		Engine(std::shared_ptr<Logging::Logger> logger, std::string windowTitle, const unsigned windowX, const unsigned windowY) noexcept;
 		~Engine() noexcept;
 

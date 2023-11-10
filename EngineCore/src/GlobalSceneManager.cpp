@@ -132,6 +132,4 @@ namespace Engine
 	{
 		this->logger = new_logger;
 	}
-
-	CMEP_EXPORT GlobalSceneManager* global_scene_manager = nullptr;
 }

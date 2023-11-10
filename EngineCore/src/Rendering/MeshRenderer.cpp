@@ -86,8 +86,12 @@ namespace Engine::Rendering
 		glm::mat4 Projection = glm::perspective(glm::radians(45.0f), (float)this->_screenx / this->_screeny, 0.1f, 100.0f);
 		Projection[1][1] *= -1;
 
-		glm::mat4 View = global_scene_manager->GetCameraViewMatrix();
-
+		glm::mat4 View;
+		if(auto locked_scene_manager = this->scene_manager.lock())
+		{
+			View = locked_scene_manager->GetCameraViewMatrix();
+		}
+		
 		if(this->_parent_size.x == 0.0f && this->_parent_size.y == 0.0f && this->_parent_size.z == 0.0f)
 		{
 			this->_parent_size = glm::vec3(1,1,1);

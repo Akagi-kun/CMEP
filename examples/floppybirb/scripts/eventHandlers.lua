@@ -57,28 +57,28 @@ onUpdate = function(event)
 	deltaTimeAvg = deltaTimeAvg + event.deltaTime;
 	deltaTimeCount = deltaTimeCount + 1;
 
+	local asset_manager = cmepapi.engine_GetAssetManager();
+	local scene_manager = cmepapi.engine_GetSceneManager();
+
 	-- Update frametime counter, recommend to leave this here for debugging purposes
 	if deltaTimeCount >= 30 then
 		local object = cmepapi.gsm_FindObject(scene_manager, "_debug_info");
 		cmepapi.textRenderer_UpdateText(object.renderer, "FT: "..tostring(deltaTimeAvg / deltaTimeCount * 1000).." ms");
-
+		
 		deltaTimeAvg = 0;
 		deltaTimeCount = 0;
 	end
-
+	
 	-- We can use the math library in here!
 	local offset = -100 + math.random(-150, 150);
-
-	local asset_manager = cmepapi.engine_GetAssetManager();
-	local scene_manager = cmepapi.engine_GetSceneManager();
-
+	
 	if gameIsGameOver == false then
 		if spawnPipeSinceLast > spawnPipeEvery then
 			-- Spawn new pipes
-			local object1 = cmepapi.objectFactory_CreateSpriteObject(1.0, offset / 720, 80 / 1100, 400 / 720, asset_manager, "game/textures/pipe_down.png");
+			local object1 = cmepapi.objectFactory_CreateSpriteObject(scene_manager, 1.0, offset / 720, 80 / 1100, 400 / 720, asset_manager, "game/textures/pipe_down.png");
 			cmepapi.gsm_AddObject(scene_manager, "sprite_pipe_down"..tostring(spawnPipeLastIdx + 1), object1);
 
-			local object2 = cmepapi.objectFactory_CreateSpriteObject(1.0, (400 + 200 + offset) / 720, 80 / 1100, 400 / 720, asset_manager, "game/textures/pipe_up.png");
+			local object2 = cmepapi.objectFactory_CreateSpriteObject(scene_manager, 1.0, (400 + 200 + offset) / 720, 80 / 1100, 400 / 720, asset_manager, "game/textures/pipe_up.png");
 			cmepapi.gsm_AddObject(scene_manager, "sprite_pipe_up"..tostring(spawnPipeLastIdx + 1), object2);
 
 			spawnPipeLastIdx = spawnPipeLastIdx + 1;
@@ -108,7 +108,7 @@ onUpdate = function(event)
 				then
 					gameIsGameOver = true;
 					local font = cmepapi.assetManager_GetFont(asset_manager, "game/fonts/myfont/myfont.fnt");
-					local object = cmepapi.objectFactory_CreateTextObject(0.4, 0.4, 32, "GAME OVER", font);
+					local object = cmepapi.objectFactory_CreateTextObject(scene_manager, 0.4, 0.4, 32, "GAME OVER", font);
 					cmepapi.gsm_AddObject(scene_manager, "text_gameover", object);
 					return 0;
 				end
@@ -123,8 +123,8 @@ onUpdate = function(event)
 
 				if x1 < (0.0 - 80 / 1100) then
 					-- Destroy objects
-					cmepapi.gsm_RemoveObject("sprite_pipe_down"..tostring(pipeIdx));
-					cmepapi.gsm_RemoveObject("sprite_pipe_up"..tostring(pipeIdx));
+					cmepapi.gsm_RemoveObject(scene_manager, "sprite_pipe_down"..tostring(pipeIdx));
+					cmepapi.gsm_RemoveObject(scene_manager, "sprite_pipe_up"..tostring(pipeIdx));
 					spawnPipeFirstIdx = spawnPipeFirstIdx + 1;
 				end
 			end
@@ -136,7 +136,7 @@ onUpdate = function(event)
 		then
 			gameIsGameOver = true;
 			local font = cmepapi.assetManager_GetFont(asset_manager, "game/fonts/myfont/myfont.fnt");
-			local object = cmepapi.objectFactory_CreateTextObject(0.4, 0.4, 32, "GAME OVER", font);
+			local object = cmepapi.objectFactory_CreateTextObject(scene_manager, 0.4, 0.4, 32, "GAME OVER", font);
 			cmepapi.gsm_AddObject(scene_manager, "text_gameover", object);
 			return 0;
 		end
@@ -151,6 +151,9 @@ onUpdate = function(event)
 		spawnPipeSinceLast = spawnPipeSinceLast + event.deltaTime;
 	end
 
+	local camrotx, camroty = cmepapi.gsm_GetCameraHVRotation(scene_manager);
+	cmepapi.gsm_SetCameraHVRotation(scene_manager, camrotx, camroty + 40.0 * event.deltaTime);
+
 	return 0;
 end
 
@@ -163,23 +166,23 @@ onInit = function(event)
 
 	-- Create frametime counter and add it to scene
 	local font = cmepapi.assetManager_GetFont(asset_manager, "game/fonts/myfont/myfont.fnt");
-	local object = cmepapi.objectFactory_CreateTextObject(0.0, 0.0, 18, "test", font);
+	local object = cmepapi.objectFactory_CreateTextObject(scene_manager, 0.0, 0.0, 18, "test", font);
 	cmepapi.gsm_AddObject(scene_manager, "_debug_info", object);
 	
 	-- Add score
-	local object = cmepapi.objectFactory_CreateTextObject(0.5, 0.0, 64, "0", font);
+	local object = cmepapi.objectFactory_CreateTextObject(scene_manager, 0.5, 0.0, 64, "0", font);
 	cmepapi.gsm_AddObject(scene_manager, "text_score", object);
 
 	-- Add birb
-	local birb = cmepapi.objectFactory_CreateSpriteObject(0.2, (720 / 2) / 720, 48 / 1100, 33 / 720, asset_manager, "game/textures/birb.png");
+	local birb = cmepapi.objectFactory_CreateSpriteObject(scene_manager, 0.2, (720 / 2) / 720, 48 / 1100, 33 / 720, asset_manager, "game/textures/birb.png");
 	cmepapi.gsm_AddObject(scene_manager, "birb", birb);
 
 	-- Set-up camera
-	cmepapi.gsm_SetCameraTransform(-5.0, 0.0, 0.0);
-	cmepapi.gsm_SetCameraHVRotation(0, 0);
+	cmepapi.gsm_SetCameraTransform(scene_manager, -5.0, 2.0, 0.0);
+	cmepapi.gsm_SetCameraHVRotation(scene_manager, 0, 0);
 
 	-- Set-up light
-	cmepapi.gsm_SetLightTransform(-1,1,0);
+	cmepapi.gsm_SetLightTransform(scene_manager, -1,1,0);
 
 	return 0;
 end

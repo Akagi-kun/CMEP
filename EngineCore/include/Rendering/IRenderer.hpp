@@ -4,12 +4,12 @@
 
 #include "VulkanRenderingEngine.hpp"
 #include "PlatformSemantics.hpp"
-
 #include "InternalEngineObject.hpp"
 
 namespace Engine
 {
 	class Object;
+	class GlobalSceneManager;
 
 	namespace Rendering
 	{
@@ -34,6 +34,8 @@ namespace Engine
 			bool has_updated_mesh = false;
 
 		public:
+			std::weak_ptr<::Engine::GlobalSceneManager> scene_manager{};
+
 			IRenderer() {};
 			virtual ~IRenderer() {};
 

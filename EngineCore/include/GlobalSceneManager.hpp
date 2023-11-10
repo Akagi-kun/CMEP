@@ -48,6 +48,4 @@ namespace Engine
 		void SetCameraTransform(glm::vec3 transform);
 		void SetCameraHVRotation(glm::vec2 hvrotation);
 	};
-
-	CMEP_EXPORT extern GlobalSceneManager* global_scene_manager;
 }

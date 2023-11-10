@@ -10,7 +10,7 @@
 #define GLFW_INCLUDE_VULKAN
 #include "glfw/include/GLFW/glfw3.h"
 
-#include "vma/vk_mem_alloc.h"
+#include "vk_mem_alloc.h"
 
 #include "glm/gtc/matrix_transform.hpp"
 #include "glm/gtc/quaternion.hpp"
