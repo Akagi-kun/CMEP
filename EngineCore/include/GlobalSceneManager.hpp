@@ -16,7 +16,7 @@ namespace Engine
 	class CMEP_EXPORT GlobalSceneManager final
 	{
 	private:
-		std::unordered_map<std::string, Object*> objects;
+		std::unordered_map<std::string, Object*> objects{};
 
 		glm::vec3 cameraTransform{}; // XYZ position
 		glm::vec2 cameraHVRotation{}; // Horizontal and Vertical rotation

@@ -152,7 +152,7 @@ namespace Engine
 	void Engine::RenderCallback(VkCommandBuffer commandBuffer, uint32_t currentFrame)
 	{
 		std::shared_ptr<GlobalSceneManager> scene_manager = std::make_shared<GlobalSceneManager>(global_scene_manager);
-		for (auto& [name, ptr] : (scene_manager->GetAllObjects()))
+		for (auto& [name, ptr] : *(scene_manager->GetAllObjects()))
 		{
 			try
 			{
