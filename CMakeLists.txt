@@ -29,7 +29,7 @@ endif()
 add_subdirectory(EngineCore)
 add_dependencies(EngineCore glfw)
 
-if(APPLE)
+if(NOT MSVC)
 	add_custom_target(lua_build COMMAND ./external/build_lua.sh macosx)
 	add_dependencies(EngineCore lua_build)
 endif()

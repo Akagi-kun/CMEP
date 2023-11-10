@@ -37,8 +37,8 @@ namespace Engine::Scripting::Mappings
 			lua_getfield(state, 1, "_smart_pointer");
 			std::weak_ptr<GlobalSceneManager> scene_manager = *(std::weak_ptr<GlobalSceneManager>*)lua_touserdata(state, -1);
 
-			double h = lua_tonumber(state, 1);
-			double v = lua_tonumber(state, 2);
+			double h = lua_tonumber(state, 2);
+			double v = lua_tonumber(state, 3);
 
 			if(auto locked_scene_manager = scene_manager.lock())
 			{
@@ -72,9 +72,9 @@ namespace Engine::Scripting::Mappings
 			lua_getfield(state, 1, "_smart_pointer");
 			std::weak_ptr<GlobalSceneManager> scene_manager = *(std::weak_ptr<GlobalSceneManager>*)lua_touserdata(state, -1);
 
-			double x = lua_tonumber(state, 1);
-			double y = lua_tonumber(state, 2);
-			double z = lua_tonumber(state, 3);
+			double x = lua_tonumber(state, 2);
+			double y = lua_tonumber(state, 3);
+			double z = lua_tonumber(state, 4);
 
 			if(auto locked_scene_manager = scene_manager.lock())
 			{
@@ -108,9 +108,9 @@ namespace Engine::Scripting::Mappings
 			lua_getfield(state, 1, "_smart_pointer");
 			std::weak_ptr<GlobalSceneManager> scene_manager = *(std::weak_ptr<GlobalSceneManager>*)lua_touserdata(state, -1);
 
-			double x = lua_tonumber(state, 1);
-			double y = lua_tonumber(state, 2);
-			double z = lua_tonumber(state, 3);
+			double x = lua_tonumber(state, 2);
+			double y = lua_tonumber(state, 3);
+			double z = lua_tonumber(state, 4);
 
 			if(auto locked_scene_manager = scene_manager.lock())
 			{
@@ -148,7 +148,6 @@ namespace Engine::Scripting::Mappings
 			std::weak_ptr<GlobalSceneManager> scene_manager = *(std::weak_ptr<GlobalSceneManager>*)lua_touserdata(state, -1);
 
 			std::string obj_name = lua_tostring(state, 2);
-			lua_pop(state, 1);
 
 			Object* obj;
 			if(auto locked_scene_manager = scene_manager.lock())
