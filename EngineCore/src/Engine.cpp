@@ -102,7 +102,6 @@ namespace Engine
 			exit(1);
 		}
 
-		Scripting::LuaScript* event_handler = nullptr;
 		EventHandling::EventType eventType = EventHandling::EventType::EVENT_UNDEFINED;
 
 		for(auto& eventHandler : data["eventHandlers"])
@@ -131,8 +130,14 @@ namespace Engine
 			assert(eventType != EventHandling::EventType::EVENT_UNDEFINED);
 
 			Logging::GlobalLogger->SimpleLog(Logging::LogLevel::Debug3, "Event handler for type: %s", static_cast<std::string>(eventHandler["type"]).c_str());
-			asset_manager->AddLuaScript(eventHandler["file"], eventHandler["file"]);
-			event_handler = asset_manager->GetLuaScript(eventHandler["file"]);
+			std::shared_ptr<Scripting::LuaScript> event_handler = asset_manager->GetLuaScript(eventHandler["file"]);
+			
+			if(event_handler == nullptr)
+			{
+				asset_manager->AddLuaScript(eventHandler["file"], eventHandler["file"]);
+				event_handler = asset_manager->GetLuaScript(eventHandler["file"]);
+			}
+			
 			global_engine->RegisterLuaEventHandler(eventType, event_handler, eventHandler["function"]);
 		}
 
@@ -308,7 +313,7 @@ namespace Engine
 		return this->lastDeltaTime;
 	}
 
-	Engine::Engine(const char* windowTitle, const unsigned windowX, const unsigned windowY) noexcept : windowTitle(windowTitle), windowX(windowX), windowY(windowY), framerateTarget(30) {}
+	Engine::Engine(std::string windowTitle, const unsigned windowX, const unsigned windowY) noexcept : windowTitle(windowTitle), windowX(windowX), windowY(windowY), framerateTarget(30) {}
 
 	Engine::~Engine() noexcept
 	{
@@ -403,7 +408,7 @@ namespace Engine
 		this->event_handlers.push_back(std::make_pair(event_type, function));
 	}
 
-	void Engine::RegisterLuaEventHandler(EventHandling::EventType event_type, Scripting::LuaScript* script, std::string function)
+	void Engine::RegisterLuaEventHandler(EventHandling::EventType event_type, std::shared_ptr<Scripting::LuaScript> script, std::string function)
 	{
 		this->lua_event_handlers.push_back(std::make_tuple(event_type, script, function));
 	}
@@ -418,10 +423,10 @@ namespace Engine
 		return this->rendering_engine;
 	}
 
-	Engine* initializeEngine(const char* windowTitle, const unsigned windowX, const unsigned windowY)
+	Engine* initializeEngine(EngineConfig config)
 	{
 		// Set up loggre
-		Logging::GlobalLogger = std::make_unique<Logging::Logger>();
+		Logging::GlobalLogger = std::make_shared<Logging::Logger>();
 #if _DEBUG == 1 || defined(DEBUG)
 		Logging::GlobalLogger->AddOutputHandle(Logging::LogLevel::Debug3, stdout, true);
 #else
@@ -432,7 +437,7 @@ namespace Engine
 		global_scene_manager = new GlobalSceneManager();
 		
 		// Initialize engine
-		global_engine = new Engine(windowTitle, windowX, windowY);
+		global_engine = new Engine(config.window.title, config.window.sizeX, config.window.sizeY);
 		global_engine->Init();
 
 		return global_engine;

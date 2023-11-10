@@ -11,19 +11,31 @@
 #include "EngineCore.hpp"
 
 Engine::Engine* engine;
-const char* windowTitle = "";
-const unsigned int windowSizeX = 1200, windowSizeY = 720;
 
-int main(int argc, char** argv)
-{
 #if defined(_MSC_VER)
+static void initStdWin32()
+{
 	HANDLE myConsole = GetStdHandle(STD_OUTPUT_HANDLE);
 	DWORD dwMode = 0;
 	GetConsoleMode(myConsole, &dwMode);
 	dwMode |= ENABLE_VIRTUAL_TERMINAL_PROCESSING;
 	SetConsoleMode(myConsole, dwMode);
+}
 #endif
-	engine = Engine::initializeEngine(windowTitle, windowSizeX, windowSizeY);
+
+int main(int argc, char** argv)
+{
+#if defined(_MSC_VER)
+	initStdWin32();
+#endif
+	
+	Engine::EngineConfig config{};
+	config.window.sizeX = 1200;
+	config.window.sizeY = 720;
+	config.window.windowTitle = "My funny game!";
+	config.rendering.framerateTarget = 60;
+
+	engine = Engine::initializeEngine(config);
 	
 	try
 	{

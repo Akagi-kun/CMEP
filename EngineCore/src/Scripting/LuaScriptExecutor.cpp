@@ -23,7 +23,7 @@ namespace Engine
 			lua_setglobal(state, "cmepapi");
 		}
 
-		int LuaScriptExecutor::CallIntoScript(ExecuteType etype, LuaScript* script, std::string function, void* data)
+		int LuaScriptExecutor::CallIntoScript(ExecuteType etype, std::shared_ptr<LuaScript> script, std::string function, void* data)
 		{
 			// Get script state
 			lua_State* state = script->GetState();
@@ -86,10 +86,10 @@ namespace Engine
 
 			if (errload != LUA_OK || errexec != LUA_OK)
 			{
-				printf("Error when loading and compiling Lua script '%s'\n   Error codes:\n    load: %i\n    compile: %i\n  Compilation error: %s\n", script->path.c_str(), errload, errexec, errorexec);
+				Logging::GlobalLogger->SimpleLog(Logging::LogLevel::Error, "Error when loading and compiling Lua script '%s'\n   Error codes:\n    load: %i\n    compile: %i\n  Compilation error: %s\n", script->path.c_str(), errload, errexec, errorexec);
 			}
 
-			printf("Loaded and compiled Lua script: '%s'\n", script->path.c_str());
+			Logging::GlobalLogger->SimpleLog(Logging::LogLevel::Debug1, "Loaded and compiled Lua script: '%s'\n", script->path.c_str());
 
 			return 0;
 		}

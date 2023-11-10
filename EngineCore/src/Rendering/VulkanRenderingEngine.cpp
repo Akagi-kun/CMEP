@@ -706,6 +706,7 @@ namespace Engine::Rendering
 		this->vkSwapChainImageFormat = VK_FORMAT_B8G8R8A8_UNORM;
 		this->vkSwapChainExtent = extent;
 
+		Logging::GlobalLogger->SimpleLog(Logging::LogLevel::Debug3, "Vulkan swap chain created");
 	}
 
 	void VulkanRenderingEngine::recreateVulkanSwapChain()
@@ -977,6 +978,8 @@ namespace Engine::Rendering
 		allocatorCreateInfo.instance = this->vkInstance;
 
 		vmaCreateAllocator(&allocatorCreateInfo, &(this->vmaAllocator));
+
+		Logging::GlobalLogger->SimpleLog(Logging::LogLevel::Debug1, "VulkanRenderingEngine: VMA created");
 	}
 
 ////////////////////////////////////////////////////////////////////////
@@ -1417,7 +1420,6 @@ namespace Engine::Rendering
 		for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
 			this->cleanupVulkanBuffer(pipeline->uniformBuffers[i]);
 			this->leakUniformBufferCounter -= 1;
-			this->leakBufferCounter -= 1;
 		}
 
 		vkDestroyDescriptorPool(this->vkLogicalDevice, pipeline->vkDescriptorPool, nullptr);
@@ -1440,15 +1442,12 @@ namespace Engine::Rendering
 
 		VkDeviceSize bufferSize = sizeof(vertices[0]) * vertices.size();
 
-		staging_buffer = this->createVulkanBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+		staging_buffer = this->createVulkanBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, 0);
+		vertex_buffer = this->createVulkanBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, 0);
 		
-		//vkMapMemory(this->vkLogicalDevice, staging_buffer->allocationInfo.deviceMemory, staging_buffer->allocationInfo.offset, staging_buffer->allocationInfo.size, 0, &staging_buffer->mappedMemory);
-		memcpy(staging_buffer->allocationInfo.pMappedData, vertices.data(), (size_t)bufferSize);
-		//vkUnmapMemory(this->vkLogicalDevice, staging_buffer->allocationInfo.deviceMemory);
-
-		//stagingBuffer = this->createVulkanStagingBufferWithData(vertices.data(), bufferSize);
-
-		vertex_buffer = this->createVulkanBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
+		vkMapMemory(this->vkLogicalDevice, staging_buffer->allocationInfo.deviceMemory, staging_buffer->allocationInfo.offset, staging_buffer->allocationInfo.size, 0, &staging_buffer->mappedData);
+		memcpy(staging_buffer->mappedData, vertices.data(), (size_t)bufferSize);
+		vkUnmapMemory(this->vkLogicalDevice, staging_buffer->allocationInfo.deviceMemory);
 
 		this->bufferVulkanTransferCopy(staging_buffer, vertex_buffer, bufferSize);
 
@@ -1469,14 +1468,13 @@ namespace Engine::Rendering
 		pipeline->uniformBuffers.resize(MAX_FRAMES_IN_FLIGHT);
 
 		for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
-			pipeline->uniformBuffers[i] = this->createVulkanBuffer(bufferSize, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+			pipeline->uniformBuffers[i] = this->createVulkanBuffer(bufferSize, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, 0);
 
-			//vkMapMemory(this->vkLogicalDevice, pipeline->uniformBuffers[i]->allocationInfo.deviceMemory, pipeline->uniformBuffers[i]->allocationInfo.offset, bufferSize, 0, &(pipeline->uniformBuffers[i]->mappedMemory));
 			this->leakUniformBufferCounter += 1;
 		}
 	}
 
-	VulkanBuffer* VulkanRenderingEngine::createVulkanBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties)
+	VulkanBuffer* VulkanRenderingEngine::createVulkanBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VmaAllocationCreateFlags vmaAllocFlags)
 	{
 		VulkanBuffer* new_buffer = new VulkanBuffer();
 
@@ -1494,6 +1492,7 @@ namespace Engine::Rendering
 
 		VmaAllocationCreateInfo vmaAllocInfo = {};
 		vmaAllocInfo.usage = VMA_MEMORY_USAGE_AUTO;
+		vmaAllocInfo.flags = vmaAllocFlags; //VMA_ALLOCATION_CREATE_HOST_ACCESS_SEQUENTIAL_WRITE_BIT | VMA_ALLOCATION_CREATE_MAPPED_BIT;
 		vmaAllocInfo.requiredFlags = properties;
 
 		//if (vkCreateBuffer(this->vkLogicalDevice, &bufferInfo, nullptr, &(new_buffer->buffer)) != VK_SUCCESS)
@@ -1503,51 +1502,23 @@ namespace Engine::Rendering
 			throw std::runtime_error("failed to create buffer!");
 		}
 
-		// Get memory requiremenets of this buffer
-		// VkMemoryRequirements memRequirements;
-		// vkGetBufferMemoryRequirements(this->vkLogicalDevice, new_buffer->buffer, &memRequirements);
-
-		// // Allocate the required memory
-		// VkMemoryAllocateInfo allocInfo{};
-		// allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
-		// allocInfo.allocationSize = memRequirements.size;
-		// allocInfo.memoryTypeIndex = this->findVulkanMemoryType(memRequirements.memoryTypeBits, properties);
-
-		// if (vkAllocateMemory(this->vkLogicalDevice, &allocInfo, nullptr, &(new_buffer->bufferMemory)) != VK_SUCCESS)
-		// {
-		// 	Logging::GlobalLogger->SimpleLog(Logging::LogLevel::Error, "Vulkan failed allocating buffer memory");
-		// 	throw std::runtime_error("failed to allocate buffer memory!");
-		// }
-
-		// // Assign the memory to buffer
-		// vkBindBufferMemory(this->vkLogicalDevice, new_buffer->buffer, new_buffer->bufferMemory, 0);
-
 		this->leakBufferCounter += 1;
 
 		return new_buffer;
-	}
-
-	VulkanBuffer* VulkanRenderingEngine::createVulkanStagingBufferPreMapped(VkDeviceSize dataSize)
-	{
-		VulkanBuffer* staging_buffer;
-
-		Logging::GlobalLogger->SimpleLog(Logging::LogLevel::Debug3, "Creating a staging buffer with size of %u", static_cast<unsigned int>(dataSize));
-
-		staging_buffer = this->createVulkanBuffer(dataSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
-
-		//vkMapMemory(this->vkLogicalDevice, staging_buffer->allocationInfo.deviceMemory, staging_buffer->allocationInfo.offset, staging_buffer->allocationInfo.size, 0, &staging_buffer->mappedMemory);
-		
-		return staging_buffer;
 	}
 
 	VulkanBuffer* VulkanRenderingEngine::createVulkanStagingBufferWithData(void* data, VkDeviceSize dataSize)
 	{
 		VulkanBuffer* staging_buffer;
 
-		staging_buffer = this->createVulkanStagingBufferPreMapped(dataSize);
+		staging_buffer = this->createVulkanBuffer(dataSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, 0);
 
-		memcpy(staging_buffer->allocationInfo.pMappedData, data, static_cast<size_t>(dataSize));
+		vkMapMemory(this->vkLogicalDevice, staging_buffer->allocationInfo.deviceMemory, staging_buffer->allocationInfo.offset, staging_buffer->allocationInfo.size, 0, &staging_buffer->mappedData);
+		
+		memcpy(staging_buffer->mappedData, data, static_cast<size_t>(dataSize));
 
+		vkUnmapMemory(this->vkLogicalDevice, staging_buffer->allocationInfo.deviceMemory);
+		
 		return staging_buffer;
 	}
 
@@ -1582,20 +1553,6 @@ namespace Engine::Rendering
 	// Descriptor sets
 	void VulkanRenderingEngine::createVulkanDescriptorSetLayout(VulkanPipeline* pipeline, VulkanDescriptorLayoutSettings settings)
 	{
-		/*VkDescriptorSetLayoutBinding uboLayoutBinding{};
-		uboLayoutBinding.binding = 0;
-		uboLayoutBinding.descriptorCount = 1;
-		uboLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-		uboLayoutBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
-		uboLayoutBinding.pImmutableSamplers = nullptr;
-
-		VkDescriptorSetLayoutBinding samplerLayoutBinding{};
-		samplerLayoutBinding.binding = 1;
-		samplerLayoutBinding.descriptorCount = 1;
-		samplerLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-		samplerLayoutBinding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
-		samplerLayoutBinding.pImmutableSamplers = nullptr;
-	*/
 		std::vector<VkDescriptorSetLayoutBinding> bindings = {};
 		std::vector<VkDescriptorBindingFlags> bindingFlags = {};
 		for (size_t i = 0; i < settings.binding.size(); i++)
@@ -1634,10 +1591,6 @@ namespace Engine::Rendering
 	void VulkanRenderingEngine::createVulkanDescriptorPool(VulkanPipeline* pipeline, VulkanDescriptorLayoutSettings settings)
 	{
 		std::vector<VkDescriptorPoolSize> poolSizes{};
-		/*poolSizes[0].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-		poolSizes[0].descriptorCount = static_cast<uint32_t>(MAX_FRAMES_IN_FLIGHT);
-		poolSizes[1].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-		poolSizes[1].descriptorCount = static_cast<uint32_t>(MAX_FRAMES_IN_FLIGHT);*/
 
 		poolSizes.resize(settings.binding.size());
 		for (int i = 0; i < settings.binding.size(); i++)
@@ -1678,27 +1631,6 @@ namespace Engine::Rendering
 			Logging::GlobalLogger->SimpleLog(Logging::LogLevel::Exception, "Vulkan failed to create descriptor sets, VkResult: %i", createResult);
 			throw std::runtime_error("failed to allocate descriptor sets!");
 		}
-
-		//for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
-		//{
-		//	VkDescriptorBufferInfo bufferInfo{};
-		//	bufferInfo.buffer = pipeline->uniformBuffers[i]->buffer;
-		//	bufferInfo.offset = 0;
-		//	bufferInfo.range = sizeof(glm::mat4);
-
-		//	VkWriteDescriptorSet descriptorWrite{};
-		//	descriptorWrite.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-		//	descriptorWrite.dstSet = pipeline->vkDescriptorSets[i];
-		//	descriptorWrite.dstBinding = 0;
-		//	descriptorWrite.dstArrayElement = 0;
-		//	descriptorWrite.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-		//	descriptorWrite.descriptorCount = 1;
-		//	descriptorWrite.pBufferInfo = &bufferInfo;
-		//	descriptorWrite.pImageInfo = nullptr; // Optional
-		//	descriptorWrite.pTexelBufferView = nullptr; // Optional
-
-		//	vkUpdateDescriptorSets(this->vkLogicalDevice, 1, &descriptorWrite, 0, nullptr);
-		//}
 	}
 
 
@@ -1730,31 +1662,17 @@ namespace Engine::Rendering
 		imageInfo.samples = numSamples;
 		imageInfo.flags = 0; // Optional
 
-		VmaAllocationCreateInfo allocCreateInfo{};
+		VmaAllocationCreateInfo vmaAllocInfo{};
+		vmaAllocInfo.usage = VMA_MEMORY_USAGE_AUTO;
+		vmaAllocInfo.flags = VMA_ALLOCATION_CREATE_DEDICATED_MEMORY_BIT;//vmaAllocFlags; //VMA_ALLOCATION_CREATE_HOST_ACCESS_SEQUENTIAL_WRITE_BIT | VMA_ALLOCATION_CREATE_MAPPED_BIT;
+		vmaAllocInfo.requiredFlags = properties;
 
 		//if (vkCreateImage(this->vkLogicalDevice, &imageInfo, nullptr, &(new_image->image)) != VK_SUCCESS)
-		if (vmaCreateImage(this->vmaAllocator, &imageInfo, &allocCreateInfo, &(new_image->image), &(new_image->allocation), &(new_image->allocationInfo)) != VK_SUCCESS)
+		if (vmaCreateImage(this->vmaAllocator, &imageInfo, &vmaAllocInfo, &(new_image->image), &(new_image->allocation), &(new_image->allocationInfo)) != VK_SUCCESS)
 		{
 			Logging::GlobalLogger->SimpleLog(Logging::LogLevel::Error, "Failed to create image");
 			throw std::runtime_error("failed to create image!");
 		}
-
-		// VkMemoryRequirements memRequirements;
-		// vkGetImageMemoryRequirements(this->vkLogicalDevice, new_image->image, &memRequirements);
-
-		// VkMemoryAllocateInfo allocInfo{};
-		// allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
-		// allocInfo.allocationSize = memRequirements.size;
-		// allocInfo.memoryTypeIndex = this->findVulkanMemoryType(memRequirements.memoryTypeBits, properties);
-
-		// if (vkAllocateMemory(this->vkLogicalDevice, &allocInfo, nullptr, &(new_image->imageMemory)) != VK_SUCCESS)
-		// {
-		// 	throw std::runtime_error("failed to allocate image memory!");
-		// }
-
-		// vkBindImageMemory(this->vkLogicalDevice, new_image->image, new_image->imageMemory, 0);
-
-		Logging::GlobalLogger->SimpleLog(Logging::LogLevel::Info, "Created vulkan image with handle 0x%x", new_image->image);
 
 		this->leakImageCounter += 1;
 

@@ -60,7 +60,7 @@ namespace Engine
 		}
 		else
 		{
-			Logging::GlobalLogger->SimpleLog(Logging::LogLevel::Warning, "Texture %s requested and is not loaded", name.c_str());
+			Logging::GlobalLogger->SimpleLog(Logging::LogLevel::Debug1, "Texture %s requested and is not loaded", name.c_str());
 			this->AddTexture(name, name, Rendering::Texture_InitFiletype::FILE_PNG);
 			
 			return this->GetTexture(name);
@@ -100,7 +100,7 @@ namespace Engine
 		}
 	}
 
-	Scripting::LuaScript* AssetManager::GetLuaScript(std::string name)
+	std::shared_ptr<Scripting::LuaScript> AssetManager::GetLuaScript(std::string name)
 	{
 		Logging::GlobalLogger->SimpleLog(Logging::LogLevel::Debug2, "LuaScript %s requested", name.c_str());
 		if (this->luascripts.find(name) != this->luascripts.end())

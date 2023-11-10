@@ -30,6 +30,27 @@ namespace Engine
 	extern double EngineMouseXPos;
 	extern double EngineMouseYPos;
 
+	typedef struct structEngineConfig
+	{
+		struct
+		{
+			unsigned int sizeX = 0;
+			unsigned int sizeY = 0;
+			std::string title = "I am an title!";
+		} window;
+
+		struct {
+			unsigned int framerateTarget = 0;
+		} rendering;
+
+		struct {
+			std::string textures;
+			std::string models;
+			std::string scripts;
+			std::string scenes; 
+		} lookup;
+	} EngineConfig;
+
 	class CMEP_EXPORT Engine final
 	{
 	private:
@@ -39,7 +60,7 @@ namespace Engine
 		std::string config_path = "";
 
 		// Window
-		//GLFWwindow* window = nullptr;
+		
 		unsigned int windowX = 0, windowY = 0;
 		std::string windowTitle;
 		unsigned int framerateTarget = 30;
@@ -53,7 +74,7 @@ namespace Engine
 
 		// Event handler storage
 		std::vector<std::pair<EventHandling::EventType, std::function<int(EventHandling::Event&)>>> event_handlers;
-		std::vector<std::tuple<EventHandling::EventType, Scripting::LuaScript*, std::string>> lua_event_handlers;
+		std::vector<std::tuple<EventHandling::EventType, std::shared_ptr<Scripting::LuaScript>, std::string>> lua_event_handlers;
 		
 		
 		static void spinSleep(double seconds);
@@ -72,7 +93,7 @@ namespace Engine
 		void HandleConfig();
 
 	public:
-		Engine(const char* windowTitle, const unsigned windowX, const unsigned windowY) noexcept;
+		Engine(std::string windowTitle, const unsigned windowX, const unsigned windowY) noexcept;
 		~Engine() noexcept;
 
 		void SetFramerateTarget(unsigned framerate) noexcept;
@@ -82,7 +103,7 @@ namespace Engine
 
 		void ConfigFile(std::string path);
 		void RegisterEventHandler(EventHandling::EventType event_type, std::function<int(EventHandling::Event&)> function);
-		void RegisterLuaEventHandler(EventHandling::EventType event_type, Scripting::LuaScript* script, std::string function);
+		void RegisterLuaEventHandler(EventHandling::EventType event_type, std::shared_ptr<Scripting::LuaScript> script, std::string function);
 		
 		int FireEvent(EventHandling::Event& event);
 
@@ -92,7 +113,7 @@ namespace Engine
 		Rendering::VulkanRenderingEngine* GetRenderingEngine() noexcept;
 	};
 
-	CMEP_EXPORT Engine* initializeEngine(const char* windowTitle, const unsigned windowX, const unsigned windowY);
+	CMEP_EXPORT Engine* initializeEngine(EngineConfig config);
 
 	CMEP_EXPORT int deinitializeEngine();
 

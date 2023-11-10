@@ -10,10 +10,12 @@
 #define GLFW_INCLUDE_VULKAN
 #include "glfw/include/GLFW/glfw3.h"
 
+#include "vma/vk_mem_alloc.h"
+
 #include "glm/gtc/matrix_transform.hpp"
 #include "glm/gtc/quaternion.hpp"
 #include "../EngineCore/include/Rendering/tinyobjloader/tiny_obj_loader.h"
-#include "../external/lua-prebuilt/include/lua.hpp"
+#include "lua.hpp"
 
 #pragma region forward decls
 
@@ -484,6 +486,9 @@ namespace Engine
 		// Depth buffers
 		VulkanImage* vkDepthBuffer = nullptr;
 
+		// Memory management 
+		VmaAllocator vmaAllocator;
+
 		// External callback for rendering
 		std::function<void(VkCommandBuffer, uint32_t)> external_callback;
 
@@ -557,6 +562,7 @@ namespace Engine
 		void createVulkanSyncObjects();
 		void createVulkanDepthResources();
 		void createMultisampledColorResources();
+		void createVulkanMemoryAllocator();
 
 	public:
 		VulkanRenderingEngine() {}
@@ -579,10 +585,9 @@ namespace Engine
 		void SetRenderCallback(std::function<void(VkCommandBuffer, uint32_t)> callback);
 		
 		// Buffer functions
-		VulkanBuffer* createVulkanBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties);
+		VulkanBuffer* createVulkanBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VmaAllocationCreateFlags vmaAllocFlags);
 		void bufferVulkanTransferCopy(VulkanBuffer* src, VulkanBuffer* dest, VkDeviceSize size);
 		VulkanBuffer* createVulkanVertexBufferFromData(std::vector<RenderingVertex> vertices);
-		VulkanBuffer* createVulkanStagingBufferPreMapped(VkDeviceSize dataSize);
 		VulkanBuffer* createVulkanStagingBufferWithData(void* data, VkDeviceSize dataSize);
 
 		// Image functions
@@ -657,7 +662,7 @@ namespace Engine
 			LuaScriptExecutor() {};
 			~LuaScriptExecutor() {};
 
-			static int CallIntoScript(ExecuteType etype, LuaScript* script, std::string function, void* data);
+			static int CallIntoScript(ExecuteType etype, std::shared_ptr<LuaScript> script, std::string function, void* data);
 
 			static int LoadAndCompileScript(LuaScript* script);
 		};
@@ -706,6 +711,27 @@ namespace Engine
 
 #pragma region Engine.hpp
 
+	typedef struct structEngineConfig
+	{
+		struct
+		{
+			unsigned int sizeX = 0;
+			unsigned int sizeY = 0;
+			std::string windowTitle = "I am an title!";
+		} window;
+
+		struct {
+			unsigned int framerateTarget = 0;
+		} rendering;
+
+		struct {
+			std::string textures;
+			std::string models;
+			std::string scripts;
+			std::string scenes; 
+		} lookup;
+	} EngineConfig;
+
 	class Engine final
 	{
 	private:
@@ -715,7 +741,7 @@ namespace Engine
 		std::string config_path = "";
 
 		// Window
-		//GLFWwindow* window = nullptr;
+		
 		unsigned int windowX = 0, windowY = 0;
 		std::string windowTitle;
 		unsigned int framerateTarget = 30;
@@ -729,7 +755,7 @@ namespace Engine
 
 		// Event handler storage
 		std::vector<std::pair<EventHandling::EventType, std::function<int(EventHandling::Event&)>>> event_handlers;
-		std::vector<std::tuple<EventHandling::EventType, Scripting::LuaScript*, std::string>> lua_event_handlers;
+		std::vector<std::tuple<EventHandling::EventType, std::shared_ptr<Scripting::LuaScript>, std::string>> lua_event_handlers;
 		
 		
 		static void spinSleep(double seconds);
@@ -748,7 +774,7 @@ namespace Engine
 		void HandleConfig();
 
 	public:
-		Engine(const char* windowTitle, const unsigned windowX, const unsigned windowY) noexcept;
+		Engine(std::string windowTitle, const unsigned windowX, const unsigned windowY) noexcept;
 		~Engine() noexcept;
 
 		void SetFramerateTarget(unsigned framerate) noexcept;
@@ -758,7 +784,7 @@ namespace Engine
 
 		void ConfigFile(std::string path);
 		void RegisterEventHandler(EventHandling::EventType event_type, std::function<int(EventHandling::Event&)> function);
-		void RegisterLuaEventHandler(EventHandling::EventType event_type, Scripting::LuaScript* script, std::string function);
+		void RegisterLuaEventHandler(EventHandling::EventType event_type, std::shared_ptr<Scripting::LuaScript> script, std::string function);
 		
 		int FireEvent(EventHandling::Event& event);
 
@@ -768,7 +794,7 @@ namespace Engine
 		Rendering::VulkanRenderingEngine* GetRenderingEngine() noexcept;
 	};
 
-	Engine* initializeEngine(const char* windowTitle, const unsigned windowX, const unsigned windowY);
+	Engine* initializeEngine(EngineConfig config);
 
 	int deinitializeEngine();
 
@@ -848,7 +874,7 @@ namespace Engine
 	class AssetManager final
 	{
 	private:
-		std::unordered_map<std::string, Scripting::LuaScript*> luascripts;
+		std::unordered_map<std::string, std::shared_ptr<Scripting::LuaScript>> luascripts;
 		std::unordered_map<std::string, std::shared_ptr<Rendering::Texture>> textures;
 		std::unordered_map<std::string, std::shared_ptr<Rendering::Font>> fonts;
 	public:
@@ -861,7 +887,7 @@ namespace Engine
 
 		std::shared_ptr<Rendering::Texture> GetTexture(std::string name);
 		std::shared_ptr<Rendering::Font> GetFont(std::string name);
-		Scripting::LuaScript* GetLuaScript(std::string name);
+		std::shared_ptr<Scripting::LuaScript> GetLuaScript(std::string name);
 	};
 
 #pragma endregion

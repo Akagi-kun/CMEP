@@ -141,4 +141,4 @@ void Logging::Logger::SimpleLog(LogLevel level, const char* format, ...)
 	this->StopLog();
 }
 
-std::unique_ptr<Logging::Logger> Logging::GlobalLogger;
+std::shared_ptr<Logging::Logger> Logging::GlobalLogger;

@@ -5,6 +5,8 @@
 #include "VulkanRenderingEngine.hpp"
 #include "PlatformSemantics.hpp"
 
+#include "InternalEngineObject.hpp"
+
 namespace Engine
 {
 	class Object;
@@ -16,7 +18,7 @@ namespace Engine
 		/// <summary>
 		/// Interface describing Renderer API for renderables.
 		/// </summary>
-		class CMEP_EXPORT IRenderer
+		class CMEP_EXPORT IRenderer : InternalEngineObject
 		{
 		protected:
 			glm::vec3 _pos = glm::vec3();

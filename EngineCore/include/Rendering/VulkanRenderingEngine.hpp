@@ -44,6 +44,7 @@ namespace Engine::Rendering
 		VkBuffer buffer;
 		VmaAllocation allocation;
 		VmaAllocationInfo allocationInfo;
+		void* mappedData;
 	};
 
 	struct VulkanImage
@@ -301,10 +302,9 @@ namespace Engine::Rendering
 		void SetRenderCallback(std::function<void(VkCommandBuffer, uint32_t)> callback);
 		
 		// Buffer functions
-		VulkanBuffer* createVulkanBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties);
+		VulkanBuffer* createVulkanBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VmaAllocationCreateFlags vmaAllocFlags);
 		void bufferVulkanTransferCopy(VulkanBuffer* src, VulkanBuffer* dest, VkDeviceSize size);
 		VulkanBuffer* createVulkanVertexBufferFromData(std::vector<RenderingVertex> vertices);
-		VulkanBuffer* createVulkanStagingBufferPreMapped(VkDeviceSize dataSize);
 		VulkanBuffer* createVulkanStagingBufferWithData(void* data, VkDeviceSize dataSize);
 
 		// Image functions

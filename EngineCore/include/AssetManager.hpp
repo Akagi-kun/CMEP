@@ -17,7 +17,7 @@ namespace Engine
 	class CMEP_EXPORT AssetManager final
 	{
 	private:
-		std::unordered_map<std::string, Scripting::LuaScript*> luascripts;
+		std::unordered_map<std::string, std::shared_ptr<Scripting::LuaScript>> luascripts;
 		std::unordered_map<std::string, std::shared_ptr<Rendering::Texture>> textures;
 		std::unordered_map<std::string, std::shared_ptr<Rendering::Font>> fonts;
 	public:
@@ -30,6 +30,6 @@ namespace Engine
 
 		std::shared_ptr<Rendering::Texture> GetTexture(std::string name);
 		std::shared_ptr<Rendering::Font> GetFont(std::string name);
-		Scripting::LuaScript* GetLuaScript(std::string name);
+		std::shared_ptr<Scripting::LuaScript> GetLuaScript(std::string name);
 	};
 }
