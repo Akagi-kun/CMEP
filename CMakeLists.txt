@@ -29,13 +29,14 @@ endif()
 add_subdirectory(EngineCore)
 add_dependencies(EngineCore glfw)
 
+add_subdirectory(rungame)
+add_dependencies(rungame glfw)
+
 if(NOT MSVC)
 	add_custom_target(lua_build COMMAND ./external/build_lua.sh macosx)
 	add_dependencies(EngineCore lua_build)
+	add_dependencies(rungame lua_build)
 endif()
-
-add_subdirectory(rungame)
-add_dependencies(rungame glfw)
 
 set(TESTS_TO_RUN
 	vulkan_init_cleanup
