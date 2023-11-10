@@ -4,23 +4,27 @@
 
 #include "Engine.hpp"
 
-Engine::Engine* engine;
-const char* windowTitle = "";
-const unsigned int windowSizeX = 1200, windowSizeY = 720;
-
 int test_engine()
 {
-    engine = Engine::initializeEngine(windowTitle, windowSizeX, windowSizeY);
+	Engine::EngineConfig config{};
+	config.window.sizeX = 1200;
+	config.window.sizeY = 720;
+	config.window.title = "My funny game!";
+	config.rendering.framerateTarget = 60;
+
+	Engine::Engine* engine = Engine::initializeEngine(config);
 	
 	try
 	{
 		engine->ConfigFile("game/config.json");
 		engine->Run();
-		return Engine::deinitializeEngine();
+		
 	}
 	catch(std::exception e)
 	{
-		return 1;
+		printf("Exception loading config and running engine!");
+		exit(-1);
 	}
-
+	
+	return 0;
 }

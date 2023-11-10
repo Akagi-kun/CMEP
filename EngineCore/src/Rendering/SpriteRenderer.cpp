@@ -37,7 +37,7 @@ namespace Engine::Rendering
 
 	SpriteRenderer::~SpriteRenderer()
 	{
-		Logging::GlobalLogger->SimpleLog(Logging::LogLevel::Debug3, "Cleaning up sprite renderer");
+		this->logger->SimpleLog(Logging::LogLevel::Debug3, "Cleaning up sprite renderer");
 		VulkanRenderingEngine* renderer = global_engine->GetRenderingEngine();
 
 		vkDeviceWaitIdle(renderer->GetLogicalDevice());

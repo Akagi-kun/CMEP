@@ -1,20 +1,30 @@
 #pragma once
 
 #include "Logging/Logging.hpp"
+//#include "Engine.hpp"
+#include "PlatformSemantics.hpp"
+
+#include <optional>
 
 namespace Engine 
 {
-    class InternalEngineObject
+    class CMEP_EXPORT InternalEngineObject
     {
     protected:
-        std::shared_ptr<Logging::Logger> logger{};
     public:
+        std::shared_ptr<Logging::Logger> logger{};
+        
         InternalEngineObject() {}
         //~InternalEngineObject() {}
 
-        int UpdateHeldLogger(std::shared_ptr<Logging::Logger> new_logger)
+        void UpdateHeldLogger(std::shared_ptr<Logging::Logger> new_logger)
         {
             this->logger = new_logger;
         }
+
+        // void UpdateEngine(Engine* engine)
+        // {
+        //     this->engine = engine;
+        // }
     };
 }

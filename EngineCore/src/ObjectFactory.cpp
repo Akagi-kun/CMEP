@@ -13,7 +13,7 @@ namespace Engine::ObjectFactory
 	Object* CreateSpriteObject(double x, double y, double sizex, double sizey, std::shared_ptr<::Engine::Rendering::Texture> sprite)
 	{
 		assert(sprite != nullptr);
-		Engine::Object* object = new Engine::Object();
+		Object* object = new Object();
 		object->renderer = new Rendering::SpriteRenderer();
 		object->Translate(glm::vec3(x, y, 0));
 		object->Scale(glm::vec3(sizex, sizey, 0));
@@ -26,7 +26,7 @@ namespace Engine::ObjectFactory
 	Object* CreateTextObject(double x, double y, int size, std::string text, ::Engine::Rendering::Font* font)
 	{
 		assert(font != nullptr);
-		Engine::Object* object = new Engine::Object();
+		Object* object = new Object();
 		object->renderer = new Rendering::TextRenderer();
 		object->Translate(glm::vec3(x, y, 0));
 		object->Scale(glm::vec3(size, size, 0));
@@ -39,7 +39,7 @@ namespace Engine::ObjectFactory
 
 	Object* CreateGeneric3DObject(double x, double y, double z, double sizex, double sizey, double sizez, double rotx, double roty, double rotz, std::shared_ptr<::Engine::Rendering::Mesh> mesh)
 	{
-		Engine::Object* object = new Engine::Object();
+		Object* object = new Object();
 		object->renderer = new Rendering::MeshRenderer();
 		object->Translate(glm::vec3(x, y, z));
 		object->Scale(glm::vec3(sizex, sizey, sizez));

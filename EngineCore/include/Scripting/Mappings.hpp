@@ -1,8 +1,11 @@
 #pragma once
 
 #include "lualib/lua.hpp"
-
 #include "GlobalSceneManager.hpp"
+
+#include <unordered_map>
+
+#define CMEP_LUAMAPPING_DEFINE(mapping) {#mapping, Functions::mapping }
 
 namespace Engine::Scripting::Mappings
 {
@@ -39,7 +42,9 @@ namespace Engine::Scripting::Mappings
 		int mesh_CreateMeshFromObj(lua_State* state);
 	}
 
-	const uint32_t countMappings = 26;
+	const uint32_t countMappings = 24;
+
+	extern std::unordered_map<std::string, lua_CFunction> mappings;
 
 	extern const char* nameMappings[];
 	extern lua_CFunction functionMappings[];

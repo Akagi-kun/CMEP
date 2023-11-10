@@ -20,7 +20,7 @@ namespace Engine::Rendering
 
 	Font::~Font() 
 	{
-		Logging::GlobalLogger->SimpleLog(Logging::LogLevel::Debug3, "Deleting font");
+		this->logger->SimpleLog(Logging::LogLevel::Debug3, "Deleting font");
 	}
 
 	int Font::Init(std::string path)
@@ -35,10 +35,10 @@ namespace Engine::Rendering
 			return 1;
 		}
 
-		Logging::GlobalLogger->SimpleLog(Logging::LogLevel::Debug2, "Loading font file %s", path.c_str());
+		this->logger->SimpleLog(Logging::LogLevel::Debug2, "Loading font file %s", path.c_str());
 		// Evaluate it
 		this->EvalBmfont(file);
-		Logging::GlobalLogger->SimpleLog(Logging::LogLevel::Debug2, "Font file %s loaded successfully", path.c_str());
+		this->logger->SimpleLog(Logging::LogLevel::Debug2, "Font file %s loaded successfully", path.c_str());
 
 		fclose(file);
 
@@ -96,7 +96,7 @@ namespace Engine::Rendering
 			}
 			else
 			{
-				Logging::GlobalLogger->SimpleLog(Logging::LogLevel::Warning, "unknown: \"%s\"\n", cur_data);
+				this->logger->SimpleLog(Logging::LogLevel::Warning, "unknown: \"%s\"\n", cur_data);
 			}
 		}
 		delete[] data;
@@ -189,16 +189,16 @@ namespace Engine::Rendering
 					}
 					whole_filename += "/" + std::string(&value[1]);
 
-					Logging::GlobalLogger->SimpleLog(Logging::LogLevel::Debug3, "Font page index %u is %s", page_idx, whole_filename.c_str());
+					this->logger->SimpleLog(Logging::LogLevel::Debug3, "Font page index %u is %s", page_idx, whole_filename.c_str());
 
 					std::shared_ptr<Texture> texture{};
 					if (this->asset_manager == nullptr)
 					{
-						Logging::GlobalLogger->SimpleLog(Logging::LogLevel::Debug3, "A Font is not managed by a AssetManager, this may be unintentional");
+						this->logger->SimpleLog(Logging::LogLevel::Debug3, "A Font is not managed by a AssetManager, this may be unintentional");
 						texture = std::make_shared<Texture>();
 						if (texture->InitFile(Texture_InitFiletype::FILE_PNG, whole_filename.c_str()) != 0)
 						{
-							Logging::GlobalLogger->SimpleLog(Logging::LogLevel::Exception, "Failed initializing texture");
+							this->logger->SimpleLog(Logging::LogLevel::Exception, "Failed initializing texture");
 							throw std::runtime_error("Failed initializing texture!");
 						}
 					}

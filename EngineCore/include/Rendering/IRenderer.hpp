@@ -18,7 +18,7 @@ namespace Engine
 		/// <summary>
 		/// Interface describing Renderer API for renderables.
 		/// </summary>
-		class CMEP_EXPORT IRenderer : InternalEngineObject
+		class CMEP_EXPORT IRenderer : public InternalEngineObject
 		{
 		protected:
 			glm::vec3 _pos = glm::vec3();

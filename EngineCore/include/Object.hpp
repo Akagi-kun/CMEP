@@ -8,10 +8,11 @@
 #include "Logging/Logging.hpp"
 #include "Rendering/IRenderer.hpp"
 #include "PlatformSemantics.hpp"
+#include "InternalEngineObject.hpp"
 
 namespace Engine
 {
-	class CMEP_EXPORT Object
+	class CMEP_EXPORT Object : public InternalEngineObject
 	{
 	protected:
 		/// <summary>
@@ -50,7 +51,7 @@ namespace Engine
 		Object() noexcept {}
 		~Object() noexcept
 		{
-			Logging::GlobalLogger->SimpleLog(Logging::LogLevel::Debug3, "Object deleted");
+			this->logger->SimpleLog(Logging::LogLevel::Debug3, "Object deleted");
 			delete this->renderer;
 		}
 

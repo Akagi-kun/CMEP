@@ -16,13 +16,6 @@ namespace Engine::Rendering
 {
 	AxisRenderer::AxisRenderer()
 	{
-		/*std::ifstream vert("data/shaders/axisrenderer.vert");
-		std::ifstream frag("data/shaders/axisrenderer.frag");
-		std::ostringstream vertsstr;
-		std::ostringstream fragsstr;
-		vertsstr << vert.rdbuf();
-		fragsstr << frag.rdbuf();*/
-
 		VulkanRenderingEngine* renderer = global_engine->GetRenderingEngine();
 
 		VulkanPipelineSettings pipeline_settings = renderer->getVulkanDefaultPipelineSettings();
@@ -34,17 +27,13 @@ namespace Engine::Rendering
 		pipeline_settings.descriptorLayoutSettings.stageFlags.push_back(VK_SHADER_STAGE_VERTEX_BIT);
 
 		this->pipeline = renderer->createVulkanPipeline(pipeline_settings, "game/shaders/vulkan/axisrenderer_vert.spv", "game/shaders/vulkan/axisrenderer_frag.spv");
-
-		//this->program = std::make_unique<Shader>(vertsstr.str().c_str(), fragsstr.str().c_str());
 	}
 
 	AxisRenderer::~AxisRenderer()
 	{
-		Logging::GlobalLogger->SimpleLog(Logging::LogLevel::Debug3, "Destructing up axis renderer");
+		this->logger->SimpleLog(Logging::LogLevel::Debug3, "Cleaning up axis renderer");
 		global_engine->GetRenderingEngine()->cleanupVulkanBuffer(this->vbo);
 		global_engine->GetRenderingEngine()->cleanupVulkanPipeline(this->pipeline);
-		//glDeleteVertexArrays(1, &this->vao);
-		//glDeleteBuffers(1, &this->vbo);
 	}
 
 	void AxisRenderer::Update(glm::vec3 pos, glm::vec3 size, glm::vec3 rotation, uint_fast16_t screenx, uint_fast16_t screeny, glm::vec3 parent_position, glm::vec3 parent_rotation, glm::vec3 parent_size)

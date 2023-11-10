@@ -6,6 +6,8 @@
 
 #include "VulkanMemoryAllocator/include/vk_mem_alloc.h"
 
+#include "Logging/Logging.hpp"
+
 #include "glm/glm.hpp"
 
 #include <string>
@@ -282,6 +284,8 @@ namespace Engine::Rendering
 		void createVulkanMemoryAllocator();
 
 	public:
+		std::shared_ptr<Logging::Logger> logger;
+
 		VulkanRenderingEngine() {}
 
 		// Signaling function for framebuffer resize

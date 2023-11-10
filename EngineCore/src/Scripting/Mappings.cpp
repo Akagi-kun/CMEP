@@ -350,6 +350,35 @@ namespace Engine::Scripting::Mappings
 			return 1;
 		}
 
+		int assetManager_GetModel(lua_State* state)
+		{
+			lua_getfield(state, 1, "_pointer");
+			AssetManager* ptr_am = *(AssetManager**)lua_touserdata(state, -1);
+
+			std::string path = lua_tostring(state, 2);
+
+			std::shared_ptr<Rendering::Mesh> model = ptr_am->GetModel(std::move(path));
+
+			if (model != nullptr)
+			{
+				// Generate object table
+				lua_newtable(state);
+
+				void* ptr = lua_newuserdata(state, sizeof(std::shared_ptr<Rendering::Mesh>));
+				//(*ptr) = model.get();
+				
+				new(ptr) std::shared_ptr<Rendering::Mesh>(model);
+				
+				lua_setfield(state, -2, "_pointer");
+			}
+			else
+			{
+				lua_pushnil(state);
+			}
+
+			return 1;
+		}
+
 #pragma endregion
 
 #pragma region ObjectFactory
@@ -447,8 +476,6 @@ namespace Engine::Scripting::Mappings
 
 			std::shared_ptr<Rendering::Mesh> mesh = std::make_shared<Rendering::Mesh>();
 			mesh->CreateMeshFromObj(std::string(lua_tostring(state, 10)));
-			//lua_getfield(state, 10, "_self");
-			//Rendering::Mesh* mesh = *(Rendering::Mesh**)lua_touserdata(state, -1);
 
 			Object* obj = ObjectFactory::CreateGeneric3DObject(x, y, z, xsize, ysize, zsize, xrot, yrot, zrot, mesh);
 
@@ -477,36 +504,41 @@ namespace Engine::Scripting::Mappings
 		}
 #pragma endregion
 	
-#pragma region Mesh
-
-		int mesh_Mesh(lua_State* state)
-		{
-			Rendering::Mesh* mesh = new Rendering::Mesh();
-
-			// Generate table
-			lua_newtable(state);
-
-			Rendering::Mesh** ptr_mesh = (Rendering::Mesh**)lua_newuserdata(state, sizeof(Rendering::Mesh*));
-			(*ptr_mesh) = mesh;
-			lua_setfield(state, -2, "_self");
-
-			return 1;
-		}
-
-		int mesh_CreateMeshFromObj(lua_State* state)
-		{
-			lua_getfield(state, 1, "_self");
-			Rendering::Mesh** mesh = (Rendering::Mesh**)lua_touserdata(state, -1);
-
-			std::string path = lua_tostring(state, 2);
-
-			(*mesh)->CreateMeshFromObj(std::move(path));
-
-			return 0;
-		}
-
-#pragma endregion
 	}
+
+	std::unordered_map<std::string, lua_CFunction> mappings = {
+		CMEP_LUAMAPPING_DEFINE(gsm_GetCameraHVRotation),
+		CMEP_LUAMAPPING_DEFINE(gsm_SetCameraHVRotation),
+		CMEP_LUAMAPPING_DEFINE(gsm_GetCameraTransform),
+		CMEP_LUAMAPPING_DEFINE(gsm_SetCameraTransform),
+		CMEP_LUAMAPPING_DEFINE(gsm_GetLightTransform),
+		CMEP_LUAMAPPING_DEFINE(gsm_SetLightTransform),
+		CMEP_LUAMAPPING_DEFINE(gsm_AddObject),
+		CMEP_LUAMAPPING_DEFINE(gsm_FindObject),
+		CMEP_LUAMAPPING_DEFINE(gsm_RemoveObject),
+
+		CMEP_LUAMAPPING_DEFINE(engine_GetAssetManager),
+		CMEP_LUAMAPPING_DEFINE(engine_SetFramerateTarget),
+
+		CMEP_LUAMAPPING_DEFINE(textRenderer_UpdateText),
+
+		CMEP_LUAMAPPING_DEFINE(meshRenderer_UpdateTexture),
+
+		CMEP_LUAMAPPING_DEFINE(object_AddChild),
+		CMEP_LUAMAPPING_DEFINE(object_GetRotation),
+		CMEP_LUAMAPPING_DEFINE(object_Rotate),
+		CMEP_LUAMAPPING_DEFINE(object_GetPosition),
+		CMEP_LUAMAPPING_DEFINE(object_Translate),
+
+		CMEP_LUAMAPPING_DEFINE(assetManager_GetFont),
+		CMEP_LUAMAPPING_DEFINE(assetManager_GetTexture),
+		CMEP_LUAMAPPING_DEFINE(assetManager_AddTexture),
+		CMEP_LUAMAPPING_DEFINE(assetManager_GetModel),
+
+		CMEP_LUAMAPPING_DEFINE(objectFactory_CreateSpriteObject),
+		CMEP_LUAMAPPING_DEFINE(objectFactory_CreateTextObject),
+		CMEP_LUAMAPPING_DEFINE(objectFactory_CreateGeneric3DObject)
+	};
 
 	const char* nameMappings[] = {
 		"gsm_GetCameraHVRotation",
@@ -535,13 +567,11 @@ namespace Engine::Scripting::Mappings
 		"assetManager_GetFont",
 		"assetManager_GetTexture",
 		"assetManager_AddTexture",
+		"assetManager_GetModel",
 
 		"objectFactory_CreateSpriteObject",
 		"objectFactory_CreateTextObject",
-		"objectFactory_CreateGeneric3DObject",
-
-		"mesh_Mesh",
-		"mesh_CreateMeshFromObj"
+		"objectFactory_CreateGeneric3DObject"
 	};
 
 	lua_CFunction functionMappings[] = {
@@ -571,12 +601,10 @@ namespace Engine::Scripting::Mappings
 		Functions::assetManager_GetFont,
 		Functions::assetManager_GetTexture,
 		Functions::assetManager_AddTexture,
+		Functions::assetManager_GetModel,
 
 		Functions::objectFactory_CreateSpriteObject,
 		Functions::objectFactory_CreateTextObject,
-		Functions::objectFactory_CreateGeneric3DObject,
-
-		Functions::mesh_Mesh,
-		Functions::mesh_CreateMeshFromObj
+		Functions::objectFactory_CreateGeneric3DObject
 	};
 }

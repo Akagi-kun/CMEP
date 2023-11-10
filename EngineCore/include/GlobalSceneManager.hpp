@@ -1,13 +1,15 @@
 #pragma once
 
-#include <unordered_map>
-#include <memory>
-
 #include "glm/glm.hpp"
 #include "glm/gtc/matrix_transform.hpp"
 
 #include "Object.hpp"
 #include "PlatformSemantics.hpp"
+
+#include "Logging/Logging.hpp"
+
+#include <unordered_map>
+#include <memory>
 
 namespace Engine
 {
@@ -23,8 +25,12 @@ namespace Engine
 
 		void CameraUpdated();
 	public:
+		std::shared_ptr<Logging::Logger> logger;
+
 		GlobalSceneManager();
 		~GlobalSceneManager();
+
+		void UpdateHeldLogger(std::shared_ptr<Logging::Logger> new_logger);
 
 		const std::unordered_map<std::string, Object*>* const GetAllObjects() noexcept;
 

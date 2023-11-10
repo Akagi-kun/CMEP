@@ -14,10 +14,16 @@ namespace Engine
 		{
 			lua_newtable(state);
 
-			for (int i = 0; i < Mappings::countMappings; i++)
+			//for (int i = 0; i < Mappings::countMappings; i++)
+			//{
+			//	lua_pushcfunction(state, Mappings::functionMappings[i]);
+			//	lua_setfield(state, -2, Mappings::nameMappings[i]);
+			//}
+
+			for(auto& mapping : Mappings::mappings)
 			{
-				lua_pushcfunction(state, Mappings::functionMappings[i]);
-				lua_setfield(state, -2, Mappings::nameMappings[i]);
+				lua_pushcfunction(state, mapping.second);
+				lua_setfield(state, -2, mapping.first.c_str());
 			}
 
 			lua_setglobal(state, "cmepapi");
@@ -41,6 +47,7 @@ namespace Engine
 					lua_setfield(state, -2, "deltaTime");
 					lua_pushinteger(state, event->keycode);
 					lua_setfield(state, -2, "keycode");
+					
 					lua_newtable(state);
 					lua_pushnumber(state, event->mouse.x);
 					lua_setfield(state, -2, "x");
@@ -57,7 +64,7 @@ namespace Engine
 				const char* errormsg = "";
 				errormsg = lua_tostring(state, -1);
 
-				Logging::GlobalLogger->SimpleLog(Logging::LogLevel::Warning,
+				this->logger->SimpleLog(Logging::LogLevel::Warning,
 					"Error when calling Lua script '%s'\n  Called function: '%s'\n  Call error code: %i\n  Error message: %s",
 					script->path.c_str(), function.c_str(), errcall, errormsg);
 			}
@@ -66,7 +73,7 @@ namespace Engine
 			lua_pop(state, 1);
 
 			return static_cast<int>(ret);
-			//Logging::GlobalLogger->SimpleLog(Logging::LogLevel::Debug2,
+			//this->logger->SimpleLog(Logging::LogLevel::Debug2,
 			//	"Running lua script '%s', called function '%d' returned %llu",
 			//	script->path.c_str(), function.c_str(), ret);
 		}
@@ -86,10 +93,10 @@ namespace Engine
 
 			if (errload != LUA_OK || errexec != LUA_OK)
 			{
-				Logging::GlobalLogger->SimpleLog(Logging::LogLevel::Error, "Error when loading and compiling Lua script '%s'\n   Error codes:\n    load: %i\n    compile: %i\n  Compilation error: %s\n", script->path.c_str(), errload, errexec, errorexec);
+				this->logger->SimpleLog(Logging::LogLevel::Error, "Error when loading and compiling Lua script '%s'\n   Error codes:\n    load: %i\n    compile: %i\n  Compilation error: %s", script->path.c_str(), errload, errexec, errorexec);
 			}
 
-			Logging::GlobalLogger->SimpleLog(Logging::LogLevel::Debug1, "Loaded and compiled Lua script: '%s'\n", script->path.c_str());
+			this->logger->SimpleLog(Logging::LogLevel::Debug1, "Loaded and compiled Lua script: '%s'", script->path.c_str());
 
 			return 0;
 		}

@@ -20,7 +20,7 @@ namespace Engine::Rendering
 	{
 		this->diffuse_textures.clear();
 
-		Logging::GlobalLogger->SimpleLog(Logging::LogLevel::Debug1, "Mesh destructor called");
+		this->logger->SimpleLog(Logging::LogLevel::Debug1, "Mesh destructor called");
 	}
 
 	void Mesh::CreateMeshFromObj(std::string path)
@@ -32,13 +32,13 @@ namespace Engine::Rendering
 
 		if (!reader.ParseFromFile(path, reader_config)) {
 			if (!reader.Error().empty()) {
-				Logging::GlobalLogger->SimpleLog(Logging::LogLevel::Error, "TinyObjReader: %s", reader.Error().c_str());
+				this->logger->SimpleLog(Logging::LogLevel::Error, "TinyObjReader: %s", reader.Error().c_str());
 			}
 			exit(1);
 		}
 
 		if (!reader.Warning().empty()) {
-			Logging::GlobalLogger->SimpleLog(Logging::LogLevel::Warning, "TinyObjReader: %s", reader.Warning().c_str());
+			this->logger->SimpleLog(Logging::LogLevel::Warning, "TinyObjReader: %s", reader.Warning().c_str());
 		}
 
 		auto& attrib = reader.GetAttrib();
@@ -53,14 +53,14 @@ namespace Engine::Rendering
 		
 		VulkanRenderingEngine* renderer = global_engine->GetRenderingEngine();
 
-		VulkanBuffer* premade_staging_buffer = renderer->createVulkanBuffer(10240 * 10240 * 4, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, 0);// renderer->createVulkanStagingBufferPreMapped(10240 * 10240 * 4); // 10240x1024 4-channel staging buffer
+		VulkanBuffer* premade_staging_buffer = renderer->createVulkanBuffer(5120 * 5120 * 4, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, 0);// renderer->createVulkanStagingBufferPreMapped(10240 * 10240 * 4); // 10240x1024 4-channel staging buffer
 
 		for (size_t i = 0; i < materials.size(); i++)
 		{
 			tinyobj::material_t material = materials[i];
 			if (material.diffuse_texname != "")
 			{
-				Logging::GlobalLogger->SimpleLog(Logging::LogLevel::Debug2, "TinyObjReader: Diffuse texture: '%s' for material: '%s'", material.diffuse_texname.c_str(), material.name.c_str());
+				this->logger->SimpleLog(Logging::LogLevel::Debug2, "TinyObjReader: Diffuse texture: '%s' for material: '%s'", material.diffuse_texname.c_str(), material.name.c_str());
 				std::shared_ptr<Rendering::Texture> textureDiffuse = std::make_shared<Rendering::Texture>();
 				textureDiffuse->UsePremadeStagingBuffer(premade_staging_buffer);
 				textureDiffuse->InitFile(Rendering::Texture_InitFiletype::FILE_PNG, material.diffuse_texname);
@@ -214,6 +214,6 @@ namespace Engine::Rendering
 			this->mesh_bitangents.push_back(bitangent);
 		}
 
-		Logging::GlobalLogger->SimpleLog(Logging::LogLevel::Info, "Reading OBJ file: Successfully read and parsed file '%s", path.c_str());
+		this->logger->SimpleLog(Logging::LogLevel::Info, "Reading OBJ file: Successfully read and parsed file '%s", path.c_str());
 	}
 }
