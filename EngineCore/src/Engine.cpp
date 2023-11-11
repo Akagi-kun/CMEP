@@ -79,6 +79,7 @@ namespace Engine
 				event.mouse.x = EngineMouseXPos - lastx;
 				event.mouse.y = EngineMouseYPos - lasty;
 				event.deltaTime = deltaTime;
+				event.raisedFrom = this;
 				this->FireEvent(event);
 
 				lastx = EngineMouseXPos;
@@ -213,7 +214,8 @@ namespace Engine
 			EventHandling::Event event = EventHandling::Event(EventHandling::EventType::ON_KEYDOWN);
 			event.keycode = key;
 			event.deltaTime = global_engine->GetLastDeltaTime();
-			event.raisedFrom = global_engine;
+			Rendering::VulkanRenderingEngine* renderer = (Rendering::VulkanRenderingEngine*)glfwGetWindowUserPointer(window);
+			event.raisedFrom = renderer->owner_engine;
 			global_engine->FireEvent(event);
 		}
 		else if(action == GLFW_RELEASE)
@@ -221,7 +223,8 @@ namespace Engine
 			EventHandling::Event event = EventHandling::Event(EventHandling::EventType::ON_KEYUP);
 			event.keycode = key;
 			event.deltaTime = global_engine->GetLastDeltaTime();
-			event.raisedFrom = global_engine;
+			Rendering::VulkanRenderingEngine* renderer = (Rendering::VulkanRenderingEngine*)glfwGetWindowUserPointer(window);
+			event.raisedFrom = renderer->owner_engine;
 			global_engine->FireEvent(event);
 		}
 	}
@@ -386,6 +389,7 @@ namespace Engine
 			exit(1);
 		}
 
+		this->rendering_engine->owner_engine = this;
 		this->rendering_engine->init(this->windowX, this->windowY, this->windowTitle);
 		this->rendering_engine->SetRenderCallback(this->RenderCallback);
 
@@ -397,6 +401,7 @@ namespace Engine
 		
 		// Fire ON_INIT event
 		EventHandling::Event onInitEvent = EventHandling::Event(EventHandling::EventType::ON_INIT);
+		onInitEvent.raisedFrom = this;
 		int onInitEventRet = this->FireEvent(onInitEvent);
 
 		// Measure and log ON_INIT time

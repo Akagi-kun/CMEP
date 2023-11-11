@@ -57,8 +57,8 @@ onUpdate = function(event)
 	deltaTimeAvg = deltaTimeAvg + event.deltaTime;
 	deltaTimeCount = deltaTimeCount + 1;
 
-	local asset_manager = cmepapi.engine_GetAssetManager();
-	local scene_manager = cmepapi.engine_GetSceneManager();
+	local asset_manager = cmepapi.engine_GetAssetManager(event.raisedFrom);
+	local scene_manager = cmepapi.engine_GetSceneManager(event.raisedFrom);
 
 	-- Update frametime counter, recommend to leave this here for debugging purposes
 	if deltaTimeCount >= 30 then
@@ -161,8 +161,8 @@ onInit = function(event)
 	cmepapi.engine_SetFramerateTarget(60); -- VSYNC enabled
 
 	-- Get managers
-	local asset_manager = cmepapi.engine_GetAssetManager();
-	local scene_manager = cmepapi.engine_GetSceneManager();
+	local asset_manager = cmepapi.engine_GetAssetManager(event.raisedFrom);
+	local scene_manager = cmepapi.engine_GetSceneManager(event.raisedFrom);
 
 	-- Create frametime counter and add it to scene
 	local font = cmepapi.assetManager_GetFont(asset_manager, "game/fonts/myfont/myfont.fnt");

@@ -290,7 +290,7 @@ namespace Engine::Rendering
 
 	public:
 		std::shared_ptr<Logging::Logger> logger;
-		std::weak_ptr<Engine> owner_engine;
+		Engine* owner_engine;
 
 		VulkanRenderingEngine() {}
 

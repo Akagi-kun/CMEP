@@ -210,7 +210,9 @@ namespace Engine::Scripting::Mappings
 
 		int engine_GetAssetManager(lua_State* state)
 		{
-			AssetManager* asset_manager = global_engine->GetAssetManager();
+			Engine* engine = *(Engine**)lua_touserdata(state, 1);
+
+			AssetManager* asset_manager = engine->GetAssetManager();
 
 			if (asset_manager != nullptr)
 			{
@@ -233,7 +235,9 @@ namespace Engine::Scripting::Mappings
 
 		int engine_GetSceneManager(lua_State* state)
 		{
-			std::weak_ptr<GlobalSceneManager> scene_manager = global_engine->GetSceneManager();
+			Engine* engine = *(Engine**)lua_touserdata(state, 1);
+
+			std::weak_ptr<GlobalSceneManager> scene_manager = engine->GetSceneManager();
 
 			if (!scene_manager.expired())
 			{

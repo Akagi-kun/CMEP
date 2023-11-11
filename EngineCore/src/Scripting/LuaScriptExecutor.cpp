@@ -55,6 +55,9 @@ namespace Engine
 					lua_setfield(state, -2, "deltaTime");
 					lua_pushinteger(state, event->keycode);
 					lua_setfield(state, -2, "keycode");
+					Engine** engine = (Engine**)lua_newuserdata(state, sizeof(Engine*));
+					*engine = event->raisedFrom;
+					lua_setfield(state, -2, "raisedFrom");
 					
 					lua_newtable(state);
 					lua_pushnumber(state, event->mouse.x);
