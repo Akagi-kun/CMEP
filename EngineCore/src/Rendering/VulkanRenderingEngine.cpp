@@ -62,7 +62,7 @@ namespace Engine::Rendering
 	static void framebufferResizeCallback(GLFWwindow* window, int width, int height)
 	{
 		auto app = reinterpret_cast<VulkanRenderingEngine*>(glfwGetWindowUserPointer(window));
-		app->SignalFramebufferResizeGLFW();
+		app->SignalFramebufferResizeGLFW(width, height);
 	}
 
 ////////////////////////////////////////////////////////////////////////
@@ -726,12 +726,14 @@ namespace Engine::Rendering
 
 		// Clean up old swap chain
 		this->cleanupVulkanSwapChain();
+		this->cleanupVulkanImage(this->vkDepthBuffer);
 		this->cleanupVulkanImage(this->multisampledColorImage);
 
 		// Create a new swap chain
-		this->createMultisampledColorResources();
 		this->createVulkanSwapChain();
 		this->createVulkanSwapChainViews();
+		this->createVulkanDepthResources();
+		this->createMultisampledColorResources();
 		this->createVulkanFramebuffers();
 	}
 
@@ -1160,9 +1162,11 @@ namespace Engine::Rendering
 		this->external_callback = std::move(callback);
 	}
 
-	void VulkanRenderingEngine::SignalFramebufferResizeGLFW()
+	void VulkanRenderingEngine::SignalFramebufferResizeGLFW(int width, int height)
 	{
 		this->framebufferResized = true;
+		this->windowX = width;
+		this->windowY = height;
 	}
 
 	VkCommandBuffer VulkanRenderingEngine::beginVulkanSingleTimeCommandsCommandBuffer()

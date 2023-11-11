@@ -295,7 +295,7 @@ namespace Engine::Rendering
 		VulkanRenderingEngine() {}
 
 		// Signaling function for framebuffer resize
-		void SignalFramebufferResizeGLFW();
+		void SignalFramebufferResizeGLFW(int width, int height);
 		
 		// Cleanup functions
 		void cleanup();
