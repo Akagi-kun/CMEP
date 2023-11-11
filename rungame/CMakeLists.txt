@@ -1,6 +1,10 @@
 cmake_minimum_required(VERSION 3.5)
 project(CMEP CXX)
 
+set(HEADER_FILES
+	../common_include/EngineCore.hpp
+	)
+
 set(SRC_FILES
 	src/main.cpp
 	)
@@ -23,7 +27,7 @@ else()
 		)
 endif()
 
-add_executable(rungame ${SRC_FILES})
+add_executable(rungame ${SRC_FILES} ${HEADER_FILES})
 
 include_directories(rungame PUBLIC ../external ../external/lua-prebuilt/include include ../common_include ../EngineCore/include ../external/VulkanMemoryAllocator/include)
 if(DEFINED ENV{VULKAN_SDK})

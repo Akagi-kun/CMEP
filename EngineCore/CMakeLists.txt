@@ -5,6 +5,7 @@ set(SRC_FILES
 	src/AssetManager.cpp
 	src/dllmain.cpp
 	src/Engine.cpp
+	src/Object.cpp
 	src/GlobalSceneManager.cpp
 	src/ObjectFactory.cpp
 	src/Logging/ConsoleColors.cpp

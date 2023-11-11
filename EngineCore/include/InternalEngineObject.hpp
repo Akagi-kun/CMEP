@@ -21,10 +21,5 @@ namespace Engine
         {
             this->logger = new_logger;
         }
-
-        // void UpdateEngine(Engine* engine)
-        // {
-        //     this->engine = engine;
-        // }
     };
 }

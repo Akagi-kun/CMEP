@@ -19,6 +19,11 @@
 
 #pragma region forward decls
 
+namespace Logging
+{
+	class Logger;
+}
+
 namespace Engine
 {
 	class AssetManager;
@@ -51,12 +56,31 @@ namespace Engine
 
 namespace Engine
 {
+#pragma region InternalEngineObject.hpp
+
+	class InternalEngineObject
+    {
+    protected:
+    public:
+        std::shared_ptr<Logging::Logger> logger{};
+        
+        InternalEngineObject() {}
+        //~InternalEngineObject() {}
+
+        void UpdateHeldLogger(std::shared_ptr<Logging::Logger> new_logger)
+        {
+            this->logger = new_logger;
+        }
+    };
+
+#pragma endregion
+
 	namespace Rendering
 	{
 
 #pragma region Mesh.hpp
 
-	class Mesh final
+	class Mesh final : public InternalEngineObject
 	{
 	private:
 	public:
@@ -95,7 +119,7 @@ namespace Engine
 			int x, y, width, height, xoffset, yoffset, xadvance, page, channel;
 		};
 
-		class Font final
+		class Font final : public InternalEngineObject
 		{
 		private:
 			AssetManager* asset_manager;
@@ -124,7 +148,7 @@ namespace Engine
 
 #pragma region Texture.hpp
 
-		class Texture final
+		class Texture final : public InternalEngineObject
 		{
 		private:
 			std::vector<unsigned char> data;
@@ -156,7 +180,7 @@ namespace Engine
 
 #pragma region IRenderer.hpp
 
-		class IRenderer
+		class IRenderer : public InternalEngineObject
 		{
 		protected:
 			glm::vec3 _pos = glm::vec3();
@@ -172,6 +196,8 @@ namespace Engine
 			bool has_updated_mesh = false;
 
 		public:
+			std::weak_ptr<::Engine::GlobalSceneManager> scene_manager{};
+
 			IRenderer() {};
 			virtual ~IRenderer() {};
 
@@ -654,18 +680,19 @@ namespace Engine
 
 #pragma region LuaScriptExecutor.hpp
 
-		class LuaScriptExecutor
+		class LuaScriptExecutor : public InternalEngineObject
 		{
 		protected:
-			static void registerCallbacks(lua_State* state);
+			void registerCallbacks(lua_State* state);
 		public:
 			LuaScriptExecutor() {};
 			~LuaScriptExecutor() {};
 
-			static int CallIntoScript(ExecuteType etype, std::shared_ptr<LuaScript> script, std::string function, void* data);
+			int CallIntoScript(ExecuteType etype, std::shared_ptr<LuaScript> script, std::string function, void* data);
 
-			static int LoadAndCompileScript(LuaScript* script);
+			int LoadAndCompileScript(LuaScript* script);
 		};
+
 #pragma endregion
 	
 	}
@@ -741,7 +768,6 @@ namespace Engine
 		std::string config_path = "";
 
 		// Window
-		
 		unsigned int windowX = 0, windowY = 0;
 		std::string windowTitle;
 		unsigned int framerateTarget = 30;
@@ -752,11 +778,11 @@ namespace Engine
 		Rendering::VulkanRenderingEngine* rendering_engine = nullptr;
 		AssetManager* asset_manager = nullptr;
 		Scripting::LuaScriptExecutor* script_executor = nullptr;
+        std::shared_ptr<Logging::Logger> logger{};
 
 		// Event handler storage
 		std::vector<std::pair<EventHandling::EventType, std::function<int(EventHandling::Event&)>>> event_handlers;
 		std::vector<std::tuple<EventHandling::EventType, std::shared_ptr<Scripting::LuaScript>, std::string>> lua_event_handlers;
-		
 		
 		static void spinSleep(double seconds);
 
@@ -774,7 +800,9 @@ namespace Engine
 		void HandleConfig();
 
 	public:
-		Engine(std::string windowTitle, const unsigned windowX, const unsigned windowY) noexcept;
+		std::shared_ptr<GlobalSceneManager> scene_manager{};
+		
+		Engine(std::shared_ptr<Logging::Logger> logger, std::string windowTitle, const unsigned windowX, const unsigned windowY) noexcept;
 		~Engine() noexcept;
 
 		void SetFramerateTarget(unsigned framerate) noexcept;
@@ -792,6 +820,7 @@ namespace Engine
 
 		AssetManager* GetAssetManager() noexcept;
 		Rendering::VulkanRenderingEngine* GetRenderingEngine() noexcept;
+		std::weak_ptr<GlobalSceneManager> GetSceneManager() noexcept;
 	};
 
 	Engine* initializeEngine(EngineConfig config);
@@ -803,7 +832,7 @@ namespace Engine
 
 #pragma region Object.hpp
 
-	class Object
+	class Object : public InternalEngineObject
 	{
 	protected:
 		/// <summary>
@@ -861,9 +890,7 @@ namespace Engine
 		void SetParentPositionRotationSize(glm::vec3 position, glm::vec3 rotation, glm::vec3 size);
 
 		void AddChild(Object* object);
-
 		void RemoveChildren();
-
 		void SetParent(Object* object);
 	};
 
@@ -877,17 +904,23 @@ namespace Engine
 		std::unordered_map<std::string, std::shared_ptr<Scripting::LuaScript>> luascripts;
 		std::unordered_map<std::string, std::shared_ptr<Rendering::Texture>> textures;
 		std::unordered_map<std::string, std::shared_ptr<Rendering::Font>> fonts;
+		std::unordered_map<std::string, std::shared_ptr<Rendering::Mesh>> models;
 	public:
+		std::shared_ptr<Logging::Logger> logger;
+		Scripting::LuaScriptExecutor* lua_executor;
+
 		AssetManager() {};
 		~AssetManager();
 
 		void AddTexture(std::string name, std::string path, Rendering::Texture_InitFiletype filetype);
 		void AddFont(std::string name, std::string path);
 		void AddLuaScript(std::string name, std::string path);
+		void AddModel(std::string name, std::string path);
 
 		std::shared_ptr<Rendering::Texture> GetTexture(std::string name);
 		std::shared_ptr<Rendering::Font> GetFont(std::string name);
 		std::shared_ptr<Scripting::LuaScript> GetLuaScript(std::string name);
+		std::shared_ptr<Rendering::Mesh> GetModel(std::string name);
 	};
 
 #pragma endregion
@@ -897,7 +930,7 @@ namespace Engine
 	class GlobalSceneManager final
 	{
 	private:
-		std::unordered_map<std::string, Object*> objects;
+		std::unordered_map<std::string, Object*> objects{};
 
 		glm::vec3 cameraTransform{}; // XYZ position
 		glm::vec2 cameraHVRotation{}; // Horizontal and Vertical rotation
@@ -906,8 +939,12 @@ namespace Engine
 
 		void CameraUpdated();
 	public:
+		std::shared_ptr<Logging::Logger> logger;
+
 		GlobalSceneManager();
 		~GlobalSceneManager();
+
+		void UpdateHeldLogger(std::shared_ptr<Logging::Logger> new_logger);
 
 		const std::unordered_map<std::string, Object*>* const GetAllObjects() noexcept;
 
@@ -925,8 +962,6 @@ namespace Engine
 		void SetCameraTransform(glm::vec3 transform);
 		void SetCameraHVRotation(glm::vec2 hvrotation);
 	};
-
-	GlobalSceneManager* global_scene_manager;
 
 #pragma endregion
 
