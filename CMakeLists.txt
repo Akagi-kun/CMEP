@@ -15,7 +15,7 @@ add_subdirectory(external/glfw)
 include_directories(external/glm)
 
 if(MSVC)
-    add_compile_options(/std:c++17 /wd4996 /wd4251)
+    add_compile_options(/std:c++17 /MP /wd4996 /wd4251)
 else()
 	add_compile_definitions("DEBUG=$<CONFIG:Debug>")
 	add_compile_options(-std=c++17)

@@ -17,6 +17,11 @@
 #include <optional>
 #include <cstring>
 
+namespace Engine
+{
+	class Engine;
+}
+
 namespace Engine::Rendering
 {
 	struct QueueFamilyIndices {
@@ -285,6 +290,7 @@ namespace Engine::Rendering
 
 	public:
 		std::shared_ptr<Logging::Logger> logger;
+		std::weak_ptr<Engine> owner_engine;
 
 		VulkanRenderingEngine() {}
 

@@ -53,7 +53,7 @@ namespace Engine::Scripting::Mappings
 			lua_getfield(state, 1, "_smart_pointer");
 			std::weak_ptr<GlobalSceneManager> scene_manager = *(std::weak_ptr<GlobalSceneManager>*)lua_touserdata(state, -1);
 
-			glm::vec3 transform;
+			glm::vec3 transform{};
 			
 			if(auto locked_scene_manager = scene_manager.lock())
 			{
@@ -178,7 +178,11 @@ namespace Engine::Scripting::Mappings
 			}
 			else
 			{
-				Logging::GlobalLogger->SimpleLog(Logging::LogLevel::Warning, "Lua: Object %s requested but returned nullptr!", obj_name.c_str());
+				// Get logger through a scene manager
+				if(auto locked_scene_manager = scene_manager.lock())
+				{
+					locked_scene_manager->logger->SimpleLog(Logging::LogLevel::Warning, "Lua: Object %s requested but returned nullptr!", obj_name.c_str());
+				}
 
 				lua_pushnil(state);
 			}

@@ -29,12 +29,20 @@ namespace Engine
 			lua_setglobal(state, "cmepapi");
 		}
 
+		static int LuaErrorHandler(lua_State* state)
+		{
+
+
+			return 0;
+		}
+
 		int LuaScriptExecutor::CallIntoScript(ExecuteType etype, std::shared_ptr<LuaScript> script, std::string function, void* data)
 		{
 			// Get script state
 			lua_State* state = script->GetState();
 
 			// Run the start function in a way decided by the ExecuteType
+			lua_pushcfunction(state, LuaErrorHandler);
 			lua_getglobal(state, function.c_str()); // Get start function
 			int errcall = LUA_OK;
 			switch (etype)
@@ -55,7 +63,7 @@ namespace Engine
 					lua_setfield(state, -2, "y");
 					lua_setfield(state, -2, "mouse");
 
-					errcall = lua_pcall(state, 1, 1, 0); // Call
+					errcall = lua_pcall(state, 1, 1, -3); // Call
 					break;
 			}
 
