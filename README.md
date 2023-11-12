@@ -34,6 +34,7 @@ This project depends on:
 - lodepng
 - nlohmann-json
 - Vulkan SDK
+
 all except the Vulkan SDK are prepackaged or built automatically once the build script is run.
 
 ### License
