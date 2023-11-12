@@ -37,7 +37,7 @@ namespace Engine
 
 	void GlobalSceneManager::SetScene(std::string scene_name)
 	{
-		
+		this->current_scene = scene_name;
 	}
 
 	const std::unordered_map<std::string, Object*>* const GlobalSceneManager::GetAllObjects() noexcept
