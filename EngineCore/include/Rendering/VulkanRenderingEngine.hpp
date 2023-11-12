@@ -214,7 +214,7 @@ namespace Engine::Rendering
 		VmaAllocator vmaAllocator;
 
 		// External callback for rendering
-		std::function<void(VkCommandBuffer, uint32_t)> external_callback;
+		std::function<void(VkCommandBuffer, uint32_t, Engine*)> external_callback;
 
 		// Required extensions to be supported
 		const std::vector<const char*> deviceExtensions = {
@@ -309,7 +309,7 @@ namespace Engine::Rendering
 
 		// Engine functions
 		void drawFrame();
-		void SetRenderCallback(std::function<void(VkCommandBuffer, uint32_t)> callback);
+		void SetRenderCallback(std::function<void(VkCommandBuffer, uint32_t, Engine*)> callback);
 		
 		// Buffer functions
 		VulkanBuffer* createVulkanBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VmaAllocationCreateFlags vmaAllocFlags);

@@ -262,9 +262,11 @@ namespace Engine::Scripting::Mappings
 
 		int engine_SetFramerateTarget(lua_State* state)
 		{
-			unsigned int framerate_target = static_cast<unsigned int>(lua_tointeger(state, 1));
+			Engine* engine = *(Engine**)lua_touserdata(state, 1);
 
-			global_engine->SetFramerateTarget(framerate_target);
+			unsigned int framerate_target = static_cast<unsigned int>(lua_tointeger(state, 2));
+
+			engine->SetFramerateTarget(framerate_target);
 
 			return 0;
 		}

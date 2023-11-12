@@ -19,13 +19,16 @@ namespace Engine
 	class CMEP_EXPORT AssetManager final
 	{
 	private:
-		std::unordered_map<std::string, std::shared_ptr<Scripting::LuaScript>> luascripts;
-		std::unordered_map<std::string, std::shared_ptr<Rendering::Texture>> textures;
-		std::unordered_map<std::string, std::shared_ptr<Rendering::Font>> fonts;
-		std::unordered_map<std::string, std::shared_ptr<Rendering::Mesh>> models;
+		std::unordered_map<std::string, std::shared_ptr<Scripting::LuaScript>> luascripts{};
+		std::unordered_map<std::string, std::shared_ptr<Rendering::Texture>> textures{};
+		std::unordered_map<std::string, std::shared_ptr<Rendering::Font>> fonts{};
+		std::unordered_map<std::string, std::shared_ptr<Rendering::Mesh>> models{};
 	public:
-		std::shared_ptr<Logging::Logger> logger;
-		Scripting::LuaScriptExecutor* lua_executor;
+		std::shared_ptr<Logging::Logger> logger{};
+		Scripting::LuaScriptExecutor* lua_executor{};
+		Engine* owner_engine{};
+
+		std::string current_load_path = "";
 
 		AssetManager() {};
 		~AssetManager();

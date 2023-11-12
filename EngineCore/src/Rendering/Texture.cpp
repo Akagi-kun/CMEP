@@ -12,7 +12,7 @@ namespace Engine::Rendering
 	Texture::Texture() {}
 	Texture::~Texture()
 	{
-		VulkanRenderingEngine* renderer = global_engine->GetRenderingEngine();
+		VulkanRenderingEngine* renderer = this->owner_engine->GetRenderingEngine();
 
 		this->logger->SimpleLog(Logging::LogLevel::Debug3, "Deleting texture");
 		renderer->cleanupVulkanTextureImage(this->textureImage);
@@ -37,7 +37,7 @@ namespace Engine::Rendering
 
 		VkDeviceSize memory_size = static_cast<VkDeviceSize>(xsize) * static_cast<VkDeviceSize>(ysize) * channel_count;
 
-		VulkanRenderingEngine* renderer = global_engine->GetRenderingEngine();
+		VulkanRenderingEngine* renderer = this->owner_engine->GetRenderingEngine();
 
 		if (!managedStagingBuffer)
 		{

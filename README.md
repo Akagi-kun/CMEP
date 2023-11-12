@@ -1,7 +1,7 @@
 # CMEP
 [![Windows](https://github.com/Snezhnaya-chan/CMEP/actions/workflows/build-windows.yml/badge.svg)](https://github.com/Snezhnaya-chan/CMEP/actions/workflows/build-windows.yml) [![Linux](https://github.com/Snezhnaya-chan/CMEP/actions/workflows/build-linux.yml/badge.svg)](https://github.com/Snezhnaya-chan/CMEP/actions/workflows/build-linux.yml) [![MacOS](https://github.com/Snezhnaya-chan/CMEP/actions/workflows/build-macosx.yml/badge.svg)](https://github.com/Snezhnaya-chan/CMEP/actions/workflows/build-macosx.yml) <a href="https://scan.coverity.com/projects/snezhnaya-chan-cmep"><img alt="Coverity Scan Build Status" src="https://scan.coverity.com/projects/29326/badge.svg"/></a> [![Coverage Status](https://coveralls.io/repos/github/Snezhnaya-chan/CMEP/badge.svg?branch=master)](https://coveralls.io/github/Snezhnaya-chan/CMEP?branch=master)
 
-This is the repository of the CMEP project. A simple scriptable game engine written in C++ and using the Vulkan API for rendering.
+This is the repository of the CMEP project. A simple scriptable game engine written in C++, using the Vulkan API for rendering.
 This project is currently in alpha and although games (as shown in the `./examples/` subfolder) can be made with it, is very simple and lacks in functionality.
 
 ### Install Vulkan SDK
@@ -9,9 +9,13 @@ Before you build the engine you first have to install the Vulkan SDK, download i
 
 Depending on your platform (Linux needs this, I haven't tested it on MacOS), you might need to set the `VULKAN_SDK` environment variable to point to Vulkan SDK so cmake finds all includes. Use either the `setup-env.sh` script that comes with Vulkan SDK or set it manually.
 
-
 ### Building
-To build the core libraries and rungame executable use the `build.sh` and `build.bat` scripts depending on your platform.
+To build the core libraries and rungame executable use the `build.sh` and `build.bat` scripts depending on your platform or build manually using CMake:
+```
+cmake .
+cmake --build . --target rungame
+```
+
 
 To build any of the examples, use cmake:
 ```

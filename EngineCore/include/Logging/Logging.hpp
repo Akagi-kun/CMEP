@@ -8,6 +8,8 @@
 #include <thread>
 #include <memory>
 
+#include "PlatformSemantics.hpp"
+
 namespace Logging
 {
 	enum class LogLevel
@@ -30,7 +32,7 @@ namespace Logging
 		bool useColors;
 	};
 
-	class Logger
+	class CMEP_EXPORT Logger
 	{
 	private:
 		std::vector<LoggerInternalMapping*> outputs;

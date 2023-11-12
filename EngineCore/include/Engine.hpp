@@ -49,6 +49,8 @@ namespace Engine
 			std::string scripts;
 			std::string scenes; 
 		} lookup;
+
+		std::string defaultScene;
 	} EngineConfig;
 
 	class CMEP_EXPORT Engine final
@@ -66,6 +68,8 @@ namespace Engine
 
 		double lastDeltaTime = 0.0;
 
+		EngineConfig config{};
+
 		// Engine parts
 		Rendering::VulkanRenderingEngine* rendering_engine = nullptr;
 		AssetManager* asset_manager = nullptr;
@@ -78,8 +82,9 @@ namespace Engine
 		
 		static void spinSleep(double seconds);
 
-		static void RenderCallback(VkCommandBuffer commandBuffer, uint32_t currentFrame);
+		static void RenderCallback(VkCommandBuffer commandBuffer, uint32_t currentFrame, Engine* engine);
 
+		static void ErrorCallback(int code, const char* message);
 		static void OnWindowFocusCallback(GLFWwindow* window, int focused);
 		static void CursorPositionCallback(GLFWwindow* window, double xpos, double ypos);
 		static void CursorEnterLeaveCallback(GLFWwindow* window, int entered);
@@ -94,7 +99,7 @@ namespace Engine
 	public:
 		std::shared_ptr<GlobalSceneManager> scene_manager{};
 		
-		Engine(std::shared_ptr<Logging::Logger> logger, std::string windowTitle, const unsigned windowX, const unsigned windowY) noexcept;
+		Engine(std::shared_ptr<Logging::Logger> logger, EngineConfig& config) noexcept;
 		~Engine() noexcept;
 
 		void SetFramerateTarget(unsigned framerate) noexcept;
@@ -114,10 +119,4 @@ namespace Engine
 		Rendering::VulkanRenderingEngine* GetRenderingEngine() noexcept;
 		std::weak_ptr<GlobalSceneManager> GetSceneManager() noexcept;
 	};
-
-	CMEP_EXPORT Engine* initializeEngine(EngineConfig config);
-
-	CMEP_EXPORT int deinitializeEngine();
-
-	extern CMEP_EXPORT Engine* global_engine;
 }

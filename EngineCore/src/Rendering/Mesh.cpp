@@ -51,7 +51,7 @@ namespace Engine::Rendering
 		int metallic_count = 0;
 		int reflection_count = 0;
 		
-		VulkanRenderingEngine* renderer = global_engine->GetRenderingEngine();
+		VulkanRenderingEngine* renderer = this->owner_engine->GetRenderingEngine();
 
 		VulkanBuffer* premade_staging_buffer = renderer->createVulkanBuffer(5120 * 5120 * 4, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, 0);// renderer->createVulkanStagingBufferPreMapped(10240 * 10240 * 4); // 10240x1024 4-channel staging buffer
 

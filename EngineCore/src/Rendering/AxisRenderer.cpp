@@ -14,9 +14,9 @@
 
 namespace Engine::Rendering
 {
-	AxisRenderer::AxisRenderer()
+	AxisRenderer::AxisRenderer(Engine* engine) : IRenderer(engine)
 	{
-		VulkanRenderingEngine* renderer = global_engine->GetRenderingEngine();
+		VulkanRenderingEngine* renderer = this->owner_engine->GetRenderingEngine();
 
 		VulkanPipelineSettings pipeline_settings = renderer->getVulkanDefaultPipelineSettings();
 		pipeline_settings.inputAssembly.topology = VK_PRIMITIVE_TOPOLOGY_LINE_LIST;
@@ -32,8 +32,8 @@ namespace Engine::Rendering
 	AxisRenderer::~AxisRenderer()
 	{
 		this->logger->SimpleLog(Logging::LogLevel::Debug3, "Cleaning up axis renderer");
-		global_engine->GetRenderingEngine()->cleanupVulkanBuffer(this->vbo);
-		global_engine->GetRenderingEngine()->cleanupVulkanPipeline(this->pipeline);
+		this->owner_engine->GetRenderingEngine()->cleanupVulkanBuffer(this->vbo);
+		this->owner_engine->GetRenderingEngine()->cleanupVulkanPipeline(this->pipeline);
 	}
 
 	void AxisRenderer::Update(glm::vec3 pos, glm::vec3 size, glm::vec3 rotation, uint_fast16_t screenx, uint_fast16_t screeny, glm::vec3 parent_position, glm::vec3 parent_rotation, glm::vec3 parent_size)
@@ -78,11 +78,11 @@ namespace Engine::Rendering
 
 		this->matMVP = Projection * View * Model;
 
-		VulkanRenderingEngine* renderer = global_engine->GetRenderingEngine();
+		VulkanRenderingEngine* renderer = this->owner_engine->GetRenderingEngine();
 
 		if (this->vbo == nullptr)
 		{
-			this->vbo = global_engine->GetRenderingEngine()->createVulkanVertexBufferFromData(vertices);
+			this->vbo = renderer->createVulkanVertexBufferFromData(vertices);
 		}
 
 		for (size_t i = 0; i < renderer->GetMaxFramesInFlight(); i++)
@@ -114,7 +114,7 @@ namespace Engine::Rendering
 			this->UpdateMesh();
 		}
 
-		VulkanRenderingEngine* renderer = global_engine->GetRenderingEngine();
+		VulkanRenderingEngine* renderer = this->owner_engine->GetRenderingEngine();
 		vkMapMemory(renderer->GetLogicalDevice(),
 			pipeline->uniformBuffers[currentFrame]->allocationInfo.deviceMemory,
 			pipeline->uniformBuffers[currentFrame]->allocationInfo.offset,

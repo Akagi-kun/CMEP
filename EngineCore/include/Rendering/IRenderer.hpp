@@ -9,6 +9,7 @@
 namespace Engine
 {
 	class Object;
+	class Engine;
 	class GlobalSceneManager;
 
 	namespace Rendering
@@ -36,7 +37,9 @@ namespace Engine
 		public:
 			std::weak_ptr<::Engine::GlobalSceneManager> scene_manager{};
 
+			// Don't use default constructor! Will crash!
 			IRenderer() {};
+			IRenderer(Engine* engine) : InternalEngineObject(engine) {};
 			virtual ~IRenderer() {};
 
 			virtual void Update(glm::vec3 pos, glm::vec3 size, glm::vec3 rotation, uint_fast16_t screenx, uint_fast16_t screeny, glm::vec3 parent_position, glm::vec3 parent_rotation, glm::vec3 parent_size) = 0;

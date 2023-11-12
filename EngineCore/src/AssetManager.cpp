@@ -20,10 +20,11 @@ namespace Engine
 	void AssetManager::AddTexture(std::string name, std::string path, Rendering::Texture_InitFiletype filetype)
 	{
 		std::shared_ptr<Rendering::Texture> texture = std::make_shared<Rendering::Texture>();
+		texture->owner_engine = this->owner_engine;
 
-		texture->UpdateHeldLogger(this->logger);			
+		texture->UpdateHeldLogger(this->logger);
 
-		if (texture->InitFile(filetype, path) != 0)
+		if (texture->InitFile(filetype, this->current_load_path + path) != 0)
 		{
 			this->logger->SimpleLog(Logging::LogLevel::Error, "Error occured when adding Texture %s as %s, this may be unintentional", path.c_str(), name.c_str());
 			return;
@@ -36,9 +37,10 @@ namespace Engine
 	void AssetManager::AddFont(std::string name, std::string path)
 	{
 		std::shared_ptr<Rendering::Font> font = std::make_shared<Rendering::Font>(this);
+		font->owner_engine = this->owner_engine;
 		
 		font->UpdateHeldLogger(this->logger);
-		font->Init(std::move(path));
+		font->Init(std::move(this->current_load_path + path));
 
 		this->fonts.emplace(name, font);
 	}
@@ -53,9 +55,10 @@ namespace Engine
 	void AssetManager::AddModel(std::string name, std::string path)
 	{
 		std::shared_ptr<Rendering::Mesh> mesh = std::make_shared<Rendering::Mesh>();
+		mesh->owner_engine = this->owner_engine;
 		mesh->UpdateHeldLogger(this->logger);
 		
-		mesh->CreateMeshFromObj(path);
+		mesh->CreateMeshFromObj(this->current_load_path + path);
 
 		this->models.emplace(name, std::move(mesh));
 	}
@@ -90,7 +93,7 @@ namespace Engine
 			std::shared_ptr<Rendering::Font> font = std::make_shared<Rendering::Font>(this);
 			
 			font->UpdateHeldLogger(this->logger);
-			if (font->Init(name) != 0)
+			if (font->Init(this->current_load_path + name) != 0)
 			{
 				return nullptr;
 			}

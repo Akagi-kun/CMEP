@@ -258,7 +258,7 @@ namespace Engine::Rendering
 		vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, this->graphicsPipelineDefault->pipeline);
 		if (this->external_callback)
 		{
-			this->external_callback(commandBuffer, currentFrame);
+			this->external_callback(commandBuffer, currentFrame, this->owner_engine);
 		}
 
 		vkCmdEndRenderPass(commandBuffer);
@@ -1012,6 +1012,8 @@ namespace Engine::Rendering
 
 		vkDestroyRenderPass(this->vkLogicalDevice, this->vkRenderPass, nullptr);
 		
+		vmaDestroyAllocator(this->vmaAllocator);
+
 		vkDestroySurfaceKHR(this->vkInstance, this->vkSurface, nullptr);
 		vkDestroyDevice(this->vkLogicalDevice, nullptr);
 		if (this->enableVkValidationLayers)
@@ -1157,7 +1159,7 @@ namespace Engine::Rendering
 		return this->MAX_FRAMES_IN_FLIGHT;
 	}
 
-	void VulkanRenderingEngine::SetRenderCallback(std::function<void(VkCommandBuffer, uint32_t)> callback)
+	void VulkanRenderingEngine::SetRenderCallback(std::function<void(VkCommandBuffer, uint32_t, Engine*)> callback)
 	{
 		this->external_callback = std::move(callback);
 	}
@@ -1439,6 +1441,7 @@ namespace Engine::Rendering
 
 
 	// Buffers
+
 	VulkanBuffer* VulkanRenderingEngine::createVulkanVertexBufferFromData(std::vector<RenderingVertex> vertices)
 	{
 		VulkanBuffer* staging_buffer{};
@@ -1555,6 +1558,7 @@ namespace Engine::Rendering
 
 
 	// Descriptor sets
+
 	void VulkanRenderingEngine::createVulkanDescriptorSetLayout(VulkanPipeline* pipeline, VulkanDescriptorLayoutSettings settings)
 	{
 		std::vector<VkDescriptorSetLayoutBinding> bindings = {};
@@ -1639,6 +1643,7 @@ namespace Engine::Rendering
 
 
 	// Image functions
+
 	VulkanImage* VulkanRenderingEngine::createVulkanImage(uint32_t width, uint32_t height, VkSampleCountFlagBits numSamples, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties)
 	{
 		VulkanImage* new_image = new VulkanImage();

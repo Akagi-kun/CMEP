@@ -105,6 +105,9 @@ namespace Engine
 
 		EventHandling::EventType eventType = EventHandling::EventType::EVENT_UNDEFINED;
 
+		std::string prefix_scene = this->config.lookup.scenes + std::string("/") + this->config.defaultScene + std::string("/");
+		this->logger->SimpleLog(Logging::LogLevel::Info, "Loading scene prefix is: %s", prefix_scene.c_str());
+
 		for(auto& eventHandler : data["eventHandlers"])
 		{
 			if(eventHandler["type"] == std::string("onInit"))
@@ -131,15 +134,15 @@ namespace Engine
 			assert(eventType != EventHandling::EventType::EVENT_UNDEFINED);
 
 			this->logger->SimpleLog(Logging::LogLevel::Debug3, "Event handler for type: %s", static_cast<std::string>(eventHandler["type"]).c_str());
-			std::shared_ptr<Scripting::LuaScript> event_handler = asset_manager->GetLuaScript(eventHandler["file"]);
+			std::shared_ptr<Scripting::LuaScript> event_handler = this->asset_manager->GetLuaScript(prefix_scene + std::string(eventHandler["file"]));
 			
 			if(event_handler == nullptr)
 			{
-				asset_manager->AddLuaScript(eventHandler["file"], eventHandler["file"]);
-				event_handler = asset_manager->GetLuaScript(eventHandler["file"]);
+				this->asset_manager->AddLuaScript(prefix_scene + std::string(eventHandler["file"]), prefix_scene + std::string(eventHandler["file"]));
+				event_handler = this->asset_manager->GetLuaScript(prefix_scene + std::string(eventHandler["file"]));
 			}
 			
-			global_engine->RegisterLuaEventHandler(eventType, event_handler, eventHandler["function"]);
+			this->RegisterLuaEventHandler(eventType, event_handler, eventHandler["function"]);
 		}
 
 		std::string setting;
@@ -150,10 +153,10 @@ namespace Engine
 		this->windowX = data[setting]["x"]; this->windowY = data[setting]["y"];
 	}
 
-	void Engine::RenderCallback(VkCommandBuffer commandBuffer, uint32_t currentFrame)
+	void Engine::RenderCallback(VkCommandBuffer commandBuffer, uint32_t currentFrame, Engine* engine)
 	{
 		
-		for (auto& [name, ptr] : *(global_engine->scene_manager->GetAllObjects()))
+		for (auto& [name, ptr] : *(engine->scene_manager->GetAllObjects()))
 		{
 			try
 			{
@@ -165,6 +168,11 @@ namespace Engine
 				exit(1);
 			}
 		}
+	}
+
+	void Engine::ErrorCallback(int code, const char* message)
+	{
+		printf("GLFW ERROR: %u, %s\n", code, message);
 	}
 	
 	void Engine::OnWindowFocusCallback(GLFWwindow* window, int focused)
@@ -211,28 +219,28 @@ namespace Engine
 	{
 		if (action == GLFW_PRESS)
 		{
+			Rendering::VulkanRenderingEngine* renderer = (Rendering::VulkanRenderingEngine*)glfwGetWindowUserPointer(window);
 			EventHandling::Event event = EventHandling::Event(EventHandling::EventType::ON_KEYDOWN);
 			event.keycode = key;
-			event.deltaTime = global_engine->GetLastDeltaTime();
-			Rendering::VulkanRenderingEngine* renderer = (Rendering::VulkanRenderingEngine*)glfwGetWindowUserPointer(window);
+			event.deltaTime = renderer->owner_engine->GetLastDeltaTime();
 			event.raisedFrom = renderer->owner_engine;
-			global_engine->FireEvent(event);
+			renderer->owner_engine->FireEvent(event);
 		}
 		else if(action == GLFW_RELEASE)
 		{
+			Rendering::VulkanRenderingEngine* renderer = (Rendering::VulkanRenderingEngine*)glfwGetWindowUserPointer(window);
 			EventHandling::Event event = EventHandling::Event(EventHandling::EventType::ON_KEYUP);
 			event.keycode = key;
-			event.deltaTime = global_engine->GetLastDeltaTime();
-			Rendering::VulkanRenderingEngine* renderer = (Rendering::VulkanRenderingEngine*)glfwGetWindowUserPointer(window);
+			event.deltaTime = renderer->owner_engine->GetLastDeltaTime();
 			event.raisedFrom = renderer->owner_engine;
-			global_engine->FireEvent(event);
+			renderer->owner_engine->FireEvent(event);
 		}
 	}
 
 	void Engine::engineLoop()
 	{		
 		Object* object = new Object();
-		object->renderer = new Rendering::AxisRenderer();
+		object->renderer = new Rendering::AxisRenderer(this);
 		object->Translate(glm::vec3(0, 0, 0));
 		object->Scale(glm::vec3(1, 1, 1));
 		object->Rotate(glm::vec3(0, 0, 0));
@@ -272,7 +280,7 @@ namespace Engine
 			// Render
 			this->rendering_engine->drawFrame();
 			
-			glfwSwapBuffers(this->rendering_engine->GetWindow().window);
+			//glfwSwapBuffers(this->rendering_engine->GetWindow().window);
 			glfwPollEvents();
 			
 			// spin sleep if framerate locked
@@ -319,13 +327,18 @@ namespace Engine
 		return this->lastDeltaTime;
 	}
 
-	Engine::Engine(std::shared_ptr<Logging::Logger> logger, std::string windowTitle, const unsigned windowX, const unsigned windowY) noexcept : logger(logger), windowTitle(windowTitle), windowX(windowX), windowY(windowY), framerateTarget(30) {}
+	Engine::Engine(std::shared_ptr<Logging::Logger> logger, EngineConfig& config) noexcept : logger(logger)
+	{
+		this->config = config;
+	}
 
 	Engine::~Engine() noexcept
 	{
 		delete this->asset_manager;
 
 		delete this->script_executor;
+
+		this->scene_manager.reset();
 
 		this->rendering_engine->cleanup();
 
@@ -364,12 +377,14 @@ namespace Engine
 		this->script_executor->UpdateHeldLogger(this->logger);
 
 		this->asset_manager = new AssetManager();
+		this->asset_manager->current_load_path = this->config.lookup.scenes + std::string("/") + this->config.defaultScene + std::string("/");
+		this->asset_manager->owner_engine = this;
 		this->asset_manager->logger = this->logger;
 		this->asset_manager->lua_executor = this->script_executor;
 		//this->asset_manager->UpdateEngine(this);
 
-		this->scene_manager = std::make_shared<GlobalSceneManager>();
-		this->scene_manager->logger = this->logger;
+		this->scene_manager = std::make_shared<GlobalSceneManager>(this->logger);
+		this->scene_manager->owner_engine = this;
 
 		this->rendering_engine = new Rendering::VulkanRenderingEngine();
 		this->rendering_engine->logger = this->logger;
@@ -390,7 +405,7 @@ namespace Engine
 		}
 
 		this->rendering_engine->owner_engine = this;
-		this->rendering_engine->init(this->windowX, this->windowY, this->windowTitle);
+		this->rendering_engine->init(this->config.window.sizeX, this->config.window.sizeY, this->config.window.title);
 		this->rendering_engine->SetRenderCallback(this->RenderCallback);
 
 		Rendering::GLFWwindowData windowdata = this->rendering_engine->GetWindow();
@@ -398,6 +413,7 @@ namespace Engine
 		glfwSetCursorPosCallback(windowdata.window, Engine::CursorPositionCallback);
 		glfwSetCursorEnterCallback(windowdata.window, Engine::CursorEnterLeaveCallback);
 		glfwSetKeyCallback(windowdata.window, Engine::OnKeyEventCallback);
+		glfwSetErrorCallback(Engine::ErrorCallback);
 		
 		// Fire ON_INIT event
 		EventHandling::Event onInitEvent = EventHandling::Event(EventHandling::EventType::ON_INIT);
@@ -447,30 +463,4 @@ namespace Engine
 		
 		return weakSceneManager;
 	}
-
-	Engine* initializeEngine(EngineConfig config)
-	{
-		// Set up loggre
-		std::shared_ptr<Logging::Logger> myLogger = std::make_shared<Logging::Logger>();
-#if _DEBUG == 1 || defined(DEBUG)
-		myLogger->AddOutputHandle(Logging::LogLevel::Debug3, stdout, true);
-#else
-		myLogger->AddOutputHandle(Logging::LogLevel::Debug1, stdout, true);
-#endif
-
-		// Initialize engine
-		global_engine = new Engine(myLogger, config.window.title, config.window.sizeX, config.window.sizeY);
-		global_engine->Init();
-
-		return global_engine;
-	}
-
-	int deinitializeEngine()
-	{
-		delete global_engine;
-
-		return 0;
-	}
-
-	CMEP_EXPORT Engine* global_engine;
 }

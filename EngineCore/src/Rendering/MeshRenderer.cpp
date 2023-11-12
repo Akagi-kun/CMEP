@@ -13,9 +13,9 @@
 
 namespace Engine::Rendering
 {
-	MeshRenderer::MeshRenderer()
+	MeshRenderer::MeshRenderer(Engine* engine) : IRenderer(engine)
 	{
-		VulkanRenderingEngine* renderer = global_engine->GetRenderingEngine();
+		VulkanRenderingEngine* renderer = this->owner_engine->GetRenderingEngine();
 
 		VulkanPipelineSettings pipeline_settings = renderer->getVulkanDefaultPipelineSettings();
 		pipeline_settings.inputAssembly.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
@@ -37,8 +37,13 @@ namespace Engine::Rendering
 
 	MeshRenderer::~MeshRenderer()
 	{
-		global_engine->GetRenderingEngine()->cleanupVulkanBuffer(this->vbo);
-		global_engine->GetRenderingEngine()->cleanupVulkanPipeline(this->pipeline);
+		this->logger->SimpleLog(Logging::LogLevel::Debug3, "Cleaning up mesh renderer");
+		VulkanRenderingEngine* renderer = this->owner_engine->GetRenderingEngine();
+
+		vkDeviceWaitIdle(renderer->GetLogicalDevice());
+
+		renderer->cleanupVulkanBuffer(this->vbo);
+		renderer->cleanupVulkanPipeline(this->pipeline);
 	}
 
 	void MeshRenderer::AssignMesh(std::shared_ptr<Mesh> new_mesh)
@@ -81,7 +86,7 @@ namespace Engine::Rendering
 
 		this->has_updated_mesh = true;
 
-		VulkanRenderingEngine* renderer = global_engine->GetRenderingEngine();
+		VulkanRenderingEngine* renderer = this->owner_engine->GetRenderingEngine();
 
 		glm::mat4 Projection = glm::perspective(glm::radians(45.0f), (float)this->_screenx / this->_screeny, 0.1f, 100.0f);
 		Projection[1][1] *= -1;
@@ -362,7 +367,7 @@ namespace Engine::Rendering
 			exit(1);
 		}*/
 
-		VulkanRenderingEngine* renderer = global_engine->GetRenderingEngine();
+		VulkanRenderingEngine* renderer = this->owner_engine->GetRenderingEngine();
 		vkMapMemory(renderer->GetLogicalDevice(),
 			pipeline->uniformBuffers[currentFrame]->allocationInfo.deviceMemory,
 			pipeline->uniformBuffers[currentFrame]->allocationInfo.offset,

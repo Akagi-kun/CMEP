@@ -5,6 +5,7 @@
 
 #include "Object.hpp"
 #include "PlatformSemantics.hpp"
+#include "Scene.hpp"
 
 #include "Logging/Logging.hpp"
 
@@ -17,6 +18,7 @@ namespace Engine
 	{
 	private:
 		std::unordered_map<std::string, Object*> objects{};
+		std::unique_ptr<Scene> current_scene;
 
 		glm::vec3 cameraTransform{}; // XYZ position
 		glm::vec2 cameraHVRotation{}; // Horizontal and Vertical rotation
@@ -26,8 +28,9 @@ namespace Engine
 		void CameraUpdated();
 	public:
 		std::shared_ptr<Logging::Logger> logger;
+		Engine* owner_engine;
 
-		GlobalSceneManager();
+		GlobalSceneManager(std::shared_ptr<Logging::Logger> logger);
 		~GlobalSceneManager();
 
 		void UpdateHeldLogger(std::shared_ptr<Logging::Logger> new_logger);

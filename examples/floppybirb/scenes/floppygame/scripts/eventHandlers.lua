@@ -75,10 +75,10 @@ onUpdate = function(event)
 	if gameIsGameOver == false then
 		if spawnPipeSinceLast > spawnPipeEvery then
 			-- Spawn new pipes
-			local object1 = cmepapi.objectFactory_CreateSpriteObject(scene_manager, 1.0, offset / 720, 80 / 1100, 400 / 720, asset_manager, "game/textures/pipe_down.png");
+			local object1 = cmepapi.objectFactory_CreateSpriteObject(scene_manager, 1.0, offset / 720, 80 / 1100, 400 / 720, asset_manager, "textures/pipe_down.png");
 			cmepapi.gsm_AddObject(scene_manager, "sprite_pipe_down"..tostring(spawnPipeLastIdx + 1), object1);
 
-			local object2 = cmepapi.objectFactory_CreateSpriteObject(scene_manager, 1.0, (400 + 200 + offset) / 720, 80 / 1100, 400 / 720, asset_manager, "game/textures/pipe_up.png");
+			local object2 = cmepapi.objectFactory_CreateSpriteObject(scene_manager, 1.0, (400 + 200 + offset) / 720, 80 / 1100, 400 / 720, asset_manager, "textures/pipe_up.png");
 			cmepapi.gsm_AddObject(scene_manager, "sprite_pipe_up"..tostring(spawnPipeLastIdx + 1), object2);
 
 			spawnPipeLastIdx = spawnPipeLastIdx + 1;
@@ -107,7 +107,7 @@ onUpdate = function(event)
 				   checkCollisions2DBox(birbx, birby, 48 / 1100, 33 / 720, x2, y2, 80 / 1100, 400 / 720)
 				then
 					gameIsGameOver = true;
-					local font = cmepapi.assetManager_GetFont(asset_manager, "game/fonts/myfont/myfont.fnt");
+					local font = cmepapi.assetManager_GetFont(asset_manager, "fonts/myfont/myfont.fnt");
 					local object = cmepapi.objectFactory_CreateTextObject(scene_manager, 0.4, 0.4, 32, "GAME OVER", font);
 					cmepapi.gsm_AddObject(scene_manager, "text_gameover", object);
 					return 0;
@@ -135,7 +135,7 @@ onUpdate = function(event)
 			checkCollisions2DBox(birbx, birby, 48 / 1100, 33 / 720, 0.0, 1.0, 1.0, 40 / 720)
 		then
 			gameIsGameOver = true;
-			local font = cmepapi.assetManager_GetFont(asset_manager, "game/fonts/myfont/myfont.fnt");
+			local font = cmepapi.assetManager_GetFont(asset_manager, "fonts/myfont/myfont.fnt");
 			local object = cmepapi.objectFactory_CreateTextObject(scene_manager, 0.4, 0.4, 32, "GAME OVER", font);
 			cmepapi.gsm_AddObject(scene_manager, "text_gameover", object);
 			return 0;
@@ -158,14 +158,14 @@ onUpdate = function(event)
 end
 
 onInit = function(event)
-	cmepapi.engine_SetFramerateTarget(60); -- VSYNC enabled
+	cmepapi.engine_SetFramerateTarget(event.raisedFrom, 60); -- VSYNC enabled
 
 	-- Get managers
 	local asset_manager = cmepapi.engine_GetAssetManager(event.raisedFrom);
 	local scene_manager = cmepapi.engine_GetSceneManager(event.raisedFrom);
 
 	-- Create frametime counter and add it to scene
-	local font = cmepapi.assetManager_GetFont(asset_manager, "game/fonts/myfont/myfont.fnt");
+	local font = cmepapi.assetManager_GetFont(asset_manager, "fonts/myfont/myfont.fnt");
 	local object = cmepapi.objectFactory_CreateTextObject(scene_manager, 0.0, 0.0, 18, "test", font);
 	cmepapi.gsm_AddObject(scene_manager, "_debug_info", object);
 	
@@ -174,7 +174,7 @@ onInit = function(event)
 	cmepapi.gsm_AddObject(scene_manager, "text_score", object);
 
 	-- Add birb
-	local birb = cmepapi.objectFactory_CreateSpriteObject(scene_manager, 0.2, (720 / 2) / 720, 48 / 1100, 33 / 720, asset_manager, "game/textures/birb.png");
+	local birb = cmepapi.objectFactory_CreateSpriteObject(scene_manager, 0.2, (720 / 2) / 720, 48 / 1100, 33 / 720, asset_manager, "textures/birb.png");
 	cmepapi.gsm_AddObject(scene_manager, "birb", birb);
 
 	-- Set-up camera

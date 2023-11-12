@@ -5,20 +5,20 @@
 
 namespace Engine
 {
-	GlobalSceneManager::GlobalSceneManager()
+	GlobalSceneManager::GlobalSceneManager(std::shared_ptr<Logging::Logger> logger)
 	{
 		// Reset transform and rotation
 		this->cameraTransform = glm::vec3(2.0, 0, 1.0);
 		this->cameraHVRotation = glm::vec2(0.0, 0.0);
+
+		this->logger = logger;
+
+		this->current_scene = std::make_unique<Scene>();
+		this->current_scene->logger = this->logger;
 	}
 
 	GlobalSceneManager::~GlobalSceneManager()
 	{
-		for (auto& [name, ptr] : this->objects)
-		{
-			delete ptr;
-		}
-		this->objects.clear();
 	}
 
 	void GlobalSceneManager::CameraUpdated()
@@ -31,43 +31,23 @@ namespace Engine
 
 	const std::unordered_map<std::string, Object*>* const GlobalSceneManager::GetAllObjects() noexcept
 	{
-		return &(this->objects);
+		return this->current_scene->GetAllObjects();
 	}
 	
 	void GlobalSceneManager::AddObject(std::string name, Object* ptr)
 	{
-		this->logger->SimpleLog(Logging::LogLevel::Info, "Adding object \"%s\" to globally managed scene", name.c_str());
-		if (ptr != nullptr)
-		{
-			Rendering::GLFWwindowData data = global_engine->GetRenderingEngine()->GetWindow();
-			ptr->ScreenSizeInform(data.windowX, data.windowY);
-			ptr->UpdateHeldLogger(this->logger);
-			ptr->renderer->UpdateHeldLogger(this->logger);
-			this->objects.emplace(name, ptr);
-		}
+		this->current_scene->owner_engine = this->owner_engine;
+		this->current_scene->AddObject(name, ptr);
 	}
 
 	Object* GlobalSceneManager::FindObject(std::string name)
 	{
-		auto find_ret = this->objects.find(name);
-		if (find_ret != this->objects.end())
-		{
-			return find_ret->second;
-		}
-		return nullptr;
+		return this->current_scene->FindObject(name);
 	}
 
 	size_t GlobalSceneManager::RemoveObject(std::string name) noexcept
 	{
-		Object* object = this->FindObject(name);
-		
-		if(object)
-		{
-			this->logger->SimpleLog(Logging::LogLevel::Info, "Removing object \"%s\" from globally managed scene, deleting object", name.c_str());
-			delete object;
-		}
-
-		return this->objects.erase(name);
+		return this->current_scene->RemoveObject(name);
 	}
 
 	glm::vec3 GlobalSceneManager::GetLightTransform()

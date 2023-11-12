@@ -12,9 +12,9 @@
 
 namespace Engine::Rendering
 {
-	TextRenderer::TextRenderer()
+	TextRenderer::TextRenderer(Engine* engine) : IRenderer(engine)
 	{
-		VulkanRenderingEngine* renderer = global_engine->GetRenderingEngine();
+		VulkanRenderingEngine* renderer = this->owner_engine->GetRenderingEngine();
 
 		VulkanPipelineSettings pipeline_settings = renderer->getVulkanDefaultPipelineSettings();
 		pipeline_settings.inputAssembly.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
@@ -36,8 +36,12 @@ namespace Engine::Rendering
 	TextRenderer::~TextRenderer()
 	{
 		this->logger->SimpleLog(Logging::LogLevel::Debug3, "Cleaning up text renderer");
-		global_engine->GetRenderingEngine()->cleanupVulkanBuffer(this->vbo);
-		global_engine->GetRenderingEngine()->cleanupVulkanPipeline(this->pipeline);
+		VulkanRenderingEngine* renderer = this->owner_engine->GetRenderingEngine();
+
+		vkDeviceWaitIdle(renderer->GetLogicalDevice());
+
+		renderer->cleanupVulkanBuffer(this->vbo);
+		renderer->cleanupVulkanPipeline(this->pipeline);
 	}
 
 	void TextRenderer::Update(glm::vec3 pos, glm::vec3 size, glm::vec3 rotation, uint_fast16_t screenx, uint_fast16_t screeny, glm::vec3 parent_position, glm::vec3 parent_rotation, glm::vec3 parent_size)
@@ -89,7 +93,7 @@ namespace Engine::Rendering
 			glCreateBuffers(1, &this->vbo);
 		}*/
 
-		VulkanRenderingEngine* renderer = global_engine->GetRenderingEngine();
+		VulkanRenderingEngine* renderer = this->owner_engine->GetRenderingEngine();
 
 		if (this->vbo != nullptr)
 		{
@@ -232,39 +236,5 @@ namespace Engine::Rendering
 		vkCmdBindVertexBuffers(commandBuffer, 0, 1, vertexBuffers, offsets);
 
 		vkCmdDraw(commandBuffer, static_cast<uint32_t>(this->vbo_vert_count), 1, 0, 0);
-
-		/*if (!this->program)
-		{
-			throw std::exception("No program assigned to TextRenderer, cannot perform Engine::Rendering::TextRenderer::Render()");
-		}*/
-
-		/*GLuint shader = this->program->GetProgram();
-		assert(shader != 0);
-
-		glBindVertexArray(this->vao);
-
-		glUseProgram(shader);
-
-		glActiveTexture(GL_TEXTURE0);
-
-		glEnableVertexAttribArray(0);
-		glEnableVertexAttribArray(1);
-
-		glBindBuffer(GL_ARRAY_BUFFER, this->vbo);
-
-		const Rendering::FontChar* const c = this->font->GetChar(this->text.at(0));
-		assert(c != nullptr);
-		GLuint texture = this->font->GetPageTexture(c->page)->GetTexture();
-		assert(texture != 0);
-
-		glBindTexture(GL_TEXTURE_2D, texture);
-
-		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat), (void*)nullptr);
-		glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat), (void*)(3 * sizeof(GLfloat)));
-
-		glDrawArrays(GL_TRIANGLES, 0, GLsizei(this->vbo_vert_count));
-
-		glDisableVertexAttribArray(0);
-		glDisableVertexAttribArray(1);;*/
 	}
 }

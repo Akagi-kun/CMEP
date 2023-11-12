@@ -40,7 +40,7 @@ namespace Engine::Rendering
 
 		std::shared_ptr<Mesh> mesh;
 	public:
-		MeshRenderer();
+		MeshRenderer(Engine* engine);
 		~MeshRenderer();
 
 		void AssignMesh(std::shared_ptr<Mesh> new_mesh);

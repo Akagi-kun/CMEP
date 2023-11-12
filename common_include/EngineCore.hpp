@@ -54,6 +54,53 @@ namespace Engine
 
 #pragma endregion
 
+#pragma region Logging.hpp
+
+	namespace Logging
+	{
+		enum class LogLevel
+		{
+			Debug3 = 0,
+			Debug2,
+			Debug1,
+			Info,
+			Success,
+			Warning,
+			Error,
+			Exception
+		};
+
+		struct LoggerInternalMapping
+		{
+			LogLevel min_level;
+			FILE* handle;
+			bool hasStartedLogging;
+			bool useColors;
+		};
+
+		class Logger
+		{
+		private:
+			std::vector<LoggerInternalMapping*> outputs;
+			std::map<int16_t, std::string> threadid_name_map;
+			std::atomic<bool> threadLocked;
+
+		public:
+			Logger() : threadLocked(false) {}
+
+			void AddOutputHandle(LogLevel min_level, FILE* handle, bool useColors = false);
+			void MapCurrentThreadToName(std::string name);
+
+			void StartLog(LogLevel level);
+			void Log(const char* format, ...);
+			void StopLog();
+
+			void SimpleLog(LogLevel level, const char* format, ...);
+		};
+	}
+
+#pragma endregion
+
 namespace Engine
 {
 #pragma region InternalEngineObject.hpp
@@ -744,7 +791,7 @@ namespace Engine
 		{
 			unsigned int sizeX = 0;
 			unsigned int sizeY = 0;
-			std::string windowTitle = "I am an title!";
+			std::string title = "I am an title!";
 		} window;
 
 		struct {
@@ -757,6 +804,8 @@ namespace Engine
 			std::string scripts;
 			std::string scenes; 
 		} lookup;
+
+		std::string defaultScene;
 	} EngineConfig;
 
 	class Engine final
@@ -774,6 +823,8 @@ namespace Engine
 
 		double lastDeltaTime = 0.0;
 
+		EngineConfig config{};
+
 		// Engine parts
 		Rendering::VulkanRenderingEngine* rendering_engine = nullptr;
 		AssetManager* asset_manager = nullptr;
@@ -786,8 +837,9 @@ namespace Engine
 		
 		static void spinSleep(double seconds);
 
-		static void RenderCallback(VkCommandBuffer commandBuffer, uint32_t currentFrame);
+		static void RenderCallback(VkCommandBuffer commandBuffer, uint32_t currentFrame, Engine* engine);
 
+		static void ErrorCallback(int code, const char* message);
 		static void OnWindowFocusCallback(GLFWwindow* window, int focused);
 		static void CursorPositionCallback(GLFWwindow* window, double xpos, double ypos);
 		static void CursorEnterLeaveCallback(GLFWwindow* window, int entered);
@@ -802,7 +854,7 @@ namespace Engine
 	public:
 		std::shared_ptr<GlobalSceneManager> scene_manager{};
 		
-		Engine(std::shared_ptr<Logging::Logger> logger, std::string windowTitle, const unsigned windowX, const unsigned windowY) noexcept;
+		Engine(std::shared_ptr<Logging::Logger> logger, EngineConfig& config) noexcept;
 		~Engine() noexcept;
 
 		void SetFramerateTarget(unsigned framerate) noexcept;
@@ -823,11 +875,6 @@ namespace Engine
 		std::weak_ptr<GlobalSceneManager> GetSceneManager() noexcept;
 	};
 
-	Engine* initializeEngine(EngineConfig config);
-
-	int deinitializeEngine();
-
-	Engine* global_engine;
 #pragma endregion
 
 #pragma region Object.hpp
@@ -925,12 +972,34 @@ namespace Engine
 
 #pragma endregion
 
+#pragma region Scene.hpp
+
+	class Scene : public InternalEngineObject
+    {
+    private:
+    protected:
+        std::unordered_map<std::string, Object*> objects{};
+    public:
+		Engine* owner_engine;
+
+        Scene();
+
+		const std::unordered_map<std::string, Object*>* const GetAllObjects() noexcept;
+
+		void AddObject(std::string name, Object* ptr);
+		Object* FindObject(std::string name);
+		size_t RemoveObject(std::string name) noexcept;
+    };
+
+#pragma endregion
+
 #pragma region GlobalSceneManager.hpp
 
 	class GlobalSceneManager final
 	{
 	private:
 		std::unordered_map<std::string, Object*> objects{};
+		std::unique_ptr<Scene> current_scene;
 
 		glm::vec3 cameraTransform{}; // XYZ position
 		glm::vec2 cameraHVRotation{}; // Horizontal and Vertical rotation
@@ -940,8 +1009,9 @@ namespace Engine
 		void CameraUpdated();
 	public:
 		std::shared_ptr<Logging::Logger> logger;
+		Engine* owner_engine;
 
-		GlobalSceneManager();
+		GlobalSceneManager(std::shared_ptr<Logging::Logger> logger);
 		~GlobalSceneManager();
 
 		void UpdateHeldLogger(std::shared_ptr<Logging::Logger> new_logger);

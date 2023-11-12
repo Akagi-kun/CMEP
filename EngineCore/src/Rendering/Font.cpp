@@ -185,9 +185,11 @@ namespace Engine::Rendering
 					const size_t last_slash_idx = this->fntfile.rfind('/');
 					if (std::string::npos != last_slash_idx)
 					{
-						whole_filename = this->fntfile.substr(0, last_slash_idx);
+						//whole_filename = this->fntfile.substr(0, last_slash_idx);
 					}
-					whole_filename += "/" + std::string(&value[1]);
+					//whole_filename += "/" + std::string(&value[1]);
+					whole_filename += std::string(&value[1]);
+
 
 					this->logger->SimpleLog(Logging::LogLevel::Debug3, "Font page index %u is %s", page_idx, whole_filename.c_str());
 

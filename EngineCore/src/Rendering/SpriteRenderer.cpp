@@ -13,9 +13,9 @@
 
 namespace Engine::Rendering
 {
-	SpriteRenderer::SpriteRenderer()
+	SpriteRenderer::SpriteRenderer(Engine* engine) : IRenderer(engine)
 	{
-		VulkanRenderingEngine* renderer = global_engine->GetRenderingEngine();
+		VulkanRenderingEngine* renderer = this->owner_engine->GetRenderingEngine();
 
 		VulkanPipelineSettings pipeline_settings = renderer->getVulkanDefaultPipelineSettings();
 		pipeline_settings.inputAssembly.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
@@ -38,7 +38,7 @@ namespace Engine::Rendering
 	SpriteRenderer::~SpriteRenderer()
 	{
 		this->logger->SimpleLog(Logging::LogLevel::Debug3, "Cleaning up sprite renderer");
-		VulkanRenderingEngine* renderer = global_engine->GetRenderingEngine();
+		VulkanRenderingEngine* renderer = this->owner_engine->GetRenderingEngine();
 
 		vkDeviceWaitIdle(renderer->GetLogicalDevice());
 		renderer->cleanupVulkanBuffer(this->vbo);
@@ -74,7 +74,7 @@ namespace Engine::Rendering
 	{
 		this->has_updated_mesh = true;
 
-		VulkanRenderingEngine* renderer = global_engine->GetRenderingEngine();
+		VulkanRenderingEngine* renderer = this->owner_engine->GetRenderingEngine();
 
 		if (this->vbo == nullptr)
 		{
@@ -173,7 +173,7 @@ namespace Engine::Rendering
 			this->UpdateMesh();
 		}
 
-		VulkanRenderingEngine* renderer = global_engine->GetRenderingEngine();
+		VulkanRenderingEngine* renderer = this->owner_engine->GetRenderingEngine();
 		vkMapMemory(renderer->GetLogicalDevice(),
 			pipeline->uniformBuffers[currentFrame]->allocationInfo.deviceMemory,
 			pipeline->uniformBuffers[currentFrame]->allocationInfo.offset,
