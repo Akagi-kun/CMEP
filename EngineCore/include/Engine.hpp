@@ -4,6 +4,7 @@
 #include <functional>
 #include <vector>
 #include <memory>
+#include <atomic>
 
 #include "Rendering/VulkanRenderingEngine.hpp"
 
@@ -56,9 +57,6 @@ namespace Engine
 	class CMEP_EXPORT Engine final
 	{
 	private:
-		// Keeps internal loop running
-		bool run_threads = true;
-
 		std::string config_path = "";
 
 		// Window
