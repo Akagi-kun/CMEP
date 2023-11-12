@@ -5,6 +5,7 @@
 #include <memory>
 #include <vector>
 #include <optional>
+#include <atomic>
 
 #define GLFW_INCLUDE_NONE
 #define GLFW_INCLUDE_VULKAN
