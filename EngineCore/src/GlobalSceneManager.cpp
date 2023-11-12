@@ -13,8 +13,8 @@ namespace Engine
 
 		this->logger = logger;
 
-		this->current_scene = std::make_unique<Scene>();
-		this->current_scene->logger = this->logger;
+		this->scenes.emplace("_default", std::make_shared<Scene>());
+		this->scenes.at(this->current_scene)->logger = this->logger;
 	}
 
 	GlobalSceneManager::~GlobalSceneManager()
@@ -23,31 +23,42 @@ namespace Engine
 
 	void GlobalSceneManager::CameraUpdated()
 	{
-		for (auto& [name, ptr] : this->objects)
+		for (auto& [name, ptr] : *(this->scenes.at(this->current_scene)->GetAllObjects()))
 		{
 			ptr->renderer->UpdateMesh();
 		}
 	}
 
+	void GlobalSceneManager::LoadScene(std::string scene_name)
+	{
+		this->scenes.emplace(scene_name, std::make_shared<Scene>());
+		this->scenes.at(scene_name)->logger = this->logger;
+	}
+
+	void GlobalSceneManager::SetScene(std::string scene_name)
+	{
+		
+	}
+
 	const std::unordered_map<std::string, Object*>* const GlobalSceneManager::GetAllObjects() noexcept
 	{
-		return this->current_scene->GetAllObjects();
+		return this->scenes.at(this->current_scene)->GetAllObjects();
 	}
 	
 	void GlobalSceneManager::AddObject(std::string name, Object* ptr)
 	{
-		this->current_scene->owner_engine = this->owner_engine;
-		this->current_scene->AddObject(name, ptr);
+		this->scenes.at(this->current_scene)->owner_engine = this->owner_engine;
+		this->scenes.at(this->current_scene)->AddObject(name, ptr);
 	}
 
 	Object* GlobalSceneManager::FindObject(std::string name)
 	{
-		return this->current_scene->FindObject(name);
+		return this->scenes.at(this->current_scene)->FindObject(name);
 	}
 
 	size_t GlobalSceneManager::RemoveObject(std::string name) noexcept
 	{
-		return this->current_scene->RemoveObject(name);
+		return this->scenes.at(this->current_scene)->RemoveObject(name);
 	}
 
 	glm::vec3 GlobalSceneManager::GetLightTransform()

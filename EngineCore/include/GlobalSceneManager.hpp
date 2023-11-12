@@ -17,8 +17,8 @@ namespace Engine
 	class CMEP_EXPORT GlobalSceneManager final
 	{
 	private:
-		std::unordered_map<std::string, Object*> objects{};
-		std::unique_ptr<Scene> current_scene;
+		std::unordered_map<std::string, std::shared_ptr<Scene>> scenes{};
+		std::string current_scene = "_default";
 
 		glm::vec3 cameraTransform{}; // XYZ position
 		glm::vec2 cameraHVRotation{}; // Horizontal and Vertical rotation
@@ -29,11 +29,14 @@ namespace Engine
 	public:
 		std::shared_ptr<Logging::Logger> logger;
 		Engine* owner_engine;
-
+		
 		GlobalSceneManager(std::shared_ptr<Logging::Logger> logger);
 		~GlobalSceneManager();
 
 		void UpdateHeldLogger(std::shared_ptr<Logging::Logger> new_logger);
+
+		void LoadScene(std::string scene_name);
+		void SetScene(std::string scene_name);
 
 		const std::unordered_map<std::string, Object*>* const GetAllObjects() noexcept;
 

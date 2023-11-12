@@ -27,7 +27,7 @@ void runEngine()
 	Engine::Engine* engine = nullptr;
 
 	Engine::EngineConfig config{};
-	config.window.sizeX = 1200;
+	config.window.sizeX = 1100;
 	config.window.sizeY = 720;
 	config.window.title = "My funny game!";
 	config.rendering.framerateTarget = 60;

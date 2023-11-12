@@ -179,17 +179,7 @@ namespace Engine::Rendering
 						value[strcspn(&value[1], "\"") + 1] = 0;
 					}
 
-					// bmfont uses local filenames relative to the fnt file
-					// Get directory from fnt file path and add our page filename to it
-					std::string whole_filename;
-					const size_t last_slash_idx = this->fntfile.rfind('/');
-					if (std::string::npos != last_slash_idx)
-					{
-						//whole_filename = this->fntfile.substr(0, last_slash_idx);
-					}
-					//whole_filename += "/" + std::string(&value[1]);
-					whole_filename += std::string(&value[1]);
-
+					std::string whole_filename = std::string(&value[1]);
 
 					this->logger->SimpleLog(Logging::LogLevel::Debug3, "Font page index %u is %s", page_idx, whole_filename.c_str());
 
