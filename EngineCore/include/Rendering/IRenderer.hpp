@@ -10,7 +10,7 @@ namespace Engine
 {
 	class Object;
 	class Engine;
-	class GlobalSceneManager;
+	class SceneManager;
 
 	namespace Rendering
 	{
@@ -35,7 +35,7 @@ namespace Engine
 			bool has_updated_mesh = false;
 
 		public:
-			std::weak_ptr<::Engine::GlobalSceneManager> scene_manager{};
+			std::weak_ptr<::Engine::SceneManager> scene_manager{};
 
 			// Don't use default constructor! Will crash!
 			IRenderer() {};

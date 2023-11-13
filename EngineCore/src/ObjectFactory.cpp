@@ -10,7 +10,7 @@
 
 namespace Engine::ObjectFactory
 {
-	Object* CreateSpriteObject(std::weak_ptr<GlobalSceneManager> scene_manager, double x, double y, double sizex, double sizey, std::shared_ptr<::Engine::Rendering::Texture> sprite)
+	Object* CreateSpriteObject(std::weak_ptr<SceneManager> scene_manager, double x, double y, double sizex, double sizey, std::shared_ptr<::Engine::Rendering::Texture> sprite)
 	{
 		assert(sprite != nullptr);
 		if(auto locked_scene_manager = scene_manager.lock())
@@ -27,7 +27,7 @@ namespace Engine::ObjectFactory
 		return nullptr;
 	}
 
-	Object* CreateTextObject(std::weak_ptr<GlobalSceneManager> scene_manager, double x, double y, int size, std::string text, ::Engine::Rendering::Font* font)
+	Object* CreateTextObject(std::weak_ptr<SceneManager> scene_manager, double x, double y, int size, std::string text, ::Engine::Rendering::Font* font)
 	{
 		assert(font != nullptr);
 		if(auto locked_scene_manager = scene_manager.lock())
@@ -46,7 +46,7 @@ namespace Engine::ObjectFactory
 		return nullptr;
 	}
 
-	Object* CreateGeneric3DObject(std::weak_ptr<GlobalSceneManager> scene_manager, double x, double y, double z, double sizex, double sizey, double sizez, double rotx, double roty, double rotz, std::shared_ptr<::Engine::Rendering::Mesh> mesh)
+	Object* CreateGeneric3DObject(std::weak_ptr<SceneManager> scene_manager, double x, double y, double z, double sizex, double sizey, double sizez, double rotx, double roty, double rotz, std::shared_ptr<::Engine::Rendering::Mesh> mesh)
 	{
 		if(auto locked_scene_manager = scene_manager.lock())
 		{

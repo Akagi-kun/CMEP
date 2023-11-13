@@ -50,7 +50,7 @@ namespace Engine
 		class Font;
 		class Mesh;
 	}
-	class GlobalSceneManager;
+	class SceneManager;
 }
 
 #pragma endregion
@@ -244,7 +244,7 @@ namespace Engine
 			bool has_updated_mesh = false;
 
 		public:
-			std::weak_ptr<::Engine::GlobalSceneManager> scene_manager{};
+			std::weak_ptr<::Engine::SceneManager> scene_manager{};
 
 			IRenderer() {};
 			virtual ~IRenderer() {};
@@ -812,9 +812,6 @@ namespace Engine
 	class Engine final
 	{
 	private:
-		// Keeps internal loop running
-		bool run_threads = true;
-
 		std::string config_path = "";
 
 		// Window
@@ -853,7 +850,7 @@ namespace Engine
 		void HandleConfig();
 
 	public:
-		std::shared_ptr<GlobalSceneManager> scene_manager{};
+		std::shared_ptr<SceneManager> scene_manager{};
 		
 		Engine(std::shared_ptr<Logging::Logger> logger, EngineConfig& config) noexcept;
 		~Engine() noexcept;
@@ -871,9 +868,9 @@ namespace Engine
 
 		double GetLastDeltaTime();
 
-		AssetManager* GetAssetManager() noexcept;
-		Rendering::VulkanRenderingEngine* GetRenderingEngine() noexcept;
-		std::weak_ptr<GlobalSceneManager> GetSceneManager() noexcept;
+		inline AssetManager* GetAssetManager() noexcept;
+		inline Rendering::VulkanRenderingEngine* GetRenderingEngine() noexcept;
+		inline std::weak_ptr<SceneManager> GetSceneManager() noexcept;
 	};
 
 #pragma endregion
@@ -996,7 +993,7 @@ namespace Engine
 
 #pragma region GlobalSceneManager.hpp
 
-	class GlobalSceneManager final
+	class SceneManager final
 	{
 	private:
 		std::unordered_map<std::string, Object*> objects{};
@@ -1012,8 +1009,8 @@ namespace Engine
 		std::shared_ptr<Logging::Logger> logger;
 		Engine* owner_engine;
 
-		GlobalSceneManager(std::shared_ptr<Logging::Logger> logger);
-		~GlobalSceneManager();
+		SceneManager(std::shared_ptr<Logging::Logger> logger);
+		~SceneManager();
 
 		void UpdateHeldLogger(std::shared_ptr<Logging::Logger> new_logger);
 

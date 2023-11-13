@@ -4,7 +4,7 @@
 #include <cstring>
 
 #include "Rendering/MeshRenderer.hpp"
-#include "GlobalSceneManager.hpp"
+#include "SceneManager.hpp"
 #include "Rendering/Texture.hpp"
 #include <glm/gtx/quaternion.hpp>
 #include "Logging/Logging.hpp"

@@ -12,7 +12,7 @@ set(SRC_FILES
 	../EngineCore/src/Logging/ConsoleColors.cpp
 	../EngineCore/src/AssetManager.cpp
 	../EngineCore/src/Engine.cpp
-	../EngineCore/src/GlobalSceneManager.cpp
+	../EngineCore/src/SceneManager.cpp
 	../EngineCore/src/ObjectFactory.cpp
 	../EngineCore/src/Rendering/Font.cpp
 	../EngineCore/src/Rendering/AxisRenderer.cpp

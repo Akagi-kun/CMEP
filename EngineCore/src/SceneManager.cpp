@@ -1,11 +1,11 @@
-#include "GlobalSceneManager.hpp"
+#include "SceneManager.hpp"
 #include "Logging/Logging.hpp"
 #include "glm/common.hpp"
 #include "Engine.hpp"
 
 namespace Engine
 {
-	GlobalSceneManager::GlobalSceneManager(std::shared_ptr<Logging::Logger> logger)
+	SceneManager::SceneManager(std::shared_ptr<Logging::Logger> logger)
 	{
 		// Reset transform and rotation
 		this->cameraTransform = glm::vec3(2.0, 0, 1.0);
@@ -17,11 +17,11 @@ namespace Engine
 		this->scenes.at(this->current_scene)->logger = this->logger;
 	}
 
-	GlobalSceneManager::~GlobalSceneManager()
+	SceneManager::~SceneManager()
 	{
 	}
 
-	void GlobalSceneManager::CameraUpdated()
+	void SceneManager::CameraUpdated()
 	{
 		for (auto& [name, ptr] : *(this->scenes.at(this->current_scene)->GetAllObjects()))
 		{
@@ -29,59 +29,59 @@ namespace Engine
 		}
 	}
 
-	void GlobalSceneManager::LoadScene(std::string scene_name)
+	void SceneManager::LoadScene(std::string scene_name)
 	{
 		this->scenes.emplace(scene_name, std::make_shared<Scene>());
 		this->scenes.at(scene_name)->logger = this->logger;
 	}
 
-	void GlobalSceneManager::SetScene(std::string scene_name)
+	void SceneManager::SetScene(std::string scene_name)
 	{
 		this->current_scene = scene_name;
 	}
 
-	const std::unordered_map<std::string, Object*>* const GlobalSceneManager::GetAllObjects() noexcept
+	const std::unordered_map<std::string, Object*>* const SceneManager::GetAllObjects() noexcept
 	{
 		return this->scenes.at(this->current_scene)->GetAllObjects();
 	}
 	
-	void GlobalSceneManager::AddObject(std::string name, Object* ptr)
+	void SceneManager::AddObject(std::string name, Object* ptr)
 	{
 		this->scenes.at(this->current_scene)->owner_engine = this->owner_engine;
 		this->scenes.at(this->current_scene)->AddObject(name, ptr);
 	}
 
-	Object* GlobalSceneManager::FindObject(std::string name)
+	Object* SceneManager::FindObject(std::string name)
 	{
 		return this->scenes.at(this->current_scene)->FindObject(name);
 	}
 
-	size_t GlobalSceneManager::RemoveObject(std::string name) noexcept
+	size_t SceneManager::RemoveObject(std::string name) noexcept
 	{
 		return this->scenes.at(this->current_scene)->RemoveObject(name);
 	}
 
-	glm::vec3 GlobalSceneManager::GetLightTransform()
+	glm::vec3 SceneManager::GetLightTransform()
 	{
 		return this->lightPosition;
 	}
 
-	void GlobalSceneManager::SetLightTransform(glm::vec3 newpos)
+	void SceneManager::SetLightTransform(glm::vec3 newpos)
 	{
 		this->lightPosition = newpos;
 	}
 
-	glm::vec3 GlobalSceneManager::GetCameraTransform()
+	glm::vec3 SceneManager::GetCameraTransform()
 	{
 		return this->cameraTransform;
 	}
 
-	glm::vec2 GlobalSceneManager::GetCameraHVRotation()
+	glm::vec2 SceneManager::GetCameraHVRotation()
 	{
 		return this->cameraHVRotation;
 	}
 
-	glm::mat4 GlobalSceneManager::GetCameraViewMatrix()
+	glm::mat4 SceneManager::GetCameraViewMatrix()
 	{
 		glm::vec3 direction = glm::vec3(
 			cos(this->cameraHVRotation.x) * cos(this->cameraHVRotation.y),
@@ -98,13 +98,13 @@ namespace Engine
 		return ViewMatrix;
 	}
 
-	void GlobalSceneManager::SetCameraTransform(glm::vec3 transform)
+	void SceneManager::SetCameraTransform(glm::vec3 transform)
 	{
 		this->cameraTransform = transform;
 		this->CameraUpdated();
 	}
 
-	void GlobalSceneManager::SetCameraHVRotation(glm::vec2 hvrotation)
+	void SceneManager::SetCameraHVRotation(glm::vec2 hvrotation)
 	{
 		if (hvrotation.y < 1.7f)
 		{
@@ -119,7 +119,7 @@ namespace Engine
 		this->CameraUpdated();
 	}
 
-	void GlobalSceneManager::UpdateHeldLogger(std::shared_ptr<Logging::Logger> new_logger)
+	void SceneManager::UpdateHeldLogger(std::shared_ptr<Logging::Logger> new_logger)
 	{
 		this->logger = new_logger;
 	}

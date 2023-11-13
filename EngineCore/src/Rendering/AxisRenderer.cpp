@@ -7,7 +7,7 @@
 #include "Rendering/AxisRenderer.hpp"
 #include "Rendering/Texture.hpp"
 #include "Object.hpp"
-#include "GlobalSceneManager.hpp"
+#include "SceneManager.hpp"
 #include "Logging/Logging.hpp"
 
 #include "Engine.hpp"

@@ -7,7 +7,7 @@ set(SRC_FILES
 	src/Engine.cpp
 	src/Object.cpp
 	src/Scene.cpp
-	src/GlobalSceneManager.cpp
+	src/SceneManager.cpp
 	src/ObjectFactory.cpp
 	src/Logging/ConsoleColors.cpp
 	src/Logging/Logging.cpp

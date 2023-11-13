@@ -4,7 +4,7 @@
 #include "Scripting/Mappings.hpp"
 #include "Rendering/Texture.hpp"
 
-#include "GlobalSceneManager.hpp"
+#include "SceneManager.hpp"
 #include "AssetManager.hpp"
 #include "ObjectFactory.hpp"
 #include "Engine.hpp"
@@ -18,7 +18,7 @@ namespace Engine::Scripting::Mappings
 		int gsm_GetCameraHVRotation(lua_State* state)
 		{
 			lua_getfield(state, 1, "_smart_pointer");
-			std::weak_ptr<GlobalSceneManager> scene_manager = *(std::weak_ptr<GlobalSceneManager>*)lua_touserdata(state, -1);
+			std::weak_ptr<SceneManager> scene_manager = *(std::weak_ptr<SceneManager>*)lua_touserdata(state, -1);
 
 			glm::vec2 hvrot;
 			if(auto locked_scene_manager = scene_manager.lock())
@@ -35,7 +35,7 @@ namespace Engine::Scripting::Mappings
 		int gsm_SetCameraHVRotation(lua_State* state)
 		{
 			lua_getfield(state, 1, "_smart_pointer");
-			std::weak_ptr<GlobalSceneManager> scene_manager = *(std::weak_ptr<GlobalSceneManager>*)lua_touserdata(state, -1);
+			std::weak_ptr<SceneManager> scene_manager = *(std::weak_ptr<SceneManager>*)lua_touserdata(state, -1);
 
 			double h = lua_tonumber(state, 2);
 			double v = lua_tonumber(state, 3);
@@ -51,7 +51,7 @@ namespace Engine::Scripting::Mappings
 		int gsm_GetCameraTransform(lua_State* state)
 		{
 			lua_getfield(state, 1, "_smart_pointer");
-			std::weak_ptr<GlobalSceneManager> scene_manager = *(std::weak_ptr<GlobalSceneManager>*)lua_touserdata(state, -1);
+			std::weak_ptr<SceneManager> scene_manager = *(std::weak_ptr<SceneManager>*)lua_touserdata(state, -1);
 
 			glm::vec3 transform{};
 			
@@ -70,7 +70,7 @@ namespace Engine::Scripting::Mappings
 		int gsm_SetCameraTransform(lua_State* state)
 		{
 			lua_getfield(state, 1, "_smart_pointer");
-			std::weak_ptr<GlobalSceneManager> scene_manager = *(std::weak_ptr<GlobalSceneManager>*)lua_touserdata(state, -1);
+			std::weak_ptr<SceneManager> scene_manager = *(std::weak_ptr<SceneManager>*)lua_touserdata(state, -1);
 
 			double x = lua_tonumber(state, 2);
 			double y = lua_tonumber(state, 3);
@@ -87,7 +87,7 @@ namespace Engine::Scripting::Mappings
 		int gsm_GetLightTransform(lua_State* state)
 		{
 			lua_getfield(state, 1, "_smart_pointer");
-			std::weak_ptr<GlobalSceneManager> scene_manager = *(std::weak_ptr<GlobalSceneManager>*)lua_touserdata(state, -1);
+			std::weak_ptr<SceneManager> scene_manager = *(std::weak_ptr<SceneManager>*)lua_touserdata(state, -1);
 
 			glm::vec3 transform;
 			if(auto locked_scene_manager = scene_manager.lock())
@@ -106,7 +106,7 @@ namespace Engine::Scripting::Mappings
 		int gsm_SetLightTransform(lua_State* state)
 		{
 			lua_getfield(state, 1, "_smart_pointer");
-			std::weak_ptr<GlobalSceneManager> scene_manager = *(std::weak_ptr<GlobalSceneManager>*)lua_touserdata(state, -1);
+			std::weak_ptr<SceneManager> scene_manager = *(std::weak_ptr<SceneManager>*)lua_touserdata(state, -1);
 
 			double x = lua_tonumber(state, 2);
 			double y = lua_tonumber(state, 3);
@@ -123,7 +123,7 @@ namespace Engine::Scripting::Mappings
 		int gsm_AddObject(lua_State* state)
 		{
 			lua_getfield(state, 1, "_smart_pointer");
-			std::weak_ptr<GlobalSceneManager> scene_manager = *(std::weak_ptr<GlobalSceneManager>*)lua_touserdata(state, -1);
+			std::weak_ptr<SceneManager> scene_manager = *(std::weak_ptr<SceneManager>*)lua_touserdata(state, -1);
 
 			std::string name = lua_tostring(state, 2);
 			
@@ -145,7 +145,7 @@ namespace Engine::Scripting::Mappings
 		int gsm_FindObject(lua_State* state)
 		{
 			lua_getfield(state, 1, "_smart_pointer");
-			std::weak_ptr<GlobalSceneManager> scene_manager = *(std::weak_ptr<GlobalSceneManager>*)lua_touserdata(state, -1);
+			std::weak_ptr<SceneManager> scene_manager = *(std::weak_ptr<SceneManager>*)lua_touserdata(state, -1);
 
 			std::string obj_name = lua_tostring(state, 2);
 
@@ -193,7 +193,7 @@ namespace Engine::Scripting::Mappings
 		int gsm_RemoveObject(lua_State* state)
 		{
 			lua_getfield(state, 1, "_smart_pointer");
-			std::weak_ptr<GlobalSceneManager> scene_manager = *(std::weak_ptr<GlobalSceneManager>*)lua_touserdata(state, -1);
+			std::weak_ptr<SceneManager> scene_manager = *(std::weak_ptr<SceneManager>*)lua_touserdata(state, -1);
 
 			std::string name = lua_tostring(state, 2);
 
@@ -237,16 +237,16 @@ namespace Engine::Scripting::Mappings
 		{
 			Engine* engine = *(Engine**)lua_touserdata(state, 1);
 
-			std::weak_ptr<GlobalSceneManager> scene_manager = engine->GetSceneManager();
+			std::weak_ptr<SceneManager> scene_manager = engine->GetSceneManager();
 
 			if (!scene_manager.expired())
 			{
 				// Generate scene_manager table
 				lua_newtable(state);
 
-				void* ptr_obj = lua_newuserdata(state, sizeof(std::weak_ptr<GlobalSceneManager>));
+				void* ptr_obj = lua_newuserdata(state, sizeof(std::weak_ptr<SceneManager>));
 				//(*ptr_obj) = scene_manager;
-				new(ptr_obj) std::weak_ptr<GlobalSceneManager>(scene_manager);
+				new(ptr_obj) std::weak_ptr<SceneManager>(scene_manager);
 				
 				lua_setfield(state, -2, "_smart_pointer");
 			}
@@ -488,7 +488,7 @@ namespace Engine::Scripting::Mappings
 		int objectFactory_CreateSpriteObject(lua_State* state)
 		{
 			lua_getfield(state, 1, "_smart_pointer");
-			std::weak_ptr<GlobalSceneManager> scene_manager = *(std::weak_ptr<GlobalSceneManager>*)lua_touserdata(state, -1);
+			std::weak_ptr<SceneManager> scene_manager = *(std::weak_ptr<SceneManager>*)lua_touserdata(state, -1);
 
 			double x = lua_tonumber(state, 2);
 			double y = lua_tonumber(state, 3);
@@ -531,7 +531,7 @@ namespace Engine::Scripting::Mappings
 		int objectFactory_CreateTextObject(lua_State* state)
 		{
 			lua_getfield(state, 1, "_smart_pointer");
-			std::weak_ptr<GlobalSceneManager> scene_manager = *(std::weak_ptr<GlobalSceneManager>*)lua_touserdata(state, -1);
+			std::weak_ptr<SceneManager> scene_manager = *(std::weak_ptr<SceneManager>*)lua_touserdata(state, -1);
 
 			double x = lua_tonumber(state, 2);
 			double y = lua_tonumber(state, 3);
@@ -573,7 +573,7 @@ namespace Engine::Scripting::Mappings
 		int objectFactory_CreateGeneric3DObject(lua_State* state)
 		{
 			lua_getfield(state, 1, "_smart_pointer");
-			std::weak_ptr<GlobalSceneManager> scene_manager = *(std::weak_ptr<GlobalSceneManager>*)lua_touserdata(state, -1);
+			std::weak_ptr<SceneManager> scene_manager = *(std::weak_ptr<SceneManager>*)lua_touserdata(state, -1);
 
 			double x = lua_tonumber(state, 2);
 			double y = lua_tonumber(state, 3);

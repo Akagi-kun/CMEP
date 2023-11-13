@@ -14,7 +14,7 @@
 
 namespace Engine
 {
-	class CMEP_EXPORT GlobalSceneManager final
+	class CMEP_EXPORT SceneManager final
 	{
 	private:
 		std::unordered_map<std::string, std::shared_ptr<Scene>> scenes{};
@@ -30,8 +30,8 @@ namespace Engine
 		std::shared_ptr<Logging::Logger> logger;
 		Engine* owner_engine;
 		
-		GlobalSceneManager(std::shared_ptr<Logging::Logger> logger);
-		~GlobalSceneManager();
+		SceneManager(std::shared_ptr<Logging::Logger> logger);
+		~SceneManager();
 
 		void UpdateHeldLogger(std::shared_ptr<Logging::Logger> new_logger);
 

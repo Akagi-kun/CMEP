@@ -1,7 +1,7 @@
 #pragma once
 
 #include "lualib/lua.hpp"
-#include "GlobalSceneManager.hpp"
+#include "SceneManager.hpp"
 
 #include <unordered_map>
 

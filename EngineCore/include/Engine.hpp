@@ -8,7 +8,7 @@
 
 #include "Rendering/VulkanRenderingEngine.hpp"
 
-#include "GlobalSceneManager.hpp"
+#include "SceneManager.hpp"
 #include "Logging/Logging.hpp"
 #include "EventHandling.hpp"
 #include "PlatformSemantics.hpp"
@@ -95,7 +95,7 @@ namespace Engine
 		void HandleConfig();
 
 	public:
-		std::shared_ptr<GlobalSceneManager> scene_manager{};
+		std::shared_ptr<SceneManager> scene_manager{};
 		
 		Engine(std::shared_ptr<Logging::Logger> logger, EngineConfig& config) noexcept;
 		~Engine() noexcept;
@@ -113,8 +113,8 @@ namespace Engine
 
 		double GetLastDeltaTime();
 
-		AssetManager* GetAssetManager() noexcept;
-		Rendering::VulkanRenderingEngine* GetRenderingEngine() noexcept;
-		std::weak_ptr<GlobalSceneManager> GetSceneManager() noexcept;
+		inline AssetManager* GetAssetManager() noexcept;
+		inline Rendering::VulkanRenderingEngine* GetRenderingEngine() noexcept;
+		inline std::weak_ptr<SceneManager> GetSceneManager() noexcept;
 	};
 }

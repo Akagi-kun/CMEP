@@ -383,7 +383,7 @@ namespace Engine
 		this->asset_manager->lua_executor = this->script_executor;
 		//this->asset_manager->UpdateEngine(this);
 
-		this->scene_manager = std::make_shared<GlobalSceneManager>(this->logger);
+		this->scene_manager = std::make_shared<SceneManager>(this->logger);
 		this->scene_manager->owner_engine = this;
 
 		this->rendering_engine = new Rendering::VulkanRenderingEngine();
@@ -457,9 +457,9 @@ namespace Engine
 		return this->rendering_engine;
 	}
 
-	std::weak_ptr<GlobalSceneManager> Engine::GetSceneManager() noexcept
+	std::weak_ptr<SceneManager> Engine::GetSceneManager() noexcept
 	{
-		std::weak_ptr<GlobalSceneManager> weakSceneManager = this->scene_manager;
+		std::weak_ptr<SceneManager> weakSceneManager = this->scene_manager;
 		
 		return weakSceneManager;
 	}
