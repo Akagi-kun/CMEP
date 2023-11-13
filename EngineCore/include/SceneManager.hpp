@@ -5,6 +5,7 @@
 
 #include "Object.hpp"
 #include "PlatformSemantics.hpp"
+#include "SceneLoader.hpp"
 #include "Scene.hpp"
 
 #include "Logging/Logging.hpp"
@@ -26,6 +27,8 @@ namespace Engine
 		glm::vec3 lightPosition{};
 
 		void CameraUpdated();
+
+		std::shared_ptr<SceneLoader> scene_loader;
 	public:
 		std::shared_ptr<Logging::Logger> logger;
 		Engine* owner_engine;
@@ -35,6 +38,7 @@ namespace Engine
 
 		void UpdateHeldLogger(std::shared_ptr<Logging::Logger> new_logger);
 
+		void SetSceneLoadPrefix(std::string scene_prefix);
 		void LoadScene(std::string scene_name);
 		void SetScene(std::string scene_name);
 

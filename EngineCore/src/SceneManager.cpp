@@ -15,6 +15,8 @@ namespace Engine
 
 		this->scenes.emplace("_default", std::make_shared<Scene>());
 		this->scenes.at(this->current_scene)->logger = this->logger;
+
+		this->scene_loader = std::make_shared<SceneLoader>(logger);
 	}
 
 	SceneManager::~SceneManager()
@@ -29,10 +31,14 @@ namespace Engine
 		}
 	}
 
+	void SceneManager::SetSceneLoadPrefix(std::string scene_prefix)
+	{
+		this->scene_loader->scene_prefix = scene_prefix;
+	}
+	
 	void SceneManager::LoadScene(std::string scene_name)
 	{
-		this->scenes.emplace(scene_name, std::make_shared<Scene>());
-		this->scenes.at(scene_name)->logger = this->logger;
+		this->scenes.emplace(scene_name, this->scene_loader->LoadScene(scene_name));
 	}
 
 	void SceneManager::SetScene(std::string scene_name)

@@ -8,6 +8,7 @@ set(SRC_FILES
 	src/Object.cpp
 	src/Scene.cpp
 	src/SceneManager.cpp
+	src/SceneLoader.cpp
 	src/ObjectFactory.cpp
 	src/Logging/ConsoleColors.cpp
 	src/Logging/Logging.cpp
