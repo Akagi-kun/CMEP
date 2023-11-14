@@ -13,9 +13,9 @@ namespace Engine::Scripting::Mappings
 {
 	namespace Functions
 	{
-#pragma region GlobalSceneManager
+#pragma region SceneManager
 
-		int gsm_GetCameraHVRotation(lua_State* state)
+		int sm_GetCameraHVRotation(lua_State* state)
 		{
 			lua_getfield(state, 1, "_smart_pointer");
 			std::weak_ptr<SceneManager> scene_manager = *(std::weak_ptr<SceneManager>*)lua_touserdata(state, -1);
@@ -32,7 +32,7 @@ namespace Engine::Scripting::Mappings
 			return 2;
 		}
 
-		int gsm_SetCameraHVRotation(lua_State* state)
+		int sm_SetCameraHVRotation(lua_State* state)
 		{
 			lua_getfield(state, 1, "_smart_pointer");
 			std::weak_ptr<SceneManager> scene_manager = *(std::weak_ptr<SceneManager>*)lua_touserdata(state, -1);
@@ -48,7 +48,7 @@ namespace Engine::Scripting::Mappings
 			return 0;
 		}
 
-		int gsm_GetCameraTransform(lua_State* state)
+		int sm_GetCameraTransform(lua_State* state)
 		{
 			lua_getfield(state, 1, "_smart_pointer");
 			std::weak_ptr<SceneManager> scene_manager = *(std::weak_ptr<SceneManager>*)lua_touserdata(state, -1);
@@ -67,7 +67,7 @@ namespace Engine::Scripting::Mappings
 			return 3;
 		}
 
-		int gsm_SetCameraTransform(lua_State* state)
+		int sm_SetCameraTransform(lua_State* state)
 		{
 			lua_getfield(state, 1, "_smart_pointer");
 			std::weak_ptr<SceneManager> scene_manager = *(std::weak_ptr<SceneManager>*)lua_touserdata(state, -1);
@@ -84,7 +84,7 @@ namespace Engine::Scripting::Mappings
 			return 0;
 		}
 
-		int gsm_GetLightTransform(lua_State* state)
+		int sm_GetLightTransform(lua_State* state)
 		{
 			lua_getfield(state, 1, "_smart_pointer");
 			std::weak_ptr<SceneManager> scene_manager = *(std::weak_ptr<SceneManager>*)lua_touserdata(state, -1);
@@ -103,7 +103,7 @@ namespace Engine::Scripting::Mappings
 		}
 
 
-		int gsm_SetLightTransform(lua_State* state)
+		int sm_SetLightTransform(lua_State* state)
 		{
 			lua_getfield(state, 1, "_smart_pointer");
 			std::weak_ptr<SceneManager> scene_manager = *(std::weak_ptr<SceneManager>*)lua_touserdata(state, -1);
@@ -120,7 +120,7 @@ namespace Engine::Scripting::Mappings
 			return 0;
 		}
 
-		int gsm_AddObject(lua_State* state)
+		int sm_AddObject(lua_State* state)
 		{
 			lua_getfield(state, 1, "_smart_pointer");
 			std::weak_ptr<SceneManager> scene_manager = *(std::weak_ptr<SceneManager>*)lua_touserdata(state, -1);
@@ -142,7 +142,7 @@ namespace Engine::Scripting::Mappings
 			return 0;
 		}
 
-		int gsm_FindObject(lua_State* state)
+		int sm_FindObject(lua_State* state)
 		{
 			lua_getfield(state, 1, "_smart_pointer");
 			std::weak_ptr<SceneManager> scene_manager = *(std::weak_ptr<SceneManager>*)lua_touserdata(state, -1);
@@ -190,7 +190,7 @@ namespace Engine::Scripting::Mappings
 			return 1;
 		}
 
-		int gsm_RemoveObject(lua_State* state)
+		int sm_RemoveObject(lua_State* state)
 		{
 			lua_getfield(state, 1, "_smart_pointer");
 			std::weak_ptr<SceneManager> scene_manager = *(std::weak_ptr<SceneManager>*)lua_touserdata(state, -1);
@@ -618,15 +618,15 @@ namespace Engine::Scripting::Mappings
 	}
 
 	std::unordered_map<std::string, lua_CFunction> mappings = {
-		CMEP_LUAMAPPING_DEFINE(gsm_GetCameraHVRotation),
-		CMEP_LUAMAPPING_DEFINE(gsm_SetCameraHVRotation),
-		CMEP_LUAMAPPING_DEFINE(gsm_GetCameraTransform),
-		CMEP_LUAMAPPING_DEFINE(gsm_SetCameraTransform),
-		CMEP_LUAMAPPING_DEFINE(gsm_GetLightTransform),
-		CMEP_LUAMAPPING_DEFINE(gsm_SetLightTransform),
-		CMEP_LUAMAPPING_DEFINE(gsm_AddObject),
-		CMEP_LUAMAPPING_DEFINE(gsm_FindObject),
-		CMEP_LUAMAPPING_DEFINE(gsm_RemoveObject),
+		CMEP_LUAMAPPING_DEFINE(sm_GetCameraHVRotation),
+		CMEP_LUAMAPPING_DEFINE(sm_SetCameraHVRotation),
+		CMEP_LUAMAPPING_DEFINE(sm_GetCameraTransform),
+		CMEP_LUAMAPPING_DEFINE(sm_SetCameraTransform),
+		CMEP_LUAMAPPING_DEFINE(sm_GetLightTransform),
+		CMEP_LUAMAPPING_DEFINE(sm_SetLightTransform),
+		CMEP_LUAMAPPING_DEFINE(sm_AddObject),
+		CMEP_LUAMAPPING_DEFINE(sm_FindObject),
+		CMEP_LUAMAPPING_DEFINE(sm_RemoveObject),
 
 		CMEP_LUAMAPPING_DEFINE(engine_GetAssetManager),
 		CMEP_LUAMAPPING_DEFINE(engine_SetFramerateTarget),
