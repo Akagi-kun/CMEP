@@ -41,6 +41,8 @@ namespace Engine
 
         AssetManager* asset_manager = this->owner_engine->GetAssetManager();
 
+        this->owner_engine->UnregisterAllLuaEventHandlers();
+
 		for(auto& eventHandler : data["eventHandlers"])
 		{
 			if(eventHandler["type"] == std::string("onInit"))
