@@ -1,5 +1,5 @@
 #include "Scripting/LuaScriptExecutor.hpp"
-#include "GlobalSceneManager.hpp"
+#include "SceneManager.hpp"
 #include "Scripting/Mappings.hpp"
 #include "Logging/Logging.hpp"
 #include "AssetManager.hpp"
