@@ -10,7 +10,7 @@ namespace Engine
     class SceneLoader
     {
     protected:
-        void SceneLoader::LoadSceneInternal(std::shared_ptr<Scene>& scene, std::string scene_name);
+        void LoadSceneInternal(std::shared_ptr<Scene>& scene, std::string scene_name);
 
     public:
 		std::shared_ptr<Logging::Logger> logger;

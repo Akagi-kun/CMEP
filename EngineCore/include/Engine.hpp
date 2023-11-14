@@ -107,6 +107,7 @@ namespace Engine
 
 		void ConfigFile(std::string path);
 		void RegisterEventHandler(EventHandling::EventType event_type, std::function<int(EventHandling::Event&)> function);
+		inline void UnregisterAllLuaEventHandlers();
 		void RegisterLuaEventHandler(EventHandling::EventType event_type, std::shared_ptr<Scripting::LuaScript> script, std::string function);
 		
 		int FireEvent(EventHandling::Event& event);

@@ -400,7 +400,7 @@ namespace Engine
 		this->rendering_engine->owner_engine = this;
 		this->rendering_engine->init(this->config.window.sizeX, this->config.window.sizeY, this->config.window.title);
 		this->rendering_engine->SetRenderCallback(this->RenderCallback);
-		
+
 		try
 		{
 			this->HandleConfig();
@@ -445,22 +445,27 @@ namespace Engine
 		this->event_handlers.push_back(std::make_pair(event_type, function));
 	}
 
+	inline void Engine::UnregisterAllLuaEventHandlers()
+	{
+		this->lua_event_handlers.clear();
+	}
+
 	void Engine::RegisterLuaEventHandler(EventHandling::EventType event_type, std::shared_ptr<Scripting::LuaScript> script, std::string function)
 	{
 		this->lua_event_handlers.push_back(std::make_tuple(event_type, script, function));
 	}
 
-	AssetManager* Engine::GetAssetManager() noexcept
+	inline AssetManager* Engine::GetAssetManager() noexcept
 	{
 		return this->asset_manager;
 	}
 
-	Rendering::VulkanRenderingEngine* Engine::GetRenderingEngine() noexcept
+	inline Rendering::VulkanRenderingEngine* Engine::GetRenderingEngine() noexcept
 	{
 		return this->rendering_engine;
 	}
 
-	std::weak_ptr<SceneManager> Engine::GetSceneManager() noexcept
+	inline std::weak_ptr<SceneManager> Engine::GetSceneManager() noexcept
 	{
 		std::weak_ptr<SceneManager> weakSceneManager = this->scene_manager;
 		
