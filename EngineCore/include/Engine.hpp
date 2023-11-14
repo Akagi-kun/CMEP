@@ -107,15 +107,15 @@ namespace Engine
 
 		void ConfigFile(std::string path);
 		void RegisterEventHandler(EventHandling::EventType event_type, std::function<int(EventHandling::Event&)> function);
-		inline void UnregisterAllLuaEventHandlers();
+		inline void UnregisterAllLuaEventHandlers() {  this->lua_event_handlers.clear(); }
 		void RegisterLuaEventHandler(EventHandling::EventType event_type, std::shared_ptr<Scripting::LuaScript> script, std::string function);
 		
 		int FireEvent(EventHandling::Event& event);
 
 		double GetLastDeltaTime();
 
-		inline AssetManager* GetAssetManager() noexcept;
-		inline Rendering::VulkanRenderingEngine* GetRenderingEngine() noexcept;
-		inline std::weak_ptr<SceneManager> GetSceneManager() noexcept;
+		inline AssetManager* GetAssetManager() noexcept { return this->asset_manager; }
+		inline Rendering::VulkanRenderingEngine* GetRenderingEngine() noexcept { return this->rendering_engine; }
+		inline std::weak_ptr<SceneManager> GetSceneManager() noexcept { return std::weak_ptr<SceneManager>(this->scene_manager); }
 	};
 }

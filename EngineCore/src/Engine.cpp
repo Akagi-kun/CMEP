@@ -444,31 +444,9 @@ namespace Engine
 	{
 		this->event_handlers.push_back(std::make_pair(event_type, function));
 	}
-
-	inline void Engine::UnregisterAllLuaEventHandlers()
-	{
-		this->lua_event_handlers.clear();
-	}
-
+	
 	void Engine::RegisterLuaEventHandler(EventHandling::EventType event_type, std::shared_ptr<Scripting::LuaScript> script, std::string function)
 	{
 		this->lua_event_handlers.push_back(std::make_tuple(event_type, script, function));
-	}
-
-	inline AssetManager* Engine::GetAssetManager() noexcept
-	{
-		return this->asset_manager;
-	}
-
-	inline Rendering::VulkanRenderingEngine* Engine::GetRenderingEngine() noexcept
-	{
-		return this->rendering_engine;
-	}
-
-	inline std::weak_ptr<SceneManager> Engine::GetSceneManager() noexcept
-	{
-		std::weak_ptr<SceneManager> weakSceneManager = this->scene_manager;
-		
-		return weakSceneManager;
 	}
 }
