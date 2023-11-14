@@ -108,42 +108,44 @@ namespace Engine
 		std::string prefix_scene = this->config.lookup.scenes + std::string("/") + this->config.defaultScene + std::string("/");
 		this->logger->SimpleLog(Logging::LogLevel::Info, "Loading scene prefix is: %s", prefix_scene.c_str());
 
-		for(auto& eventHandler : data["eventHandlers"])
-		{
-			if(eventHandler["type"] == std::string("onInit"))
-			{
-				eventType = EventHandling::EventType::ON_INIT;
-			}
-			else if(eventHandler["type"] == std::string("onMouseMoved"))
-			{
-				eventType = EventHandling::EventType::ON_MOUSEMOVED;
-			}
-			else if(eventHandler["type"] == std::string("onKeyDown"))
-			{
-				eventType = EventHandling::EventType::ON_KEYDOWN;
-			}
-			else if(eventHandler["type"] == std::string("onKeyUp"))
-			{
-				eventType = EventHandling::EventType::ON_KEYUP;
-			}
-			else if(eventHandler["type"] == std::string("onUpdate"))
-			{
-				eventType = EventHandling::EventType::ON_UPDATE;
-			}
+		// for(auto& eventHandler : data["eventHandlers"])
+		// {
+		// 	if(eventHandler["type"] == std::string("onInit"))
+		// 	{
+		// 		eventType = EventHandling::EventType::ON_INIT;
+		// 	}
+		// 	else if(eventHandler["type"] == std::string("onMouseMoved"))
+		// 	{
+		// 		eventType = EventHandling::EventType::ON_MOUSEMOVED;
+		// 	}
+		// 	else if(eventHandler["type"] == std::string("onKeyDown"))
+		// 	{
+		// 		eventType = EventHandling::EventType::ON_KEYDOWN;
+		// 	}
+		// 	else if(eventHandler["type"] == std::string("onKeyUp"))
+		// 	{
+		// 		eventType = EventHandling::EventType::ON_KEYUP;
+		// 	}
+		// 	else if(eventHandler["type"] == std::string("onUpdate"))
+		// 	{
+		// 		eventType = EventHandling::EventType::ON_UPDATE;
+		// 	}
 
-			assert(eventType != EventHandling::EventType::EVENT_UNDEFINED);
+		// 	assert(eventType != EventHandling::EventType::EVENT_UNDEFINED);
 
-			this->logger->SimpleLog(Logging::LogLevel::Debug3, "Event handler for type: %s", static_cast<std::string>(eventHandler["type"]).c_str());
-			std::shared_ptr<Scripting::LuaScript> event_handler = this->asset_manager->GetLuaScript(prefix_scene + std::string(eventHandler["file"]));
+		// 	this->logger->SimpleLog(Logging::LogLevel::Debug3, "Event handler for type: %s", static_cast<std::string>(eventHandler["type"]).c_str());
+		// 	std::shared_ptr<Scripting::LuaScript> event_handler = this->asset_manager->GetLuaScript(prefix_scene + std::string(eventHandler["file"]));
 			
-			if(event_handler == nullptr)
-			{
-				this->asset_manager->AddLuaScript(prefix_scene + std::string(eventHandler["file"]), prefix_scene + std::string(eventHandler["file"]));
-				event_handler = this->asset_manager->GetLuaScript(prefix_scene + std::string(eventHandler["file"]));
-			}
+		// 	if(event_handler == nullptr)
+		// 	{
+		// 		this->asset_manager->AddLuaScript(prefix_scene + std::string(eventHandler["file"]), prefix_scene + std::string(eventHandler["file"]));
+		// 		event_handler = this->asset_manager->GetLuaScript(prefix_scene + std::string(eventHandler["file"]));
+		// 	}
 			
-			this->RegisterLuaEventHandler(eventType, event_handler, eventHandler["function"]);
-		}
+		// 	this->RegisterLuaEventHandler(eventType, event_handler, eventHandler["function"]);
+		// }
+
+		this->scene_manager->LoadScene(this->config.defaultScene);
 
 		std::string setting;
 		setting = "window.title";
@@ -385,6 +387,7 @@ namespace Engine
 
 		this->scene_manager = std::make_shared<SceneManager>(this->logger);
 		this->scene_manager->owner_engine = this;
+		this->scene_manager->SetSceneLoadPrefix(this->config.lookup.scenes);
 
 		this->rendering_engine = new Rendering::VulkanRenderingEngine();
 		this->rendering_engine->logger = this->logger;
@@ -394,6 +397,10 @@ namespace Engine
 	{
 		auto start = std::chrono::steady_clock::now();
 
+		this->rendering_engine->owner_engine = this;
+		this->rendering_engine->init(this->config.window.sizeX, this->config.window.sizeY, this->config.window.title);
+		this->rendering_engine->SetRenderCallback(this->RenderCallback);
+		
 		try
 		{
 			this->HandleConfig();
@@ -403,10 +410,6 @@ namespace Engine
 			this->logger->SimpleLog(Logging::LogLevel::Exception, "Failed handling config! e.what(): %s", e.what());
 			exit(1);
 		}
-
-		this->rendering_engine->owner_engine = this;
-		this->rendering_engine->init(this->config.window.sizeX, this->config.window.sizeY, this->config.window.title);
-		this->rendering_engine->SetRenderCallback(this->RenderCallback);
 
 		Rendering::GLFWwindowData windowdata = this->rendering_engine->GetWindow();
 		glfwSetWindowFocusCallback(windowdata.window, Engine::OnWindowFocusCallback);

@@ -38,6 +38,7 @@ namespace Engine
 	
 	void SceneManager::LoadScene(std::string scene_name)
 	{
+		this->scene_loader->owner_engine = this->owner_engine;
 		this->scenes.emplace(scene_name, this->scene_loader->LoadScene(scene_name));
 	}
 
