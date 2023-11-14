@@ -306,21 +306,34 @@ namespace Engine
 	int Engine::FireEvent(EventHandling::Event& event)
 	{
 		int sum = 0;
-		for (auto handler : this->event_handlers)
+		auto handler_range = this->event_handlers.equal_range(event.event_type); 
+		// for (auto handler : this->event_handlers)
+		// {
+		// 	if (handler.first == event.event_type)
+		// 	{
+		// 		sum += handler.second(event);
+		// 	}
+		// }
+
+		for(auto handler = handler_range.first; handler != handler_range.second; ++handler)
 		{
-			if (handler.first == event.event_type)
-			{
-				sum += handler.second(event);
-			}
+			sum += handler->second(event);
 		}
 
-		for (auto handler : this->lua_event_handlers)
+		auto lua_handler_range = this->lua_event_handlers.equal_range(event.event_type); 
+
+		for(auto handler = lua_handler_range.first; handler != lua_handler_range.second; ++handler)
 		{
-			if (std::get<0>(handler) == event.event_type)
-			{
-				sum += this->script_executor->CallIntoScript(Scripting::ExecuteType::EventHandler, std::get<1>(handler), std::get<2>(handler), &event);
-			}
+			sum += this->script_executor->CallIntoScript(Scripting::ExecuteType::EventHandler, handler->second.first, handler->second.second, &event);
 		}
+
+		// for (auto handler : this->lua_event_handlers)
+		// {
+		// 	if (std::get<0>(handler) == event.event_type)
+		// 	{
+		// 		sum += this->script_executor->CallIntoScript(Scripting::ExecuteType::EventHandler, std::get<1>(handler), std::get<2>(handler), &event);
+		// 	}
+		// }
 		return sum;
 	}
 
@@ -442,11 +455,14 @@ namespace Engine
 
 	void Engine::RegisterEventHandler(EventHandling::EventType event_type, std::function<int(EventHandling::Event&)> function)
 	{
-		this->event_handlers.push_back(std::make_pair(event_type, function));
+		this->event_handlers.emplace(event_type, function);
+		//this->event_handlers.push_back(std::make_pair(event_type, function));
+		
 	}
-	
+
 	void Engine::RegisterLuaEventHandler(EventHandling::EventType event_type, std::shared_ptr<Scripting::LuaScript> script, std::string function)
 	{
-		this->lua_event_handlers.push_back(std::make_tuple(event_type, script, function));
+		this->lua_event_handlers.emplace(event_type, std::make_pair(script, function));
+		//this->lua_event_handlers.push_back(std::make_tuple(event_type, script, function));
 	}
 }
