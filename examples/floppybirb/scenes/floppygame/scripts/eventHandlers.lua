@@ -43,6 +43,7 @@ spawnPipeCount = 0;
 gameIsGameOver = false;
 gameLastScoredPipeIdx = 0;
 gameScore = 0;
+pipeMoveSpeed = 0.1;
 
 checkCollisions2DBox = function(x1, y1, w1, h1, x2, y2, w2, h2)
 	if (
@@ -106,8 +107,8 @@ onUpdate = function(event)
 				local pipe2 = cmepapi.sm_FindObject(scene_manager, "sprite_pipe_up"..tostring(pipeIdx));
 				local x1, y1, z1 = cmepapi.object_GetPosition(pipe1);
 				local x2, y2, z2 = cmepapi.object_GetPosition(pipe2);
-				x1 = x1 - 0.05 * event.deltaTime;
-				x2 = x2 - 0.05 * event.deltaTime;
+				x1 = x1 - pipeMoveSpeed * event.deltaTime;
+				x2 = x2 - pipeMoveSpeed * event.deltaTime;
 				cmepapi.object_Translate(pipe1, x1, y1, z1);
 				cmepapi.object_Translate(pipe2, x2, y2, z2);
 
@@ -122,12 +123,14 @@ onUpdate = function(event)
 					return 0;
 				end
 
-				-- Add score score by colliding with a wall after the pipes
+				-- Add score by colliding with a wall after the pipes
 				if checkCollisions2DBox(birbx, birby, 48 / 1100, 33 / 720, x2 + 80 / 1100, 0.0, 80 / 1100, 1.0) and pipeIdx > gameLastScoredPipeIdx then
 					gameScore = gameScore + 1;
 					gameLastScoredPipeIdx = pipeIdx;
 					local score_object = cmepapi.sm_FindObject(scene_manager, "text_score");
 					cmepapi.textRenderer_UpdateText(score_object.renderer, tostring(gameScore));
+
+					pipeMoveSpeed = pipeMoveSpeed + 0.01;
 				end
 
 				if x1 < (0.0 - 80 / 1100) then
