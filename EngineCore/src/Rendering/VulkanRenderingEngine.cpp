@@ -7,6 +7,10 @@
 
 #include "Logging/Logging.hpp"
 
+// Prefixes for logging messages
+#define LOGPFX_CURRENT LOGPFX_CLASS_VULKAN_RENDERING_ENGINE
+#include "Logging/LoggingPrefix.hpp"
+
 namespace Engine::Rendering
 {
 	static VKAPI_ATTR VkBool32 VKAPI_CALL vulcanDebugCallback(
@@ -15,7 +19,7 @@ namespace Engine::Rendering
 		const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData,
 		void* pUserData)
 	{
-		((VulkanRenderingEngine*)pUserData)->logger->SimpleLog(Logging::LogLevel::Warning, "Vulcan validation layer reported: %s", pCallbackData->pMessage);
+		((VulkanRenderingEngine*)pUserData)->logger->SimpleLog(Logging::LogLevel::Warning, LOGPFX_CURRENT "Vulcan validation layer reported: %s", pCallbackData->pMessage);
 
 		return VK_FALSE;
 	}
@@ -103,17 +107,17 @@ namespace Engine::Rendering
 		// Return 0 (unsuitable) if some of the required queues aren't supported
 		if (!indices.isComplete())
 		{
-			this->logger->SimpleLog(Logging::LogLevel::Debug2, "Found device '%s', unsuitable, required queue types unsupported", deviceProperties.deviceName, score);
+			this->logger->SimpleLog(Logging::LogLevel::Debug2, LOGPFX_CURRENT "Found device '%s', unsuitable, required queue types unsupported", deviceProperties.deviceName, score);
 			return 0;
 		}
 		else if (!this->checkVulkanDeviceExtensionSupport(device))
 		{
-			this->logger->SimpleLog(Logging::LogLevel::Debug2, "Found device '%s', unsuitable, cause: required extensions unsupported", deviceProperties.deviceName);
+			this->logger->SimpleLog(Logging::LogLevel::Debug2, LOGPFX_CURRENT"Found device '%s', unsuitable, cause: required extensions unsupported", deviceProperties.deviceName);
 			return 0;
 		}
 		else if (!deviceFeatures.samplerAnisotropy)
 		{
-			this->logger->SimpleLog(Logging::LogLevel::Debug2, "Found device '%s', unsuitable, cause: anisotropy unsupported", deviceProperties.deviceName);
+			this->logger->SimpleLog(Logging::LogLevel::Debug2, LOGPFX_CURRENT "Found device '%s', unsuitable, cause: anisotropy unsupported", deviceProperties.deviceName);
 			return 0;
 		}
 
@@ -123,11 +127,11 @@ namespace Engine::Rendering
 
 		if (!swapChainAdequate)
 		{
-			this->logger->SimpleLog(Logging::LogLevel::Debug2, "Found device '%s', unsuitable, cause: inadequate or no swap chain support", deviceProperties.deviceName);
+			this->logger->SimpleLog(Logging::LogLevel::Debug2, LOGPFX_CURRENT"Found device '%s', unsuitable, cause: inadequate or no swap chain support", deviceProperties.deviceName);
 			return 0;
 		}
 
-		this->logger->SimpleLog(Logging::LogLevel::Debug2, "Found device '%s', suitability %u", deviceProperties.deviceName, score);
+		this->logger->SimpleLog(Logging::LogLevel::Debug2, LOGPFX_CURRENT "Found device '%s', suitability %u", deviceProperties.deviceName, score);
 
 		return score;
 	}
@@ -173,7 +177,7 @@ namespace Engine::Rendering
 		}
 
 		for (const auto& extension : requiredExtensions) {
-			this->logger->SimpleLog(Logging::LogLevel::Warning, "Unsupported extension: %s", extension.c_str());
+			this->logger->SimpleLog(Logging::LogLevel::Warning, LOGPFX_CURRENT "Unsupported extension: %s", extension.c_str());
 		}
 
 		return requiredExtensions.empty();
@@ -219,7 +223,7 @@ namespace Engine::Rendering
 
 		if (vkBeginCommandBuffer(commandBuffer, &beginInfo) != VK_SUCCESS)
 		{
-			this->logger->SimpleLog(Logging::LogLevel::Exception, "Failed to begin recording command buffer");
+			this->logger->SimpleLog(Logging::LogLevel::Exception, LOGPFX_CURRENT "Failed to begin recording command buffer");
 			throw std::runtime_error("failed to begin recording command buffer!");
 		}
 
@@ -265,7 +269,7 @@ namespace Engine::Rendering
 
 		if (vkEndCommandBuffer(commandBuffer) != VK_SUCCESS)
 		{
-			this->logger->SimpleLog(Logging::LogLevel::Exception, "Failed to record command buffer");
+			this->logger->SimpleLog(Logging::LogLevel::Exception, LOGPFX_CURRENT "Failed to record command buffer");
 			throw std::runtime_error("failed to record command buffer!");
 		}
 	}
@@ -280,7 +284,7 @@ namespace Engine::Rendering
 			}
 		}
 
-		this->logger->SimpleLog(Logging::LogLevel::Warning, "Unpreferred swap surface format selected");
+		this->logger->SimpleLog(Logging::LogLevel::Warning, LOGPFX_CURRENT "Unpreferred swap surface format selected");
 		return availableFormats[0];
 	}
 
@@ -294,7 +298,7 @@ namespace Engine::Rendering
 			}
 		}
 
-		this->logger->SimpleLog(Logging::LogLevel::Warning, "Unpreferred swap present mode selected");
+		this->logger->SimpleLog(Logging::LogLevel::Warning, LOGPFX_CURRENT "Unpreferred swap present mode selected");
 		return VK_PRESENT_MODE_FIFO_KHR;
 	}
 
@@ -333,7 +337,7 @@ namespace Engine::Rendering
 			}
 		}
 
-		this->logger->SimpleLog(Logging::LogLevel::Exception, "Failed to find required memory type");
+		this->logger->SimpleLog(Logging::LogLevel::Exception, LOGPFX_CURRENT "Failed to find required memory type");
 		throw std::runtime_error("failed to find required memory type!");
 	}
 
@@ -375,7 +379,7 @@ namespace Engine::Rendering
 			}
 		}
 
-		this->logger->SimpleLog(Logging::LogLevel::Exception, "Failed to find supported vkFormat");
+		this->logger->SimpleLog(Logging::LogLevel::Exception, LOGPFX_CURRENT "Failed to find supported vkFormat");
 		throw std::runtime_error("failed to find supported vkFormat!");
 	}
 
@@ -475,7 +479,7 @@ namespace Engine::Rendering
 		// Create logical device
 		VkResult result = vkCreateDevice(this->vkPhysicalDevice, &createInfo, nullptr, &this->vkLogicalDevice);
 		if (result != VK_SUCCESS) {
-			this->logger->SimpleLog(Logging::LogLevel::Error, "Vulkan logical device creation failed with %u code", result);
+			this->logger->SimpleLog(Logging::LogLevel::Error, LOGPFX_CURRENT "Vulkan logical device creation failed with %u code", result);
 			throw std::runtime_error("Vulkan: failed to create logical device!");
 		}
 
@@ -487,10 +491,10 @@ namespace Engine::Rendering
 	void VulkanRenderingEngine::createVulkanSurface()
 	{
 		if (glfwCreateWindowSurface(this->vkInstance, this->window, nullptr, &this->vkSurface) != VK_SUCCESS) {
-			this->logger->SimpleLog(Logging::LogLevel::Exception, "Vulkan surface creation failed");
+			this->logger->SimpleLog(Logging::LogLevel::Exception, LOGPFX_CURRENT "Vulkan surface creation failed");
 			throw std::runtime_error("failed to create window surface!");
 		}
-		this->logger->SimpleLog(Logging::LogLevel::Debug3, "Created glfw window surface");
+		this->logger->SimpleLog(Logging::LogLevel::Debug3, LOGPFX_CURRENT "Created glfw window surface");
 	}
 
 	bool VulkanRenderingEngine::checkVulkanValidationLayers()
@@ -537,7 +541,7 @@ namespace Engine::Rendering
 		// Check validation layer support
 		if (this->enableVkValidationLayers && !this->checkVulkanValidationLayers())
 		{
-			this->logger->SimpleLog(Logging::LogLevel::Error, "Validation layer support requested but not allowed!");
+			this->logger->SimpleLog(Logging::LogLevel::Error, LOGPFX_CURRENT "Validation layer support requested but not allowed!");
 		}
 
 		// Vulkan instance information
@@ -578,15 +582,15 @@ namespace Engine::Rendering
 		// Create an instance
 		if (vkCreateInstance(&createInfo, nullptr, &(this->vkInstance)) != VK_SUCCESS)
 		{
-			this->logger->SimpleLog(Logging::LogLevel::Exception, "Could not create Vulkan instance");
+			this->logger->SimpleLog(Logging::LogLevel::Exception, LOGPFX_CURRENT "Could not create Vulkan instance");
 			throw std::runtime_error("Could not create Vulkan instance");
 		}
-		this->logger->SimpleLog(Logging::LogLevel::Info, "Created a Vulkan instance");
+		this->logger->SimpleLog(Logging::LogLevel::Info, LOGPFX_CURRENT "Created a Vulkan instance");
 
 		// If it's a debug build, add a debug callback to Vulkan
 		if (this->enableVkValidationLayers)
 		{
-			this->logger->SimpleLog(Logging::LogLevel::Debug2, "Creating debug messenger");
+			this->logger->SimpleLog(Logging::LogLevel::Debug2, LOGPFX_CURRENT "Creating debug messenger");
 			VkDebugUtilsMessengerCreateInfoEXT debugMessengerCreateInfo{};
 			debugMessengerCreateInfo.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT;
 			debugMessengerCreateInfo.messageSeverity = VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT;
@@ -596,15 +600,15 @@ namespace Engine::Rendering
 
 			if (CreateDebugUtilsMessengerEXT(this->vkInstance, &debugMessengerCreateInfo, nullptr, &(this->vkDebugMessenger)) != VK_SUCCESS)
 			{
-				this->logger->SimpleLog(Logging::LogLevel::Error, "Could not create a debug messenger");
+				this->logger->SimpleLog(Logging::LogLevel::Error, LOGPFX_CURRENT "Could not create a debug messenger");
 			}
-			this->logger->SimpleLog(Logging::LogLevel::Debug2, "Created debug messenger");
+			this->logger->SimpleLog(Logging::LogLevel::Debug2, LOGPFX_CURRENT "Created debug messenger");
 		}
 	}
 
 	void VulkanRenderingEngine::initVulkanDevice()
 	{
-		this->logger->SimpleLog(Logging::LogLevel::Debug2, "Initializing vulkan device");
+		this->logger->SimpleLog(Logging::LogLevel::Debug2, LOGPFX_CURRENT "Initializing vulkan device");
 		// Get physical device count
 		uint32_t deviceCount = 0;
 		vkEnumeratePhysicalDevices(this->vkInstance, &deviceCount, nullptr);
@@ -612,7 +616,7 @@ namespace Engine::Rendering
 		// Check if there are any Vulkan-supporting devices
 		if (deviceCount == 0)
 		{
-			this->logger->SimpleLog(Logging::LogLevel::Error, "Found no device supporting the Vulcan API");
+			this->logger->SimpleLog(Logging::LogLevel::Error, LOGPFX_CURRENT "Found no device supporting the Vulcan API");
 		}
 
 		// Get all Vulkan-supporting devices
@@ -632,18 +636,18 @@ namespace Engine::Rendering
 		{
 			this->vkPhysicalDevice = candidates.rbegin()->second;
 			this->msaaSamples = this->getMaxUsableSampleCount();
-			this->logger->SimpleLog(Logging::LogLevel::Info, "Using MSAAx%u", this->msaaSamples);
+			this->logger->SimpleLog(Logging::LogLevel::Info, LOGPFX_CURRENT "Using MSAAx%u", this->msaaSamples);
 		}
 
 		if (this->vkPhysicalDevice == VK_NULL_HANDLE)
 		{
-			this->logger->SimpleLog(Logging::LogLevel::Exception, "No suitable physical device found, fatal error");
+			this->logger->SimpleLog(Logging::LogLevel::Exception, LOGPFX_CURRENT "No suitable physical device found, fatal error");
 			throw std::runtime_error("FATAL! No physical device found");
 		}
 
 		VkPhysicalDeviceProperties deviceProperties;
 		vkGetPhysicalDeviceProperties(this->vkPhysicalDevice, &deviceProperties);
-		this->logger->SimpleLog(Logging::LogLevel::Info, "Found a capable physical device: '%s'", deviceProperties.deviceName);
+		this->logger->SimpleLog(Logging::LogLevel::Info, LOGPFX_CURRENT "Found a capable physical device: '%s'", deviceProperties.deviceName);
 	}
 
 	void VulkanRenderingEngine::createVulkanSwapChain()
@@ -660,14 +664,14 @@ namespace Engine::Rendering
 		if (swapChainSupport.capabilities.maxImageCount > 0 && imageCount > swapChainSupport.capabilities.maxImageCount)
 		{
 			imageCount = swapChainSupport.capabilities.maxImageCount;
-			this->logger->SimpleLog(Logging::LogLevel::Debug1, "Using maxImageCount capability, GPU support limited");
+			this->logger->SimpleLog(Logging::LogLevel::Debug1, LOGPFX_CURRENT "Using maxImageCount capability, GPU support limited");
 		}
 
 		VkSwapchainCreateInfoKHR createInfo{};
 		createInfo.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
 		createInfo.surface = this->vkSurface;
 
-		this->logger->SimpleLog(Logging::LogLevel::Debug1, "Creating Vulkan swap chain with %u images", imageCount);
+		this->logger->SimpleLog(Logging::LogLevel::Debug1, LOGPFX_CURRENT "Creating Vulkan swap chain with %u images", imageCount);
 
 		createInfo.minImageCount = imageCount;
 		createInfo.imageFormat = VK_FORMAT_B8G8R8A8_UNORM;
@@ -695,7 +699,7 @@ namespace Engine::Rendering
 		createInfo.oldSwapchain = VK_NULL_HANDLE;
 
 		if (vkCreateSwapchainKHR(this->vkLogicalDevice, &createInfo, nullptr, &(this->vkSwapChain)) != VK_SUCCESS) {
-			this->logger->SimpleLog(Logging::LogLevel::Error, "Vulkan swap chain creation failed");
+			this->logger->SimpleLog(Logging::LogLevel::Error, LOGPFX_CURRENT "Vulkan swap chain creation failed");
 			throw std::runtime_error("failed to create swap chain!");
 		}
 
@@ -706,7 +710,7 @@ namespace Engine::Rendering
 		this->vkSwapChainImageFormat = VK_FORMAT_B8G8R8A8_UNORM;
 		this->vkSwapChainExtent = extent;
 
-		this->logger->SimpleLog(Logging::LogLevel::Debug3, "Vulkan swap chain created");
+		this->logger->SimpleLog(Logging::LogLevel::Debug3, LOGPFX_CURRENT "Vulkan swap chain created");
 	}
 
 	void VulkanRenderingEngine::recreateVulkanSwapChain()
@@ -722,7 +726,7 @@ namespace Engine::Rendering
 
 		vkDeviceWaitIdle(this->vkLogicalDevice);
 
-		this->logger->SimpleLog(Logging::LogLevel::Debug1, "Recreating vulkan swap chain");
+		this->logger->SimpleLog(Logging::LogLevel::Debug1, LOGPFX_CURRENT "Recreating vulkan swap chain");
 
 		// Clean up old swap chain
 		this->cleanupVulkanSwapChain();
@@ -770,7 +774,7 @@ namespace Engine::Rendering
 
 		VkShaderModule shaderModule;
 		if (vkCreateShaderModule(this->vkLogicalDevice, &createInfo, nullptr, &shaderModule) != VK_SUCCESS) {
-			this->logger->SimpleLog(Logging::LogLevel::Error, "Vulkan failed creating shader module");
+			this->logger->SimpleLog(Logging::LogLevel::Error, LOGPFX_CURRENT "Vulkan failed creating shader module");
 			throw std::runtime_error("failed to create shader module!");
 		}
 
@@ -863,7 +867,7 @@ namespace Engine::Rendering
 
 		if (vkCreateRenderPass(this->vkLogicalDevice, &renderPassInfo, nullptr, &this->vkRenderPass) != VK_SUCCESS)
 		{
-			this->logger->SimpleLog(Logging::LogLevel::Error, "Vulkan failed creating render pass");
+			this->logger->SimpleLog(Logging::LogLevel::Error, LOGPFX_CURRENT "Vulkan failed creating render pass");
 			throw std::runtime_error("failed to create render pass!");
 		}
 	}
@@ -890,7 +894,7 @@ namespace Engine::Rendering
 
 			if (vkCreateFramebuffer(this->vkLogicalDevice, &framebufferInfo, nullptr, &this->vkSwapChainFramebuffers[i]) != VK_SUCCESS)
 			{
-				this->logger->SimpleLog(Logging::LogLevel::Error, "Vulkan failed creating framebuffers");
+				this->logger->SimpleLog(Logging::LogLevel::Error, LOGPFX_CURRENT "Vulkan failed creating framebuffers");
 				throw std::runtime_error("failed to create framebuffer!");
 			}
 		}
@@ -905,7 +909,7 @@ namespace Engine::Rendering
 	
 		if (vkCreateCommandPool(this->vkLogicalDevice, &poolInfo, nullptr, &(this->vkCommandPool)) != VK_SUCCESS)
 		{
-			this->logger->SimpleLog(Logging::LogLevel::Error, "Vulkan failed creating command pools");
+			this->logger->SimpleLog(Logging::LogLevel::Error, LOGPFX_CURRENT "Vulkan failed creating command pools");
 			throw std::runtime_error("failed to create command pool!");
 		}
 	}
@@ -922,7 +926,7 @@ namespace Engine::Rendering
 
 		if (vkAllocateCommandBuffers(this->vkLogicalDevice, &allocInfo, this->vkCommandBuffers.data()) != VK_SUCCESS)
 		{
-			this->logger->SimpleLog(Logging::LogLevel::Error, "Vulkan failed creating command pools");
+			this->logger->SimpleLog(Logging::LogLevel::Error, LOGPFX_CURRENT "Vulkan failed creating command pools");
 			throw std::runtime_error("failed to allocate command buffers!");
 		}
 	}
@@ -948,7 +952,7 @@ namespace Engine::Rendering
 				vkCreateFence(this->vkLogicalDevice, &fenceInfo, nullptr, &(this->inFlightFences[i])) != VK_SUCCESS)
 			{
 
-				this->logger->SimpleLog(Logging::LogLevel::Error, "Vulkan failed creating sync objects");
+				this->logger->SimpleLog(Logging::LogLevel::Error, LOGPFX_CURRENT "Vulkan failed creating sync objects");
 				throw std::runtime_error("failed to create sync objects!");
 			}
 		}
@@ -981,7 +985,7 @@ namespace Engine::Rendering
 
 		vmaCreateAllocator(&allocatorCreateInfo, &(this->vmaAllocator));
 
-		this->logger->SimpleLog(Logging::LogLevel::Debug1, "VulkanRenderingEngine: VMA created");
+		this->logger->SimpleLog(Logging::LogLevel::Debug1, LOGPFX_CURRENT "VulkanRenderingEngine: VMA created");
 	}
 
 ////////////////////////////////////////////////////////////////////////
@@ -992,7 +996,7 @@ namespace Engine::Rendering
 	{
 		vkDeviceWaitIdle(this->vkLogicalDevice);
 
-		this->logger->SimpleLog(Logging::LogLevel::Info, "VulkanRenderingEngine: cleaning up");
+		this->logger->SimpleLog(Logging::LogLevel::Info, LOGPFX_CURRENT "VulkanRenderingEngine: cleaning up");
 
 		this->cleanupVulkanSwapChain();
 
@@ -1007,7 +1011,7 @@ namespace Engine::Rendering
 
 		vkDestroyCommandPool(this->vkLogicalDevice, this->vkCommandPool, nullptr);
 
-		this->logger->SimpleLog(Logging::LogLevel::Debug3, "Cleaning up default vulkan pipeline");
+		this->logger->SimpleLog(Logging::LogLevel::Debug3, LOGPFX_CURRENT "Cleaning up default vulkan pipeline");
 		this->cleanupVulkanPipeline(this->graphicsPipelineDefault);
 
 		vkDestroyRenderPass(this->vkLogicalDevice, this->vkRenderPass, nullptr);
@@ -1042,10 +1046,10 @@ namespace Engine::Rendering
 		// Initialize GLFW
 		if (glfwInit() == GLFW_FALSE)
 		{
-			this->logger->SimpleLog(Logging::LogLevel::Error, "glfwInit returned GLFW_FALSE!");
+			this->logger->SimpleLog(Logging::LogLevel::Error, LOGPFX_CURRENT "glfwInit returned GLFW_FALSE!");
 			exit(1);
 		}
-		this->logger->SimpleLog(Logging::LogLevel::Info, "GLFW initialized");
+		this->logger->SimpleLog(Logging::LogLevel::Info, LOGPFX_CURRENT "GLFW initialized");
 
 		// Create a GLFW window
 		glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
@@ -1059,7 +1063,7 @@ namespace Engine::Rendering
 		uint32_t extensionCount = 0;
 		vkEnumerateInstanceExtensionProperties(nullptr, &extensionCount, nullptr);
 
-		this->logger->SimpleLog(Logging::LogLevel::Debug1, "%u vulkan extensions supported", extensionCount);
+		this->logger->SimpleLog(Logging::LogLevel::Debug1, LOGPFX_CURRENT "%u vulkan extensions supported", extensionCount);
 
 		// Set up our vulkan rendering stack
 		this->initVulkanInstance();
@@ -1313,7 +1317,7 @@ namespace Engine::Rendering
 	{
 		if (this->leakPipelineCounter > 300)
 		{
-			this->logger->SimpleLog(Logging::LogLevel::Warning, "Currently allocated pipeline count %u, possibly leaking pipelines", this->leakPipelineCounter);
+			this->logger->SimpleLog(Logging::LogLevel::Warning, LOGPFX_CURRENT "Currently allocated pipeline count %u, possibly leaking pipelines", this->leakPipelineCounter);
 		}
 
 		settings.colorBlending.pAttachments = &settings.colorBlendAttachment;
@@ -1369,7 +1373,7 @@ namespace Engine::Rendering
 
 		if (vkCreatePipelineLayout(this->vkLogicalDevice, &pipelineLayoutInfo, nullptr, &(pipeline->vkPipelineLayout)) != VK_SUCCESS)
 		{
-			this->logger->SimpleLog(Logging::LogLevel::Error, "Vulkan failed creating graphics pipeline layout");
+			this->logger->SimpleLog(Logging::LogLevel::Error, LOGPFX_CURRENT "Vulkan failed creating graphics pipeline layout");
 			throw std::runtime_error("failed to create pipeline layout!");
 		}
 
@@ -1394,7 +1398,7 @@ namespace Engine::Rendering
 
 		if (vkCreateGraphicsPipelines(this->vkLogicalDevice, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &(pipeline->pipeline)) != VK_SUCCESS)
 		{
-			this->logger->SimpleLog(Logging::LogLevel::Exception, "Vulkan failed creating triangle graphics pipeline");
+			this->logger->SimpleLog(Logging::LogLevel::Exception, LOGPFX_CURRENT "Vulkan failed creating triangle graphics pipeline");
 			throw std::runtime_error("failed to create triangle graphics pipeline!");
 		}
 
@@ -1421,7 +1425,7 @@ namespace Engine::Rendering
 
 	void VulkanRenderingEngine::cleanupVulkanPipeline(VulkanPipeline* pipeline)
 	{
-		this->logger->SimpleLog(Logging::LogLevel::Debug3, "Cleaning up vulkan pipeline");
+		this->logger->SimpleLog(Logging::LogLevel::Debug3, LOGPFX_CURRENT "Cleaning up vulkan pipeline");
 
 		for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
 			this->cleanupVulkanBuffer(pipeline->uniformBuffers[i]);
@@ -1467,7 +1471,7 @@ namespace Engine::Rendering
 	{
 		if (this->leakUniformBufferCounter > 300)
 		{
-			this->logger->SimpleLog(Logging::LogLevel::Warning, "Currently allocated uniform buffer count %u, possibly leaking uniform buffers", this->leakUniformBufferCounter);
+			this->logger->SimpleLog(Logging::LogLevel::Warning, LOGPFX_CURRENT "Currently allocated uniform buffer count %u, possibly leaking uniform buffers", this->leakUniformBufferCounter);
 		}
 
 		VkDeviceSize bufferSize = sizeof(glm::mat4);
@@ -1487,7 +1491,7 @@ namespace Engine::Rendering
 
 		if(this->leakBufferCounter > 300)
 		{
-			this->logger->SimpleLog(Logging::LogLevel::Warning, "Currently allocated buffer count %u, possibly leaking buffers", this->leakBufferCounter);
+			this->logger->SimpleLog(Logging::LogLevel::Warning, LOGPFX_CURRENT "Currently allocated buffer count %u, possibly leaking buffers", this->leakBufferCounter);
 		}
 
 		// Create a buffer handle
@@ -1505,7 +1509,7 @@ namespace Engine::Rendering
 		//if (vkCreateBuffer(this->vkLogicalDevice, &bufferInfo, nullptr, &(new_buffer->buffer)) != VK_SUCCESS)
 		if (vmaCreateBuffer(this->vmaAllocator, &bufferInfo, &vmaAllocInfo, &(new_buffer->buffer), &(new_buffer->allocation), &(new_buffer->allocationInfo)) != VK_SUCCESS)
 		{
-			this->logger->SimpleLog(Logging::LogLevel::Error, "Vulkan failed creating buffer");
+			this->logger->SimpleLog(Logging::LogLevel::Error, LOGPFX_CURRENT "Vulkan failed creating buffer");
 			throw std::runtime_error("failed to create buffer!");
 		}
 
@@ -1546,7 +1550,7 @@ namespace Engine::Rendering
 	{
 		this->leakBufferCounter -= 1;
 
-		//this->logger->SimpleLog(Logging::LogLevel::Debug3, "Cleaning up vulkan buffer");
+		//this->logger->SimpleLog(Logging::LogLevel::Debug3, LOGPFX_CURRENT "Cleaning up vulkan buffer");
 
 		vkDestroyBuffer(this->vkLogicalDevice, buffer->buffer, nullptr);
 		vmaFreeMemory(this->vmaAllocator, buffer->allocation);
@@ -1591,7 +1595,7 @@ namespace Engine::Rendering
 
 		if (vkCreateDescriptorSetLayout(this->vkLogicalDevice, &layoutInfo, nullptr, &(pipeline->vkDescriptorSetLayout)) != VK_SUCCESS)
 		{
-			this->logger->SimpleLog(Logging::LogLevel::Exception, "Vulkan failed to create descriptor set layout");
+			this->logger->SimpleLog(Logging::LogLevel::Exception, LOGPFX_CURRENT "Vulkan failed to create descriptor set layout");
 			throw std::runtime_error("failed to create descriptor set layout!");
 		}
 	}
@@ -1618,7 +1622,7 @@ namespace Engine::Rendering
 
 		if (vkCreateDescriptorPool(this->vkLogicalDevice, &poolInfo, nullptr, &(pipeline->vkDescriptorPool)) != VK_SUCCESS)
 		{
-			this->logger->SimpleLog(Logging::LogLevel::Exception, "Vulkan failed to create descriptor pool");
+			this->logger->SimpleLog(Logging::LogLevel::Exception, LOGPFX_CURRENT "Vulkan failed to create descriptor pool");
 			throw std::runtime_error("failed to create descriptor pool!");
 		}
 	}
@@ -1636,7 +1640,7 @@ namespace Engine::Rendering
 		VkResult createResult{};
 		if ((createResult = vkAllocateDescriptorSets(this->vkLogicalDevice, &allocInfo, pipeline->vkDescriptorSets.data())) != VK_SUCCESS)
 		{
-			this->logger->SimpleLog(Logging::LogLevel::Exception, "Vulkan failed to create descriptor sets, VkResult: %i", createResult);
+			this->logger->SimpleLog(Logging::LogLevel::Exception, LOGPFX_CURRENT "Vulkan failed to create descriptor sets, VkResult: %i", createResult);
 			throw std::runtime_error("failed to allocate descriptor sets!");
 		}
 	}
@@ -1652,7 +1656,7 @@ namespace Engine::Rendering
 
 		if (this->leakImageCounter > 300)
 		{
-			this->logger->SimpleLog(Logging::LogLevel::Warning, "Currently allocated image count %u, possibly leaking images", this->leakImageCounter);
+			this->logger->SimpleLog(Logging::LogLevel::Warning, LOGPFX_CURRENT "Currently allocated image count %u, possibly leaking images", this->leakImageCounter);
 		}
 
 		VkImageCreateInfo imageInfo{};
@@ -1679,7 +1683,7 @@ namespace Engine::Rendering
 		//if (vkCreateImage(this->vkLogicalDevice, &imageInfo, nullptr, &(new_image->image)) != VK_SUCCESS)
 		if (vmaCreateImage(this->vmaAllocator, &imageInfo, &vmaAllocInfo, &(new_image->image), &(new_image->allocation), &(new_image->allocationInfo)) != VK_SUCCESS)
 		{
-			this->logger->SimpleLog(Logging::LogLevel::Error, "Failed to create image");
+			this->logger->SimpleLog(Logging::LogLevel::Error, LOGPFX_CURRENT "Failed to create image");
 			throw std::runtime_error("failed to create image!");
 		}
 
@@ -1694,7 +1698,7 @@ namespace Engine::Rendering
 
 		if (this->leakTextureImageCounter > 300)
 		{
-			this->logger->SimpleLog(Logging::LogLevel::Warning, "Currently allocated texture image count %u, possibly leaking texture images", this->leakTextureImageCounter);
+			this->logger->SimpleLog(Logging::LogLevel::Warning, LOGPFX_CURRENT "Currently allocated texture image count %u, possibly leaking texture images", this->leakTextureImageCounter);
 		}
 
 		new_texture_image->image = this->createVulkanImage(width, height, VK_SAMPLE_COUNT_1_BIT, format, tiling, usage, properties);
@@ -1775,7 +1779,7 @@ namespace Engine::Rendering
 		}
 		else
 		{
-			this->logger->SimpleLog(Logging::LogLevel::Error, "Unsupported layout transition requested");
+			this->logger->SimpleLog(Logging::LogLevel::Error, LOGPFX_CURRENT "Unsupported layout transition requested");
 			throw std::invalid_argument("unsupported layout transition!");
 		}
 
@@ -1827,7 +1831,7 @@ namespace Engine::Rendering
 
 		if (vkCreateSampler(this->vkLogicalDevice, &samplerInfo, nullptr, &(teximage->textureSampler)) != VK_SUCCESS)
 		{
-			this->logger->SimpleLog(Logging::LogLevel::Error, "Failed to create texture sampler");
+			this->logger->SimpleLog(Logging::LogLevel::Error, LOGPFX_CURRENT "Failed to create texture sampler");
 			throw std::runtime_error("failed to create texture sampler!");
 		}
 	}
@@ -1848,7 +1852,7 @@ namespace Engine::Rendering
 	{
 		this->leakTextureImageCounter -= 1;
 
-		//this->logger->SimpleLog(Logging::LogLevel::Debug3, "Cleaning up Vulkan texture image");
+		//this->logger->SimpleLog(Logging::LogLevel::Debug3, LOGPFX_CURRENT "Cleaning up Vulkan texture image");
 
 		vkDestroySampler(this->vkLogicalDevice, image->textureSampler, nullptr);
 		

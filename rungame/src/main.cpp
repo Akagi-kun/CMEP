@@ -12,7 +12,7 @@
 #include "EngineCore.hpp"
 
 #if defined(_MSC_VER)
-static void initStdWin32()
+static void initConsoleWin32()
 {
 	HANDLE myConsole = GetStdHandle(STD_OUTPUT_HANDLE);
 	DWORD dwMode = 0;
@@ -33,17 +33,16 @@ void runEngine()
 	myLogger->AddOutputHandle(Logging::LogLevel::Debug1, stdout, true);
 #endif
 
-		// Initialize engine
+	// Initialize engine
 	engine = new Engine::Engine(myLogger);
 
 	try
 	{
 		engine->ConfigFile("game/config.json");
-		
 	}
 	catch(std::exception e)
 	{
-		printf("Exception loading config! %s\n", e.what());
+		printf("Exception loading config! e.what(): %s\n", e.what());
 		throw e;
 	}
 	
@@ -56,7 +55,7 @@ void runEngine()
 int main(int argc, char** argv)
 {
 #if defined(_MSC_VER)
-	initStdWin32();
+	initConsoleWin32();
 #endif
 	
 	runEngine();

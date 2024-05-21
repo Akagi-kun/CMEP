@@ -18,9 +18,13 @@
 #include "Engine.hpp"
 #include "Object.hpp"
 
-#if defined(_MSC_VER)
-#include <Windows.h>
-#endif
+// Prefixes for logging messages
+#define LOGPFX_CURRENT LOGPFX_CLASS_ENGINE
+#include "Logging/LoggingPrefix.hpp"
+
+//#if defined(_MSC_VER)
+//#include <Windows.h>
+//#endif
 
 #if defined(_MSC_VER)
 	#ifndef _DEBUG
@@ -99,7 +103,7 @@ namespace Engine
 		}
 		catch(std::exception& e)
 		{
-			this->logger->SimpleLog(Logging::LogLevel::Exception, "Error parsing config json '%s', e.what(): %s", this->config_path.c_str(), e.what());
+			this->logger->SimpleLog(Logging::LogLevel::Exception, LOGPFX_CURRENT "Error parsing config json '%s', e.what(): %s", this->config_path.c_str(), e.what());
 			exit(1);
 		}
 
@@ -194,14 +198,14 @@ namespace Engine
 			}
 			catch (const std::exception& e)
 			{
-				ptr->renderer->logger->SimpleLog(Logging::LogLevel::Exception, "Caught exception while rendering object %s: %s", name.c_str(), e.what());
+				ptr->renderer->logger->SimpleLog(Logging::LogLevel::Exception, LOGPFX_CURRENT "Caught exception while rendering object %s: %s", name.c_str(), e.what());
 				exit(1);
 			}
 		}
 	}
 
 	void Engine::engineLoop()
-	{		
+	{	
 		Object* object = new Object();
 		object->renderer = new Rendering::AxisRenderer(this);
 		object->Translate(glm::vec3(0, 0, 0));
@@ -268,6 +272,7 @@ namespace Engine
 	{
 		int sum = 0;
 
+		// Allow binary handlers
 		auto handler_range = this->event_handlers.equal_range(event.event_type); 
 		for(auto handler = handler_range.first; handler != handler_range.second; ++handler)
 		{
@@ -293,7 +298,7 @@ namespace Engine
 
 	Engine::~Engine() noexcept
 	{
-		this->logger->SimpleLog(Logging::LogLevel::Info, "Deleting engine");
+		this->logger->SimpleLog(Logging::LogLevel::Info, LOGPFX_CURRENT "Destructor called");
 
 		delete this->asset_manager;
 
@@ -317,18 +322,18 @@ namespace Engine
 
 		// Engine info printout
 #if defined(_MSC_VER)
-		this->logger->SimpleLog(Logging::LogLevel::Info, 
-			"Engine info:\n////\nRunning CMEP EngineCore %s %s build, configured %s\nCompiled by MSVC compiler version: %u.%u\n////\n", 
+		this->logger->SimpleLog(Logging::LogLevel::Info, LOGPFX_CURRENT
+			"build info:\n////\nRunning CMEP EngineCore %s %s build, configured %s\nCompiled by MSVC compiler version: %u.%u\n////\n", 
 			__TIME__, __DATE__, _DEBUG ? "DEBUG" : "RELEASE", _MSC_FULL_VER, _MSC_BUILD
 		);
 #elif defined(__GNUC__)
-		this->logger->SimpleLog(Logging::LogLevel::Info, 
-			"Engine info:\n////\nRunning CMEP EngineCore %s %s build\nCompiled by GCC compiler version: %u.%u.%u\n////\n", 
+		this->logger->SimpleLog(Logging::LogLevel::Info, LOGPFX_CURRENT
+			"build info:\n////\nRunning CMEP EngineCore %s %s build\nCompiled by GCC compiler version: %u.%u.%u\n////\n", 
 			__TIME__, __DATE__, __GNUC__, __GNUC_MINOR__, __GNUC_PATCHLEVEL__
 		);
 #else
-		this->logger->SimpleLog(Logging::LogLevel::Info, 
-			"Engine info:\n////\nRunning CMEP EngineCore %s %s build\nCompiled by unknown compiler\n////\n", 
+		this->logger->SimpleLog(Logging::LogLevel::Info, LOGPFX_CURRENT
+			"build info:\n////\nRunning CMEP EngineCore %s %s build\nCompiled by unknown compiler\n////\n", 
 			__TIME__, __DATE__
 		);
 #endif
@@ -339,9 +344,11 @@ namespace Engine
 		}
 		catch(std::exception e)
 		{
-			this->logger->SimpleLog(Logging::LogLevel::Exception, "Failed handling config! e.what(): %s", e.what());
+			this->logger->SimpleLog(Logging::LogLevel::Exception, LOGPFX_CURRENT "Exception parsing config! e.what(): %s", e.what());
 			exit(1);
 		}
+
+		// Order matters here due to interdependency
 
 		this->script_executor = new Scripting::LuaScriptExecutor();
 		this->script_executor->UpdateHeldLogger(this->logger);
@@ -368,9 +375,12 @@ namespace Engine
 		this->rendering_engine->init(this->config.window.sizeX, this->config.window.sizeY, this->config.window.title);
 		this->rendering_engine->SetRenderCallback(this->RenderCallback);
 
+		//return;
+
 		this->scene_manager->LoadScene(this->config.defaultScene);
 		this->scene_manager->SetScene(this->config.defaultScene);
 
+		// Set-up GLFW
 		Rendering::GLFWwindowData windowdata = this->rendering_engine->GetWindow();
 		glfwSetWindowFocusCallback(windowdata.window, Engine::OnWindowFocusCallback);
 		glfwSetCursorPosCallback(windowdata.window, Engine::CursorPositionCallback);
@@ -385,7 +395,7 @@ namespace Engine
 
 		// Measure and log ON_INIT time
 		double total = (std::chrono::steady_clock::now() - start).count() / 1e6;
-		this->logger->SimpleLog(Logging::LogLevel::Debug1, "Handling ON_INIT took %.3lf ms total and returned %i", total, onInitEventRet);
+		this->logger->SimpleLog(Logging::LogLevel::Debug1, LOGPFX_CURRENT "Handling ON_INIT took %.3lf ms total and returned %i", total, onInitEventRet);
 		
 		if(onInitEventRet != 0)
 		{
