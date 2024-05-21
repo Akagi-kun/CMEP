@@ -985,7 +985,7 @@ namespace Engine::Rendering
 
 		vmaCreateAllocator(&allocatorCreateInfo, &(this->vmaAllocator));
 
-		this->logger->SimpleLog(Logging::LogLevel::Debug1, LOGPFX_CURRENT "VulkanRenderingEngine: VMA created");
+		this->logger->SimpleLog(Logging::LogLevel::Debug1, LOGPFX_CURRENT "VMA created");
 	}
 
 ////////////////////////////////////////////////////////////////////////

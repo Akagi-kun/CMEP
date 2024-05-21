@@ -2,6 +2,10 @@
 #include "Engine.hpp"
 #include "Rendering/SpriteRenderer.hpp"
 
+// Prefixes for logging messages
+#define LOGPFX_CURRENT LOGPFX_CLASS_SCENE
+#include "Logging/LoggingPrefix.hpp"
+
 namespace Engine
 {
     Scene::Scene() {}
@@ -50,7 +54,7 @@ namespace Engine
 
 	void Scene::AddObject(std::string name, Object* ptr)
 	{
-		this->logger->SimpleLog(Logging::LogLevel::Info, "Adding object \"%s\" to managed scene", name.c_str());
+		this->logger->SimpleLog(Logging::LogLevel::Info, LOGPFX_CURRENT "Adding object \"%s\"", name.c_str());
 		if (ptr != nullptr)
 		{
 			Rendering::GLFWwindowData data = this->owner_engine->GetRenderingEngine()->GetWindow();
@@ -77,7 +81,7 @@ namespace Engine
 		
 		if(object)
 		{
-			this->logger->SimpleLog(Logging::LogLevel::Info, "Removing object \"%s\" from managed scene, deleting object", name.c_str());
+			this->logger->SimpleLog(Logging::LogLevel::Info, LOGPFX_CURRENT "Removing object \"%s\" from scene, deleting object", name.c_str());
 			delete object;
 		}
 

@@ -7,6 +7,10 @@
 
 #include "Engine.hpp"
 
+// Prefixes for logging messages
+#define LOGPFX_CURRENT LOGPFX_CLASS_TEXTURE
+#include "Logging/LoggingPrefix.hpp"
+
 namespace Engine::Rendering
 {
 	Texture::Texture() {}
@@ -14,7 +18,7 @@ namespace Engine::Rendering
 	{
 		VulkanRenderingEngine* renderer = this->owner_engine->GetRenderingEngine();
 
-		this->logger->SimpleLog(Logging::LogLevel::Debug3, "Deleting texture");
+		this->logger->SimpleLog(Logging::LogLevel::Debug3, LOGPFX_CURRENT "Deleting texture");
 		renderer->cleanupVulkanTextureImage(this->textureImage);
 		this->textureImage = nullptr;
 	}
@@ -71,11 +75,11 @@ namespace Engine::Rendering
 		FILE* file = nullptr;
 		if ((file = fopen(path.c_str(), "rb")) == NULL)
 		{
-			this->logger->SimpleLog(Logging::LogLevel::Exception, "File %s could not be found, initializing texture not possible!", path.c_str());
+			this->logger->SimpleLog(Logging::LogLevel::Exception, LOGPFX_CURRENT "File %s could not be found, initializing texture not possible!", path.c_str());
 			throw std::runtime_error("Could not find texture!");
 		}
 
-		this->logger->SimpleLog(Logging::LogLevel::Debug2, "Initializing texture from file %s", path.c_str());
+		this->logger->SimpleLog(Logging::LogLevel::Debug2, LOGPFX_CURRENT "Initializing texture from file %s", path.c_str());
 
 		// Get size
 		fseek(file, 0, SEEK_END);
@@ -91,7 +95,7 @@ namespace Engine::Rendering
 				unsigned int xs, ys;
 				unsigned error = lodepng::decode(data, xs, ys, path.c_str());
 
-				this->logger->SimpleLog(Logging::LogLevel::Debug1, "Decoded png file %s width %u height %u", path.c_str(), xs, ys);
+				this->logger->SimpleLog(Logging::LogLevel::Debug1, LOGPFX_CURRENT "Decoded png file %s width %u height %u", path.c_str(), xs, ys);
 
 				fclose(file);
 

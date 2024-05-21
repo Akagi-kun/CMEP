@@ -28,7 +28,7 @@ void runEngine()
 
 	std::shared_ptr<Logging::Logger> myLogger = std::make_shared<Logging::Logger>();
 #if _DEBUG == 1 || defined(DEBUG)
-	myLogger->AddOutputHandle(Logging::LogLevel::Debug3, stdout, true);
+	myLogger->AddOutputHandle(Logging::LogLevel::Debug2, stdout, true);
 #else
 	myLogger->AddOutputHandle(Logging::LogLevel::Debug1, stdout, true);
 #endif
