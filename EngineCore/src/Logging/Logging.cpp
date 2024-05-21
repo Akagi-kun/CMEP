@@ -5,16 +5,20 @@
 #include <cstdarg>
 #include <chrono>
 
-static const char* level_to_color_table[8] =
+// Prefixes for logging messages
+#define LOGPFX_CURRENT LOGPFX_CLASS_LOGGER
+#include "Logging/LoggingPrefix.hpp"
+
+static const char* level_to_color_table[7] =
 {
 	Logging::Console::GRAY_FG, Logging::Console::GRAY_FG, Logging::Console::GRAY_FG,
-	Logging::Console::WHITE_FG, Logging::Console::GREEN_FG, Logging::Console::YELLOW_FG,
+	Logging::Console::WHITE_FG, Logging::Console::YELLOW_FG,
 	Logging::Console::RED_FG, Logging::Console::BLUE_FG
 };
 
-static const char* level_to_string_table[8] =
+static const char* level_to_string_table[7] =
 {
-	 "DEBUG3", "DEBUG2", "DEBUG1", "INFO", "SUCCESS", "WARNING", "ERROR", "EXCEPTION"
+	 "DBG3", "DBG2", "DBG1", "INFO", "WARN", "ERROR", "EXCEPTION"
 };
 
 void Logging::Logger::AddOutputHandle(Logging::LogLevel min_level, FILE* handle, bool use_colors)

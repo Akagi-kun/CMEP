@@ -22,10 +22,6 @@
 #define LOGPFX_CURRENT LOGPFX_CLASS_ENGINE
 #include "Logging/LoggingPrefix.hpp"
 
-//#if defined(_MSC_VER)
-//#include <Windows.h>
-//#endif
-
 #if defined(_MSC_VER)
 	#ifndef _DEBUG
 		#define _DEBUG 0
@@ -348,6 +344,7 @@ namespace Engine
 			exit(1);
 		}
 
+		//return;
 		// Order matters here due to interdependency
 
 		this->script_executor = new Scripting::LuaScriptExecutor();

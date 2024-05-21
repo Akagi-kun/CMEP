@@ -18,7 +18,6 @@ namespace Logging
 		Debug2,
 		Debug1,
 		Info,
-		Success,
 		Warning,
 		Error,
 		Exception
@@ -41,10 +40,7 @@ namespace Logging
 
 	public:
 		Logger() : threadLocked(false) {}
-		~Logger()
-		{
-			this->SimpleLog(LogLevel::Debug3, "Logger deleting...");
-		}
+		~Logger() {};
 
 		void AddOutputHandle(LogLevel min_level, FILE* handle, bool useColors = false);
 		void MapCurrentThreadToName(std::string name);

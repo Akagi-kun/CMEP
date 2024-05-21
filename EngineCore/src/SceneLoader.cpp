@@ -11,6 +11,10 @@
 
 #include <fstream>
 
+// Prefixes for logging messages
+#define LOGPFX_CURRENT LOGPFX_CLASS_SCENE_LOADER
+#include "Logging/LoggingPrefix.hpp"
+
 namespace Engine
 {
     SceneLoader::SceneLoader(std::shared_ptr<Logging::Logger> logger)
@@ -34,12 +38,12 @@ namespace Engine
 		}
 		catch(std::exception& e)
 		{
-			this->logger->SimpleLog(Logging::LogLevel::Exception, "Error parsing scene.json '%s', what: %s", std::string(this->scene_prefix + "/" + scene_name + "/scene.json").c_str(), e.what());
+			this->logger->SimpleLog(Logging::LogLevel::Exception, LOGPFX_CURRENT "Error parsing scene.json '%s', what: %s", std::string(this->scene_prefix + "/" + scene_name + "/scene.json").c_str(), e.what());
 			throw std::runtime_error("Error parsing scene.json");
 		}
 
 		std::string prefix_scene = this->scene_prefix + std::string("/") + scene_name + std::string("/");
-		this->logger->SimpleLog(Logging::LogLevel::Info, "Loading scene prefix is: %s", prefix_scene.c_str());
+		this->logger->SimpleLog(Logging::LogLevel::Info, LOGPFX_CURRENT "Loading scene prefix is: %s", prefix_scene.c_str());
 
 		EventHandling::EventType event_type = EventHandling::EventType::EVENT_UNDEFINED;
 
@@ -71,7 +75,7 @@ namespace Engine
 
 			assert(event_type != EventHandling::EventType::EVENT_UNDEFINED);
 
-			this->logger->SimpleLog(Logging::LogLevel::Debug3, "Event handler for type: %s", static_cast<std::string>(event_handler_entry["type"]).c_str());
+			this->logger->SimpleLog(Logging::LogLevel::Debug3, LOGPFX_CURRENT "Event handler for type: %s", static_cast<std::string>(event_handler_entry["type"]).c_str());
 			std::shared_ptr<Scripting::LuaScript> event_handler = asset_manager->GetLuaScript(prefix_scene + std::string(event_handler_entry["file"]));
 			
 			if(event_handler == nullptr)
@@ -98,7 +102,7 @@ namespace Engine
 				object->renderer_type = "sprite";
 			}
 			
-			this->logger->SimpleLog(Logging::LogLevel::Debug2, "Loaded templated object %s", std::string(template_entry["name"]).c_str());
+			this->logger->SimpleLog(Logging::LogLevel::Debug2, LOGPFX_CURRENT "Loaded templated object %s", std::string(template_entry["name"]).c_str());
 			scene->LoadTemplatedObject(template_entry["name"], object);
 		}
     }
