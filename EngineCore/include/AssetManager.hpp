@@ -19,24 +19,30 @@ namespace Engine
 		class Font;
 	}
 
-	class CMEP_EXPORT AssetManager final
+	class CMEP_EXPORT AssetManager final : public InternalEngineObject
 	{
 	private:
 		std::unordered_map<std::string, std::shared_ptr<Scripting::LuaScript>> luascripts{};
 		std::unordered_map<std::string, std::shared_ptr<Rendering::Texture>> textures{};
 		std::unordered_map<std::string, std::shared_ptr<Rendering::Font>> fonts{};
 		std::unordered_map<std::string, std::shared_ptr<Rendering::Mesh>> models{};
-	public:
-		std::shared_ptr<Logging::Logger> logger{};
-		Engine* owner_engine{};
 
 		std::unique_ptr<Factories::FontFactory> fontFactory{};
+	public:
+		//std::shared_ptr<Logging::Logger> logger{};
+		//Engine* owner_engine{};
+
 		Scripting::LuaScriptExecutor* lua_executor{};
 		
 		std::string current_load_path = "";
 
 		AssetManager();
 		~AssetManager();
+
+		// Overrides InternalEngineObject::UpdateHeldLogger
+		void UpdateHeldLogger(std::shared_ptr<Logging::Logger> new_logger);
+		// Overrides InternalEngineObject::UpdateOwnerEngine
+        void UpdateOwnerEngine(Engine* owner_engine);
 
 		void AddTexture(std::string name, std::string path, Rendering::Texture_InitFiletype filetype);
 		void AddFont(std::string name, std::string path);

@@ -27,17 +27,17 @@ namespace Engine::Rendering
 		this->logger->SimpleLog(Logging::LogLevel::Debug3, LOGPFX_CURRENT "Destructor called");
 	}
 
-	int Font::Init(FontData data)
+	int Font::Init(std::unique_ptr<FontData> data)
 	{
-		this->data = data;
+		this->data = std::move(data);
 
 		return 0;
 	}
 
 	FontChar* Font::GetChar(char ch)
 	{
-		auto find_ret = this->data.chars.find(ch);
-		if (find_ret != this->data.chars.end())
+		auto find_ret = this->data->chars.find(ch);
+		if (find_ret != this->data->chars.end())
 		{
 			return &find_ret->second;
 		}
@@ -46,8 +46,8 @@ namespace Engine::Rendering
 
 	std::shared_ptr<Texture> Font::GetPageTexture(int page)
 	{
-		auto find_ret = this->data.pages.find(page);
-		if (find_ret != this->data.pages.end())
+		auto find_ret = this->data->pages.find(page);
+		if (find_ret != this->data->pages.end())
 		{
 			return find_ret->second;
 		}
@@ -56,8 +56,8 @@ namespace Engine::Rendering
 
 	std::string* Font::GetFontInfoParameter(std::string name)
 	{
-		auto find_ret = this->data.info.find(name);
-		if (find_ret != this->data.info.end())
+		auto find_ret = this->data->info.find(name);
+		if (find_ret != this->data->info.end())
 		{
 			return &find_ret->second;
 		}

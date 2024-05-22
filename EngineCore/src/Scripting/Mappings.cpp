@@ -248,6 +248,8 @@ namespace Engine::Scripting::Mappings
 		}
 #pragma endregion
 
+
+
 #pragma region Engine
 
 		int engine_GetAssetManager(lua_State* state)
@@ -324,6 +326,8 @@ namespace Engine::Scripting::Mappings
 
 #pragma endregion
 
+
+
 #pragma region TextRenderer
 
 		int textRenderer_UpdateText(lua_State* state)
@@ -339,6 +343,8 @@ namespace Engine::Scripting::Mappings
 		}
 
 #pragma endregion
+
+
 
 #pragma region MeshRenderer
 
@@ -356,6 +362,8 @@ namespace Engine::Scripting::Mappings
 		}
 
 #pragma endregion
+
+
 
 #pragma region Object
 
@@ -466,6 +474,8 @@ namespace Engine::Scripting::Mappings
 
 #pragma endregion
 
+
+
 #pragma region AssetManager
 
 		int assetManager_GetFont(lua_State* state)
@@ -563,6 +573,8 @@ namespace Engine::Scripting::Mappings
 		}
 
 #pragma endregion
+
+
 
 #pragma region ObjectFactory
 

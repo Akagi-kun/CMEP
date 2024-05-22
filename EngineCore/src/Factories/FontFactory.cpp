@@ -22,7 +22,7 @@ namespace Engine::Factories
 		font->owner_engine = this->owner_engine;
 		font->UpdateHeldLogger(this->logger);
 
-		Rendering::FontData fontData = {};
+		std::unique_ptr<Rendering::FontData> fontData = std::make_unique<Rendering::FontData>();
 
 		std::ifstream fontFile(fontPath);
 
@@ -40,13 +40,13 @@ namespace Engine::Factories
 
 		fontFile.close();
 
-		font->Init(fontData);
+		font->Init(std::move(fontData));
 
 		return font;
 	}
 
 	
-	void FontFactory::EvalBmfont(Rendering::FontData& font, std::ifstream& fontFile)
+	void FontFactory::EvalBmfont(std::unique_ptr<Rendering::FontData>& font, std::ifstream& fontFile)
 	{
 		int cur_offset = 0;
 		char cur_data[16] = {};
@@ -105,7 +105,7 @@ namespace Engine::Factories
 		
 	}
 
-	void FontFactory::EvalBmfontLine(Rendering::FontData& font, int type, char* data)
+	void FontFactory::EvalBmfontLine(std::unique_ptr<Rendering::FontData>& font, int type, char* data)
 	{
 		// Temporary storage arrays
 		char cur_data[48] = {};
@@ -126,7 +126,7 @@ namespace Engine::Factories
 			case 0: // info
 			case 2: // common
 			{
-				font.info.emplace(key, value);
+				font->info.emplace(key, value);
 				break;
 			}
 			case 1: // char
@@ -163,7 +163,7 @@ namespace Engine::Factories
 					c.channel = std::stoi(pairs.find("chnl")->second.c_str(), nullptr, 10);
 
 					// Place the character into unordered_map
-					font.chars.emplace(id, c);
+					font->chars.emplace(id, c);
 
 					// Clear the collector unordered_map
 					pairs.clear();
@@ -207,14 +207,14 @@ namespace Engine::Factories
 					}
 
 					// Add page and it's texture to map
-					font.pages.insert(std::pair<int, std::shared_ptr<Rendering::Texture>>(page_idx, std::move(texture)));
+					font->pages.insert(std::pair<int, std::shared_ptr<Rendering::Texture>>(page_idx, std::move(texture)));
 					page_idx++;
 				}
 				break;
 			}
 			case 4: // chars
 			{
-				(void)sscanf(value, "%u", &font.char_count);
+				(void)sscanf(value, "%u", &font->char_count);
 				break;
 			}
 			}

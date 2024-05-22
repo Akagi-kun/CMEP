@@ -25,6 +25,18 @@ namespace Engine
 		this->logger->SimpleLog(Logging::LogLevel::Debug3, LOGPFX_CURRENT "Deleting asset manager");
 	}
 
+	void AssetManager::UpdateHeldLogger(std::shared_ptr<Logging::Logger> new_logger)
+	{
+		InternalEngineObject::UpdateHeldLogger(new_logger);
+		this->fontFactory->UpdateHeldLogger(new_logger);
+	}
+
+    void AssetManager::UpdateOwnerEngine(Engine* owner_engine)
+	{
+		InternalEngineObject::UpdateOwnerEngine(owner_engine);
+		this->fontFactory->UpdateOwnerEngine(owner_engine);
+	}
+
 #pragma region Adding Assets
 	void AssetManager::AddTexture(std::string name, std::string path, Rendering::Texture_InitFiletype filetype)
 	{

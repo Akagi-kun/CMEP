@@ -12,8 +12,8 @@ namespace Engine::Factories
 	private:
 		AssetManager* asset_manager;
 
-		void EvalBmfont(Rendering::FontData& font, std::ifstream& fontFile);
-		void EvalBmfontLine(Rendering::FontData& font, int type, char* data);
+		void EvalBmfont(std::unique_ptr<Rendering::FontData>& font, std::ifstream& fontFile);
+		void EvalBmfontLine(std::unique_ptr<Rendering::FontData>& font, int type, char* data);
 	public:
 		FontFactory(AssetManager* manager);
 

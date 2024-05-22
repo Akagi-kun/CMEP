@@ -352,10 +352,12 @@ namespace Engine
 
 		this->asset_manager = new AssetManager();
 		this->asset_manager->current_load_path = this->config.lookup.scenes + std::string("/") + this->config.defaultScene + std::string("/");
-		this->asset_manager->owner_engine = this;
-		this->asset_manager->fontFactory->owner_engine = this;
-		this->asset_manager->logger = this->logger;
-		this->asset_manager->fontFactory->logger = this->logger;
+		//this->asset_manager->owner_engine = this;
+		this->asset_manager->UpdateOwnerEngine(this);
+		//this->asset_manager->fontFactory->owner_engine = this;
+		this->asset_manager->UpdateHeldLogger(this->logger);
+		//this->asset_manager->logger = this->logger;
+		//this->asset_manager->fontFactory->logger = this->logger;
 
 		this->asset_manager->lua_executor = this->script_executor;
 

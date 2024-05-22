@@ -31,13 +31,13 @@ namespace Engine
 			std::string fntfile;
 
 			// Data from fnt file
-			FontData data;
+			std::unique_ptr<FontData> data;
 
 		public:
 			Font(AssetManager* managed_by = nullptr);
 			~Font();
 
-			int Init(FontData data);
+			int Init(std::unique_ptr<FontData> data);
 
 			FontChar* GetChar(char ch);
 			std::shared_ptr<Texture> GetPageTexture(int page);
