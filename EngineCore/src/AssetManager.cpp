@@ -8,6 +8,11 @@
 
 namespace Engine
 {
+	AssetManager::AssetManager()
+	{
+		this->fontFactory = std::make_unique<Factories::FontFactory>(this);
+	}
+
 	AssetManager::~AssetManager()
 	{
 		for(auto& texture : this->textures)
@@ -40,13 +45,8 @@ namespace Engine
 
 	void AssetManager::AddFont(std::string name, std::string path)
 	{
-		std::shared_ptr<Rendering::Font> font = std::make_shared<Rendering::Font>(this);
-		font->owner_engine = this->owner_engine;
-		
-		font->UpdateHeldLogger(this->logger);
-		font->Init(std::move(this->current_load_path + path));
-
-		this->fonts.emplace(name, font);
+		std::shared_ptr<Rendering::Font> font = this->fontFactory->InitBMFont(path);
+		this->fonts.emplace(name, std::move(font));
 	}
 
 	void AssetManager::AddLuaScript(std::string name, std::string path)
@@ -94,16 +94,20 @@ namespace Engine
 		}
 		else
 		{
-			std::shared_ptr<Rendering::Font> font = std::make_shared<Rendering::Font>(this);
-			
-			font->UpdateHeldLogger(this->logger);
-			if (font->Init(this->current_load_path + name) != 0)
-			{
-				return nullptr;
-			}
-			
-			this->fonts.emplace(name, font);
-			return font;
+			// Recursive!!!
+			this->AddFont(name, this->current_load_path + name);
+			return this->GetFont(name);
+
+			//std::shared_ptr<Rendering::Font> font = std::make_shared<Rendering::Font>(this);
+			//
+			//font->UpdateHeldLogger(this->logger);
+			//if (font->Init(this->current_load_path + name) != 0)
+			//{
+			//	return nullptr;
+			//}
+			//
+			//this->fonts.emplace(name, font);
+			//return font;
 		}
 	}
 

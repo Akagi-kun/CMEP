@@ -7,6 +7,9 @@
 #include "PlatformSemantics.hpp"
 #include "Rendering/Texture.hpp"
 #include "Rendering/Mesh.hpp"
+
+#include "Factories/FontFactory.hpp"
+
 #include "InternalEngineObject.hpp"
 
 namespace Engine
@@ -25,12 +28,14 @@ namespace Engine
 		std::unordered_map<std::string, std::shared_ptr<Rendering::Mesh>> models{};
 	public:
 		std::shared_ptr<Logging::Logger> logger{};
-		Scripting::LuaScriptExecutor* lua_executor{};
 		Engine* owner_engine{};
 
+		std::unique_ptr<Factories::FontFactory> fontFactory{};
+		Scripting::LuaScriptExecutor* lua_executor{};
+		
 		std::string current_load_path = "";
 
-		AssetManager() {};
+		AssetManager();
 		~AssetManager();
 
 		void AddTexture(std::string name, std::string path, Rendering::Texture_InitFiletype filetype);

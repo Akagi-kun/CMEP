@@ -6,7 +6,9 @@
 
 #include "SceneManager.hpp"
 #include "AssetManager.hpp"
-#include "ObjectFactory.hpp"
+
+#include "Factories/ObjectFactory.hpp"
+
 #include "Engine.hpp"
 
 namespace Engine::Scripting::Mappings

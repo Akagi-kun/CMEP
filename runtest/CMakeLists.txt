@@ -13,7 +13,10 @@ set(SRC_FILES
 	../EngineCore/src/AssetManager.cpp
 	../EngineCore/src/Engine.cpp
 	../EngineCore/src/SceneManager.cpp
-	../EngineCore/src/ObjectFactory.cpp
+
+	../EngineCore/src/Factories/ObjectFactory.cpp
+	../EngineCore/src/Factories/FontFactory.cpp
+
 	../EngineCore/src/Rendering/Font.cpp
 	../EngineCore/src/Rendering/AxisRenderer.cpp
 	../EngineCore/src/Rendering/Mesh.cpp

@@ -9,9 +9,13 @@ set(SRC_FILES
 	src/Scene.cpp
 	src/SceneManager.cpp
 	src/SceneLoader.cpp
-	src/ObjectFactory.cpp
+
+	src/Factories/ObjectFactory.cpp
+	src/Factories/FontFactory.cpp
+
 	src/Logging/ConsoleColors.cpp
 	src/Logging/Logging.cpp
+
 	src/Rendering/Font.cpp
 	src/Rendering/AxisRenderer.cpp
 	src/Rendering/Mesh.cpp
@@ -20,9 +24,11 @@ set(SRC_FILES
 	src/Rendering/TextRenderer.cpp
 	src/Rendering/Texture.cpp
 	src/Rendering/VulkanRenderingEngine.cpp
+	
 	src/Scripting/LuaScript.cpp
 	src/Scripting/LuaScriptExecutor.cpp
 	src/Scripting/Mappings.cpp
+
 	../external/lodepng/lodepng.cpp
 	)
 

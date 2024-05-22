@@ -11,6 +11,7 @@ namespace Engine::Rendering
 	class Font;
 }
 
+// TODO: Move to Factories namespace?
 namespace Engine::ObjectFactory
 {
 	CMEP_EXPORT Object* CreateSpriteObject(std::weak_ptr<SceneManager> scene_manager, double x, double y, double sizex, double sizey, std::shared_ptr<::Engine::Rendering::Texture> sprite);
