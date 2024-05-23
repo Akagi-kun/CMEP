@@ -19,7 +19,7 @@ namespace Engine::Factories
 	std::shared_ptr<Rendering::Font> FontFactory::InitBMFont(std::string fontPath)
 	{
 		std::shared_ptr<Rendering::Font> font = std::make_shared<Rendering::Font>();
-		font->owner_engine = this->owner_engine;
+		font->UpdateOwnerEngine(this->owner_engine);
 		font->UpdateHeldLogger(this->logger);
 
 		std::unique_ptr<Rendering::FontData> fontData = std::make_unique<Rendering::FontData>();

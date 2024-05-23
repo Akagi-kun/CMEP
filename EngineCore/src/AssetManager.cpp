@@ -41,7 +41,7 @@ namespace Engine
 	void AssetManager::AddTexture(std::string name, std::string path, Rendering::Texture_InitFiletype filetype)
 	{
 		std::shared_ptr<Rendering::Texture> texture = std::make_shared<Rendering::Texture>();
-		texture->owner_engine = this->owner_engine;
+		texture->UpdateOwnerEngine(this->owner_engine);
 
 		texture->UpdateHeldLogger(this->logger);
 
@@ -71,7 +71,7 @@ namespace Engine
 	void AssetManager::AddModel(std::string name, std::string path)
 	{
 		std::shared_ptr<Rendering::Mesh> mesh = std::make_shared<Rendering::Mesh>();
-		mesh->owner_engine = this->owner_engine;
+		mesh->UpdateOwnerEngine(this->owner_engine);
 		mesh->UpdateHeldLogger(this->logger);
 		
 		mesh->CreateMeshFromObj(this->current_load_path + path);

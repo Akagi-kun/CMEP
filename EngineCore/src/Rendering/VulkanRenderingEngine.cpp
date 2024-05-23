@@ -19,7 +19,10 @@ namespace Engine::Rendering
 		const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData,
 		void* pUserData)
 	{
-		((VulkanRenderingEngine*)pUserData)->logger->SimpleLog(Logging::LogLevel::Warning, LOGPFX_CURRENT "Vulcan validation layer reported: %s", pCallbackData->pMessage);
+		if(auto locked_logger = ((VulkanRenderingEngine*)pUserData)->GetLogger().lock())
+		{
+			locked_logger->SimpleLog(Logging::LogLevel::Warning, LOGPFX_CURRENT "Vulcan validation layer reported: %s", pCallbackData->pMessage);
+		}
 
 		return VK_FALSE;
 	}

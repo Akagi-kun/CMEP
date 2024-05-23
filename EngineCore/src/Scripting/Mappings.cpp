@@ -180,10 +180,14 @@ namespace Engine::Scripting::Mappings
 			}
 			else
 			{
+				// TODO: Affix logger to Lua global state and get it through that
 				// Get logger through a scene manager
 				if(auto locked_scene_manager = scene_manager.lock())
 				{
-					locked_scene_manager->logger->SimpleLog(Logging::LogLevel::Warning, "Lua: Object %s requested but returned nullptr!", obj_name.c_str());
+					if(auto locked_logger = locked_scene_manager->GetLogger().lock())
+					{
+						locked_logger->SimpleLog(Logging::LogLevel::Warning, "Lua: Object %s requested but returned nullptr!", obj_name.c_str());
+					}					
 				}
 
 				lua_pushnil(state);

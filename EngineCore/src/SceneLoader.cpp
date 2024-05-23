@@ -110,8 +110,8 @@ namespace Engine
     std::shared_ptr<Scene> SceneLoader::LoadScene(std::string scene_name)
     {
         std::shared_ptr<Scene> new_scene = std::make_shared<Scene>();
-        new_scene->logger = this->logger;
-		new_scene->owner_engine = this->owner_engine;
+        new_scene->UpdateHeldLogger(this->logger);
+		new_scene->UpdateOwnerEngine(this->owner_engine);
 
         this->LoadSceneInternal(new_scene, scene_name);
 

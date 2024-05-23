@@ -168,18 +168,18 @@ namespace Engine
 			Rendering::VulkanRenderingEngine* renderer = (Rendering::VulkanRenderingEngine*)glfwGetWindowUserPointer(window);
 			EventHandling::Event event = EventHandling::Event(EventHandling::EventType::ON_KEYDOWN);
 			event.keycode = key;
-			event.deltaTime = renderer->owner_engine->GetLastDeltaTime();
-			event.raisedFrom = renderer->owner_engine;
-			renderer->owner_engine->FireEvent(event);
+			event.deltaTime = renderer->GetOwnerEngine()->GetLastDeltaTime();
+			event.raisedFrom = renderer->GetOwnerEngine();
+			renderer->GetOwnerEngine()->FireEvent(event);
 		}
 		else if(action == GLFW_RELEASE)
 		{
 			Rendering::VulkanRenderingEngine* renderer = (Rendering::VulkanRenderingEngine*)glfwGetWindowUserPointer(window);
 			EventHandling::Event event = EventHandling::Event(EventHandling::EventType::ON_KEYUP);
 			event.keycode = key;
-			event.deltaTime = renderer->owner_engine->GetLastDeltaTime();
-			event.raisedFrom = renderer->owner_engine;
-			renderer->owner_engine->FireEvent(event);
+			event.deltaTime = renderer->GetOwnerEngine()->GetLastDeltaTime();
+			event.raisedFrom = renderer->GetOwnerEngine();
+			renderer->GetOwnerEngine()->FireEvent(event);
 		}
 	}
 
@@ -194,7 +194,7 @@ namespace Engine
 			}
 			catch (const std::exception& e)
 			{
-				ptr->renderer->logger->SimpleLog(Logging::LogLevel::Exception, LOGPFX_CURRENT "Caught exception while rendering object %s: %s", name.c_str(), e.what());
+				engine->logger->SimpleLog(Logging::LogLevel::Exception, LOGPFX_CURRENT "Caught exception while rendering object %s: %s", name.c_str(), e.what());
 				exit(1);
 			}
 		}
@@ -375,7 +375,7 @@ namespace Engine
 	{
 		auto start = std::chrono::steady_clock::now();
 
-		this->rendering_engine->owner_engine = this;
+		this->rendering_engine->UpdateOwnerEngine(this);
 		this->rendering_engine->init(this->config.window.sizeX, this->config.window.sizeY, this->config.window.title);
 		this->rendering_engine->SetRenderCallback(this->RenderCallback);
 

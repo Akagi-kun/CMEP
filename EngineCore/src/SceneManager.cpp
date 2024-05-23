@@ -14,7 +14,7 @@ namespace Engine
 		this->logger = logger;
 
 		this->scenes.emplace("_default", std::make_shared<Scene>());
-		this->scenes.at(this->current_scene)->logger = this->logger;
+		this->scenes.at(this->current_scene)->UpdateHeldLogger(this->logger);
 
 		this->scene_loader = std::make_shared<SceneLoader>(logger);
 	}
@@ -38,7 +38,7 @@ namespace Engine
 	
 	void SceneManager::LoadScene(std::string scene_name)
 	{
-		this->scene_loader->owner_engine = this->owner_engine;
+		this->scene_loader->UpdateOwnerEngine(this->owner_engine);
 		this->scenes.emplace(scene_name, this->scene_loader->LoadScene(scene_name));
 	}
 
@@ -59,7 +59,7 @@ namespace Engine
 	
 	void SceneManager::AddObject(std::string name, Object* ptr)
 	{
-		this->scenes.at(this->current_scene)->owner_engine = this->owner_engine;
+		this->scenes.at(this->current_scene)->UpdateOwnerEngine(this->owner_engine);
 		this->scenes.at(this->current_scene)->AddObject(name, ptr);
 	}
 

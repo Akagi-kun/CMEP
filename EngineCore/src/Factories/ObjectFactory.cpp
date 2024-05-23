@@ -18,7 +18,7 @@ namespace Engine::ObjectFactory
 		if(auto locked_scene_manager = scene_manager.lock())
 		{
 			Object* object = new Object();
-			object->renderer = new Rendering::SpriteRenderer(locked_scene_manager->owner_engine);
+			object->renderer = new Rendering::SpriteRenderer(locked_scene_manager->GetOwnerEngine());
 			object->Translate(glm::vec3(x, y, 0));
 			object->Scale(glm::vec3(sizex, sizey, 0));
 			((Rendering::SpriteRenderer*)object->renderer)->scene_manager = scene_manager;
@@ -35,7 +35,7 @@ namespace Engine::ObjectFactory
 		if(auto locked_scene_manager = scene_manager.lock())
 		{
 			Object* object = new Object();
-			object->renderer = new Rendering::TextRenderer(locked_scene_manager->owner_engine);
+			object->renderer = new Rendering::TextRenderer(locked_scene_manager->GetOwnerEngine());
 			object->Translate(glm::vec3(x, y, 0));
 			object->Scale(glm::vec3(size, size, 0));
 			((Rendering::TextRenderer*)object->renderer)->scene_manager = scene_manager;
@@ -53,7 +53,7 @@ namespace Engine::ObjectFactory
 		if(auto locked_scene_manager = scene_manager.lock())
 		{
 			Object* object = new Object();
-			object->renderer = new Rendering::MeshRenderer(locked_scene_manager->owner_engine);
+			object->renderer = new Rendering::MeshRenderer(locked_scene_manager->GetOwnerEngine());
 			object->Translate(glm::vec3(x, y, z));
 			object->Scale(glm::vec3(sizex, sizey, sizez));
 			object->Rotate(glm::vec3(rotx, roty, rotz));
