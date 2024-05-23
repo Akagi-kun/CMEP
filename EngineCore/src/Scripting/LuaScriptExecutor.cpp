@@ -29,15 +29,41 @@ namespace Engine
 			lua_setglobal(state, "cmepapi");
 		}
 
-		static int LuaErrorHandler(lua_State* state)
+		// Register meta information (logger etc)
+		void LuaScriptExecutor::registerMeta(lua_State* state)
 		{
+			// cmepmeta table (not an actual Lua metatable !!!)
+			lua_newtable(state);
 
+			/*******************************/
+			// Logger table
+			lua_newtable(state);
+
+			void* ptr_obj = lua_newuserdata(state, sizeof(std::weak_ptr<Logging::Logger>));
+			new(ptr_obj) std::weak_ptr<Logging::Logger>(this->logger);
+			
+			lua_setfield(state, -2, "_smart_pointer");
+
+			lua_setfield(state, -2, "logger");
+			/*******************************/
+			/*******************************/
+
+			lua_setglobal(state, "cmepmeta");
+		}
+
+		static int LuaErrorHandler(lua_State* state)
+		{// TODO:
+			//Logging::GlobalLogger->SimpleLog(Logging::LogLevel::Error, "Error?");
 
 			return 0;
 		}
 
 		int LuaScriptExecutor::CallIntoScript(ExecuteType etype, std::shared_ptr<LuaScript> script, std::string function, void* data)
 		{
+			//this->logger->SimpleLog(Logging::LogLevel::Debug2,
+			//	"Running lua script '%s', called function '%s'",
+			//	script->path.c_str(), function.c_str());
+
 			// Get script state
 			lua_State* state = script->GetState();
 
@@ -50,6 +76,7 @@ namespace Engine
 				case ExecuteType::EventHandler:
 					EventHandling::Event* event = (EventHandling::Event*)data;
 
+					// Event table
 					lua_newtable(state);
 					lua_pushnumber(state, event->deltaTime);
 					lua_setfield(state, -2, "deltaTime");
@@ -84,9 +111,6 @@ namespace Engine
 			lua_pop(state, 1);
 
 			return static_cast<int>(ret);
-			//this->logger->SimpleLog(Logging::LogLevel::Debug2,
-			//	"Running lua script '%s', called function '%d' returned %llu",
-			//	script->path.c_str(), function.c_str(), ret);
 		}
 
 		int LuaScriptExecutor::LoadAndCompileScript(LuaScript* script)
@@ -101,10 +125,13 @@ namespace Engine
 
 			// Register c callback functions
 			LuaScriptExecutor::registerCallbacks(state);
+			this->registerMeta(state);
 
 			if (errload != LUA_OK || errexec != LUA_OK)
 			{
 				this->logger->SimpleLog(Logging::LogLevel::Error, "Error when loading and compiling Lua script '%s'\n   Error codes:\n    load: %i\n    compile: %i\n  Compilation error: %s", script->path.c_str(), errload, errexec, errorexec);
+			
+				return 1;
 			}
 
 			this->logger->SimpleLog(Logging::LogLevel::Debug1, "Loaded and compiled Lua script: '%s'", script->path.c_str());

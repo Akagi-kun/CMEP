@@ -174,7 +174,7 @@ namespace Engine::Rendering
 			diffuseImageBufferInfos.resize(this->mesh->diffuse_textures.size());
 			for (int diffuseTextureIndex = 0; diffuseTextureIndex < this->mesh->diffuse_textures.size(); diffuseTextureIndex++)
 			{
-				Logging::GlobalLogger->SimpleLog(Logging::LogLevel::Debug2, "Filling imageBufferInfos at index %u", diffuseTextureIndex);
+				//Logging::GlobalLogger->SimpleLog(Logging::LogLevel::Debug2, "Filling imageBufferInfos at index %u", diffuseTextureIndex);
 
 				if(this->mesh->diffuse_textures[diffuseTextureIndex] != nullptr)
 				{
@@ -214,7 +214,8 @@ namespace Engine::Rendering
 
 				if (diffuseImageBufferInfos.size() > 0)
 				{
-					Logging::GlobalLogger->SimpleLog(Logging::LogLevel::Debug3, "Updating set 0x%x binding 1", pipeline->vkDescriptorSets[i]);
+					// TODO:
+					//Logging::GlobalLogger->SimpleLog(Logging::LogLevel::Debug3, "Updating set 0x%x binding 1", pipeline->vkDescriptorSets[i]);
 
 					descriptorWrites.resize(2);
 					descriptorWrites[1].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
@@ -225,9 +226,9 @@ namespace Engine::Rendering
 					descriptorWrites[1].descriptorCount = static_cast<uint32_t>(diffuseImageBufferInfos.size());
 					descriptorWrites[1].pImageInfo = diffuseImageBufferInfos.data();
 				}
-
-				Logging::GlobalLogger->SimpleLog(Logging::LogLevel::Debug3, "Descriptor set 0x%x write of index 1 has binding %u, descriptorWrite size is %u",
-					pipeline->vkDescriptorSets[i], descriptorWrites[1].dstBinding, static_cast<unsigned int>(descriptorWrites.size()));
+				// TODO:
+				//Logging::GlobalLogger->SimpleLog(Logging::LogLevel::Debug3, "Descriptor set 0x%x write of index 1 has binding %u, descriptorWrite size is %u",
+				//	pipeline->vkDescriptorSets[i], descriptorWrites[1].dstBinding, static_cast<unsigned int>(descriptorWrites.size()));
 
 				vkUpdateDescriptorSets(renderer->GetLogicalDevice(), static_cast<uint32_t>(descriptorWrites.size()), descriptorWrites.data(), 0, nullptr);
 			}

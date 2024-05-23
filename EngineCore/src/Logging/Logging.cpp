@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include <cstdarg>
 #include <chrono>
+#include <exception>
 
 // Prefixes for logging messages
 #define LOGPFX_CURRENT LOGPFX_CLASS_LOGGER
@@ -55,10 +56,6 @@ void Logging::Logger::StartLog(Logging::LogLevel level)
 		return;
 	}
 
-	// locking
-	while (this->threadLocked) {};
-	this->threadLocked = true;
-
 	// StartLog for all outputs
 	for (auto output : this->outputs)
 	{
@@ -87,7 +84,6 @@ void Logging::Logger::StartLog(Logging::LogLevel level)
 			{
 				fprintf(output->handle, "%s[%02i:%02i:%02i %s %s] ", output->useColors ? level_to_color_table[static_cast<int>(level)] : "", cur_time.tm_hour, cur_time.tm_min, cur_time.tm_sec, find_result->second.c_str(), level_to_string_table[static_cast<int>(level)]);
 			}
-
 		}
 	}
 }
@@ -122,9 +118,6 @@ void Logging::Logger::StopLog()
 			fputc('\n', output->handle);
 		}
 	}
-
-	// unlocking
-	this->threadLocked = false;
 }
 
 void Logging::Logger::SimpleLog(LogLevel level, const char* format, ...)
@@ -142,7 +135,6 @@ void Logging::Logger::SimpleLog(LogLevel level, const char* format, ...)
 			va_end(args);
 		}
 	}
+
 	this->StopLog();
 }
-
-std::shared_ptr<Logging::Logger> Logging::GlobalLogger;

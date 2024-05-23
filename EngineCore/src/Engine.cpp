@@ -349,6 +349,7 @@ namespace Engine
 
 		this->script_executor = new Scripting::LuaScriptExecutor();
 		// Will LuaScriptExecutor need to access owner engine? UpdateOwnerEngine
+		this->script_executor->UpdateOwnerEngine(this);
 		this->script_executor->UpdateHeldLogger(this->logger);
 
 		this->asset_manager = new AssetManager();

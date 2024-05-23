@@ -27,14 +27,17 @@ void runEngine()
 	Engine::Engine* engine = nullptr;
 
 	std::shared_ptr<Logging::Logger> myLogger = std::make_shared<Logging::Logger>();
+
 #if _DEBUG == 1 || defined(DEBUG)
-	myLogger->AddOutputHandle(Logging::LogLevel::Debug2, stdout, true);
+	myLogger->AddOutputHandle(Logging::LogLevel::Debug3, stdout, true);
 #else
 	myLogger->AddOutputHandle(Logging::LogLevel::Debug1, stdout, true);
 #endif
 
+	myLogger->SimpleLog(Logging::LogLevel::Info, "Logger initialized");
+
 	// Initialize engine
-	engine = new Engine::Engine(myLogger);
+	engine = new Engine::Engine(std::move(myLogger));
 
 	try
 	{

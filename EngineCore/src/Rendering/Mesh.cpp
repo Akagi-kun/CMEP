@@ -117,8 +117,9 @@ namespace Engine::Rendering
 
 		renderer->cleanupVulkanBuffer(premade_staging_buffer);
 
-		Logging::GlobalLogger->SimpleLog(Logging::LogLevel::Info, "\nTinyObjReader:\n  Loaded %u materials\n  %u diffuse textures\n  %u bump textures\n  %u roughness textures\n  %u metallic textures\n  %u reflective textures",
-			materials.size(), diffuse_count, bump_count, roughness_count, metallic_count, reflection_count);
+		// TODO:
+		//Logging::GlobalLogger->SimpleLog(Logging::LogLevel::Info, "\nTinyObjReader:\n  Loaded %u materials\n  %u diffuse textures\n  %u bump textures\n  %u roughness textures\n  %u metallic textures\n  %u reflective textures",
+		//	materials.size(), diffuse_count, bump_count, roughness_count, metallic_count, reflection_count);
 
 		// Loop over shapes
 		for (size_t s = 0; s < shapes.size(); s++)

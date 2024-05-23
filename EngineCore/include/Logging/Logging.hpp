@@ -3,7 +3,8 @@
 #include <cstdio>
 #include <vector>
 #include <map>
-#include <atomic>
+//#include <atomic>
+#include <mutex>
 #include <string>
 #include <thread>
 #include <memory>
@@ -31,15 +32,15 @@ namespace Logging
 		bool useColors;
 	};
 
+	// TODO: Thread unsafe!!!
 	class CMEP_EXPORT Logger
 	{
 	private:
 		std::vector<LoggerInternalMapping*> outputs;
 		std::map<int16_t, std::string> threadid_name_map;
-		std::atomic<bool> threadLocked;
 
 	public:
-		Logger() : threadLocked(false) {}
+		Logger() {}
 		~Logger() {};
 
 		void AddOutputHandle(LogLevel min_level, FILE* handle, bool useColors = false);
@@ -51,6 +52,4 @@ namespace Logging
 
 		void SimpleLog(LogLevel level, const char* format, ...);
 	};
-
-	extern std::shared_ptr<Logger> GlobalLogger;
 }

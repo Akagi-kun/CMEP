@@ -180,14 +180,14 @@ namespace Engine::Scripting::Mappings
 			}
 			else
 			{
-				// TODO: Affix logger to Lua global state and get it through that
-				// Get logger through a scene manager
-				if(auto locked_scene_manager = scene_manager.lock())
+				lua_getglobal(state, "cmepmeta");
+				lua_getfield(state, -1, "logger");
+				lua_getfield(state, -1, "_smart_pointer");
+				std::weak_ptr<Logging::Logger> logger = *(std::weak_ptr<Logging::Logger>*)lua_touserdata(state, -1);
+
+				if(auto locked_logger = logger.lock())
 				{
-					if(auto locked_logger = locked_scene_manager->GetLogger().lock())
-					{
-						locked_logger->SimpleLog(Logging::LogLevel::Warning, "Lua: Object %s requested but returned nullptr!", obj_name.c_str());
-					}					
+					locked_logger->SimpleLog(Logging::LogLevel::Warning, "Lua: Object %s requested but returned nullptr!", obj_name.c_str());
 				}
 
 				lua_pushnil(state);
@@ -273,8 +273,15 @@ namespace Engine::Scripting::Mappings
 			}
 			else
 			{
-				Logging::GlobalLogger->SimpleLog(Logging::LogLevel::Warning, "Lua: AssetManager requested but returned nullptr!");
+				lua_getglobal(state, "cmepmeta");
+				lua_getfield(state, -1, "logger");
+				lua_getfield(state, -1, "_smart_pointer");
+				std::weak_ptr<Logging::Logger> logger = *(std::weak_ptr<Logging::Logger>*)lua_touserdata(state, -1);
 
+				if(auto locked_logger = logger.lock())
+				{
+					locked_logger->SimpleLog(Logging::LogLevel::Warning, "Lua: AssetManager requested but returned nullptr!");
+				}
 				lua_pushnil(state);
 			}
 
@@ -300,8 +307,15 @@ namespace Engine::Scripting::Mappings
 			}
 			else
 			{
-				Logging::GlobalLogger->SimpleLog(Logging::LogLevel::Warning, "Lua: SceneManager requested but is expired!");
+				lua_getglobal(state, "cmepmeta");
+				lua_getfield(state, -1, "logger");
+				lua_getfield(state, -1, "_smart_pointer");
+				std::weak_ptr<Logging::Logger> logger = *(std::weak_ptr<Logging::Logger>*)lua_touserdata(state, -1);
 
+				if(auto locked_logger = logger.lock())
+				{
+					locked_logger->SimpleLog(Logging::LogLevel::Warning, "Lua: SceneManager requested but is expired!");
+				}
 				lua_pushnil(state);
 			}
 
@@ -617,7 +631,15 @@ namespace Engine::Scripting::Mappings
 			}
 			else
 			{
-				Logging::GlobalLogger->SimpleLog(Logging::LogLevel::Warning, "Lua: Object creation failed, ObjectFactory::CreateSpriteObject returned nullptr! Params: %f %f %f %f", x, y, sizex, sizey);
+				lua_getglobal(state, "cmepmeta");
+				lua_getfield(state, -1, "logger");
+				lua_getfield(state, -1, "_smart_pointer");
+				std::weak_ptr<Logging::Logger> logger = *(std::weak_ptr<Logging::Logger>*)lua_touserdata(state, -1);
+
+				if(auto locked_logger = logger.lock())
+				{
+					locked_logger->SimpleLog(Logging::LogLevel::Warning, "Lua: Object creation failed, ObjectFactory::CreateSpriteObject returned nullptr! Params: %f %f %f %f", x, y, sizex, sizey);
+				}
 
 				lua_pushnil(state);
 			}
@@ -659,7 +681,15 @@ namespace Engine::Scripting::Mappings
 			}
 			else
 			{
-				Logging::GlobalLogger->SimpleLog(Logging::LogLevel::Warning, "Lua: Object creation failed, ObjectFactory::CreateTextObject returned nullptr! Params: %f %f %u '%s'", x, y, size, text.c_str());
+				lua_getglobal(state, "cmepmeta");
+				lua_getfield(state, -1, "logger");
+				lua_getfield(state, -1, "_smart_pointer");
+				std::weak_ptr<Logging::Logger> logger = *(std::weak_ptr<Logging::Logger>*)lua_touserdata(state, -1);
+
+				if(auto locked_logger = logger.lock())
+				{
+					locked_logger->SimpleLog(Logging::LogLevel::Warning, "Lua: Object creation failed, ObjectFactory::CreateTextObject returned nullptr! Params: %f %f %u '%s'", x, y, size, text.c_str());
+				}
 
 				lua_pushnil(state);
 			}

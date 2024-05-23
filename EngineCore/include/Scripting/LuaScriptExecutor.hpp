@@ -19,7 +19,9 @@ namespace Engine
 		class CMEP_EXPORT LuaScriptExecutor : public InternalEngineObject
 		{
 		protected:
-			void registerCallbacks(lua_State* state);
+			static void registerCallbacks(lua_State* state);
+		
+			void registerMeta(lua_State* state);
 		public:
 			LuaScriptExecutor() {};
 			~LuaScriptExecutor() {};
