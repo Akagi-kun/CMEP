@@ -348,25 +348,27 @@ namespace Engine
 		// Order matters here due to interdependency
 
 		this->script_executor = new Scripting::LuaScriptExecutor();
+		// Will LuaScriptExecutor need to access owner engine? UpdateOwnerEngine
 		this->script_executor->UpdateHeldLogger(this->logger);
 
 		this->asset_manager = new AssetManager();
 		this->asset_manager->current_load_path = this->config.lookup.scenes + std::string("/") + this->config.defaultScene + std::string("/");
-		//this->asset_manager->owner_engine = this;
 		this->asset_manager->UpdateOwnerEngine(this);
-		//this->asset_manager->fontFactory->owner_engine = this;
 		this->asset_manager->UpdateHeldLogger(this->logger);
-		//this->asset_manager->logger = this->logger;
-		//this->asset_manager->fontFactory->logger = this->logger;
 
 		this->asset_manager->lua_executor = this->script_executor;
 
 		this->scene_manager = std::make_shared<SceneManager>(this->logger);
-		this->scene_manager->owner_engine = this;
+		//this->scene_manager->UpdateOwnerEngine(this);
+		this->scene_manager->UpdateOwnerEngine(this);
+		this->scene_manager->UpdateHeldLogger(this->logger);
+		//this->scene_manager->owner_engine = this;
 		this->scene_manager->SetSceneLoadPrefix(this->config.lookup.scenes);
 
 		this->rendering_engine = new Rendering::VulkanRenderingEngine();
-		this->rendering_engine->logger = this->logger;
+		this->rendering_engine->UpdateOwnerEngine(this);
+		this->rendering_engine->UpdateHeldLogger(this->logger);
+		//this->rendering_engine->logger = this->logger;
 	}
 
 	void Engine::Run()

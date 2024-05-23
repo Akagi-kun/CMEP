@@ -8,6 +8,8 @@
 #include "SceneLoader.hpp"
 #include "Scene.hpp"
 
+#include "InternalEngineObject.hpp"
+
 #include "Logging/Logging.hpp"
 
 #include <unordered_map>
@@ -15,7 +17,7 @@
 
 namespace Engine
 {
-	class CMEP_EXPORT SceneManager final
+	class CMEP_EXPORT SceneManager final : public InternalEngineObject
 	{
 	private:
 		std::unordered_map<std::string, std::shared_ptr<Scene>> scenes{};
@@ -30,13 +32,13 @@ namespace Engine
 
 		std::shared_ptr<SceneLoader> scene_loader;
 	public:
-		std::shared_ptr<Logging::Logger> logger;
-		Engine* owner_engine;
+		//std::shared_ptr<Logging::Logger> logger;
+		//Engine* owner_engine;
 		
 		SceneManager(std::shared_ptr<Logging::Logger> logger);
 		~SceneManager();
 
-		void UpdateHeldLogger(std::shared_ptr<Logging::Logger> new_logger);
+		//void UpdateHeldLogger(std::shared_ptr<Logging::Logger> new_logger);
 
 		void SetSceneLoadPrefix(std::string scene_prefix);
 		void LoadScene(std::string scene_name);

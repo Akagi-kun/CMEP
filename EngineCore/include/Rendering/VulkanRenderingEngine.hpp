@@ -10,6 +10,8 @@
 
 #include "glm/glm.hpp"
 
+#include "InternalEngineObject.hpp"
+
 #include <string>
 #include <array>
 #include <vector>
@@ -151,7 +153,7 @@ namespace Engine::Rendering
 		}
 	};
 
-	class VulkanRenderingEngine
+	class VulkanRenderingEngine : public InternalEngineObject
 	{
 	private:
 		const uint32_t MAX_FRAMES_IN_FLIGHT = 2;
@@ -289,8 +291,8 @@ namespace Engine::Rendering
 		void createVulkanMemoryAllocator();
 
 	public:
-		std::shared_ptr<Logging::Logger> logger;
-		Engine* owner_engine;
+		//std::shared_ptr<Logging::Logger> logger;
+		//Engine* owner_engine;
 
 		VulkanRenderingEngine() {}
 
