@@ -28,8 +28,42 @@
 	#endif
 #endif
 
+#if _DEBUG == 0
+	#define BUILDCONFIG "RELEASE"
+#else
+	#define BUILDCONFIG "DEBUG"
+#endif
+
+#define MACRO_QUOTE(name) #name
+#define MACRO_STR(macro) MACRO_QUOTE(macro)
+
 namespace Engine
 {
+	const char* const _build = "CMEP EngineCore " __TIME__ " " __DATE__ " build, configured " BUILDCONFIG;
+	const char* const _compiledby = ""
+#if defined(_MSC_VER)
+	#pragma message("Compiler MSVC detected")
+	"MSVC " MACRO_STR(_MSC_FULL_VER) "." MACRO_STR(_MSC_BUILD);
+#elif defined(__GNUC__)
+	#pragma message("Compiler GNU-like detected")
+	#if defined(__llvm__ )
+		#pragma message("Compiler LLVM detected")
+		#if defined(__clang__)
+			#pragma message("Compiler LLVM-clang detected")
+			"LLVM-clang " MACRO_STR(__clang_major__) "." MACRO_STR(__clang_minor__) "." MACRO_STR(__clang_patchlevel__);
+		#else
+			#pragma message("Compiler LLVM-gcc detected")
+			"LLVM-GCC " MACRO_STR(__GNUC__) "." MACRO_STR(__GNUC_MINOR__) "." MACRO_STR(__GNUC_PATCHLEVEL__);
+		#endif
+	#else
+		#pragma message("Compiler gcc detected")
+		"GCC " MACRO_STR(__GNUC__) "." MACRO_STR(__GNUC_MINOR__) "." MACRO_STR(__GNUC_PATCHLEVEL__);
+	#endif
+#else
+	#pragma warning "Compiler could not be identified"
+	"Nil";
+#endif
+
 	bool EngineIsWindowInFocus = false;
 	bool EngineIsWindowInContent = false;
 	double EngineMouseXPos = 0.0;
@@ -317,23 +351,11 @@ namespace Engine
 		this->logger->MapCurrentThreadToName("engine");
 
 		// Engine info printout
-#if defined(_MSC_VER)
 		this->logger->SimpleLog(Logging::LogLevel::Info, LOGPFX_CURRENT
-			"build info:\n////\nRunning CMEP EngineCore %s %s build, configured %s\nCompiled by MSVC compiler version: %u.%u\n////\n", 
-			__TIME__, __DATE__, _DEBUG ? "DEBUG" : "RELEASE", _MSC_FULL_VER, _MSC_BUILD
+			"build info:\n////\nRunning %s\nCompiled by %s\n////\n", _build, _compiledby
 		);
-#elif defined(__GNUC__)
-		this->logger->SimpleLog(Logging::LogLevel::Info, LOGPFX_CURRENT
-			"build info:\n////\nRunning CMEP EngineCore %s %s build\nCompiled by GCC compiler version: %u.%u.%u\n////\n", 
-			__TIME__, __DATE__, __GNUC__, __GNUC_MINOR__, __GNUC_PATCHLEVEL__
-		);
-#else
-		this->logger->SimpleLog(Logging::LogLevel::Info, LOGPFX_CURRENT
-			"build info:\n////\nRunning CMEP EngineCore %s %s build\nCompiled by unknown compiler\n////\n", 
-			__TIME__, __DATE__
-		);
-#endif
 
+		// Load configuration
 		try
 		{
 			this->HandleConfig();
@@ -341,7 +363,7 @@ namespace Engine
 		catch(std::exception e)
 		{
 			this->logger->SimpleLog(Logging::LogLevel::Exception, LOGPFX_CURRENT "Exception parsing config! e.what(): %s", e.what());
-			exit(1);
+			throw;
 		}
 
 		//return;
@@ -360,16 +382,13 @@ namespace Engine
 		this->asset_manager->lua_executor = this->script_executor;
 
 		this->scene_manager = std::make_shared<SceneManager>(this->logger);
-		//this->scene_manager->UpdateOwnerEngine(this);
 		this->scene_manager->UpdateOwnerEngine(this);
 		this->scene_manager->UpdateHeldLogger(this->logger);
-		//this->scene_manager->owner_engine = this;
 		this->scene_manager->SetSceneLoadPrefix(this->config.lookup.scenes);
 
 		this->rendering_engine = new Rendering::VulkanRenderingEngine();
 		this->rendering_engine->UpdateOwnerEngine(this);
 		this->rendering_engine->UpdateHeldLogger(this->logger);
-		//this->rendering_engine->logger = this->logger;
 	}
 
 	void Engine::Run()

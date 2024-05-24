@@ -15,6 +15,28 @@ namespace Engine::Scripting::Mappings
 {
 	namespace Functions
 	{
+#pragma region Meta
+
+	int metaLogger_SimpleLog(lua_State* state)
+	{
+		const char* string = lua_tostring(state, 1);
+
+		lua_getglobal(state, "cmepmeta");
+		lua_getfield(state, -1, "logger");
+		lua_getfield(state, -1, "_smart_pointer");
+		std::weak_ptr<Logging::Logger> logger = *(std::weak_ptr<Logging::Logger>*)lua_touserdata(state, -1);
+
+		if(auto locked_logger = logger.lock())
+		{
+			locked_logger->SimpleLog(Logging::LogLevel::Info, "Lua: %s", string);
+		}
+
+		return 0;
+	}
+
+#pragma endregion
+
+
 #pragma region SceneManager
 
 		int sm_GetCameraHVRotation(lua_State* state)

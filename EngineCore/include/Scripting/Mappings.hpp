@@ -11,15 +11,17 @@ namespace Engine::Scripting::Mappings
 {
 	namespace Functions
 	{
-		int gsm_GetCameraHVRotation(lua_State* state);
-		int gsm_SetCameraHVRotation(lua_State* state);
-		int gsm_GetCameraTransform(lua_State* state);
-		int gsm_SetCameraTransform(lua_State* state);
-		int gsm_GetLightTransform(lua_State* state);
-		int gsm_SetLightTransform(lua_State* state);
-		int gsm_AddObject(lua_State* state);
-		int gsm_FindObject(lua_State* state);
-		int gsm_RemoveObject(lua_State* state);
+		int metaLogger_SimpleLog(lua_State* state);
+
+		int sm_GetCameraHVRotation(lua_State* state);
+		int sm_SetCameraHVRotation(lua_State* state);
+		int sm_GetCameraTransform(lua_State* state);
+		int sm_SetCameraTransform(lua_State* state);
+		int sm_GetLightTransform(lua_State* state);
+		int sm_SetLightTransform(lua_State* state);
+		int sm_AddObject(lua_State* state);
+		int sm_FindObject(lua_State* state);
+		int sm_RemoveObject(lua_State* state);
 
 		int engine_GetAssetManager(lua_State* state);
 		int engine_SetFramerateTarget(lua_State* state);
@@ -38,8 +40,8 @@ namespace Engine::Scripting::Mappings
 		int objectFactory_CreateTextObject(lua_State* state);
 		int objectFactory_CreateGeneric3DObject(lua_State* state);
 
-		int mesh_Mesh(lua_State* state);
-		int mesh_CreateMeshFromObj(lua_State* state);
+		//int mesh_Mesh(lua_State* state);
+		//int mesh_CreateMeshFromObj(lua_State* state);
 	}
 
 	// const uint32_t countMappings = 24;

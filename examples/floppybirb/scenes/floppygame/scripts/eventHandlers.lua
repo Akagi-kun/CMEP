@@ -68,6 +68,7 @@ onUpdate = function(event)
 
 	-- Update frametime counter, recommend to leave this here for debugging purposes
 	if deltaTimeCount >= 30 then
+		--cmepmeta.logger.SimpleLog(string.format("Hello from Lua! Last FT is: %f ms!", deltaTimeAvg / deltaTimeCount * 1000))
 		local object = cmepapi.sm_FindObject(scene_manager, "_debug_info");
 		cmepapi.textRenderer_UpdateText(object.renderer, "FT: "..tostring(deltaTimeAvg / deltaTimeCount * 1000).." ms");
 		
@@ -147,6 +148,8 @@ onUpdate = function(event)
 			checkCollisions2DBox(birbx, birby, 48 / 1100, 33 / 720, 0.0, 1.0, 1.0, 40 / 720)
 		then
 			gameIsGameOver = true;
+			cmepmeta.logger.SimpleLog(string.format("Game over!"))
+
 			local font = cmepapi.assetManager_GetFont(asset_manager, "fonts/myfont/myfont.fnt");
 			local object = cmepapi.objectFactory_CreateTextObject(scene_manager, 0.4, 0.4, 32, "GAME OVER", font);
 			cmepapi.sm_AddObject(scene_manager, "text_gameover", object);

@@ -136,8 +136,8 @@ namespace Engine::Rendering
 				Rendering::FontChar* ch = this->font->GetChar(this->text[i]);
 				assert(ch != nullptr);
 				if (ch == nullptr)
-				{// TODO:
-					//Logging::GlobalLogger->SimpleLog(Logging::LogLevel::Error, "Char 0x%x is not found in set font", this->text[i]);
+				{
+					this->logger->SimpleLog(Logging::LogLevel::Error, "Char 0x%x is not found in set font", this->text[i]);
 					continue;
 				}
 

@@ -30,6 +30,7 @@ namespace Engine
 		}
 
 		// Register meta information (logger etc)
+		// this information can be used in C callbacks
 		void LuaScriptExecutor::registerMeta(lua_State* state)
 		{
 			// cmepmeta table (not an actual Lua metatable !!!)
@@ -44,6 +45,9 @@ namespace Engine
 			
 			lua_setfield(state, -2, "_smart_pointer");
 
+			lua_pushcfunction(state, Mappings::Functions::metaLogger_SimpleLog);
+			lua_setfield(state, -2, "SimpleLog");
+
 			lua_setfield(state, -2, "logger");
 			/*******************************/
 			/*******************************/
@@ -52,10 +56,17 @@ namespace Engine
 		}
 
 		static int LuaErrorHandler(lua_State* state)
-		{// TODO:
-			//Logging::GlobalLogger->SimpleLog(Logging::LogLevel::Error, "Error?");
+		{
+			// We can handle errors here if necessary
+			//
+			// last value on stack is the error object
+			//
+			// last value on stack when returning has to
+			// be an error object original or another
+			//
 
-			return 0;
+			// Simply pass the error object through to pcall
+			return 1;
 		}
 
 		int LuaScriptExecutor::CallIntoScript(ExecuteType etype, std::shared_ptr<LuaScript> script, std::string function, void* data)
@@ -80,12 +91,15 @@ namespace Engine
 					lua_newtable(state);
 					lua_pushnumber(state, event->deltaTime);
 					lua_setfield(state, -2, "deltaTime");
+
 					lua_pushinteger(state, event->keycode);
 					lua_setfield(state, -2, "keycode");
+
 					Engine** engine = (Engine**)lua_newuserdata(state, sizeof(Engine*));
 					*engine = event->raisedFrom;
 					lua_setfield(state, -2, "raisedFrom");
 					
+					// Mouse table
 					lua_newtable(state);
 					lua_pushnumber(state, event->mouse.x);
 					lua_setfield(state, -2, "x");
@@ -93,6 +107,7 @@ namespace Engine
 					lua_setfield(state, -2, "y");
 					lua_setfield(state, -2, "mouse");
 
+					// Call into script
 					errcall = lua_pcall(state, 1, 1, -3); // Call
 					break;
 			}
@@ -103,7 +118,7 @@ namespace Engine
 				errormsg = lua_tostring(state, -1);
 
 				this->logger->SimpleLog(Logging::LogLevel::Warning,
-					"Error when calling Lua script '%s'\n  Called function: '%s'\n  Call error code: %i\n  Error message: %s",
+					"Error when calling Lua\n\tscript '%s' function: '%s'\n\tCall error code: %i\n\tError message: %s",
 					script->path.c_str(), function.c_str(), errcall, errormsg);
 			}
 
