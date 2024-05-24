@@ -40,28 +40,27 @@
 namespace Engine
 {
 	const char* const _build = "CMEP EngineCore " __TIME__ " " __DATE__ " build, configured " BUILDCONFIG;
-	const char* const _compiledby = ""
 #if defined(_MSC_VER)
 	#pragma message("Compiler MSVC detected")
-	"MSVC " MACRO_STR(_MSC_FULL_VER) "." MACRO_STR(_MSC_BUILD);
+	const char* const _compiledby = "MSVC " MACRO_STR(_MSC_FULL_VER) "." MACRO_STR(_MSC_BUILD);
 #elif defined(__GNUC__)
 	#pragma message("Compiler GNU-like detected")
 	#if defined(__llvm__ )
 		#pragma message("Compiler LLVM detected")
 		#if defined(__clang__)
 			#pragma message("Compiler LLVM-clang detected")
-			"LLVM-clang " MACRO_STR(__clang_major__) "." MACRO_STR(__clang_minor__) "." MACRO_STR(__clang_patchlevel__);
+			const char* const _compiledby = "LLVM-clang " MACRO_STR(__clang_major__) "." MACRO_STR(__clang_minor__) "." MACRO_STR(__clang_patchlevel__);
 		#else
 			#pragma message("Compiler LLVM-gcc detected")
-			"LLVM-GCC " MACRO_STR(__GNUC__) "." MACRO_STR(__GNUC_MINOR__) "." MACRO_STR(__GNUC_PATCHLEVEL__);
+			const char* const _compiledby = "LLVM-GCC " MACRO_STR(__GNUC__) "." MACRO_STR(__GNUC_MINOR__) "." MACRO_STR(__GNUC_PATCHLEVEL__);
 		#endif
 	#else
 		#pragma message("Compiler gcc detected")
-		"GCC " MACRO_STR(__GNUC__) "." MACRO_STR(__GNUC_MINOR__) "." MACRO_STR(__GNUC_PATCHLEVEL__);
+		const char* const _compiledby = "GCC " MACRO_STR(__GNUC__) "." MACRO_STR(__GNUC_MINOR__) "." MACRO_STR(__GNUC_PATCHLEVEL__);
 	#endif
 #else
 	#pragma warning "Compiler could not be identified"
-	"Nil";
+	const char* const _compiledby = "Nil";
 #endif
 
 	bool EngineIsWindowInFocus = false;
