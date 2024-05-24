@@ -7,7 +7,7 @@ This project is currently in alpha and although games (as shown in the `./exampl
 ### Install Vulkan SDK
 Before you build the engine you first have to install the Vulkan SDK, download it from https://vulkan.lunarg.com/ and install it/unpack it.
 
-Depending on your platform (Linux needs this, I haven't tested it on MacOS), you might need to set the `VULKAN_SDK` environment variable to point to Vulkan SDK so cmake finds all includes. Use either the `setup-env.sh` script that comes with Vulkan SDK or set it manually.
+Depending on your platform (Linux needs this, untested on MacOS), it might be necessary to set the `VULKAN_SDK` environment variable to point to Vulkan SDK so cmake finds all includes. Use either the `setup-env.sh` script that comes with Vulkan SDK or set it manually.
 
 ### Building
 To build the core libraries and rungame executable use the `build.sh` and `build.bat` scripts depending on your platform or build manually using CMake:
@@ -36,6 +36,7 @@ This project depends on:
 - Vulkan SDK
 
 all except the Vulkan SDK are prepackaged or built automatically once the build script is run.
+These projects are external to this one and are not affiliated with this project in any way, when using this project take care to follow licenses of the dependencies.
 
 ### License
 This project is licensed under the MIT license (see the `LICENSE` file for more information).
