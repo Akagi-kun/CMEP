@@ -91,7 +91,7 @@ namespace Engine
 
 					Engine** engine = (Engine**)lua_newuserdata(state, sizeof(Engine*));
 					*engine = event->raisedFrom;
-					lua_setfield(state, -2, "raisedFrom");
+					lua_setfield(state, -2, "engine");
 					
 					// Mouse table
 					lua_newtable(state);

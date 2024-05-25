@@ -47,6 +47,9 @@ namespace Engine::Scripting::Mappings
 	// const uint32_t countMappings = 24;
 
 	extern std::unordered_map<std::string, lua_CFunction> sceneManager_Mappings;
+	extern std::unordered_map<std::string, lua_CFunction> object_Mappings;
+
+	[[deprecated]]
 	extern std::unordered_map<std::string, lua_CFunction> mappings;
 
 	// extern const char* nameMappings[];

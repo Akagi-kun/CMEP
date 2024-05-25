@@ -10,7 +10,8 @@ birbIsVelociting = true;
 onKeyDown = function(event)
 	-- check for esc
 	if event.keycode == 256 then
-		cmepapi.engine_Stop(event.raisedFrom);
+		cmepapi.engine_Stop(event.engine);
+		return 0;
 	end
 
 	-- check for space press
@@ -45,7 +46,7 @@ gameLastScoredPipeIdx = 0;
 gameScore = 0;
 pipeMoveSpeed = 0.1;
 
-checkCollisions2DBox = function(x1, y1, w1, h1, x2, y2, w2, h2)
+local checkCollisions2DBox = function(x1, y1, w1, h1, x2, y2, w2, h2)
 	if (
 	 x1 < x2 + w2 and
 	 x1 + w1 > x2 and
@@ -63,8 +64,8 @@ onUpdate = function(event)
 	deltaTimeAvg = deltaTimeAvg + event.deltaTime;
 	deltaTimeCount = deltaTimeCount + 1;
 
-	local asset_manager = cmepapi.engine_GetAssetManager(event.raisedFrom);
-	local scene_manager = cmepapi.engine_GetSceneManager(event.raisedFrom);
+	local asset_manager = cmepapi.engine_GetAssetManager(event.engine);
+	local scene_manager = cmepapi.engine_GetSceneManager(event.engine);
 
 	-- Update frametime counter, recommend to leave this here for debugging purposes
 	if deltaTimeCount >= 30 then
@@ -85,13 +86,13 @@ onUpdate = function(event)
 			-- Spawn new pipes
 			--local object1 = cmepapi.objectFactory_CreateSpriteObject(scene_manager, 1.0, offset / 720, 80 / 1100, 400 / 720, asset_manager, "textures/pipe_down.png");
 			local object1 = scene_manager:AddTemplatedObject("sprite_pipe_down"..tostring(spawnPipeLastIdx + 1), "pipe_down");
-			cmepapi.object_Translate(object1, 1.0, offset / 720, 0.0);
-			cmepapi.object_Scale(object1, 80 / 1100, 400 / 720, 1.0);
+			object1:Translate(1.0, offset / 720, 0.0);
+			object1:Scale(80 / 1100, 400 / 720, 1.0);
 
 			--local object2 = cmepapi.objectFactory_CreateSpriteObject(scene_manager, 1.0, (400 + 200 + offset) / 720, 80 / 1100, 400 / 720, asset_manager, "textures/pipe_up.png");
 			local object2 = scene_manager:AddTemplatedObject("sprite_pipe_up"..tostring(spawnPipeLastIdx + 1), "pipe_up");
-			cmepapi.object_Translate(object2, 1.0, (400 + 200 + offset) / 720, 0.0);
-			cmepapi.object_Scale(object2, 80 / 1100, 400 / 720, 1.0);
+			object2:Translate(1.0, (400 + 200 + offset) / 720, 0.0);
+			object2:Scale(80 / 1100, 400 / 720, 1.0);
 
 			spawnPipeLastIdx = spawnPipeLastIdx + 1;
 			spawnPipeCount = spawnPipeCount + 1;
@@ -100,19 +101,19 @@ onUpdate = function(event)
 
 		-- Get birb position
 		local birb = scene_manager:FindObject("birb");
-		local birbx, birby, birbz = cmepapi.object_GetPosition(birb);
+		local birbx, birby, birbz = birb:GetPosition();
 
 		if spawnPipeCount >= 1 then
 			for pipeIdx = spawnPipeFirstIdx, spawnPipeLastIdx, 1 do
 				-- Move pipes
 				local pipe1 = scene_manager:FindObject("sprite_pipe_down"..tostring(pipeIdx));
 				local pipe2 = scene_manager:FindObject("sprite_pipe_up"..tostring(pipeIdx));
-				local x1, y1, z1 = cmepapi.object_GetPosition(pipe1);
-				local x2, y2, z2 = cmepapi.object_GetPosition(pipe2);
+				local x1, y1, z1 = pipe1:GetPosition();
+				local x2, y2, z2 = pipe2:GetPosition();
 				x1 = x1 - pipeMoveSpeed * event.deltaTime;
 				x2 = x2 - pipeMoveSpeed * event.deltaTime;
-				cmepapi.object_Translate(pipe1, x1, y1, z1);
-				cmepapi.object_Translate(pipe2, x2, y2, z2);
+				pipe1:Translate(x1, y1, z1);
+				pipe2:Translate(x2, y2, z2);
 
 				-- Check collisions with both pipes
 				if checkCollisions2DBox(birbx, birby, 48 / 1100, 33 / 720, x1, y1, 80 / 1100, 400 / 720) or
@@ -158,9 +159,9 @@ onUpdate = function(event)
 		end
 
 		local birb = scene_manager:FindObject("birb");
-		local x, y, z = cmepapi.object_GetPosition(birb);
+		local x, y, z = birb:GetPosition();
 		y = y - birbVelocity * event.deltaTime;
-		cmepapi.object_Translate(birb, x, y, z);
+		birb:Translate(x, y, z);
 
 		birbVelocity = birbVelocity - 0.5 * event.deltaTime;
 
@@ -174,11 +175,11 @@ onUpdate = function(event)
 end
 
 onInit = function(event)
-	cmepapi.engine_SetFramerateTarget(event.raisedFrom, 60); -- VSYNC enabled
+	cmepapi.engine_SetFramerateTarget(event.engine, 60); -- VSYNC enabled
 
 	-- Get managers
-	local asset_manager = cmepapi.engine_GetAssetManager(event.raisedFrom);
-	local scene_manager = cmepapi.engine_GetSceneManager(event.raisedFrom);
+	local asset_manager = cmepapi.engine_GetAssetManager(event.engine);
+	local scene_manager = cmepapi.engine_GetSceneManager(event.engine);
 
 	-- Create frametime counter and add it to scene
 	local font = cmepapi.assetManager_GetFont(asset_manager, "fonts/myfont/myfont.fnt");
@@ -191,8 +192,8 @@ onInit = function(event)
 
 	-- Add birb
 	local birb = scene_manager:AddTemplatedObject("birb", "birb");
-	cmepapi.object_Translate(birb, 0.2, (720 / 2) / 720, 0.0);
-	cmepapi.object_Scale(birb, 48 / 1100, 33 / 720, 1.0);
+	birb:Translate(0.2, (720 / 2) / 720, 0.0);
+	birb:Scale(48 / 1100, 33 / 720, 1.0);
 
 	-- Set-up camera
 	scene_manager:SetCameraTransform(-5.0, 2.0, 0.0);

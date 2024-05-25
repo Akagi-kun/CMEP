@@ -13,7 +13,7 @@
 
 namespace Engine::Scripting::Mappings
 {
-	namespace ObjectFactories
+	namespace LuaObjectFactories
 	{
 		void SceneManagerFactory(lua_State* state, std::weak_ptr<SceneManager> scene_manager)
 		{
@@ -30,6 +30,31 @@ namespace Engine::Scripting::Mappings
 			new(ptr_obj) std::weak_ptr<SceneManager>(scene_manager);
 			
 			lua_setfield(state, -2, "_smart_pointer");
+		}
+
+		void ObjectFactory(lua_State* state, Object* object_ptr)
+		{
+			// Generate object table
+			lua_newtable(state);
+
+			// Add object pointer
+			Object** ptr_obj = (Object**)lua_newuserdata(state, sizeof(Object*));
+			(*ptr_obj) = object_ptr;
+			lua_setfield(state, -2, "_pointer");
+
+			// Object mappings
+			for(auto& mapping : Mappings::object_Mappings)
+			{
+				lua_pushcfunction(state, mapping.second);
+				lua_setfield(state, -2, mapping.first.c_str() + 7); // TODO: Danger! Implement without object_ prefix!
+			}
+
+			// Generate renderer table
+			lua_newtable(state);
+			Rendering::IRenderer** ptr_renderer = (Rendering::IRenderer**)lua_newuserdata(state, sizeof(Rendering::IRenderer*));
+			(*ptr_renderer) = object_ptr->renderer;
+			lua_setfield(state, -2, "_pointer");
+			lua_setfield(state, -2, "renderer");
 		}
 	}
 
@@ -207,6 +232,8 @@ namespace Engine::Scripting::Mappings
 
 			if (obj != nullptr)
 			{
+				LuaObjectFactories::ObjectFactory(state, obj);
+				/* 
 				// Generate object table
 				lua_newtable(state);
 
@@ -220,6 +247,7 @@ namespace Engine::Scripting::Mappings
 				(*ptr_renderer) = obj->renderer;
 				lua_setfield(state, -2, "_pointer");
 				lua_setfield(state, -2, "renderer");
+				*/
 			}
 			else
 			{
@@ -269,6 +297,8 @@ namespace Engine::Scripting::Mappings
 
 				if(object != nullptr)
 				{
+					LuaObjectFactories::ObjectFactory(state, object);
+/* 
 					// Generate object table
 					lua_newtable(state);
 
@@ -282,7 +312,7 @@ namespace Engine::Scripting::Mappings
 					(*ptr_renderer) = object->renderer;
 					lua_setfield(state, -2, "_pointer");
 					lua_setfield(state, -2, "renderer");
-
+ */
 					return 1;
 				}
 
@@ -339,7 +369,7 @@ namespace Engine::Scripting::Mappings
 
 			if (!scene_manager.expired())
 			{
-				ObjectFactories::SceneManagerFactory(state, scene_manager);
+				LuaObjectFactories::SceneManagerFactory(state, scene_manager);
 
 				// Generate scene_manager table
 				//lua_newtable(state);
@@ -802,6 +832,16 @@ namespace Engine::Scripting::Mappings
 		CMEP_LUAMAPPING_DEFINE(sm_AddTemplatedObject)
 	};
 
+	std::unordered_map<std::string, lua_CFunction> object_Mappings = {
+		CMEP_LUAMAPPING_DEFINE(object_AddChild),
+		CMEP_LUAMAPPING_DEFINE(object_GetSize),
+		CMEP_LUAMAPPING_DEFINE(object_Scale),
+		CMEP_LUAMAPPING_DEFINE(object_GetRotation),
+		CMEP_LUAMAPPING_DEFINE(object_Rotate),
+		CMEP_LUAMAPPING_DEFINE(object_GetPosition),
+		CMEP_LUAMAPPING_DEFINE(object_Translate)
+	};
+
 	std::unordered_map<std::string, lua_CFunction> mappings = {
 		//CMEP_LUAMAPPING_DEFINE(sm_GetCameraHVRotation),
 		//CMEP_LUAMAPPING_DEFINE(sm_SetCameraHVRotation),
@@ -823,13 +863,13 @@ namespace Engine::Scripting::Mappings
 
 		CMEP_LUAMAPPING_DEFINE(meshRenderer_UpdateTexture),
 
-		CMEP_LUAMAPPING_DEFINE(object_AddChild),
-		CMEP_LUAMAPPING_DEFINE(object_GetSize),
-		CMEP_LUAMAPPING_DEFINE(object_Scale),
-		CMEP_LUAMAPPING_DEFINE(object_GetRotation),
-		CMEP_LUAMAPPING_DEFINE(object_Rotate),
-		CMEP_LUAMAPPING_DEFINE(object_GetPosition),
-		CMEP_LUAMAPPING_DEFINE(object_Translate),
+		//CMEP_LUAMAPPING_DEFINE(object_AddChild),
+		//CMEP_LUAMAPPING_DEFINE(object_GetSize),
+		//CMEP_LUAMAPPING_DEFINE(object_Scale),
+		//CMEP_LUAMAPPING_DEFINE(object_GetRotation),
+		//CMEP_LUAMAPPING_DEFINE(object_Rotate),
+		//CMEP_LUAMAPPING_DEFINE(object_GetPosition),
+		//CMEP_LUAMAPPING_DEFINE(object_Translate),
 
 		CMEP_LUAMAPPING_DEFINE(assetManager_GetFont),
 		CMEP_LUAMAPPING_DEFINE(assetManager_GetTexture),
