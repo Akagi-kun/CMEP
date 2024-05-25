@@ -69,7 +69,8 @@ onUpdate = function(event)
 	-- Update frametime counter, recommend to leave this here for debugging purposes
 	if deltaTimeCount >= 30 then
 		--cmepmeta.logger.SimpleLog(string.format("Hello from Lua! Last FT is: %f ms!", deltaTimeAvg / deltaTimeCount * 1000))
-		local object = cmepapi.sm_FindObject(scene_manager, "_debug_info");
+		--local object = cmepapi.sm_FindObject(scene_manager, "_debug_info");
+		local object = scene_manager:FindObject("_debug_info");
 		cmepapi.textRenderer_UpdateText(object.renderer, "FT: "..tostring(deltaTimeAvg / deltaTimeCount * 1000).." ms");
 		
 		deltaTimeAvg = 0;
@@ -83,12 +84,12 @@ onUpdate = function(event)
 		if spawnPipeSinceLast > spawnPipeEvery then
 			-- Spawn new pipes
 			--local object1 = cmepapi.objectFactory_CreateSpriteObject(scene_manager, 1.0, offset / 720, 80 / 1100, 400 / 720, asset_manager, "textures/pipe_down.png");
-			local object1 = cmepapi.sm_AddTemplatedObject(scene_manager, "sprite_pipe_down"..tostring(spawnPipeLastIdx + 1), "pipe_down");
+			local object1 = scene_manager:AddTemplatedObject("sprite_pipe_down"..tostring(spawnPipeLastIdx + 1), "pipe_down");
 			cmepapi.object_Translate(object1, 1.0, offset / 720, 0.0);
 			cmepapi.object_Scale(object1, 80 / 1100, 400 / 720, 1.0);
 
 			--local object2 = cmepapi.objectFactory_CreateSpriteObject(scene_manager, 1.0, (400 + 200 + offset) / 720, 80 / 1100, 400 / 720, asset_manager, "textures/pipe_up.png");
-			local object2 = cmepapi.sm_AddTemplatedObject(scene_manager, "sprite_pipe_up"..tostring(spawnPipeLastIdx + 1), "pipe_up");
+			local object2 = scene_manager:AddTemplatedObject("sprite_pipe_up"..tostring(spawnPipeLastIdx + 1), "pipe_up");
 			cmepapi.object_Translate(object2, 1.0, (400 + 200 + offset) / 720, 0.0);
 			cmepapi.object_Scale(object2, 80 / 1100, 400 / 720, 1.0);
 
@@ -98,14 +99,14 @@ onUpdate = function(event)
 		end
 
 		-- Get birb position
-		local birb = cmepapi.sm_FindObject(scene_manager, "birb");
+		local birb = scene_manager:FindObject("birb");
 		local birbx, birby, birbz = cmepapi.object_GetPosition(birb);
 
 		if spawnPipeCount >= 1 then
 			for pipeIdx = spawnPipeFirstIdx, spawnPipeLastIdx, 1 do
 				-- Move pipes
-				local pipe1 = cmepapi.sm_FindObject(scene_manager, "sprite_pipe_down"..tostring(pipeIdx));
-				local pipe2 = cmepapi.sm_FindObject(scene_manager, "sprite_pipe_up"..tostring(pipeIdx));
+				local pipe1 = scene_manager:FindObject("sprite_pipe_down"..tostring(pipeIdx));
+				local pipe2 = scene_manager:FindObject("sprite_pipe_up"..tostring(pipeIdx));
 				local x1, y1, z1 = cmepapi.object_GetPosition(pipe1);
 				local x2, y2, z2 = cmepapi.object_GetPosition(pipe2);
 				x1 = x1 - pipeMoveSpeed * event.deltaTime;
@@ -120,7 +121,7 @@ onUpdate = function(event)
 					gameIsGameOver = true;
 					local font = cmepapi.assetManager_GetFont(asset_manager, "fonts/myfont/myfont.fnt");
 					local object = cmepapi.objectFactory_CreateTextObject(scene_manager, 0.4, 0.4, 32, "GAME OVER", font);
-					cmepapi.sm_AddObject(scene_manager, "text_gameover", object);
+					scene_manager:AddObject("text_gameover", object);
 					return 0;
 				end
 
@@ -128,7 +129,7 @@ onUpdate = function(event)
 				if checkCollisions2DBox(birbx, birby, 48 / 1100, 33 / 720, x2 + 80 / 1100, 0.0, 80 / 1100, 1.0) and pipeIdx > gameLastScoredPipeIdx then
 					gameScore = gameScore + 1;
 					gameLastScoredPipeIdx = pipeIdx;
-					local score_object = cmepapi.sm_FindObject(scene_manager, "text_score");
+					local score_object = scene_manager:FindObject("text_score");
 					cmepapi.textRenderer_UpdateText(score_object.renderer, tostring(gameScore));
 
 					pipeMoveSpeed = pipeMoveSpeed + 0.01;
@@ -136,8 +137,8 @@ onUpdate = function(event)
 
 				if x1 < (0.0 - 80 / 1100) then
 					-- Destroy objects
-					cmepapi.sm_RemoveObject(scene_manager, "sprite_pipe_down"..tostring(pipeIdx));
-					cmepapi.sm_RemoveObject(scene_manager, "sprite_pipe_up"..tostring(pipeIdx));
+					scene_manager:RemoveObject("sprite_pipe_down"..tostring(pipeIdx));
+					scene_manager:RemoveObject("sprite_pipe_up"..tostring(pipeIdx));
 					spawnPipeFirstIdx = spawnPipeFirstIdx + 1;
 				end
 			end
@@ -152,11 +153,11 @@ onUpdate = function(event)
 
 			local font = cmepapi.assetManager_GetFont(asset_manager, "fonts/myfont/myfont.fnt");
 			local object = cmepapi.objectFactory_CreateTextObject(scene_manager, 0.4, 0.4, 32, "GAME OVER", font);
-			cmepapi.sm_AddObject(scene_manager, "text_gameover", object);
+			scene_manager:AddObject("text_gameover", object);
 			return 0;
 		end
 
-		local birb = cmepapi.sm_FindObject(scene_manager, "birb");
+		local birb = scene_manager:FindObject("birb");
 		local x, y, z = cmepapi.object_GetPosition(birb);
 		y = y - birbVelocity * event.deltaTime;
 		cmepapi.object_Translate(birb, x, y, z);
@@ -166,8 +167,8 @@ onUpdate = function(event)
 		spawnPipeSinceLast = spawnPipeSinceLast + event.deltaTime;
 	end
 
-	local camrotx, camroty = cmepapi.sm_GetCameraHVRotation(scene_manager);
-	cmepapi.sm_SetCameraHVRotation(scene_manager, camrotx, camroty + 40.0 * event.deltaTime);
+	local camrotx, camroty = scene_manager:GetCameraHVRotation();
+	scene_manager:SetCameraHVRotation(camrotx, camroty + 40.0 * event.deltaTime);
 
 	return 0;
 end
@@ -182,23 +183,23 @@ onInit = function(event)
 	-- Create frametime counter and add it to scene
 	local font = cmepapi.assetManager_GetFont(asset_manager, "fonts/myfont/myfont.fnt");
 	local object = cmepapi.objectFactory_CreateTextObject(scene_manager, 0.0, 0.0, 18, "test", font);
-	cmepapi.sm_AddObject(scene_manager, "_debug_info", object);
+	scene_manager:AddObject("_debug_info", object);
 	
 	-- Add score
 	local object = cmepapi.objectFactory_CreateTextObject(scene_manager, 0.5, 0.0, 64, "0", font);
-	cmepapi.sm_AddObject(scene_manager, "text_score", object);
+	scene_manager:AddObject("text_score", object);
 
 	-- Add birb
-	local birb = cmepapi.sm_AddTemplatedObject(scene_manager, "birb", "birb");
+	local birb = scene_manager:AddTemplatedObject("birb", "birb");
 	cmepapi.object_Translate(birb, 0.2, (720 / 2) / 720, 0.0);
 	cmepapi.object_Scale(birb, 48 / 1100, 33 / 720, 1.0);
 
 	-- Set-up camera
-	cmepapi.sm_SetCameraTransform(scene_manager, -5.0, 2.0, 0.0);
-	cmepapi.sm_SetCameraHVRotation(scene_manager, 0, 0);
+	scene_manager:SetCameraTransform(-5.0, 2.0, 0.0);
+	scene_manager:SetCameraHVRotation(0, 0);
 
 	-- Set-up light
-	cmepapi.sm_SetLightTransform(scene_manager, -1,1,0);
+	scene_manager:SetLightTransform(-1, 1, 0);
 
 	return 0;
 end

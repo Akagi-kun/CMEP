@@ -14,12 +14,6 @@ namespace Engine
 		{
 			lua_newtable(state);
 
-			//for (int i = 0; i < Mappings::countMappings; i++)
-			//{
-			//	lua_pushcfunction(state, Mappings::functionMappings[i]);
-			//	lua_setfield(state, -2, Mappings::nameMappings[i]);
-			//}
-
 			for(auto& mapping : Mappings::mappings)
 			{
 				lua_pushcfunction(state, mapping.second);

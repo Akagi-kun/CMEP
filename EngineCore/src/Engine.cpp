@@ -419,7 +419,9 @@ namespace Engine
 		// Measure and log ON_INIT time
 		double total = (std::chrono::steady_clock::now() - start).count() / 1e6;
 		this->logger->SimpleLog(Logging::LogLevel::Debug1, LOGPFX_CURRENT "Handling ON_INIT took %.3lf ms total and returned %i", total, onInitEventRet);
-		
+
+		//return;
+
 		if(onInitEventRet != 0)
 		{
 			return;

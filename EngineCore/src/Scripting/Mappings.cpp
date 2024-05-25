@@ -13,6 +13,26 @@
 
 namespace Engine::Scripting::Mappings
 {
+	namespace ObjectFactories
+	{
+		void SceneManagerFactory(lua_State* state, std::weak_ptr<SceneManager> scene_manager)
+		{
+			// Generate scene_manager table
+			lua_newtable(state);
+
+			for(auto& mapping : Mappings::sceneManager_Mappings)
+			{
+				lua_pushcfunction(state, mapping.second);
+				lua_setfield(state, -2, mapping.first.c_str() + 3); // TODO: Danger! Implement without sm_ prefix!
+			}
+
+			void* ptr_obj = lua_newuserdata(state, sizeof(std::weak_ptr<SceneManager>));
+			new(ptr_obj) std::weak_ptr<SceneManager>(scene_manager);
+			
+			lua_setfield(state, -2, "_smart_pointer");
+		}
+	}
+
 	namespace Functions
 	{
 #pragma region Meta
@@ -35,6 +55,7 @@ namespace Engine::Scripting::Mappings
 	}
 
 #pragma endregion
+
 
 
 #pragma region SceneManager
@@ -318,14 +339,16 @@ namespace Engine::Scripting::Mappings
 
 			if (!scene_manager.expired())
 			{
-				// Generate scene_manager table
-				lua_newtable(state);
+				ObjectFactories::SceneManagerFactory(state, scene_manager);
 
-				void* ptr_obj = lua_newuserdata(state, sizeof(std::weak_ptr<SceneManager>));
-				//(*ptr_obj) = scene_manager;
-				new(ptr_obj) std::weak_ptr<SceneManager>(scene_manager);
-				
-				lua_setfield(state, -2, "_smart_pointer");
+				// Generate scene_manager table
+				//lua_newtable(state);
+
+				//void* ptr_obj = lua_newuserdata(state, sizeof(std::weak_ptr<SceneManager>));
+				////(*ptr_obj) = scene_manager;
+				//new(ptr_obj) std::weak_ptr<SceneManager>(scene_manager);
+				//
+				//lua_setfield(state, -2, "_smart_pointer");
 			}
 			else
 			{
@@ -766,7 +789,7 @@ namespace Engine::Scripting::Mappings
 	
 	}
 
-	std::unordered_map<std::string, lua_CFunction> mappings = {
+	std::unordered_map<std::string, lua_CFunction> sceneManager_Mappings = {
 		CMEP_LUAMAPPING_DEFINE(sm_GetCameraHVRotation),
 		CMEP_LUAMAPPING_DEFINE(sm_SetCameraHVRotation),
 		CMEP_LUAMAPPING_DEFINE(sm_GetCameraTransform),
@@ -776,7 +799,20 @@ namespace Engine::Scripting::Mappings
 		CMEP_LUAMAPPING_DEFINE(sm_AddObject),
 		CMEP_LUAMAPPING_DEFINE(sm_FindObject),
 		CMEP_LUAMAPPING_DEFINE(sm_RemoveObject),
-		CMEP_LUAMAPPING_DEFINE(sm_AddTemplatedObject),
+		CMEP_LUAMAPPING_DEFINE(sm_AddTemplatedObject)
+	};
+
+	std::unordered_map<std::string, lua_CFunction> mappings = {
+		//CMEP_LUAMAPPING_DEFINE(sm_GetCameraHVRotation),
+		//CMEP_LUAMAPPING_DEFINE(sm_SetCameraHVRotation),
+		//CMEP_LUAMAPPING_DEFINE(sm_GetCameraTransform),
+		//CMEP_LUAMAPPING_DEFINE(sm_SetCameraTransform),
+		//CMEP_LUAMAPPING_DEFINE(sm_GetLightTransform),
+		//CMEP_LUAMAPPING_DEFINE(sm_SetLightTransform),
+		//CMEP_LUAMAPPING_DEFINE(sm_AddObject),
+		//CMEP_LUAMAPPING_DEFINE(sm_FindObject),
+		//CMEP_LUAMAPPING_DEFINE(sm_RemoveObject),
+		//CMEP_LUAMAPPING_DEFINE(sm_AddTemplatedObject),
 
 		CMEP_LUAMAPPING_DEFINE(engine_GetAssetManager),
 		CMEP_LUAMAPPING_DEFINE(engine_SetFramerateTarget),
