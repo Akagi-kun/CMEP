@@ -57,7 +57,7 @@ namespace Engine::Rendering
 		memcpy(this->staging_buffer->mappedData, raw_data.data(), static_cast<size_t>(memory_size));
 
 		
-		if(auto& vulkanImageFactory = this->owner_engine->GetVulkanImageFactory().lock())
+		if(const auto& vulkanImageFactory = this->owner_engine->GetVulkanImageFactory().lock())
 		{
 			this->textureImage = vulkanImageFactory->createTextureImage(
 				xsize,
