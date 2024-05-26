@@ -23,7 +23,10 @@ set(SRC_FILES
 	src/Rendering/SpriteRenderer.cpp
 	src/Rendering/TextRenderer.cpp
 	src/Rendering/Texture.cpp
-	src/Rendering/VulkanRenderingEngine.cpp
+	
+	src/Rendering/Vulkan/VulkanRenderingEngine.cpp
+	src/Rendering/Vulkan/VulkanRenderingEngine_Init.cpp
+	src/Rendering/Vulkan/VulkanImageFactory.cpp
 	
 	src/Scripting/LuaScript.cpp
 	src/Scripting/LuaScriptExecutor.cpp

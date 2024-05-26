@@ -27,6 +27,7 @@ namespace Logging
 
 namespace Engine
 {
+	class Engine;
 	class AssetManager;
 	class Object;
 	namespace Rendering
@@ -51,6 +52,8 @@ namespace Engine
 		class Mesh;
 	}
 	class SceneManager;
+
+	class InternalEngineObject;
 }
 
 #pragma endregion
@@ -196,7 +199,7 @@ namespace Engine
 
 #pragma region Texture.hpp
 
-		class Texture final : public InternalEngineObject
+		class Texture final : public ::Engine::InternalEngineObject
 		{
 		private:
 			std::vector<unsigned char> data;
@@ -373,6 +376,25 @@ namespace Engine
 		};
 
 #pragma endregion
+
+	namespace Factories
+	{
+		class VulkanImageFactory : public InternalEngineObject
+		{
+		protected:
+			VmaAllocator vmaAllocator;
+
+		public:
+			VulkanImageFactory(VmaAllocator vmaAllocator) : vmaAllocator(vmaAllocator) {};
+
+			VulkanImage* createImage(uint32_t width, uint32_t height, VkSampleCountFlagBits numSamples, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties);
+			VulkanTextureImage* createTextureImage(uint32_t width, uint32_t height, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties, VkFilter useFilter, VkSamplerAddressMode addressMode);
+			//void copyVulcanBufferToImage(VkBuffer buffer, VkImage image, uint32_t width, uint32_t height);
+			//void appendVulkanImageViewToVulkanTextureImage(VulkanTextureImage* teximage);
+			//void appendVulkanSamplerToVulkanTextureImage(VulkanTextureImage* teximage);
+			//void transitionVulkanImageLayout(VkImage image, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout);
+		};
+	}
 
 #pragma region VulkanRenderingEngine.hpp
 
@@ -826,6 +848,7 @@ namespace Engine
 		AssetManager* asset_manager = nullptr;
 		Scripting::LuaScriptExecutor* script_executor = nullptr;
         std::shared_ptr<Logging::Logger> logger{};
+		std::shared_ptr<Rendering::Factories::VulkanImageFactory> vulkanImageFactory{};
 
 		// Event handler storage
 		std::multimap<EventHandling::EventType, std::function<int(EventHandling::Event&)>> event_handlers;
@@ -866,9 +889,10 @@ namespace Engine
 
 		double GetLastDeltaTime();
 
-		inline AssetManager* GetAssetManager() noexcept { return this->asset_manager; }
-		inline Rendering::VulkanRenderingEngine* GetRenderingEngine() noexcept { return this->rendering_engine; }
-		inline std::weak_ptr<SceneManager> GetSceneManager() noexcept { return std::weak_ptr<SceneManager>(this->scene_manager); }
+		AssetManager* GetAssetManager() noexcept;
+		Rendering::VulkanRenderingEngine* GetRenderingEngine() noexcept;
+		std::weak_ptr<SceneManager> GetSceneManager() noexcept;
+		std::weak_ptr<Rendering::Factories::VulkanImageFactory> GetVulkanImageFactory() noexcept;
 	};
 
 #pragma endregion

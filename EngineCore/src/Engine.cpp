@@ -394,8 +394,13 @@ namespace Engine
 	{
 		auto start = std::chrono::steady_clock::now();
 
-		this->rendering_engine->UpdateOwnerEngine(this);
+		// Initialize rendering engine
 		this->rendering_engine->init(this->config.window.sizeX, this->config.window.sizeY, this->config.window.title);
+
+		this->vulkanImageFactory = std::make_shared<Rendering::Factories::VulkanImageFactory>(this->rendering_engine->GetVMAAllocator(), this->rendering_engine);
+		
+		// Prepare rendering engine to run (framebuffers etc.)
+		this->rendering_engine->prepRun();
 		this->rendering_engine->SetRenderCallback(this->RenderCallback);
 
 		//return;

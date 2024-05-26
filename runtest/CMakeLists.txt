@@ -7,15 +7,15 @@ set(SRC_FILES
 	src/test_logging.cpp
 	src/test_engine.cpp
 	
-	../EngineCore/src/Rendering/VulkanRenderingEngine.cpp
-	../EngineCore/src/Logging/Logging.cpp
-	../EngineCore/src/Logging/ConsoleColors.cpp
 	../EngineCore/src/AssetManager.cpp
 	../EngineCore/src/Engine.cpp
 	../EngineCore/src/SceneManager.cpp
 
 	../EngineCore/src/Factories/ObjectFactory.cpp
 	../EngineCore/src/Factories/FontFactory.cpp
+
+	../EngineCore/src/Logging/ConsoleColors.cpp
+	../EngineCore/src/Logging/Logging.cpp
 
 	../EngineCore/src/Rendering/Font.cpp
 	../EngineCore/src/Rendering/AxisRenderer.cpp
@@ -24,9 +24,17 @@ set(SRC_FILES
 	../EngineCore/src/Rendering/SpriteRenderer.cpp
 	../EngineCore/src/Rendering/TextRenderer.cpp
 	../EngineCore/src/Rendering/Texture.cpp
+	
+	../EngineCore/src/Rendering/Vulkan/VulkanRenderingEngine.cpp
+	
 	../EngineCore/src/Scripting/LuaScript.cpp
 	../EngineCore/src/Scripting/LuaScriptExecutor.cpp
 	../EngineCore/src/Scripting/Mappings.cpp
+	
+	../EngineCore/src/Scripting/API/LuaFactories.cpp
+	../EngineCore/src/Scripting/API/SceneManager_API.cpp
+	../EngineCore/src/Scripting/API/Object_API.cpp
+	
 	../external/lodepng/lodepng.cpp
 	)
 

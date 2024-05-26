@@ -52,31 +52,35 @@ namespace Engine::Rendering
 
 		memcpy(this->staging_buffer->mappedData, raw_data.data(), static_cast<size_t>(memory_size));
 
-		this->textureImage = renderer->createVulkanTextureImage(
-			xsize,
-			ysize,
-			VK_FORMAT_R8G8B8A8_SRGB,
-			VK_IMAGE_TILING_OPTIMAL,
-			VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
-			VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
-			VK_FILTER_LINEAR, // Filter for both mag and min
-			VK_SAMPLER_ADDRESS_MODE_REPEAT // sampler address mode
-			);
 		
-		// Transfer image layout to one usable by the shader
-		renderer->transitionVulkanImageLayout(this->textureImage->image->image, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
-		renderer->copyVulcanBufferToImage(this->staging_buffer->buffer, this->textureImage->image->image, static_cast<uint32_t>(xsize), static_cast<uint32_t>(ysize));
-		renderer->transitionVulkanImageLayout(this->textureImage->image->image, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
-
-		// Unmap staging memory and cleanup buffer if we created it here 
-		vkUnmapMemory(renderer->GetLogicalDevice(), this->staging_buffer->allocationInfo.deviceMemory);
-		if (!managedStagingBuffer)
+		if(auto& vulkanImageFactory = this->owner_engine->GetVulkanImageFactory().lock())
 		{
-			renderer->cleanupVulkanBuffer(this->staging_buffer);
-		}
+			this->textureImage = vulkanImageFactory->createTextureImage(
+				xsize,
+				ysize,
+				VK_FORMAT_R8G8B8A8_SRGB,
+				VK_IMAGE_TILING_OPTIMAL,
+				VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
+				VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
+				VK_FILTER_LINEAR, // Filter for both mag and min
+				VK_SAMPLER_ADDRESS_MODE_REPEAT // sampler address mode
+				);
 
-		renderer->appendVulkanImageViewToVulkanTextureImage(this->textureImage);
-		renderer->appendVulkanSamplerToVulkanTextureImage(this->textureImage);
+			// Transfer image layout to one usable by the shader
+			vulkanImageFactory->transitionImageLayout(this->textureImage->image->image, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
+			renderer->copyVulcanBufferToImage(this->staging_buffer->buffer, this->textureImage->image->image, static_cast<uint32_t>(xsize), static_cast<uint32_t>(ysize));
+			vulkanImageFactory->transitionImageLayout(this->textureImage->image->image, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+
+			// Unmap staging memory and cleanup buffer if we created it here 
+			vkUnmapMemory(renderer->GetLogicalDevice(), this->staging_buffer->allocationInfo.deviceMemory);
+			if (!managedStagingBuffer)
+			{
+				renderer->cleanupVulkanBuffer(this->staging_buffer);
+			}
+
+			vulkanImageFactory->appendImageViewToTextureImage(this->textureImage);
+			renderer->appendVulkanSamplerToVulkanTextureImage(this->textureImage);
+		}
 
 		return 0;
 	}

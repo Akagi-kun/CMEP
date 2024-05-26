@@ -108,7 +108,7 @@ onUpdate = function(event)
 	local offset = -200 + math.random(-15, 15) * 10;
 
 	if gameIsGameOver == false then
-		if false then --  spawnPipeSinceLast > spawnPipeEvery then
+		if spawnPipeSinceLast > spawnPipeEvery then
 			-- Spawn new pipes
 
 			--local object1 = cmepapi.objectFactory_CreateSpriteObject(scene_manager, 1.0, offset / 720, 80 / 1100, 400 / 720, asset_manager, "textures/pipe_down.png");
@@ -130,7 +130,7 @@ onUpdate = function(event)
 		local birb = scene_manager:FindObject("birb");
 		local birbx, birby, birbz = birb:GetPosition();
 
-		if false then -- spawnPipeCount >= 1 then
+		if spawnPipeCount >= 1 then
 			for pipeIdx = spawnPipeFirstIdx, spawnPipeLastIdx, 1 do
 				-- Move pipes
 				local pipe1 = scene_manager:FindObject("sprite_pipe_down"..tostring(pipeIdx));

@@ -5,7 +5,7 @@
 #include <vector>
 
 #include "InternalEngineObject.hpp"
-#include "VulkanRenderingEngine.hpp"
+#include "Rendering/Vulkan/VulkanRenderingEngine.hpp"
 #include "PlatformSemantics.hpp"
 
 namespace Engine::Rendering

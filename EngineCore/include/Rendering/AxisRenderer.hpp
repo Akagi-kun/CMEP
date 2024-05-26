@@ -7,7 +7,7 @@
 #include "glm/glm.hpp"
 #include "glm/gtc/matrix_transform.hpp"
 
-#include "Rendering/VulkanRenderingEngine.hpp"
+#include "Rendering/Vulkan/VulkanRenderingEngine.hpp"
 #include "PlatformSemantics.hpp"
 
 namespace Engine::Rendering

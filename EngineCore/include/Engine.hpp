@@ -6,7 +6,8 @@
 #include <memory>
 #include <atomic>
 
-#include "Rendering/VulkanRenderingEngine.hpp"
+#include "Rendering/Vulkan/VulkanRenderingEngine.hpp"
+#include "Rendering/Vulkan/VulkanImageFactory.hpp"
 
 #include "SceneManager.hpp"
 #include "Logging/Logging.hpp"
@@ -71,6 +72,7 @@ namespace Engine
 		AssetManager* asset_manager = nullptr;
 		Scripting::LuaScriptExecutor* script_executor = nullptr;
         std::shared_ptr<Logging::Logger> logger{};
+		std::shared_ptr<Rendering::Factories::VulkanImageFactory> vulkanImageFactory{};
 
 		// Event handler storage
 		std::multimap<EventHandling::EventType, std::function<int(EventHandling::Event&)>> event_handlers;
@@ -112,5 +114,6 @@ namespace Engine
 		inline AssetManager* GetAssetManager() noexcept { return this->asset_manager; }
 		inline Rendering::VulkanRenderingEngine* GetRenderingEngine() noexcept { return this->rendering_engine; }
 		inline std::weak_ptr<SceneManager> GetSceneManager() noexcept { return std::weak_ptr<SceneManager>(this->scene_manager); }
+		inline std::weak_ptr<Rendering::Factories::VulkanImageFactory> GetVulkanImageFactory() noexcept { return std::weak_ptr<Rendering::Factories::VulkanImageFactory>(this->vulkanImageFactory); }
 	};
 }

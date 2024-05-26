@@ -155,6 +155,20 @@ namespace Engine::Rendering
 		}
 	};
 
+	extern VKAPI_ATTR VkBool32 VKAPI_CALL vulcanDebugCallback(
+		VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
+		VkDebugUtilsMessageTypeFlagsEXT messageType,
+		const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData,
+		void* pUserData
+		);
+		
+	extern VkResult CreateDebugUtilsMessengerEXT(
+		VkInstance instance,
+		const VkDebugUtilsMessengerCreateInfoEXT* pCreateInfo,
+		const VkAllocationCallbacks* pAllocator,
+		VkDebugUtilsMessengerEXT* pDebugMessenger
+		);
+
 	class VulkanRenderingEngine : public InternalEngineObject
 	{
 	private:
@@ -239,13 +253,6 @@ namespace Engine::Rendering
 		const bool enableVkValidationLayers = true;
 #endif
 
-		// Leak check counters
-		size_t leakBufferCounter = 0;
-		size_t leakUniformBufferCounter = 0;
-		size_t leakImageCounter = 0;
-		size_t leakTextureImageCounter = 0;
-		size_t leakPipelineCounter = 0;
-
 		// Physical device functions
 		int checkVulkanPhysicalDeviceScore(VkPhysicalDevice device);
 		QueueFamilyIndices findVulkanQueueFamilies(VkPhysicalDevice device);
@@ -273,7 +280,7 @@ namespace Engine::Rendering
 		VkShaderModule createVulkanShaderModule(const std::vector<char>& code);
 
 		// Image view functions
-		VkImageView createVulkanImageView(VkImage image, VkFormat format, VkImageAspectFlags aspectFlags);
+		//VkImageView createVulkanImageView(VkImage image, VkFormat format, VkImageAspectFlags aspectFlags);
 
 		// Init functions
 		bool checkVulkanValidationLayers();
@@ -293,9 +300,6 @@ namespace Engine::Rendering
 		void createVulkanMemoryAllocator();
 
 	public:
-		//std::shared_ptr<Logging::Logger> logger;
-		//Engine* owner_engine;
-
 		VulkanRenderingEngine() {}
 
 		// Signaling function for framebuffer resize
@@ -310,6 +314,7 @@ namespace Engine::Rendering
 		
 		// Init
 		void init(unsigned int xsize, unsigned int ysize, std::string title);
+		void prepRun();
 
 		// Engine functions
 		void drawFrame();
@@ -321,13 +326,19 @@ namespace Engine::Rendering
 		VulkanBuffer* createVulkanVertexBufferFromData(std::vector<RenderingVertex> vertices);
 		VulkanBuffer* createVulkanStagingBufferWithData(void* data, VkDeviceSize dataSize);
 
+
+
 		// Image functions
-		VulkanImage* createVulkanImage(uint32_t width, uint32_t height, VkSampleCountFlagBits numSamples, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties);
-		VulkanTextureImage* createVulkanTextureImage(uint32_t width, uint32_t height, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties, VkFilter useFilter, VkSamplerAddressMode addressMode);
+		//VulkanImage* createVulkanImage(uint32_t width, uint32_t height, VkSampleCountFlagBits numSamples, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties);
+		//VulkanTextureImage* createVulkanTextureImage(uint32_t width, uint32_t height, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties, VkFilter useFilter, VkSamplerAddressMode addressMode);
+		
 		void copyVulcanBufferToImage(VkBuffer buffer, VkImage image, uint32_t width, uint32_t height);
-		void appendVulkanImageViewToVulkanTextureImage(VulkanTextureImage* teximage);
+		
+		//void appendVulkanImageViewToVulkanTextureImage(VulkanTextureImage* teximage);
 		void appendVulkanSamplerToVulkanTextureImage(VulkanTextureImage* teximage);
-		void transitionVulkanImageLayout(VkImage image, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout);
+		//void transitionVulkanImageLayout(VkImage image, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout);
+
+
 
 		// Command buffer functions
 		VkCommandBuffer beginVulkanSingleTimeCommandsCommandBuffer();
@@ -348,6 +359,7 @@ namespace Engine::Rendering
 		VkDevice GetLogicalDevice();
 		GLFWwindowData const GetWindow();
 		const uint32_t GetMaxFramesInFlight();
+		VmaAllocator GetVMAAllocator();
 
 		// Utility functions
 		uint32_t findVulkanMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties);

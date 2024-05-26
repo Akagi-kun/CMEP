@@ -2,7 +2,7 @@
 
 #include "glm/vec3.hpp"
 
-#include "VulkanRenderingEngine.hpp"
+#include "Rendering/Vulkan/VulkanRenderingEngine.hpp"
 #include "PlatformSemantics.hpp"
 #include "InternalEngineObject.hpp"
 
