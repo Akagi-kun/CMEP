@@ -238,7 +238,7 @@ namespace Engine::Rendering
 		renderPassInfo.renderArea.extent = this->vkSwapChainExtent;
 
 		std::array<VkClearValue, 2> clearValues{};
-		clearValues[0].color = { {0.1f, 0.1f, 0.1f, 1.0f} };
+		clearValues[0].color = { {1.0f, 1.0f, 1.0f, 1.0f} }; // todo configurable
 		clearValues[1].depthStencil = { 1.0f, 0 };
 
 		renderPassInfo.clearValueCount = 2;
@@ -1695,7 +1695,7 @@ namespace Engine::Rendering
 		return new_image;
 	}
 
-	VulkanTextureImage* VulkanRenderingEngine::createVulkanTextureImage(uint32_t width, uint32_t height, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties)
+	VulkanTextureImage* VulkanRenderingEngine::createVulkanTextureImage(uint32_t width, uint32_t height, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties, VkFilter useFilter, VkSamplerAddressMode addressMode)
 	{
 		VulkanTextureImage* new_texture_image = new VulkanTextureImage();
 
@@ -1705,6 +1705,8 @@ namespace Engine::Rendering
 		}
 
 		new_texture_image->image = this->createVulkanImage(width, height, VK_SAMPLE_COUNT_1_BIT, format, tiling, usage, properties);
+		new_texture_image->useAddressMode = addressMode;
+		new_texture_image->useFilter = useFilter;
 
 		this->leakTextureImageCounter += 1;
 
@@ -1807,12 +1809,12 @@ namespace Engine::Rendering
 	{
 		VkSamplerCreateInfo samplerInfo{};
 		samplerInfo.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
-		samplerInfo.magFilter = VK_FILTER_LINEAR;
-		samplerInfo.minFilter = VK_FILTER_LINEAR;
+		samplerInfo.magFilter = teximage->useFilter;
+		samplerInfo.minFilter = teximage->useFilter;//VK_FILTER_LINEAR;
 
-		samplerInfo.addressModeU = VK_SAMPLER_ADDRESS_MODE_REPEAT;
-		samplerInfo.addressModeV = VK_SAMPLER_ADDRESS_MODE_REPEAT;
-		samplerInfo.addressModeW = VK_SAMPLER_ADDRESS_MODE_REPEAT;
+		samplerInfo.addressModeU = teximage->useAddressMode;//VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
+		samplerInfo.addressModeV = teximage->useAddressMode;
+		samplerInfo.addressModeW = teximage->useAddressMode;
 
 		VkPhysicalDeviceProperties properties{};
 		vkGetPhysicalDeviceProperties(this->vkPhysicalDevice, &properties);

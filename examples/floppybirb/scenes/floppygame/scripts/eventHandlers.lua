@@ -49,8 +49,8 @@ local pipe_xSize <const> = 110;
 local pipe_ySize <const> = 450;
 local pipe_spacing = 250;
 
-local birb_xSize <const> = 48;
-local birb_ySize <const> = 33;
+local birb_xSize <const> = 72;
+local birb_ySize <const> = 44;
 
 local gameIsGameOver = false;
 local gameLastScoredPipeIdx = 0;
@@ -103,12 +103,12 @@ onUpdate = function(event)
 		deltaTimeAvg = 0;
 		deltaTimeCount = 0;
 	end
-	
+
 	-- We can use the math library in here!
 	local offset = -200 + math.random(-15, 15) * 10;
 
 	if gameIsGameOver == false then
-		if spawnPipeSinceLast > spawnPipeEvery then
+		if false then --  spawnPipeSinceLast > spawnPipeEvery then
 			-- Spawn new pipes
 
 			--local object1 = cmepapi.objectFactory_CreateSpriteObject(scene_manager, 1.0, offset / 720, 80 / 1100, 400 / 720, asset_manager, "textures/pipe_down.png");
@@ -130,7 +130,7 @@ onUpdate = function(event)
 		local birb = scene_manager:FindObject("birb");
 		local birbx, birby, birbz = birb:GetPosition();
 
-		if spawnPipeCount >= 1 then
+		if false then -- spawnPipeCount >= 1 then
 			for pipeIdx = spawnPipeFirstIdx, spawnPipeLastIdx, 1 do
 				-- Move pipes
 				local pipe1 = scene_manager:FindObject("sprite_pipe_down"..tostring(pipeIdx));
@@ -175,8 +175,8 @@ onUpdate = function(event)
 		end
 		
 		-- Check collisions with floor and roof
-		if 	checkCollisions2DBox(birbx, birby, pxToScreenX(48), pxToScreenY(33), 0.0, - pxToScreenY(40), 	1.0, pxToScreenY(40)) or
-			checkCollisions2DBox(birbx, birby, pxToScreenX(48), pxToScreenY(33), 0.0, 1.0, 					1.0, pxToScreenY(40))
+		if 	checkCollisions2DBox(birbx, birby, pxToScreenX(birb_xSize), pxToScreenY(birb_ySize), 0.0, -pxToScreenY(40), 1.0, pxToScreenY(40)) or
+			checkCollisions2DBox(birbx, birby, pxToScreenX(birb_xSize), pxToScreenY(birb_ySize), 0.0, 1.0, 				1.0, pxToScreenY(40))
 		then
 			gameIsGameOver = true;
 			cmepmeta.logger.SimpleLog(string.format("Game over!"))
@@ -221,8 +221,8 @@ onInit = function(event)
 
 	-- Add birb
 	local birb = scene_manager:AddTemplatedObject("birb", "birb");
-	birb:Translate(0.2, (720 / 2) / 720, 0.0);
-	birb:Scale(48 / 1100, 33 / 720, 1.0);
+	birb:Translate(0.2, pxToScreenY(screenY / 2), 0.0);
+	birb:Scale(pxToScreenX(birb_xSize), pxToScreenY(birb_ySize), 1.0);
 
 	-- Set-up camera
 	scene_manager:SetCameraTransform(-5.0, 2.0, 0.0);

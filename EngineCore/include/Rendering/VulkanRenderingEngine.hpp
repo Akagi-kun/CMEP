@@ -69,6 +69,8 @@ namespace Engine::Rendering
 	{
 		VulkanImage* image;
 		VkSampler textureSampler;
+		VkFilter useFilter;
+		VkSamplerAddressMode useAddressMode;
 	};
 
 	struct VulkanDescriptorLayoutSettings
@@ -321,7 +323,7 @@ namespace Engine::Rendering
 
 		// Image functions
 		VulkanImage* createVulkanImage(uint32_t width, uint32_t height, VkSampleCountFlagBits numSamples, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties);
-		VulkanTextureImage* createVulkanTextureImage(uint32_t width, uint32_t height, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties);
+		VulkanTextureImage* createVulkanTextureImage(uint32_t width, uint32_t height, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties, VkFilter useFilter, VkSamplerAddressMode addressMode);
 		void copyVulcanBufferToImage(VkBuffer buffer, VkImage image, uint32_t width, uint32_t height);
 		void appendVulkanImageViewToVulkanTextureImage(VulkanTextureImage* teximage);
 		void appendVulkanSamplerToVulkanTextureImage(VulkanTextureImage* teximage);

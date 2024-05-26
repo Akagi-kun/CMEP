@@ -11,7 +11,7 @@
             "name": "birb",
             "renderer": {
                 "type": "sprite",
-                "sprite": "textures/birb.png"
+                "sprite": "textures/new_birb.png"
             }
         },
         {

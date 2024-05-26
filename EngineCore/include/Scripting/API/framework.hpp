@@ -2,6 +2,7 @@
 
 #include <unordered_map>
 #include <memory>
+#include <string>
 
 #include "Scripting/lualib/lua.hpp"
 
