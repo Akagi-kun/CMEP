@@ -370,7 +370,7 @@ namespace Engine::Rendering
 	{
 		this->vkSwapChainImageViews.resize(this->vkSwapChainImages.size());
 
-		if (auto &vulkanImageFactory = this->owner_engine->GetVulkanImageFactory().lock())
+		if (const auto &vulkanImageFactory = this->owner_engine->GetVulkanImageFactory().lock())
 		{
 			for (size_t i = 0; i < this->vkSwapChainImages.size(); i++)
 			{
@@ -576,7 +576,7 @@ namespace Engine::Rendering
 	{
 		VkFormat depthFormat = this->findVulkanSupportedDepthFormat();
 
-		if (auto &vulkanImageFactory = this->owner_engine->GetVulkanImageFactory().lock())
+		if (const auto &vulkanImageFactory = this->owner_engine->GetVulkanImageFactory().lock())
 		{
 			this->vkDepthBuffer = vulkanImageFactory->createImage(this->vkSwapChainExtent.width, this->vkSwapChainExtent.height, this->msaaSamples, depthFormat, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
 			this->vkDepthBuffer->imageView = vulkanImageFactory->createImageView(this->vkDepthBuffer->image, depthFormat, VK_IMAGE_ASPECT_DEPTH_BIT);
@@ -587,7 +587,7 @@ namespace Engine::Rendering
 	{
 		VkFormat colorFormat = this->vkSwapChainImageFormat;
 
-		if (auto &vulkanImageFactory = this->owner_engine->GetVulkanImageFactory().lock())
+		if (const auto &vulkanImageFactory = this->owner_engine->GetVulkanImageFactory().lock())
 		{
 			this->multisampledColorImage = vulkanImageFactory->createImage(this->vkSwapChainExtent.width, this->vkSwapChainExtent.height, this->msaaSamples, colorFormat, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
 			this->multisampledColorImage->imageView = vulkanImageFactory->createImageView(this->multisampledColorImage->image, this->multisampledColorImage->imageFormat, VK_IMAGE_ASPECT_COLOR_BIT);
