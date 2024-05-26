@@ -13,7 +13,7 @@ namespace Engine::Scripting::API
 			lua_getfield(state, 1, "_smart_pointer");
 			std::weak_ptr<SceneManager> scene_manager = *(std::weak_ptr<SceneManager>*)lua_touserdata(state, -1);
 
-			glm::vec2 hvrot;
+			glm::vec2 hvrot{};
 			if(auto locked_scene_manager = scene_manager.lock())
 			{
 				hvrot = locked_scene_manager->GetCameraHVRotation();
@@ -82,7 +82,7 @@ namespace Engine::Scripting::API
 			lua_getfield(state, 1, "_smart_pointer");
 			std::weak_ptr<SceneManager> scene_manager = *(std::weak_ptr<SceneManager>*)lua_touserdata(state, -1);
 
-			glm::vec3 transform;
+			glm::vec3 transform{};
 			if(auto locked_scene_manager = scene_manager.lock())
 			{
 				transform = locked_scene_manager->GetLightTransform();

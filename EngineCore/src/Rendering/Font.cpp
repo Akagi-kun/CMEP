@@ -27,9 +27,9 @@ namespace Engine::Rendering
 		this->logger->SimpleLog(Logging::LogLevel::Debug3, LOGPFX_CURRENT "Destructor called");
 	}
 
-	int Font::Init(std::unique_ptr<FontData> data)
+	int Font::Init(std::unique_ptr<FontData> init_data)
 	{
-		this->data = std::move(data);
+		this->data = std::move(init_data);
 
 		return 0;
 	}

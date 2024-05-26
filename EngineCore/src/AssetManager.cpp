@@ -31,10 +31,10 @@ namespace Engine
 		this->fontFactory->UpdateHeldLogger(new_logger);
 	}
 
-    void AssetManager::UpdateOwnerEngine(Engine* owner_engine)
+    void AssetManager::UpdateOwnerEngine(Engine* new_owner_engine)
 	{
-		InternalEngineObject::UpdateOwnerEngine(owner_engine);
-		this->fontFactory->UpdateOwnerEngine(owner_engine);
+		InternalEngineObject::UpdateOwnerEngine(new_owner_engine);
+		this->fontFactory->UpdateOwnerEngine(new_owner_engine);
 	}
 
 #pragma region Adding Assets

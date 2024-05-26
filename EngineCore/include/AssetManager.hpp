@@ -42,7 +42,7 @@ namespace Engine
 		// Overrides InternalEngineObject::UpdateHeldLogger
 		void UpdateHeldLogger(std::shared_ptr<Logging::Logger> new_logger);
 		// Overrides InternalEngineObject::UpdateOwnerEngine
-        void UpdateOwnerEngine(Engine* owner_engine);
+        void UpdateOwnerEngine(Engine* new_owner_engine);
 
 		void AddTexture(std::string name, std::string path, Rendering::Texture_InitFiletype filetype);
 		void AddFont(std::string name, std::string path);

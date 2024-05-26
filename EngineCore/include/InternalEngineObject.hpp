@@ -21,9 +21,9 @@ namespace Engine
         InternalEngineObject(Engine* engine) : owner_engine(engine) {}
         //~InternalEngineObject() {}
 
-        void UpdateOwnerEngine(Engine* owner_engine)
+        void UpdateOwnerEngine(Engine* new_owner_engine)
         {
-            this->owner_engine = owner_engine;
+            this->owner_engine = new_owner_engine;
         }
 
         void UpdateHeldLogger(std::shared_ptr<Logging::Logger> new_logger)

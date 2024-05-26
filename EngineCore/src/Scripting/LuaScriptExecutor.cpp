@@ -58,6 +58,7 @@ namespace Engine
 			// last value on stack when returning has to
 			// be an error object original or another
 			//
+			(void)(state);
 
 			// Simply pass the error object through to pcall
 			return 1;

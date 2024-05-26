@@ -65,9 +65,9 @@ namespace Engine::Rendering
 		this->has_updated_mesh = false;
 	}
 
-	void SpriteRenderer::UpdateTexture(std::shared_ptr<Rendering::Texture> texture)
+	void SpriteRenderer::UpdateTexture(std::shared_ptr<Rendering::Texture> new_texture)
 	{
-		this->texture = texture;
+		this->texture = new_texture;
 
 		this->has_updated_mesh = false;
 	}

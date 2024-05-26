@@ -61,7 +61,15 @@ endif()
 
 add_library(EngineCore SHARED ${SRC_FILES})
 
+if(MSVC)
+	target_compile_options(EngineCore PRIVATE /W3) # /WX
+else()
+	target_compile_options(EngineCore PRIVATE -Wall) # -Wextra -Wpedantic -Werror
+endif()
+
+
 target_link_directories(EngineCore PUBLIC lib ../build/Debug ../build)
+
 if((WIN32 OR UNIX) AND NOT APPLE)
 	target_link_directories(EngineCore PUBLIC ../external/lua-prebuilt)
 elseif(APPLE)

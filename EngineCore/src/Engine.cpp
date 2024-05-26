@@ -39,6 +39,8 @@
 
 namespace Engine
 {
+	// TODO: Move this abomination elsewhere...
+	//
 	const char* const _build = "CMEP EngineCore " __TIME__ " " __DATE__ " build, configured " BUILDCONFIG;
 #if defined(_MSC_VER)
 	#pragma message("Compiler MSVC detected")
@@ -63,6 +65,7 @@ namespace Engine
 	const char* const _compiledby = "Nil";
 #endif
 
+	// TODO: Does this have to be global?
 	bool EngineIsWindowInFocus = false;
 	bool EngineIsWindowInContent = false;
 	double EngineMouseXPos = 0.0;
@@ -101,22 +104,21 @@ namespace Engine
 	{
 		Rendering::GLFWwindowData windowdata = this->rendering_engine->GetWindow();
 
-		double xpos = 0.0, ypos = 0.0;
-		static double lastx = (windowdata.windowX / 2.0), lasty = (windowdata.windowY / 2.0);
+		static double lastX = (windowdata.windowX / 2.0), lastY = (windowdata.windowY / 2.0);
 
 		if (EngineIsWindowInFocus && EngineIsWindowInContent)
 		{
-			if ((EngineMouseXPos - lastx) != 0.0 || (EngineMouseYPos - lasty) != 0.0)
+			if ((EngineMouseXPos - lastX) != 0.0 || (EngineMouseYPos - lastY) != 0.0)
 			{
 				EventHandling::Event event = EventHandling::Event(EventHandling::EventType::ON_MOUSEMOVED);
-				event.mouse.x = EngineMouseXPos - lastx;
-				event.mouse.y = EngineMouseYPos - lasty;
+				event.mouse.x = EngineMouseXPos - lastX;
+				event.mouse.y = EngineMouseYPos - lastY;
 				event.deltaTime = deltaTime;
 				event.raisedFrom = this;
 				this->FireEvent(event);
 
-				lastx = EngineMouseXPos;
-				lasty = EngineMouseYPos;
+				lastX = EngineMouseXPos;
+				lastY = EngineMouseYPos;
 			}
 		}
 	}
@@ -136,8 +138,6 @@ namespace Engine
 			exit(1);
 		}
 
-		EventHandling::EventType eventType = EventHandling::EventType::EVENT_UNDEFINED;
-
 		this->config.window.title = data["window"]["title"];
 		this->config.window.sizeX = data["window"]["sizeX"];
 		this->config.window.sizeY = data["window"]["sizeY"];
@@ -156,6 +156,9 @@ namespace Engine
 	
 	void Engine::OnWindowFocusCallback(GLFWwindow* window, int focused)
 	{
+		// Unused
+		(void)(window);
+
 		if(focused)
 		{
 			EngineIsWindowInFocus = true;
@@ -168,6 +171,9 @@ namespace Engine
 
 	void Engine::CursorPositionCallback(GLFWwindow* window, double xpos, double ypos)
 	{
+		// Unused
+		(void)(window);
+
 		if(EngineIsWindowInFocus)
 		{
 			EngineMouseXPos = xpos;
@@ -182,6 +188,9 @@ namespace Engine
 
 	void Engine::CursorEnterLeaveCallback(GLFWwindow* window, int entered)
 	{
+		// TODO: use entered?
+		(void)(entered);
+
 		if(EngineIsWindowInFocus)
 		{
 			EngineIsWindowInContent = true;
@@ -196,11 +205,15 @@ namespace Engine
 	
 	void Engine::OnKeyEventCallback(GLFWwindow* window, int key, int scancode, int action, int mods)
 	{
+		// Unused
+		(void)(scancode);
+		(void)(mods);
+
 		if (action == GLFW_PRESS)
 		{
 			Rendering::VulkanRenderingEngine* renderer = (Rendering::VulkanRenderingEngine*)glfwGetWindowUserPointer(window);
 			EventHandling::Event event = EventHandling::Event(EventHandling::EventType::ON_KEYDOWN);
-			event.keycode = key;
+			event.keycode = static_cast<uint16_t>(key);
 			event.deltaTime = renderer->GetOwnerEngine()->GetLastDeltaTime();
 			event.raisedFrom = renderer->GetOwnerEngine();
 			renderer->GetOwnerEngine()->FireEvent(event);
@@ -209,7 +222,7 @@ namespace Engine
 		{
 			Rendering::VulkanRenderingEngine* renderer = (Rendering::VulkanRenderingEngine*)glfwGetWindowUserPointer(window);
 			EventHandling::Event event = EventHandling::Event(EventHandling::EventType::ON_KEYUP);
-			event.keycode = key;
+			event.keycode = static_cast<uint16_t>(key);
 			event.deltaTime = renderer->GetOwnerEngine()->GetLastDeltaTime();
 			event.raisedFrom = renderer->GetOwnerEngine();
 			renderer->GetOwnerEngine()->FireEvent(event);
@@ -251,7 +264,7 @@ namespace Engine
 		
 		glfwShowWindow(this->rendering_engine->GetWindow().window);
 
-		int counter = 0;
+		uint16_t counter = 0;
 		auto prevClock = std::chrono::steady_clock::now();
 		// hot loop
 		while (!glfwWindowShouldClose(this->rendering_engine->GetWindow().window))

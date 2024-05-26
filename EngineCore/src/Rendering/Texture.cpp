@@ -1,7 +1,11 @@
 #include <assert.h>
 #include <fstream>
 
+#pragma warning( push, 2 )
 #include "lodepng/lodepng.h"
+#pragma warning( pop )
+
+
 #include "Rendering/Texture.hpp"
 #include "Logging/Logging.hpp"
 
