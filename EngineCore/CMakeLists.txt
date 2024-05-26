@@ -64,7 +64,7 @@ add_library(EngineCore SHARED ${SRC_FILES})
 if(MSVC)
 	target_compile_options(EngineCore PRIVATE /W3) # /WX
 else()
-	target_compile_options(EngineCore PRIVATE -Wall) # -Wextra -Wpedantic -Werror
+	#target_compile_options(EngineCore PRIVATE -Wall) # -Wextra -Wpedantic -Werror
 endif()
 
 
