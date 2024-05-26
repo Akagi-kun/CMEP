@@ -17,7 +17,7 @@ onKeyDown = function(event)
 	-- check for space press
 	if string.char(event.keycode) == ' ' then
 		if birbIsVelociting == false then
-			birbVelocity = birbVelocity + 0.5;
+			birbVelocity = 0.3;
 			birbIsVelociting = true;
 		end
 	end
@@ -32,19 +32,33 @@ onKeyUp = function(event)
 	end
 end
 
-deltaTimeAvg = 0.0;
-deltaTimeCount = 0;
+---------------------
+----  Game data  ----
 
-spawnPipeSinceLast = 4.0;
-spawnPipeEvery = 8.0;
-spawnPipeLastIdx = 0;
-spawnPipeFirstIdx = 1;
-spawnPipeCount = 0;
+local deltaTimeAvg = 0.0;
+local deltaTimeCount = 0;
 
-gameIsGameOver = false;
-gameLastScoredPipeIdx = 0;
-gameScore = 0;
-pipeMoveSpeed = 0.1;
+local spawnPipeEvery = 5.0;
+local spawnPipeSinceLast = spawnPipeEvery - 0.2;
+local spawnPipeLastIdx = 0;
+local spawnPipeFirstIdx = 1;
+local spawnPipeCount = 0;
+
+-- Pipes original size is 110x338
+local pipe_xSize <const> = 110;
+local pipe_ySize <const> = 450;
+local pipe_spacing = 250;
+
+local birb_xSize <const> = 48;
+local birb_ySize <const> = 33;
+
+local gameIsGameOver = false;
+local gameLastScoredPipeIdx = 0;
+local gameScore = 0;
+local pipeMoveSpeed = 0.1;
+
+----  Game data  ----
+---------------------
 
 local checkCollisions2DBox = function(x1, y1, w1, h1, x2, y2, w2, h2)
 	if (
@@ -59,6 +73,17 @@ local checkCollisions2DBox = function(x1, y1, w1, h1, x2, y2, w2, h2)
 	end
 end
 
+local screenX = 1100;
+local screenY = 720;
+
+local pxToScreenX = function(x)
+	return x / screenX
+end
+
+local pxToScreenY = function(y)
+	return y / screenY
+end
+
 -- ON_UPDATE event
 onUpdate = function(event)
 	deltaTimeAvg = deltaTimeAvg + event.deltaTime;
@@ -70,6 +95,7 @@ onUpdate = function(event)
 	-- Update frametime counter, recommend to leave this here for debugging purposes
 	if deltaTimeCount >= 30 then
 		--cmepmeta.logger.SimpleLog(string.format("Hello from Lua! Last FT is: %f ms!", deltaTimeAvg / deltaTimeCount * 1000))
+		--cmepmeta.logger.SimpleLog(string.format("Test (%f, %f) (%f, %f)", pxToScreenX(80), pxToScreenY(400), 80/1100, 400/720))
 		--local object = cmepapi.sm_FindObject(scene_manager, "_debug_info");
 		local object = scene_manager:FindObject("_debug_info");
 		cmepapi.textRenderer_UpdateText(object.renderer, "FT: "..tostring(deltaTimeAvg / deltaTimeCount * 1000).." ms");
@@ -79,20 +105,21 @@ onUpdate = function(event)
 	end
 	
 	-- We can use the math library in here!
-	local offset = -100 + math.random(-150, 150);
-	
+	local offset = -200 + math.random(-15, 15) * 10;
+
 	if gameIsGameOver == false then
 		if spawnPipeSinceLast > spawnPipeEvery then
 			-- Spawn new pipes
+
 			--local object1 = cmepapi.objectFactory_CreateSpriteObject(scene_manager, 1.0, offset / 720, 80 / 1100, 400 / 720, asset_manager, "textures/pipe_down.png");
 			local object1 = scene_manager:AddTemplatedObject("sprite_pipe_down"..tostring(spawnPipeLastIdx + 1), "pipe_down");
-			object1:Translate(1.0, offset / 720, 0.0);
-			object1:Scale(80 / 1100, 400 / 720, 1.0);
+			object1:Translate(1.0, pxToScreenY(offset), 0.0);
+			object1:Scale(pxToScreenX(pipe_xSize), pxToScreenY(pipe_ySize), 1.0);
 
 			--local object2 = cmepapi.objectFactory_CreateSpriteObject(scene_manager, 1.0, (400 + 200 + offset) / 720, 80 / 1100, 400 / 720, asset_manager, "textures/pipe_up.png");
 			local object2 = scene_manager:AddTemplatedObject("sprite_pipe_up"..tostring(spawnPipeLastIdx + 1), "pipe_up");
-			object2:Translate(1.0, (400 + 200 + offset) / 720, 0.0);
-			object2:Scale(80 / 1100, 400 / 720, 1.0);
+			object2:Translate(1.0, pxToScreenY(pipe_ySize + pipe_spacing + offset), 0.0);
+			object2:Scale(pxToScreenX(pipe_xSize), pxToScreenY(pipe_ySize), 1.0);
 
 			spawnPipeLastIdx = spawnPipeLastIdx + 1;
 			spawnPipeCount = spawnPipeCount + 1;
@@ -116,8 +143,8 @@ onUpdate = function(event)
 				pipe2:Translate(x2, y2, z2);
 
 				-- Check collisions with both pipes
-				if checkCollisions2DBox(birbx, birby, 48 / 1100, 33 / 720, x1, y1, 80 / 1100, 400 / 720) or
-				   checkCollisions2DBox(birbx, birby, 48 / 1100, 33 / 720, x2, y2, 80 / 1100, 400 / 720)
+				if checkCollisions2DBox(birbx, birby, pxToScreenX(birb_xSize), pxToScreenY(birb_ySize), x1, y1, pxToScreenX(pipe_xSize), pxToScreenY(pipe_ySize)) or -- pipe 1
+				   checkCollisions2DBox(birbx, birby, pxToScreenX(birb_xSize), pxToScreenY(birb_ySize), x2, y2, pxToScreenX(pipe_xSize), pxToScreenY(pipe_ySize))    -- pipe 2
 				then
 					gameIsGameOver = true;
 					local font = cmepapi.assetManager_GetFont(asset_manager, "fonts/myfont/myfont.fnt");
@@ -127,7 +154,9 @@ onUpdate = function(event)
 				end
 
 				-- Add score by colliding with a wall after the pipes
-				if checkCollisions2DBox(birbx, birby, 48 / 1100, 33 / 720, x2 + 80 / 1100, 0.0, 80 / 1100, 1.0) and pipeIdx > gameLastScoredPipeIdx then
+				if checkCollisions2DBox(birbx, birby, pxToScreenX(birb_xSize), pxToScreenY(birb_ySize), x2 + pxToScreenX(80), 0.0, pxToScreenX(80), 1.0) and
+				   pipeIdx > gameLastScoredPipeIdx
+				then
 					gameScore = gameScore + 1;
 					gameLastScoredPipeIdx = pipeIdx;
 					local score_object = scene_manager:FindObject("text_score");
@@ -146,8 +175,8 @@ onUpdate = function(event)
 		end
 		
 		-- Check collisions with floor and roof
-		if 	checkCollisions2DBox(birbx, birby, 48 / 1100, 33 / 720, 0.0, -(40 / 720), 1.0, 40 / 720) or
-			checkCollisions2DBox(birbx, birby, 48 / 1100, 33 / 720, 0.0, 1.0, 1.0, 40 / 720)
+		if 	checkCollisions2DBox(birbx, birby, pxToScreenX(48), pxToScreenY(33), 0.0, - pxToScreenY(40), 	1.0, pxToScreenY(40)) or
+			checkCollisions2DBox(birbx, birby, pxToScreenX(48), pxToScreenY(33), 0.0, 1.0, 					1.0, pxToScreenY(40))
 		then
 			gameIsGameOver = true;
 			cmepmeta.logger.SimpleLog(string.format("Game over!"))
@@ -163,13 +192,13 @@ onUpdate = function(event)
 		y = y - birbVelocity * event.deltaTime;
 		birb:Translate(x, y, z);
 
-		birbVelocity = birbVelocity - 0.5 * event.deltaTime;
+		birbVelocity = birbVelocity - 0.65 * event.deltaTime;
 
 		spawnPipeSinceLast = spawnPipeSinceLast + event.deltaTime;
 	end
 
-	local camrotx, camroty = scene_manager:GetCameraHVRotation();
-	scene_manager:SetCameraHVRotation(camrotx, camroty + 40.0 * event.deltaTime);
+	--local camrotx, camroty = scene_manager:GetCameraHVRotation();
+	--scene_manager:SetCameraHVRotation(camrotx, camroty + 60.0 * event.deltaTime);
 
 	return 0;
 end

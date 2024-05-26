@@ -18,14 +18,14 @@
             "name": "pipe_up",
             "renderer": {
                 "type": "sprite",
-                "sprite": "textures/pipe_up.png"
+                "sprite": "textures/new_pipe_up.png"
             }
         },
         {
             "name": "pipe_down",
             "renderer": {
                 "type": "sprite",
-                "sprite": "textures/pipe_down.png"
+                "sprite": "textures/new_pipe_down.png"
             }
         }
     ]
