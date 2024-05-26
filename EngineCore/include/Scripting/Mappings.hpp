@@ -5,7 +5,10 @@
 
 #include <unordered_map>
 
+#ifdef CMEP_LUAMAPPING_DEFINE
+#undef CMEP_LUAMAPPING_DEFINE
 #define CMEP_LUAMAPPING_DEFINE(mapping) {#mapping, Functions::mapping }
+#endif
 
 namespace Engine::Scripting::Mappings
 {

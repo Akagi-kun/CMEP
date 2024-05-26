@@ -28,6 +28,10 @@ set(SRC_FILES
 	src/Scripting/LuaScript.cpp
 	src/Scripting/LuaScriptExecutor.cpp
 	src/Scripting/Mappings.cpp
+	
+	src/Scripting/API/LuaFactories.cpp
+	src/Scripting/API/SceneManager_API.cpp
+	src/Scripting/API/Object_API.cpp
 
 	../external/lodepng/lodepng.cpp
 	)
