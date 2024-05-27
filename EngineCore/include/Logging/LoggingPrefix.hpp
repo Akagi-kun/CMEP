@@ -1,5 +1,6 @@
 #define LOGPFX_CLASS_ENGINE 					"[ENGINE ] "
 #define LOGPFX_CLASS_VULKAN_RENDERING_ENGINE 	"[VRENDER] "
+#define LOGPFX_CLASS_VULKAN_DEVICE_MANAGER	 	"[VDEVMGR] "
 #define LOGPFX_CLASS_VULKAN_IMAGE_FACTORY	 	"[VIMG_F ] "
 #define LOGPFX_CLASS_SCENE_LOADER 				"[SCENE_L] "
 #define LOGPFX_CLASS_LOGGER						"[LOGGER ] "
@@ -14,3 +15,11 @@
 #ifndef LOGPFX_CURRENT
 	#define LOGPFX_CURRENT LOGPFX_NONE
 #endif
+
+// Include like this:
+/* 
+
+#define LOGPFX_CURRENT __DESIRED_LOGPFX__
+#include "LoggingPrefix.hpp"
+
+ */

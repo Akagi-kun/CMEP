@@ -1,9 +1,10 @@
 #include <set>
+#include <cstring>
 
 #include "Rendering/Vulkan/VulkanDeviceManager.hpp"
 
 // Prefixes for logging messages
-// #define LOGPFX_CURRENT LOGPFX_CLASS_VULKAN_RENDERING_ENGINE
+#define LOGPFX_CURRENT LOGPFX_CLASS_VULKAN_DEVICE_MANAGER
 #include "Logging/LoggingPrefix.hpp"
 
 namespace Engine::Rendering
@@ -114,12 +115,12 @@ namespace Engine::Rendering
 	{
 		return this->vkGraphicsQueue;
 	}
-/* 
+
 	const VkQueue &VulkanDeviceManager::GetPresentQueue() const noexcept
 	{
 		return this->vkPresentQueue;
 	}
- */
+
 #pragma endregion
 
 #pragma region Trampoline functions

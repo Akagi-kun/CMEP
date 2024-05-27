@@ -81,7 +81,7 @@ namespace Engine::Rendering
 		const VkSampleCountFlagBits &GetMSAASampleCount() const noexcept;
 		const QueueFamilyIndices &GetQueueFamilies() const noexcept;
 		const VkQueue &GetGraphicsQueue() const noexcept;
-		inline const VkQueue &GetPresentQueue() const noexcept { return this->vkPresentQueue; }
+		const VkQueue &GetPresentQueue() const noexcept;
 
 		SwapChainSupportDetails QuerySwapChainSupport();
 	};
