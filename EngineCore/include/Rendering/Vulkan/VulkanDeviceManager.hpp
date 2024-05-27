@@ -37,7 +37,8 @@ namespace Engine::Rendering
 		const std::vector<const char *> deviceExtensions = {
 			VK_KHR_SWAPCHAIN_EXTENSION_NAME,
 			VK_EXT_DESCRIPTOR_INDEXING_EXTENSION_NAME,
-			VK_EXT_ROBUSTNESS_2_EXTENSION_NAME};
+			VK_EXT_ROBUSTNESS_2_EXTENSION_NAME,
+		};
 
 		// Validation layers
 		VkDebugUtilsMessengerEXT vkDebugMessenger = VK_NULL_HANDLE;
@@ -73,14 +74,14 @@ namespace Engine::Rendering
 
 		void cleanup();
 
-		VkPhysicalDevice &GetPhysicalDevice() noexcept;
-		VkDevice &GetLogicalDevice() noexcept;
-		VkInstance &GetInstance() noexcept;
-		VkSurfaceKHR &GetSurface() noexcept;
-		VkSampleCountFlagBits &GetMSAASampleCount() noexcept;
-		QueueFamilyIndices &GetQueueFamilies() noexcept;
-		VkQueue &GetGraphicsQueue() noexcept;
-		VkQueue &GetPresentQueue() noexcept;
+		const VkPhysicalDevice &GetPhysicalDevice() const noexcept;
+		const VkDevice &GetLogicalDevice() const noexcept;
+		const VkInstance &GetInstance() const noexcept;
+		const VkSurfaceKHR &GetSurface() const noexcept;
+		const VkSampleCountFlagBits &GetMSAASampleCount() const noexcept;
+		const QueueFamilyIndices &GetQueueFamilies() const noexcept;
+		const VkQueue &GetGraphicsQueue() const noexcept;
+		inline const VkQueue &GetPresentQueue() const noexcept { return this->vkPresentQueue; }
 
 		SwapChainSupportDetails QuerySwapChainSupport();
 	};

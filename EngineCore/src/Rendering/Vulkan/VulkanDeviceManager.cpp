@@ -80,46 +80,46 @@ namespace Engine::Rendering
 
 #pragma region Getters
 
-	VkPhysicalDevice &VulkanDeviceManager::GetPhysicalDevice() noexcept
+	const VkPhysicalDevice &VulkanDeviceManager::GetPhysicalDevice() const noexcept
 	{
 		return this->vkPhysicalDevice;
 	}
 
-	VkDevice &VulkanDeviceManager::GetLogicalDevice() noexcept
+	const VkDevice &VulkanDeviceManager::GetLogicalDevice() const noexcept
 	{
 		return this->vkLogicalDevice;
 	}
 
-	VkInstance &VulkanDeviceManager::GetInstance() noexcept
+	const VkInstance &VulkanDeviceManager::GetInstance() const noexcept
 	{
 		return this->vkInstance;
 	}
 
-	QueueFamilyIndices &VulkanDeviceManager::GetQueueFamilies() noexcept
+	const QueueFamilyIndices &VulkanDeviceManager::GetQueueFamilies() const noexcept
 	{
 		return this->graphicsQueueIndices;
 	}
 
-	VkSurfaceKHR &VulkanDeviceManager::GetSurface() noexcept
+	const VkSurfaceKHR &VulkanDeviceManager::GetSurface() const noexcept
 	{
 		return this->vkSurface;
 	}
 
-	VkSampleCountFlagBits &VulkanDeviceManager::GetMSAASampleCount() noexcept
+	const VkSampleCountFlagBits &VulkanDeviceManager::GetMSAASampleCount() const noexcept
 	{
 		return this->msaaSamples;
 	}
 
-	VkQueue &VulkanDeviceManager::GetGraphicsQueue() noexcept
+	const VkQueue &VulkanDeviceManager::GetGraphicsQueue() const noexcept
 	{
 		return this->vkGraphicsQueue;
 	}
-
-	VkQueue &VulkanDeviceManager::GetPresentQueue() noexcept
+/* 
+	const VkQueue &VulkanDeviceManager::GetPresentQueue() const noexcept
 	{
 		return this->vkPresentQueue;
 	}
-
+ */
 #pragma endregion
 
 #pragma region Trampoline functions

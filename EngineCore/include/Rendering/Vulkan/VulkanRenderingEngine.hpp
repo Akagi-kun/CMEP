@@ -11,6 +11,7 @@
 #include "VulkanDeviceManager.hpp"
 
 #include <string>
+#include <cstring>
 #include <array>
 #include <vector>
 #include <functional>
