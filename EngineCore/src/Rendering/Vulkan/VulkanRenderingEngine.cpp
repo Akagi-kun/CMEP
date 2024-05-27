@@ -106,34 +106,6 @@ namespace Engine::Rendering
 		}
 	}
 
-	VkSurfaceFormatKHR VulkanRenderingEngine::chooseVulkanSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableFormats)
-	{
-		for (const auto& availableFormat : availableFormats)
-		{
-			if (availableFormat.format == VK_FORMAT_B8G8R8A8_SRGB && availableFormat.colorSpace == VK_COLOR_SPACE_SRGB_NONLINEAR_KHR)
-			{
-				return availableFormat;
-			}
-		}
-
-		this->logger->SimpleLog(Logging::LogLevel::Warning, LOGPFX_CURRENT "Unpreferred swap surface format selected");
-		return availableFormats[0];
-	}
-
-	VkPresentModeKHR VulkanRenderingEngine::chooseVulkanSwapPresentMode(const std::vector<VkPresentModeKHR>& availablePresentModes)
-	{
-		for (const auto& availablePresentMode : availablePresentModes)
-		{
-			if (availablePresentMode == VK_PRESENT_MODE_MAILBOX_KHR)
-			{
-				return availablePresentMode;
-			}
-		}
-
-		this->logger->SimpleLog(Logging::LogLevel::Warning, LOGPFX_CURRENT "Unpreferred swap present mode selected");
-		return VK_PRESENT_MODE_FIFO_KHR;
-	}
-
 	VkExtent2D VulkanRenderingEngine::chooseVulkanSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities)
 	{
 		if (capabilities.currentExtent.width != std::numeric_limits<uint32_t>::max())
@@ -201,11 +173,6 @@ namespace Engine::Rendering
 			VK_IMAGE_TILING_OPTIMAL,
 			VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT
 		);
-	}
-
-	bool VulkanRenderingEngine::doesVulkanFormatHaveStencilComponent(VkFormat format)
-	{
-		return format == VK_FORMAT_D32_SFLOAT_S8_UINT || format == VK_FORMAT_D24_UNORM_S8_UINT;
 	}
 
 ////////////////////////////////////////////////////////////////////////

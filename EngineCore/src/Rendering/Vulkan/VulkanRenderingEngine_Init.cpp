@@ -1,10 +1,11 @@
 #include <set>
 
 #include "Rendering/Vulkan/VulkanRenderingEngine.hpp"
-
-#include "Logging/Logging.hpp"
+#include "Rendering/Vulkan/VulkanUtilities.hpp"
 
 #include "Engine.hpp"
+
+#include "Logging/Logging.hpp"
 
 // Prefixes for logging messages
 #define LOGPFX_CURRENT LOGPFX_CLASS_VULKAN_RENDERING_ENGINE
@@ -23,8 +24,8 @@ namespace Engine::Rendering
 		SwapChainSupportDetails swapChainSupport = this->deviceManager->QuerySwapChainSupport();
 
 		// Get the info out of the capabilities
-		VkSurfaceFormatKHR surfaceFormat = this->chooseVulkanSwapSurfaceFormat(swapChainSupport.formats);
-		VkPresentModeKHR presentMode = this->chooseVulkanSwapPresentMode(swapChainSupport.presentModes);
+		VkSurfaceFormatKHR surfaceFormat = VulkanUtils::chooseVulkanSwapSurfaceFormat(swapChainSupport.formats);
+		VkPresentModeKHR presentMode = VulkanUtils::chooseVulkanSwapPresentMode(swapChainSupport.presentModes);
 		VkExtent2D extent = this->chooseVulkanSwapExtent(swapChainSupport.capabilities);
 
 		uint32_t imageCount = swapChainSupport.capabilities.minImageCount + 1;

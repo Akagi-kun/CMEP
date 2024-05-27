@@ -48,7 +48,6 @@ namespace Engine::Rendering
 	{
 	private:
 		const uint32_t MAX_FRAMES_IN_FLIGHT = 2;
-		//VkSampleCountFlagBits msaaSamples = VK_SAMPLE_COUNT_1_BIT;
 
 		GLFWwindow* window = nullptr;
 		unsigned int windowX = 0, windowY = 0;
@@ -97,21 +96,12 @@ namespace Engine::Rendering
 		// External callback for rendering
 		std::function<void(VkCommandBuffer, uint32_t, Engine*)> external_callback;
 
-		// Physical device functions
-		//int checkVulkanPhysicalDeviceScore(VkPhysicalDevice device);
-		//QueueFamilyIndices findVulkanQueueFamilies(VkPhysicalDevice device);
-		//bool checkVulkanDeviceExtensionSupport(VkPhysicalDevice device);
-		//SwapChainSupportDetails queryVulkanSwapChainSupport(VkPhysicalDevice device);
-		//VkSampleCountFlagBits getMaxUsableSampleCount();
-
 		// VkFormat functions
 		VkFormat findVulkanSupportedFormat(const std::vector<VkFormat>& candidates, VkImageTiling tiling, VkFormatFeatureFlags features);
 		VkFormat findVulkanSupportedDepthFormat();
 		bool doesVulkanFormatHaveStencilComponent(VkFormat format);
 
 		// Swap chain functions
-		VkSurfaceFormatKHR chooseVulkanSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableFormats);
-		VkPresentModeKHR chooseVulkanSwapPresentMode(const std::vector<VkPresentModeKHR>& availablePresentModes);
 		VkExtent2D chooseVulkanSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities);
 		void createVulkanSwapChainViews();
 		void recreateVulkanSwapChain();
