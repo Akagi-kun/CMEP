@@ -15,45 +15,6 @@
 
 namespace Engine::Rendering
 {
-	VKAPI_ATTR VkBool32 VKAPI_CALL vulcanDebugCallback(
-		VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
-		VkDebugUtilsMessageTypeFlagsEXT messageType,
-		const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData,
-		void* pUserData
-		)
-	{
-		if(auto locked_logger = ((VulkanRenderingEngine*)pUserData)->GetLogger().lock())
-		{
-			locked_logger->SimpleLog(Logging::LogLevel::Warning, LOGPFX_CURRENT "Vulcan validation layer reported: %s", pCallbackData->pMessage);
-		}
-
-		return VK_FALSE;
-	}
-
-	VkResult CreateDebugUtilsMessengerEXT(
-		VkInstance instance,
-		const VkDebugUtilsMessengerCreateInfoEXT* pCreateInfo,
-		const VkAllocationCallbacks* pAllocator,
-		VkDebugUtilsMessengerEXT* pDebugMessenger
-		)
-	{
-		auto func = (PFN_vkCreateDebugUtilsMessengerEXT)vkGetInstanceProcAddr(instance, "vkCreateDebugUtilsMessengerEXT");
-		if (func != nullptr)
-		{
-			return func(instance, pCreateInfo, pAllocator, pDebugMessenger);
-		}
-		else {
-			return VK_ERROR_EXTENSION_NOT_PRESENT;
-		}
-	}
-
-	void DestroyDebugUtilsMessengerEXT(VkInstance instance, VkDebugUtilsMessengerEXT debugMessenger, const VkAllocationCallbacks* pAllocator) {
-		auto func = (PFN_vkDestroyDebugUtilsMessengerEXT)vkGetInstanceProcAddr(instance, "vkDestroyDebugUtilsMessengerEXT");
-		if (func != nullptr)
-		{
-			func(instance, debugMessenger, pAllocator);
-		}
-	}
 
 	std::vector<char> VulkanRenderingEngine::readShaderFile(std::string path)
 	{
@@ -85,147 +46,6 @@ namespace Engine::Rendering
 ///////////////////////    Runtime functions    ////////////////////////
 ////////////////////////////////////////////////////////////////////////
 
-	int VulkanRenderingEngine::checkVulkanPhysicalDeviceScore(VkPhysicalDevice device)
-	{
-		// Physical device properties
-		VkPhysicalDeviceProperties deviceProperties;
-		vkGetPhysicalDeviceProperties(device, &deviceProperties);
-
-		// Physical device optional features
-		VkPhysicalDeviceFeatures deviceFeatures;
-		vkGetPhysicalDeviceFeatures(device, &deviceFeatures);
-
-		int score = 0;
-
-		// Discrete GPUs have a significant performance advantage
-		switch (deviceProperties.deviceType)
-		{
-		case VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU:
-			score += 1000;
-			break;
-		case VK_PHYSICAL_DEVICE_TYPE_INTEGRATED_GPU:
-			score += 800;
-			break;
-		case VK_PHYSICAL_DEVICE_TYPE_VIRTUAL_GPU:
-			score += 600;
-			break;
-		case VK_PHYSICAL_DEVICE_TYPE_CPU:
-			score += 200;
-			break;
-		}
-
-		QueueFamilyIndices indices = this->findVulkanQueueFamilies(device);
-
-		// Return 0 (unsuitable) if some of the required queues aren't supported
-		if (!indices.isComplete())
-		{
-			this->logger->SimpleLog(Logging::LogLevel::Debug2, LOGPFX_CURRENT "Found device '%s', unsuitable, required queue types unsupported", deviceProperties.deviceName, score);
-			return 0;
-		}
-		else if (!this->checkVulkanDeviceExtensionSupport(device))
-		{
-			this->logger->SimpleLog(Logging::LogLevel::Debug2, LOGPFX_CURRENT"Found device '%s', unsuitable, cause: required extensions unsupported", deviceProperties.deviceName);
-			return 0;
-		}
-		else if (!deviceFeatures.samplerAnisotropy)
-		{
-			this->logger->SimpleLog(Logging::LogLevel::Debug2, LOGPFX_CURRENT "Found device '%s', unsuitable, cause: anisotropy unsupported", deviceProperties.deviceName);
-			return 0;
-		}
-
-		bool swapChainAdequate = false;
-		SwapChainSupportDetails swapChainSupport = this->queryVulkanSwapChainSupport(device);
-		swapChainAdequate = !swapChainSupport.formats.empty() && !swapChainSupport.presentModes.empty();
-
-		if (!swapChainAdequate)
-		{
-			this->logger->SimpleLog(Logging::LogLevel::Debug2, LOGPFX_CURRENT"Found device '%s', unsuitable, cause: inadequate or no swap chain support", deviceProperties.deviceName);
-			return 0;
-		}
-
-		this->logger->SimpleLog(Logging::LogLevel::Debug2, LOGPFX_CURRENT "Found device '%s', suitability %u", deviceProperties.deviceName, score);
-
-		return score;
-	}
-
-	SwapChainSupportDetails VulkanRenderingEngine::queryVulkanSwapChainSupport(VkPhysicalDevice device)
-	{
-		SwapChainSupportDetails details;
-
-		vkGetPhysicalDeviceSurfaceCapabilitiesKHR(device, this->vkSurface, &details.capabilities);
-		
-		uint32_t formatCount;
-		vkGetPhysicalDeviceSurfaceFormatsKHR(device, this->vkSurface, &formatCount, nullptr);
-
-		if (formatCount != 0)
-		{
-			details.formats.resize(formatCount);
-			vkGetPhysicalDeviceSurfaceFormatsKHR(device, this->vkSurface, &formatCount, details.formats.data());
-		}
-
-		uint32_t presentModeCount;
-		vkGetPhysicalDeviceSurfacePresentModesKHR(device, this->vkSurface, &presentModeCount, nullptr);
-
-		if (presentModeCount != 0) {
-			details.presentModes.resize(presentModeCount);
-			vkGetPhysicalDeviceSurfacePresentModesKHR(device, this->vkSurface, &presentModeCount, details.presentModes.data());
-		}
-
-		return details;
-	}
-
-	bool VulkanRenderingEngine::checkVulkanDeviceExtensionSupport(VkPhysicalDevice device)
-	{
-		uint32_t extensionCount;
-		vkEnumerateDeviceExtensionProperties(device, nullptr, &extensionCount, nullptr);
-
-		std::vector<VkExtensionProperties> availableExtensions(extensionCount);
-		vkEnumerateDeviceExtensionProperties(device, nullptr, &extensionCount, availableExtensions.data());
-
-		std::set<std::string> requiredExtensions(deviceExtensions.begin(), deviceExtensions.end());
-
-		for (const auto& extension : availableExtensions) {
-			requiredExtensions.erase(extension.extensionName);
-		}
-
-		for (const auto& extension : requiredExtensions) {
-			this->logger->SimpleLog(Logging::LogLevel::Warning, LOGPFX_CURRENT "Unsupported extension: %s", extension.c_str());
-		}
-
-		return requiredExtensions.empty();
-	}
-
-	QueueFamilyIndices VulkanRenderingEngine::findVulkanQueueFamilies(VkPhysicalDevice device)
-	{
-		QueueFamilyIndices indices;
-
-		uint32_t queueFamilyCount = 0;
-		vkGetPhysicalDeviceQueueFamilyProperties(device, &queueFamilyCount, nullptr);
-
-		std::vector<VkQueueFamilyProperties> queueFamilies(queueFamilyCount);
-		vkGetPhysicalDeviceQueueFamilyProperties(device, &queueFamilyCount, queueFamilies.data());
-
-		int i = 0;
-		for (const auto& queueFamily : queueFamilies)
-		{
-			if (queueFamily.queueFlags & VK_QUEUE_GRAPHICS_BIT)
-			{
-				indices.graphicsFamily = i;
-			}
-
-			VkBool32 presentSupport = false;
-			vkGetPhysicalDeviceSurfaceSupportKHR(device, i, this->vkSurface, &presentSupport);
-			
-			if (presentSupport) {
-				indices.presentFamily = i;
-			}
-
-			i++;
-		}
-
-		return indices;
-	}
-	
 	void VulkanRenderingEngine::recordVulkanCommandBuffer(VkCommandBuffer commandBuffer, uint32_t imageIndex)
 	{
 		VkCommandBufferBeginInfo beginInfo{};
@@ -340,7 +160,7 @@ namespace Engine::Rendering
 	uint32_t VulkanRenderingEngine::findVulkanMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties)
 	{
 		VkPhysicalDeviceMemoryProperties memProperties;
-		vkGetPhysicalDeviceMemoryProperties(this->vkPhysicalDevice, &memProperties);
+		vkGetPhysicalDeviceMemoryProperties(this->deviceManager->GetPhysicalDevice(), &memProperties);
 
 		for (uint32_t i = 0; i < memProperties.memoryTypeCount; i++) {
 			if ((typeFilter & (1 << i)) && (memProperties.memoryTypes[i].propertyFlags & properties) == properties)
@@ -358,7 +178,7 @@ namespace Engine::Rendering
 		for (VkFormat format : candidates)
 		{
 			VkFormatProperties props;
-			vkGetPhysicalDeviceFormatProperties(this->vkPhysicalDevice, format, &props);
+			vkGetPhysicalDeviceFormatProperties(this->deviceManager->GetPhysicalDevice(), format, &props);
 
 			if (tiling == VK_IMAGE_TILING_LINEAR && (props.linearTilingFeatures & features) == features)
 			{
@@ -388,22 +208,6 @@ namespace Engine::Rendering
 		return format == VK_FORMAT_D32_SFLOAT_S8_UINT || format == VK_FORMAT_D24_UNORM_S8_UINT;
 	}
 
-	VkSampleCountFlagBits VulkanRenderingEngine::getMaxUsableSampleCount()
-	{
-		VkPhysicalDeviceProperties physicalDeviceProperties;
-		vkGetPhysicalDeviceProperties(this->vkPhysicalDevice, &physicalDeviceProperties);
-
-		VkSampleCountFlags counts = physicalDeviceProperties.limits.framebufferColorSampleCounts & physicalDeviceProperties.limits.framebufferDepthSampleCounts;
-		if (counts & VK_SAMPLE_COUNT_64_BIT) { return VK_SAMPLE_COUNT_64_BIT; }
-		if (counts & VK_SAMPLE_COUNT_32_BIT) { return VK_SAMPLE_COUNT_32_BIT; }
-		if (counts & VK_SAMPLE_COUNT_16_BIT) { return VK_SAMPLE_COUNT_16_BIT; }
-		if (counts & VK_SAMPLE_COUNT_8_BIT) { return VK_SAMPLE_COUNT_8_BIT; }
-		if (counts & VK_SAMPLE_COUNT_4_BIT) { return VK_SAMPLE_COUNT_4_BIT; }
-		if (counts & VK_SAMPLE_COUNT_2_BIT) { return VK_SAMPLE_COUNT_2_BIT; }
-
-		return VK_SAMPLE_COUNT_1_BIT;
-	}
-
 ////////////////////////////////////////////////////////////////////////
 ////////////////////////    Init functions    //////////////////////////
 ////////////////////////////////////////////////////////////////////////
@@ -417,7 +221,9 @@ namespace Engine::Rendering
 
 	void VulkanRenderingEngine::cleanup()
 	{
-		vkDeviceWaitIdle(this->vkLogicalDevice);
+		VkDevice logicalDevice = this->deviceManager->GetLogicalDevice();
+
+		vkDeviceWaitIdle(logicalDevice);
 
 		this->logger->SimpleLog(Logging::LogLevel::Info, LOGPFX_CURRENT "VulkanRenderingEngine: cleaning up");
 
@@ -427,27 +233,21 @@ namespace Engine::Rendering
 		this->cleanupVulkanImage(this->vkDepthBuffer);
 
 		for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
-			vkDestroySemaphore(this->vkLogicalDevice, renderFinishedSemaphores[i], nullptr);
-			vkDestroySemaphore(this->vkLogicalDevice, imageAvailableSemaphores[i], nullptr);
-			vkDestroyFence(this->vkLogicalDevice, inFlightFences[i], nullptr);
+			vkDestroySemaphore(logicalDevice, renderFinishedSemaphores[i], nullptr);
+			vkDestroySemaphore(logicalDevice, imageAvailableSemaphores[i], nullptr);
+			vkDestroyFence(logicalDevice, inFlightFences[i], nullptr);
 		}
 
-		vkDestroyCommandPool(this->vkLogicalDevice, this->vkCommandPool, nullptr);
+		vkDestroyCommandPool(logicalDevice, this->vkCommandPool, nullptr);
 
 		this->logger->SimpleLog(Logging::LogLevel::Debug3, LOGPFX_CURRENT "Cleaning up default vulkan pipeline");
 		this->cleanupVulkanPipeline(this->graphicsPipelineDefault);
 
-		vkDestroyRenderPass(this->vkLogicalDevice, this->vkRenderPass, nullptr);
+		vkDestroyRenderPass(logicalDevice, this->vkRenderPass, nullptr);
 		
 		vmaDestroyAllocator(this->vmaAllocator);
 
-		vkDestroySurfaceKHR(this->vkInstance, this->vkSurface, nullptr);
-		vkDestroyDevice(this->vkLogicalDevice, nullptr);
-		if (this->enableVkValidationLayers)
-		{
-			DestroyDebugUtilsMessengerEXT(this->vkInstance, this->vkDebugMessenger, nullptr);
-		}
-		vkDestroyInstance(this->vkInstance, nullptr);
+		this->deviceManager->cleanup();
 
 		// Clean up GLFW
 		glfwDestroyWindow(this->window);
@@ -483,10 +283,12 @@ namespace Engine::Rendering
 		this->logger->SimpleLog(Logging::LogLevel::Debug1, LOGPFX_CURRENT "%u vulkan extensions supported", extensionCount);
 
 		// Set up our vulkan rendering stack
-		this->initVulkanInstance();
-		this->createVulkanSurface();
-		this->initVulkanDevice();
-		this->createVulkanLogicalDevice();
+		this->deviceManager = std::make_unique<VulkanDeviceManager>();
+		this->deviceManager->UpdateHeldLogger(this->logger);
+		this->deviceManager->UpdateOwnerEngine(this->owner_engine);
+
+		this->deviceManager->init(this->window);
+
 		this->createVulkanMemoryAllocator();
 	}
 	
@@ -506,10 +308,12 @@ namespace Engine::Rendering
 
 	void VulkanRenderingEngine::drawFrame()
 	{
-		vkWaitForFences(this->vkLogicalDevice, 1, &this->inFlightFences[currentFrame], VK_TRUE, UINT64_MAX);
+		VkDevice logicalDevice = this->deviceManager->GetLogicalDevice();
+
+		vkWaitForFences(logicalDevice, 1, &this->inFlightFences[currentFrame], VK_TRUE, UINT64_MAX);
 
 		uint32_t imageIndex;
-		VkResult acquire_result = vkAcquireNextImageKHR(this->vkLogicalDevice, this->vkSwapChain, UINT64_MAX, this->imageAvailableSemaphores[currentFrame], VK_NULL_HANDLE, &imageIndex);
+		VkResult acquire_result = vkAcquireNextImageKHR(logicalDevice, this->vkSwapChain, UINT64_MAX, this->imageAvailableSemaphores[currentFrame], VK_NULL_HANDLE, &imageIndex);
 
 		if (acquire_result == VK_ERROR_OUT_OF_DATE_KHR || this->framebufferResized || acquire_result == VK_SUBOPTIMAL_KHR)
 		{
@@ -525,7 +329,7 @@ namespace Engine::Rendering
 			throw std::runtime_error("failed to acquire swap chain image!");
 		}
 
-		vkResetFences(this->vkLogicalDevice, 1, &this->inFlightFences[currentFrame]);
+		vkResetFences(logicalDevice, 1, &this->inFlightFences[currentFrame]);
 
 		vkResetCommandBuffer(this->vkCommandBuffers[currentFrame], 0);
 		this->recordVulkanCommandBuffer(this->vkCommandBuffers[currentFrame], imageIndex);
@@ -547,7 +351,7 @@ namespace Engine::Rendering
 		submitInfo.signalSemaphoreCount = 1;
 		submitInfo.pSignalSemaphores = signalSemaphores;
 
-		if (vkQueueSubmit(this->vkGraphicsQueue, 1, &submitInfo, this->inFlightFences[currentFrame]) != VK_SUCCESS)
+		if (vkQueueSubmit(this->deviceManager->GetGraphicsQueue(), 1, &submitInfo, this->inFlightFences[currentFrame]) != VK_SUCCESS)
 		{
 			throw std::runtime_error("failed to submit draw command buffer!");
 		}
@@ -565,7 +369,7 @@ namespace Engine::Rendering
 		presentInfo.pImageIndices = &imageIndex;
 		presentInfo.pResults = nullptr; // Optional
 
-		vkQueuePresentKHR(this->vkPresentQueue, &presentInfo);
+		vkQueuePresentKHR(this->deviceManager->GetPresentQueue(), &presentInfo);
 	}
 
 	GLFWwindowData const VulkanRenderingEngine::GetWindow()
@@ -610,7 +414,7 @@ namespace Engine::Rendering
 		allocInfo.commandBufferCount = 1;
 
 		VkCommandBuffer commandBuffer;
-		vkAllocateCommandBuffers(this->vkLogicalDevice, &allocInfo, &commandBuffer);
+		vkAllocateCommandBuffers(this->deviceManager->GetLogicalDevice(), &allocInfo, &commandBuffer);
 
 		VkCommandBufferBeginInfo beginInfo{};
 		beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
@@ -630,15 +434,15 @@ namespace Engine::Rendering
 		submitInfo.commandBufferCount = 1;
 		submitInfo.pCommandBuffers = &commandBuffer;
 
-		vkQueueSubmit(this->vkGraphicsQueue, 1, &submitInfo, VK_NULL_HANDLE);
-		vkQueueWaitIdle(this->vkGraphicsQueue);
+		vkQueueSubmit(this->deviceManager->GetGraphicsQueue(), 1, &submitInfo, VK_NULL_HANDLE);
+		vkQueueWaitIdle(this->deviceManager->GetGraphicsQueue());
 
-		vkFreeCommandBuffers(this->vkLogicalDevice, this->vkCommandPool, 1, &commandBuffer);
+		vkFreeCommandBuffers(this->deviceManager->GetLogicalDevice(), this->vkCommandPool, 1, &commandBuffer);
 	}
 
 	VkDevice VulkanRenderingEngine::GetLogicalDevice()
 	{
-		return this->vkLogicalDevice;
+		return this->deviceManager->GetLogicalDevice();
 	}
 
 	// Pipelines
@@ -685,7 +489,7 @@ namespace Engine::Rendering
 		VkPipelineMultisampleStateCreateInfo multisampling{};
 		multisampling.sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;
 		multisampling.sampleShadingEnable = VK_FALSE;
-		multisampling.rasterizationSamples = this->msaaSamples;
+		multisampling.rasterizationSamples = this->deviceManager->GetMSAASampleCount();
 		multisampling.minSampleShading = 1.0f; // Optional
 		multisampling.pSampleMask = nullptr; // Optional
 		multisampling.alphaToCoverageEnable = VK_FALSE; // Optional
@@ -741,6 +545,8 @@ namespace Engine::Rendering
 
 	VulkanPipeline* VulkanRenderingEngine::createVulkanPipelineFromPrealloc(VulkanPipeline* pipeline, VulkanPipelineSettings& settings, std::string vert_path, std::string frag_path)
 	{
+		VkDevice logicalDevice = this->deviceManager->GetLogicalDevice();
+
 		settings.colorBlending.pAttachments = &settings.colorBlendAttachment;
 
 		auto vertShaderCode = VulkanRenderingEngine::readShaderFile(std::move(vert_path));
@@ -792,7 +598,7 @@ namespace Engine::Rendering
 		pipelineLayoutInfo.pushConstantRangeCount = 0; // Optional
 		pipelineLayoutInfo.pPushConstantRanges = nullptr; // Optional
 
-		if (vkCreatePipelineLayout(this->vkLogicalDevice, &pipelineLayoutInfo, nullptr, &(pipeline->vkPipelineLayout)) != VK_SUCCESS)
+		if (vkCreatePipelineLayout(logicalDevice, &pipelineLayoutInfo, nullptr, &(pipeline->vkPipelineLayout)) != VK_SUCCESS)
 		{
 			this->logger->SimpleLog(Logging::LogLevel::Error, LOGPFX_CURRENT "Vulkan failed creating graphics pipeline layout");
 			throw std::runtime_error("failed to create pipeline layout!");
@@ -817,14 +623,14 @@ namespace Engine::Rendering
 		pipelineInfo.basePipelineHandle = VK_NULL_HANDLE; // Optional
 		pipelineInfo.basePipelineIndex = -1; // Optional
 
-		if (vkCreateGraphicsPipelines(this->vkLogicalDevice, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &(pipeline->pipeline)) != VK_SUCCESS)
+		if (vkCreateGraphicsPipelines(logicalDevice, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &(pipeline->pipeline)) != VK_SUCCESS)
 		{
 			this->logger->SimpleLog(Logging::LogLevel::Exception, LOGPFX_CURRENT "Vulkan failed creating triangle graphics pipeline");
 			throw std::runtime_error("failed to create triangle graphics pipeline!");
 		}
 
-		vkDestroyShaderModule(this->vkLogicalDevice, fragShaderModule, nullptr);
-		vkDestroyShaderModule(this->vkLogicalDevice, vertShaderModule, nullptr);
+		vkDestroyShaderModule(logicalDevice, fragShaderModule, nullptr);
+		vkDestroyShaderModule(logicalDevice, vertShaderModule, nullptr);
 
 		this->createVulkanUniformBuffers(pipeline);
 		this->createVulkanDescriptorPool(pipeline, settings.descriptorLayoutSettings);
@@ -850,11 +656,13 @@ namespace Engine::Rendering
 			this->cleanupVulkanBuffer(pipeline->uniformBuffers[i]);
 		}
 
-		vkDestroyDescriptorPool(this->vkLogicalDevice, pipeline->vkDescriptorPool, nullptr);
-		vkDestroyDescriptorSetLayout(this->vkLogicalDevice, pipeline->vkDescriptorSetLayout, nullptr);
+		VkDevice logicalDevice = this->deviceManager->GetLogicalDevice();
 
-		vkDestroyPipeline(this->vkLogicalDevice, pipeline->pipeline, nullptr);
-		vkDestroyPipelineLayout(this->vkLogicalDevice, pipeline->vkPipelineLayout, nullptr);
+		vkDestroyDescriptorPool(logicalDevice, pipeline->vkDescriptorPool, nullptr);
+		vkDestroyDescriptorSetLayout(logicalDevice, pipeline->vkDescriptorSetLayout, nullptr);
+
+		vkDestroyPipeline(logicalDevice, pipeline->pipeline, nullptr);
+		vkDestroyPipelineLayout(logicalDevice, pipeline->vkPipelineLayout, nullptr);
 
 		delete pipeline;
 	}
@@ -872,9 +680,9 @@ namespace Engine::Rendering
 		staging_buffer = this->createVulkanBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, 0);
 		vertex_buffer = this->createVulkanBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, 0);
 		
-		vkMapMemory(this->vkLogicalDevice, staging_buffer->allocationInfo.deviceMemory, staging_buffer->allocationInfo.offset, staging_buffer->allocationInfo.size, 0, &staging_buffer->mappedData);
+		vkMapMemory(this->deviceManager->GetLogicalDevice(), staging_buffer->allocationInfo.deviceMemory, staging_buffer->allocationInfo.offset, staging_buffer->allocationInfo.size, 0, &staging_buffer->mappedData);
 		memcpy(staging_buffer->mappedData, vertices.data(), (size_t)bufferSize);
-		vkUnmapMemory(this->vkLogicalDevice, staging_buffer->allocationInfo.deviceMemory);
+		vkUnmapMemory(this->deviceManager->GetLogicalDevice(), staging_buffer->allocationInfo.deviceMemory);
 
 		this->bufferVulkanTransferCopy(staging_buffer, vertex_buffer, bufferSize);
 
@@ -926,11 +734,11 @@ namespace Engine::Rendering
 
 		staging_buffer = this->createVulkanBuffer(dataSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, 0);
 
-		vkMapMemory(this->vkLogicalDevice, staging_buffer->allocationInfo.deviceMemory, staging_buffer->allocationInfo.offset, staging_buffer->allocationInfo.size, 0, &staging_buffer->mappedData);
+		vkMapMemory(this->deviceManager->GetLogicalDevice(), staging_buffer->allocationInfo.deviceMemory, staging_buffer->allocationInfo.offset, staging_buffer->allocationInfo.size, 0, &staging_buffer->mappedData);
 		
 		memcpy(staging_buffer->mappedData, data, static_cast<size_t>(dataSize));
 
-		vkUnmapMemory(this->vkLogicalDevice, staging_buffer->allocationInfo.deviceMemory);
+		vkUnmapMemory(this->deviceManager->GetLogicalDevice(), staging_buffer->allocationInfo.deviceMemory);
 		
 		return staging_buffer;
 	}
@@ -952,7 +760,7 @@ namespace Engine::Rendering
 	{
 		//this->logger->SimpleLog(Logging::LogLevel::Debug3, LOGPFX_CURRENT "Cleaning up vulkan buffer");
 
-		vkDestroyBuffer(this->vkLogicalDevice, buffer->buffer, nullptr);
+		vkDestroyBuffer(this->deviceManager->GetLogicalDevice(), buffer->buffer, nullptr);
 		vmaFreeMemory(this->vmaAllocator, buffer->allocation);
 
 		// Also delete as we use pointers
@@ -992,7 +800,7 @@ namespace Engine::Rendering
 		layoutInfo.pBindings = bindings.data();
 		layoutInfo.pNext = &layoutFlagsInfo;
 
-		if (vkCreateDescriptorSetLayout(this->vkLogicalDevice, &layoutInfo, nullptr, &(pipeline->vkDescriptorSetLayout)) != VK_SUCCESS)
+		if (vkCreateDescriptorSetLayout(this->deviceManager->GetLogicalDevice(), &layoutInfo, nullptr, &(pipeline->vkDescriptorSetLayout)) != VK_SUCCESS)
 		{
 			this->logger->SimpleLog(Logging::LogLevel::Exception, LOGPFX_CURRENT "Vulkan failed to create descriptor set layout");
 			throw std::runtime_error("failed to create descriptor set layout!");
@@ -1019,7 +827,7 @@ namespace Engine::Rendering
 		poolInfo.pPoolSizes = poolSizes.data();
 		poolInfo.maxSets = static_cast<uint32_t>(MAX_FRAMES_IN_FLIGHT);
 
-		if (vkCreateDescriptorPool(this->vkLogicalDevice, &poolInfo, nullptr, &(pipeline->vkDescriptorPool)) != VK_SUCCESS)
+		if (vkCreateDescriptorPool(this->deviceManager->GetLogicalDevice(), &poolInfo, nullptr, &(pipeline->vkDescriptorPool)) != VK_SUCCESS)
 		{
 			this->logger->SimpleLog(Logging::LogLevel::Exception, LOGPFX_CURRENT "Vulkan failed to create descriptor pool");
 			throw std::runtime_error("failed to create descriptor pool!");
@@ -1037,7 +845,7 @@ namespace Engine::Rendering
 
 		pipeline->vkDescriptorSets.resize(MAX_FRAMES_IN_FLIGHT);
 		VkResult createResult{};
-		if ((createResult = vkAllocateDescriptorSets(this->vkLogicalDevice, &allocInfo, pipeline->vkDescriptorSets.data())) != VK_SUCCESS)
+		if ((createResult = vkAllocateDescriptorSets(this->deviceManager->GetLogicalDevice(), &allocInfo, pipeline->vkDescriptorSets.data())) != VK_SUCCESS)
 		{
 			this->logger->SimpleLog(Logging::LogLevel::Exception, LOGPFX_CURRENT "Vulkan failed to create descriptor sets, VkResult: %i", createResult);
 			throw std::runtime_error("failed to allocate descriptor sets!");
@@ -1092,7 +900,7 @@ namespace Engine::Rendering
 		samplerInfo.addressModeW = teximage->useAddressMode;
 
 		VkPhysicalDeviceProperties properties{};
-		vkGetPhysicalDeviceProperties(this->vkPhysicalDevice, &properties);
+		vkGetPhysicalDeviceProperties(this->deviceManager->GetPhysicalDevice(), &properties);
 
 		samplerInfo.anisotropyEnable = VK_TRUE;
 		samplerInfo.maxAnisotropy = properties.limits.maxSamplerAnisotropy;
@@ -1109,7 +917,7 @@ namespace Engine::Rendering
 		samplerInfo.minLod = 0.0f;
 		samplerInfo.maxLod = 0.0f;
 
-		if (vkCreateSampler(this->vkLogicalDevice, &samplerInfo, nullptr, &(teximage->textureSampler)) != VK_SUCCESS)
+		if (vkCreateSampler(this->deviceManager->GetLogicalDevice(), &samplerInfo, nullptr, &(teximage->textureSampler)) != VK_SUCCESS)
 		{
 			this->logger->SimpleLog(Logging::LogLevel::Error, LOGPFX_CURRENT "Failed to create texture sampler");
 			throw std::runtime_error("failed to create texture sampler!");
@@ -1118,8 +926,8 @@ namespace Engine::Rendering
 	
 	void VulkanRenderingEngine::cleanupVulkanImage(VulkanImage* image)
 	{
-		vkDestroyImageView(this->vkLogicalDevice, image->imageView, nullptr);
-		vkDestroyImage(this->vkLogicalDevice, image->image, nullptr);
+		vkDestroyImageView(this->deviceManager->GetLogicalDevice(), image->imageView, nullptr);
+		vkDestroyImage(this->deviceManager->GetLogicalDevice(), image->image, nullptr);
 		vmaFreeMemory(this->vmaAllocator, image->allocation);
 
 		// Also delete as we use pointers
@@ -1130,7 +938,7 @@ namespace Engine::Rendering
 	{
 		//this->logger->SimpleLog(Logging::LogLevel::Debug3, LOGPFX_CURRENT "Cleaning up Vulkan texture image");
 
-		vkDestroySampler(this->vkLogicalDevice, image->textureSampler, nullptr);
+		vkDestroySampler(this->deviceManager->GetLogicalDevice(), image->textureSampler, nullptr);
 		
 		this->cleanupVulkanImage(image->image);
 

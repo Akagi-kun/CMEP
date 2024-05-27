@@ -17,250 +17,10 @@ namespace Engine::Rendering
 	////////////////////////    Init functions    //////////////////////////
 	////////////////////////////////////////////////////////////////////////
 
-	void VulkanRenderingEngine::createVulkanLogicalDevice()
-	{
-		this->graphicsQueueIndices = this->findVulkanQueueFamilies(this->vkPhysicalDevice);
-
-		// Vector of queue creation structs
-		std::vector<VkDeviceQueueCreateInfo> queueCreateInfos;
-
-		// Indices of which queue families we're going to use
-		std::set<uint32_t> uniqueQueueFamilies = {this->graphicsQueueIndices.graphicsFamily.value(), this->graphicsQueueIndices.presentFamily.value()};
-
-		// Fill queueCreateInfos
-		float queuePriority = 1.0f;
-		for (uint32_t queueFamily : uniqueQueueFamilies)
-		{
-			VkDeviceQueueCreateInfo queueCreateInfo{};
-			queueCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
-			queueCreateInfo.queueFamilyIndex = queueFamily;
-			queueCreateInfo.queueCount = 1;
-			queueCreateInfo.pQueuePriorities = &queuePriority;
-			queueCreateInfos.push_back(queueCreateInfo);
-		}
-
-		VkPhysicalDeviceDescriptorIndexingFeatures deviceDescriptorIndexingFeatures{};
-		deviceDescriptorIndexingFeatures.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DESCRIPTOR_INDEXING_FEATURES;
-		deviceDescriptorIndexingFeatures.descriptorBindingPartiallyBound = VK_TRUE;
-
-		VkPhysicalDeviceRobustness2FeaturesEXT deviceRobustnessFeatures{};
-		deviceRobustnessFeatures.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ROBUSTNESS_2_FEATURES_EXT;
-		deviceRobustnessFeatures.nullDescriptor = VK_TRUE;
-		deviceRobustnessFeatures.pNext = &deviceDescriptorIndexingFeatures;
-
-		VkPhysicalDeviceFeatures2 deviceFeatures2{};
-		deviceFeatures2.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2;
-		vkGetPhysicalDeviceFeatures2(this->vkPhysicalDevice, &deviceFeatures2);
-		deviceFeatures2.pNext = &deviceRobustnessFeatures;
-
-		// Logical device creation information
-		VkDeviceCreateInfo createInfo{};
-		createInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
-		createInfo.pQueueCreateInfos = queueCreateInfos.data();
-		createInfo.queueCreateInfoCount = static_cast<uint32_t>(queueCreateInfos.size());
-		createInfo.enabledExtensionCount = static_cast<uint32_t>(this->deviceExtensions.size());
-		createInfo.ppEnabledExtensionNames = this->deviceExtensions.data();
-		createInfo.pNext = &deviceFeatures2;
-
-		// Set logical device extensions
-		createInfo.enabledExtensionCount = static_cast<uint32_t>(this->deviceExtensions.size());
-		createInfo.ppEnabledExtensionNames = this->deviceExtensions.data();
-
-		// Again set validation layers, this part is apparently ignored by modern drivers
-		if (this->enableVkValidationLayers)
-		{
-			createInfo.enabledLayerCount = static_cast<uint32_t>(this->vkValidationLayers.size());
-			createInfo.ppEnabledLayerNames = this->vkValidationLayers.data();
-		}
-		else
-		{
-			createInfo.enabledLayerCount = 0;
-		}
-
-		// Create logical device
-		VkResult result = vkCreateDevice(this->vkPhysicalDevice, &createInfo, nullptr, &this->vkLogicalDevice);
-		if (result != VK_SUCCESS)
-		{
-			this->logger->SimpleLog(Logging::LogLevel::Error, LOGPFX_CURRENT "Vulkan logical device creation failed with %u code", result);
-			throw std::runtime_error("Vulkan: failed to create logical device!");
-		}
-
-		// Get queue handles
-		vkGetDeviceQueue(this->vkLogicalDevice, this->graphicsQueueIndices.graphicsFamily.value(), 0, &this->vkGraphicsQueue);
-		vkGetDeviceQueue(this->vkLogicalDevice, this->graphicsQueueIndices.presentFamily.value(), 0, &this->vkPresentQueue);
-	}
-
-	void VulkanRenderingEngine::createVulkanSurface()
-	{
-		if (glfwCreateWindowSurface(this->vkInstance, this->window, nullptr, &this->vkSurface) != VK_SUCCESS)
-		{
-			this->logger->SimpleLog(Logging::LogLevel::Exception, LOGPFX_CURRENT "Vulkan surface creation failed");
-			throw std::runtime_error("failed to create window surface!");
-		}
-		this->logger->SimpleLog(Logging::LogLevel::Debug3, LOGPFX_CURRENT "Created glfw window surface");
-	}
-
-	bool VulkanRenderingEngine::checkVulkanValidationLayers()
-	{
-		// Get supported validation layer count
-		uint32_t layerCount;
-		vkEnumerateInstanceLayerProperties(&layerCount, nullptr);
-
-		// Get all validation layers supported
-		std::vector<VkLayerProperties> availableLayers(layerCount);
-		vkEnumerateInstanceLayerProperties(&layerCount, availableLayers.data());
-
-		// Check if any of the supported validation layers feature the ones we want to enable
-		for (const char *layerName : this->vkValidationLayers)
-		{
-			bool layerFound = false;
-
-			for (const auto &layerProperties : availableLayers)
-			{
-				if (strcmp(layerName, layerProperties.layerName) == 0)
-				{
-					layerFound = true;
-					break;
-				}
-			}
-
-			// If none of those we want are supported, return false
-			if (!layerFound)
-			{
-				return false;
-			}
-		}
-
-		return true;
-	}
-
-	void VulkanRenderingEngine::initVulkanInstance()
-	{
-		// Application information
-		VkApplicationInfo appInfo{};
-		appInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
-		appInfo.pApplicationName = this->windowTitle.c_str();
-		appInfo.applicationVersion = VK_MAKE_VERSION(1, 0, 0);
-		appInfo.pEngineName = "CMEP";
-		appInfo.engineVersion = VK_MAKE_VERSION(1, 0, 0);
-		appInfo.apiVersion = VK_API_VERSION_1_1;
-
-		// Check validation layer support
-		if (this->enableVkValidationLayers && !this->checkVulkanValidationLayers())
-		{
-			this->logger->SimpleLog(Logging::LogLevel::Error, LOGPFX_CURRENT "Validation layer support requested but not allowed!");
-		}
-
-		// Vulkan instance information
-		VkInstanceCreateInfo createInfo{};
-		createInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
-		createInfo.pApplicationInfo = &appInfo;
-
-		// Get extensions required by GLFW
-		uint32_t glfwExtensionCount = 0;
-		const char **glfwExtensions;
-		glfwExtensions = glfwGetRequiredInstanceExtensions(&glfwExtensionCount);
-
-		// Get our required extensions
-		std::vector<const char *> vkExtensions(glfwExtensions, glfwExtensions + glfwExtensionCount);
-
-		// Enable validation layer extension if it's a debug build
-		if (this->enableVkValidationLayers)
-		{
-			vkExtensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
-		}
-
-		// Add the required extensions
-		createInfo.enabledExtensionCount = static_cast<uint32_t>(vkExtensions.size());
-		createInfo.ppEnabledExtensionNames = vkExtensions.data();
-
-		// Enable validation layers if it's a debug build
-		if (this->enableVkValidationLayers)
-		{
-			createInfo.enabledLayerCount = static_cast<uint32_t>(this->vkValidationLayers.size());
-			createInfo.ppEnabledLayerNames = this->vkValidationLayers.data();
-		}
-		else
-		{
-			// Or else we don't enable any layers
-			createInfo.enabledLayerCount = 0;
-		}
-
-		// Create an instance
-		if (vkCreateInstance(&createInfo, nullptr, &(this->vkInstance)) != VK_SUCCESS)
-		{
-			this->logger->SimpleLog(Logging::LogLevel::Exception, LOGPFX_CURRENT "Could not create Vulkan instance");
-			throw std::runtime_error("Could not create Vulkan instance");
-		}
-		this->logger->SimpleLog(Logging::LogLevel::Info, LOGPFX_CURRENT "Created a Vulkan instance");
-
-		// If it's a debug build, add a debug callback to Vulkan
-		if (this->enableVkValidationLayers)
-		{
-			this->logger->SimpleLog(Logging::LogLevel::Debug2, LOGPFX_CURRENT "Creating debug messenger");
-			VkDebugUtilsMessengerCreateInfoEXT debugMessengerCreateInfo{};
-			debugMessengerCreateInfo.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT;
-			debugMessengerCreateInfo.messageSeverity = VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT;
-			debugMessengerCreateInfo.messageType = VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT;
-			debugMessengerCreateInfo.pfnUserCallback = vulcanDebugCallback;
-			debugMessengerCreateInfo.pUserData = this;
-
-			if (CreateDebugUtilsMessengerEXT(this->vkInstance, &debugMessengerCreateInfo, nullptr, &(this->vkDebugMessenger)) != VK_SUCCESS)
-			{
-				this->logger->SimpleLog(Logging::LogLevel::Error, LOGPFX_CURRENT "Could not create a debug messenger");
-			}
-			this->logger->SimpleLog(Logging::LogLevel::Debug2, LOGPFX_CURRENT "Created debug messenger");
-		}
-	}
-
-	void VulkanRenderingEngine::initVulkanDevice()
-	{
-		this->logger->SimpleLog(Logging::LogLevel::Debug2, LOGPFX_CURRENT "Initializing vulkan device");
-		// Get physical device count
-		uint32_t deviceCount = 0;
-		vkEnumeratePhysicalDevices(this->vkInstance, &deviceCount, nullptr);
-
-		// Check if there are any Vulkan-supporting devices
-		if (deviceCount == 0)
-		{
-			this->logger->SimpleLog(Logging::LogLevel::Error, LOGPFX_CURRENT "Found no device supporting the Vulcan API");
-		}
-
-		// Get all Vulkan-supporting devices
-		std::vector<VkPhysicalDevice> physicalDevices(deviceCount);
-		vkEnumeratePhysicalDevices(this->vkInstance, &deviceCount, physicalDevices.data());
-
-		std::multimap<int, VkPhysicalDevice> candidates;
-
-		for (const auto &device : physicalDevices)
-		{
-			int score = this->checkVulkanPhysicalDeviceScore(device);
-			candidates.insert(std::make_pair(score, device));
-		}
-
-		// Check if the best candidate is suitable at all
-		if (candidates.rbegin()->first > 0)
-		{
-			this->vkPhysicalDevice = candidates.rbegin()->second;
-			this->msaaSamples = this->getMaxUsableSampleCount();
-			this->logger->SimpleLog(Logging::LogLevel::Info, LOGPFX_CURRENT "Using MSAAx%u", this->msaaSamples);
-		}
-
-		if (this->vkPhysicalDevice == VK_NULL_HANDLE)
-		{
-			this->logger->SimpleLog(Logging::LogLevel::Exception, LOGPFX_CURRENT "No suitable physical device found, fatal error");
-			throw std::runtime_error("FATAL! No physical device found");
-		}
-
-		VkPhysicalDeviceProperties deviceProperties;
-		vkGetPhysicalDeviceProperties(this->vkPhysicalDevice, &deviceProperties);
-		this->logger->SimpleLog(Logging::LogLevel::Info, LOGPFX_CURRENT "Found a capable physical device: '%s'", deviceProperties.deviceName);
-	}
-
 	void VulkanRenderingEngine::createVulkanSwapChain()
 	{
 		// Get device and surface Swap Chain capabilities
-		SwapChainSupportDetails swapChainSupport = this->queryVulkanSwapChainSupport(this->vkPhysicalDevice);
+		SwapChainSupportDetails swapChainSupport = this->deviceManager->QuerySwapChainSupport();
 
 		// Get the info out of the capabilities
 		VkSurfaceFormatKHR surfaceFormat = this->chooseVulkanSwapSurfaceFormat(swapChainSupport.formats);
@@ -276,7 +36,7 @@ namespace Engine::Rendering
 
 		VkSwapchainCreateInfoKHR createInfo{};
 		createInfo.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
-		createInfo.surface = this->vkSurface;
+		createInfo.surface = this->deviceManager->GetSurface();
 
 		this->logger->SimpleLog(Logging::LogLevel::Debug1, LOGPFX_CURRENT "Creating Vulkan swap chain with %u images", imageCount);
 
@@ -287,9 +47,11 @@ namespace Engine::Rendering
 		createInfo.imageArrayLayers = 1;
 		createInfo.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
 
-		uint32_t queueFamilyIndices[] = {this->graphicsQueueIndices.graphicsFamily.value(), this->graphicsQueueIndices.presentFamily.value()};
+		QueueFamilyIndices queueIndices = this->deviceManager->GetQueueFamilies();
 
-		if (this->graphicsQueueIndices.graphicsFamily != this->graphicsQueueIndices.presentFamily)
+		uint32_t queueFamilyIndices[] = {queueIndices.graphicsFamily.value(), queueIndices.presentFamily.value()};
+
+		if (queueIndices.graphicsFamily != queueIndices.presentFamily)
 		{
 			createInfo.imageSharingMode = VK_SHARING_MODE_CONCURRENT;
 			createInfo.queueFamilyIndexCount = 2;
@@ -307,15 +69,17 @@ namespace Engine::Rendering
 
 		createInfo.oldSwapchain = VK_NULL_HANDLE;
 
-		if (vkCreateSwapchainKHR(this->vkLogicalDevice, &createInfo, nullptr, &(this->vkSwapChain)) != VK_SUCCESS)
+		VkDevice logicalDevice = this->deviceManager->GetLogicalDevice();
+
+		if (vkCreateSwapchainKHR(logicalDevice, &createInfo, nullptr, &(this->vkSwapChain)) != VK_SUCCESS)
 		{
 			this->logger->SimpleLog(Logging::LogLevel::Error, LOGPFX_CURRENT "Vulkan swap chain creation failed");
 			throw std::runtime_error("failed to create swap chain!");
 		}
 
-		vkGetSwapchainImagesKHR(this->vkLogicalDevice, this->vkSwapChain, &imageCount, nullptr);
+		vkGetSwapchainImagesKHR(logicalDevice, this->vkSwapChain, &imageCount, nullptr);
 		this->vkSwapChainImages.resize(imageCount);
-		vkGetSwapchainImagesKHR(this->vkLogicalDevice, this->vkSwapChain, &imageCount, this->vkSwapChainImages.data());
+		vkGetSwapchainImagesKHR(logicalDevice, this->vkSwapChain, &imageCount, this->vkSwapChainImages.data());
 
 		this->vkSwapChainImageFormat = VK_FORMAT_B8G8R8A8_UNORM;
 		this->vkSwapChainExtent = extent;
@@ -334,7 +98,7 @@ namespace Engine::Rendering
 			glfwWaitEvents();
 		}
 
-		vkDeviceWaitIdle(this->vkLogicalDevice);
+		vkDeviceWaitIdle(this->deviceManager->GetLogicalDevice());
 
 		this->logger->SimpleLog(Logging::LogLevel::Debug1, LOGPFX_CURRENT "Recreating vulkan swap chain");
 
@@ -353,17 +117,19 @@ namespace Engine::Rendering
 
 	void VulkanRenderingEngine::cleanupVulkanSwapChain()
 	{
+		VkDevice logicalDevice = this->deviceManager->GetLogicalDevice();
+
 		for (auto framebuffer : this->vkSwapChainFramebuffers)
 		{
-			vkDestroyFramebuffer(this->vkLogicalDevice, framebuffer, nullptr);
+			vkDestroyFramebuffer(logicalDevice, framebuffer, nullptr);
 		}
 
 		for (auto imageView : this->vkSwapChainImageViews)
 		{
-			vkDestroyImageView(this->vkLogicalDevice, imageView, nullptr);
+			vkDestroyImageView(logicalDevice, imageView, nullptr);
 		}
 
-		vkDestroySwapchainKHR(this->vkLogicalDevice, this->vkSwapChain, nullptr);
+		vkDestroySwapchainKHR(logicalDevice, this->vkSwapChain, nullptr);
 	}
 
 	void VulkanRenderingEngine::createVulkanSwapChainViews()
@@ -387,7 +153,7 @@ namespace Engine::Rendering
 		createInfo.pCode = reinterpret_cast<const uint32_t *>(code.data());
 
 		VkShaderModule shaderModule;
-		if (vkCreateShaderModule(this->vkLogicalDevice, &createInfo, nullptr, &shaderModule) != VK_SUCCESS)
+		if (vkCreateShaderModule(this->deviceManager->GetLogicalDevice(), &createInfo, nullptr, &shaderModule) != VK_SUCCESS)
 		{
 			this->logger->SimpleLog(Logging::LogLevel::Error, LOGPFX_CURRENT "Vulkan failed creating shader module");
 			throw std::runtime_error("failed to create shader module!");
@@ -413,7 +179,7 @@ namespace Engine::Rendering
 	{
 		VkAttachmentDescription colorAttachment{};
 		colorAttachment.format = this->vkSwapChainImageFormat;
-		colorAttachment.samples = this->msaaSamples;
+		colorAttachment.samples = this->deviceManager->GetMSAASampleCount();
 		colorAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
 		colorAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
 		colorAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
@@ -423,7 +189,7 @@ namespace Engine::Rendering
 
 		VkAttachmentDescription depthAttachment{};
 		depthAttachment.format = this->findVulkanSupportedDepthFormat();
-		depthAttachment.samples = this->msaaSamples;
+		depthAttachment.samples = this->deviceManager->GetMSAASampleCount();
 		depthAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
 		depthAttachment.storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
 		depthAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
@@ -480,7 +246,7 @@ namespace Engine::Rendering
 		renderPassInfo.dependencyCount = 1;
 		renderPassInfo.pDependencies = &dependency;
 
-		if (vkCreateRenderPass(this->vkLogicalDevice, &renderPassInfo, nullptr, &this->vkRenderPass) != VK_SUCCESS)
+		if (vkCreateRenderPass(this->deviceManager->GetLogicalDevice(), &renderPassInfo, nullptr, &this->vkRenderPass) != VK_SUCCESS)
 		{
 			this->logger->SimpleLog(Logging::LogLevel::Error, LOGPFX_CURRENT "Vulkan failed creating render pass");
 			throw std::runtime_error("failed to create render pass!");
@@ -507,7 +273,7 @@ namespace Engine::Rendering
 			framebufferInfo.height = this->vkSwapChainExtent.height;
 			framebufferInfo.layers = 1;
 
-			if (vkCreateFramebuffer(this->vkLogicalDevice, &framebufferInfo, nullptr, &this->vkSwapChainFramebuffers[i]) != VK_SUCCESS)
+			if (vkCreateFramebuffer(this->deviceManager->GetLogicalDevice(), &framebufferInfo, nullptr, &this->vkSwapChainFramebuffers[i]) != VK_SUCCESS)
 			{
 				this->logger->SimpleLog(Logging::LogLevel::Error, LOGPFX_CURRENT "Vulkan failed creating framebuffers");
 				throw std::runtime_error("failed to create framebuffer!");
@@ -520,9 +286,9 @@ namespace Engine::Rendering
 		VkCommandPoolCreateInfo poolInfo{};
 		poolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
 		poolInfo.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
-		poolInfo.queueFamilyIndex = this->graphicsQueueIndices.graphicsFamily.value();
+		poolInfo.queueFamilyIndex = this->deviceManager->GetQueueFamilies().graphicsFamily.value();
 
-		if (vkCreateCommandPool(this->vkLogicalDevice, &poolInfo, nullptr, &(this->vkCommandPool)) != VK_SUCCESS)
+		if (vkCreateCommandPool(this->deviceManager->GetLogicalDevice(), &poolInfo, nullptr, &(this->vkCommandPool)) != VK_SUCCESS)
 		{
 			this->logger->SimpleLog(Logging::LogLevel::Error, LOGPFX_CURRENT "Vulkan failed creating command pools");
 			throw std::runtime_error("failed to create command pool!");
@@ -539,7 +305,7 @@ namespace Engine::Rendering
 		allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
 		allocInfo.commandBufferCount = (uint32_t)vkCommandBuffers.size();
 
-		if (vkAllocateCommandBuffers(this->vkLogicalDevice, &allocInfo, this->vkCommandBuffers.data()) != VK_SUCCESS)
+		if (vkAllocateCommandBuffers(this->deviceManager->GetLogicalDevice(), &allocInfo, this->vkCommandBuffers.data()) != VK_SUCCESS)
 		{
 			this->logger->SimpleLog(Logging::LogLevel::Error, LOGPFX_CURRENT "Vulkan failed creating command pools");
 			throw std::runtime_error("failed to allocate command buffers!");
@@ -561,9 +327,11 @@ namespace Engine::Rendering
 
 		for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
 		{
-			if (vkCreateSemaphore(this->vkLogicalDevice, &semaphoreInfo, nullptr, &(this->imageAvailableSemaphores[i])) != VK_SUCCESS ||
-				vkCreateSemaphore(this->vkLogicalDevice, &semaphoreInfo, nullptr, &(this->renderFinishedSemaphores[i])) != VK_SUCCESS ||
-				vkCreateFence(this->vkLogicalDevice, &fenceInfo, nullptr, &(this->inFlightFences[i])) != VK_SUCCESS)
+			VkDevice logicalDevice = this->deviceManager->GetLogicalDevice();
+
+			if (vkCreateSemaphore(logicalDevice, &semaphoreInfo, nullptr, &(this->imageAvailableSemaphores[i])) != VK_SUCCESS ||
+				vkCreateSemaphore(logicalDevice, &semaphoreInfo, nullptr, &(this->renderFinishedSemaphores[i])) != VK_SUCCESS ||
+				vkCreateFence(logicalDevice, &fenceInfo, nullptr, &(this->inFlightFences[i])) != VK_SUCCESS)
 			{
 
 				this->logger->SimpleLog(Logging::LogLevel::Error, LOGPFX_CURRENT "Vulkan failed creating sync objects");
@@ -578,7 +346,7 @@ namespace Engine::Rendering
 
 		if (const auto &vulkanImageFactory = this->owner_engine->GetVulkanImageFactory().lock())
 		{
-			this->vkDepthBuffer = vulkanImageFactory->createImage(this->vkSwapChainExtent.width, this->vkSwapChainExtent.height, this->msaaSamples, depthFormat, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
+			this->vkDepthBuffer = vulkanImageFactory->createImage(this->vkSwapChainExtent.width, this->vkSwapChainExtent.height, this->deviceManager->GetMSAASampleCount(), depthFormat, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
 			this->vkDepthBuffer->imageView = vulkanImageFactory->createImageView(this->vkDepthBuffer->image, depthFormat, VK_IMAGE_ASPECT_DEPTH_BIT);
 		}
 	}
@@ -589,7 +357,7 @@ namespace Engine::Rendering
 
 		if (const auto &vulkanImageFactory = this->owner_engine->GetVulkanImageFactory().lock())
 		{
-			this->multisampledColorImage = vulkanImageFactory->createImage(this->vkSwapChainExtent.width, this->vkSwapChainExtent.height, this->msaaSamples, colorFormat, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
+			this->multisampledColorImage = vulkanImageFactory->createImage(this->vkSwapChainExtent.width, this->vkSwapChainExtent.height, this->deviceManager->GetMSAASampleCount(), colorFormat, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
 			this->multisampledColorImage->imageView = vulkanImageFactory->createImageView(this->multisampledColorImage->image, this->multisampledColorImage->imageFormat, VK_IMAGE_ASPECT_COLOR_BIT);
 		}
 	}
@@ -598,9 +366,9 @@ namespace Engine::Rendering
 	{
 		VmaAllocatorCreateInfo allocatorCreateInfo = {};
 		allocatorCreateInfo.vulkanApiVersion = VK_API_VERSION_1_2;
-		allocatorCreateInfo.physicalDevice = this->vkPhysicalDevice;
-		allocatorCreateInfo.device = this->vkLogicalDevice;
-		allocatorCreateInfo.instance = this->vkInstance;
+		allocatorCreateInfo.physicalDevice = this->deviceManager->GetPhysicalDevice();
+		allocatorCreateInfo.device = this->deviceManager->GetLogicalDevice();
+		allocatorCreateInfo.instance = this->deviceManager->GetInstance();
 
 		vmaCreateAllocator(&allocatorCreateInfo, &(this->vmaAllocator));
 

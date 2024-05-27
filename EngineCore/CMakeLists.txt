@@ -24,6 +24,7 @@ set(SRC_FILES
 	src/Rendering/TextRenderer.cpp
 	src/Rendering/Texture.cpp
 	
+	src/Rendering/Vulkan/VulkanDeviceManager.cpp
 	src/Rendering/Vulkan/VulkanRenderingEngine.cpp
 	src/Rendering/Vulkan/VulkanRenderingEngine_Init.cpp
 	src/Rendering/Vulkan/VulkanImageFactory.cpp
@@ -64,7 +65,7 @@ add_library(EngineCore SHARED ${SRC_FILES})
 if(MSVC)
 	target_compile_options(EngineCore PRIVATE /W3) # /WX
 else()
-	target_compile_options(EngineCore PRIVATE -Wall) # -Wextra -Wpedantic -Werror
+	#target_compile_options(EngineCore PRIVATE -Wall) # -Wextra -Wpedantic -Werror
 endif()
 
 
