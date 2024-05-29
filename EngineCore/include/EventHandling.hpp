@@ -1,6 +1,8 @@
 #pragma once
 
 #include <stdint.h>
+#include <string>
+#include <map>
 #include "PlatformSemantics.hpp"
 
 namespace Engine
@@ -20,12 +22,20 @@ namespace Engine::EventHandling
 		EVENT_UNDEFINED = 0xffff
 	};
 
+	const std::map<std::string, EventType> eventTypeMap = {
+			{"onInit", EventHandling::EventType::ON_INIT},
+			{"onMouseMoved", EventHandling::EventType::ON_MOUSEMOVED},
+			{"onKeyDown", EventHandling::EventType::ON_KEYDOWN},
+			{"onKeyUp", EventHandling::EventType::ON_KEYUP},
+			{"onUpdate", EventHandling::EventType::ON_UPDATE},
+	};
+
 	class CMEP_EXPORT Event final
 	{
 	private:
 	public:
 		const EventType event_type;
-
+		
 		Engine* raisedFrom;
 
 		double deltaTime = 0.0;

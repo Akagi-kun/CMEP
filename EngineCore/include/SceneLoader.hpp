@@ -6,11 +6,15 @@
 
 #include <memory>
 
+#include "nlohmann-json/single_include/nlohmann/json.hpp"
+
 namespace Engine
 {
     class SceneLoader : public InternalEngineObject
     {
     protected:
+        void LoadSceneAssets(nlohmann::json& data, std::string& scene_path);
+
         void LoadSceneInternal(std::shared_ptr<Scene>& scene, std::string scene_name);
 
     public:

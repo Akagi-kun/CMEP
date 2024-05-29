@@ -387,7 +387,7 @@ namespace Engine
 		this->script_executor->UpdateHeldLogger(this->logger);
 
 		this->asset_manager = new AssetManager();
-		this->asset_manager->current_load_path = this->config.lookup.scenes + std::string("/") + this->config.defaultScene + std::string("/");
+		//this->asset_manager->current_load_path = this->config.lookup.scenes + std::string("/") + this->config.defaultScene + std::string("/");
 		this->asset_manager->UpdateOwnerEngine(this);
 		this->asset_manager->UpdateHeldLogger(this->logger);
 

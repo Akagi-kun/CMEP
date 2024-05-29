@@ -34,7 +34,7 @@ namespace Engine
 
 		Scripting::LuaScriptExecutor* lua_executor{};
 		
-		std::string current_load_path = "";
+		//std::string current_load_path = "";
 
 		AssetManager();
 		~AssetManager();

@@ -1,32 +1,65 @@
 {
     "eventHandlers": [
-        { "type": "onInit", "file": "scripts/eventHandlers.lua", "function": "onInit" },
-        { "type": "onUpdate", "file": "scripts/eventHandlers.lua", "function": "onUpdate" },
-        { "type": "onKeyDown", "file": "scripts/eventHandlers.lua", "function": "onKeyDown" },
-        { "type": "onKeyUp", "file": "scripts/eventHandlers.lua", "function": "onKeyUp" },
-        { "type": "onMouseMoved", "file": "scripts/eventHandlers.lua", "function": "onMouseMoved" }
+        { "type": "onInit", "file": "event_handler_script", "function": "onInit" },
+        { "type": "onUpdate", "file": "event_handler_script", "function": "onUpdate" },
+        { "type": "onKeyDown", "file": "event_handler_script", "function": "onKeyDown" },
+        { "type": "onKeyUp", "file": "event_handler_script", "function": "onKeyUp" },
+        { "type": "onMouseMoved", "file": "event_handler_script", "function": "onMouseMoved" }
     ],
     "templates": [
         {
             "name": "birb",
             "renderer": {
                 "type": "sprite",
-                "sprite": "textures/new_birb.png"
+                "sprite": "birb"
             }
         },
         {
             "name": "pipe_up",
             "renderer": {
                 "type": "sprite",
-                "sprite": "textures/new_pipe_up.png"
+                "sprite": "pipe_up"
             }
         },
         {
             "name": "pipe_down",
             "renderer": {
                 "type": "sprite",
-                "sprite": "textures/new_pipe_down.png"
+                "sprite": "pipe_down"
             }
+        }
+    ],
+    "assets": [
+        {
+            "type": "font",
+            "name": "myfont",
+            "location": "fonts/myfont/myfont.fnt",
+            "textures": [
+                { 
+                    "name": "myfont_0.png",
+                    "location": "fonts/myfont/myfont_0.png"
+                }
+            ]
+        },
+        {
+            "type": "texture",
+            "name": "birb",
+            "location": "textures/new_birb.png"
+        },
+        {
+            "type": "texture",
+            "name": "pipe_up",
+            "location": "textures/new_pipe_up.png"
+        },
+        {
+            "type": "texture",
+            "name": "pipe_down",
+            "location": "textures/new_pipe_down.png"
+        },
+        {
+            "type": "script",
+            "name": "event_handler_script",
+            "location": "scripts/eventHandlers.lua"
         }
     ]
 }

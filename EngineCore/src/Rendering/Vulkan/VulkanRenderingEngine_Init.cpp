@@ -90,6 +90,8 @@ namespace Engine::Rendering
 
 	void VulkanRenderingEngine::recreateVulkanSwapChain()
 	{
+		VkDevice logicalDevice = this->deviceManager->GetLogicalDevice();
+
 		// If window is minimized, wait for it to show up again
 		int width = 0, height = 0;
 		glfwGetFramebufferSize(window, &width, &height);
@@ -99,7 +101,7 @@ namespace Engine::Rendering
 			glfwWaitEvents();
 		}
 
-		vkDeviceWaitIdle(this->deviceManager->GetLogicalDevice());
+		vkDeviceWaitIdle(logicalDevice);
 
 		this->logger->SimpleLog(Logging::LogLevel::Debug1, LOGPFX_CURRENT "Recreating vulkan swap chain");
 
@@ -148,13 +150,15 @@ namespace Engine::Rendering
 
 	VkShaderModule VulkanRenderingEngine::createVulkanShaderModule(const std::vector<char> &code)
 	{
+		VkDevice logicalDevice = this->deviceManager->GetLogicalDevice();
+
 		VkShaderModuleCreateInfo createInfo{};
 		createInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
 		createInfo.codeSize = code.size();
 		createInfo.pCode = reinterpret_cast<const uint32_t *>(code.data());
 
 		VkShaderModule shaderModule;
-		if (vkCreateShaderModule(this->deviceManager->GetLogicalDevice(), &createInfo, nullptr, &shaderModule) != VK_SUCCESS)
+		if (vkCreateShaderModule(logicalDevice, &createInfo, nullptr, &shaderModule) != VK_SUCCESS)
 		{
 			this->logger->SimpleLog(Logging::LogLevel::Error, LOGPFX_CURRENT "Vulkan failed creating shader module");
 			throw std::runtime_error("failed to create shader module!");
@@ -247,7 +251,9 @@ namespace Engine::Rendering
 		renderPassInfo.dependencyCount = 1;
 		renderPassInfo.pDependencies = &dependency;
 
-		if (vkCreateRenderPass(this->deviceManager->GetLogicalDevice(), &renderPassInfo, nullptr, &this->vkRenderPass) != VK_SUCCESS)
+		VkDevice logicalDevice = this->deviceManager->GetLogicalDevice();
+
+		if (vkCreateRenderPass(logicalDevice, &renderPassInfo, nullptr, &this->vkRenderPass) != VK_SUCCESS)
 		{
 			this->logger->SimpleLog(Logging::LogLevel::Error, LOGPFX_CURRENT "Vulkan failed creating render pass");
 			throw std::runtime_error("failed to create render pass!");
@@ -274,7 +280,9 @@ namespace Engine::Rendering
 			framebufferInfo.height = this->vkSwapChainExtent.height;
 			framebufferInfo.layers = 1;
 
-			if (vkCreateFramebuffer(this->deviceManager->GetLogicalDevice(), &framebufferInfo, nullptr, &this->vkSwapChainFramebuffers[i]) != VK_SUCCESS)
+			VkDevice logicalDevice = this->deviceManager->GetLogicalDevice();
+
+			if (vkCreateFramebuffer(logicalDevice, &framebufferInfo, nullptr, &this->vkSwapChainFramebuffers[i]) != VK_SUCCESS)
 			{
 				this->logger->SimpleLog(Logging::LogLevel::Error, LOGPFX_CURRENT "Vulkan failed creating framebuffers");
 				throw std::runtime_error("failed to create framebuffer!");
@@ -288,8 +296,10 @@ namespace Engine::Rendering
 		poolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
 		poolInfo.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
 		poolInfo.queueFamilyIndex = this->deviceManager->GetQueueFamilies().graphicsFamily.value();
+		
+		VkDevice logicalDevice = this->deviceManager->GetLogicalDevice();
 
-		if (vkCreateCommandPool(this->deviceManager->GetLogicalDevice(), &poolInfo, nullptr, &(this->vkCommandPool)) != VK_SUCCESS)
+		if (vkCreateCommandPool(logicalDevice, &poolInfo, nullptr, &(this->vkCommandPool)) != VK_SUCCESS)
 		{
 			this->logger->SimpleLog(Logging::LogLevel::Error, LOGPFX_CURRENT "Vulkan failed creating command pools");
 			throw std::runtime_error("failed to create command pool!");
@@ -305,8 +315,10 @@ namespace Engine::Rendering
 		allocInfo.commandPool = this->vkCommandPool;
 		allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
 		allocInfo.commandBufferCount = (uint32_t)vkCommandBuffers.size();
+		
+		VkDevice logicalDevice = this->deviceManager->GetLogicalDevice();
 
-		if (vkAllocateCommandBuffers(this->deviceManager->GetLogicalDevice(), &allocInfo, this->vkCommandBuffers.data()) != VK_SUCCESS)
+		if (vkAllocateCommandBuffers(logicalDevice, &allocInfo, this->vkCommandBuffers.data()) != VK_SUCCESS)
 		{
 			this->logger->SimpleLog(Logging::LogLevel::Error, LOGPFX_CURRENT "Vulkan failed creating command pools");
 			throw std::runtime_error("failed to allocate command buffers!");

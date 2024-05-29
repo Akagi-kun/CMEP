@@ -7,8 +7,6 @@
 #include "Rendering/TextRenderer.hpp"
 #include "Rendering/SpriteRenderer.hpp"
 
-#include "nlohmann-json/single_include/nlohmann/json.hpp"
-
 #include <fstream>
 
 // Prefixes for logging messages
@@ -27,9 +25,22 @@ namespace Engine
 
     }
 
+    std::shared_ptr<Scene> SceneLoader::LoadScene(std::string scene_name)
+    {
+        std::shared_ptr<Scene> new_scene = std::make_shared<Scene>();
+        new_scene->UpdateHeldLogger(this->logger);
+		new_scene->UpdateOwnerEngine(this->owner_engine);
+
+        this->LoadSceneInternal(new_scene, scene_name);
+
+        return new_scene;
+    }
+
     void SceneLoader::LoadSceneInternal(std::shared_ptr<Scene>& scene, std::string scene_name)
     {
-        std::ifstream file(this->scene_prefix + "/" + scene_name + "/scene.json");
+		std::string scene_path = this->scene_prefix + "/" + scene_name + "/";
+
+        std::ifstream file(scene_path + "scene.json");
 		
 		nlohmann::json data;
 		try
@@ -39,49 +50,48 @@ namespace Engine
 		catch(std::exception& e)
 		{
 			this->logger->SimpleLog(Logging::LogLevel::Exception, LOGPFX_CURRENT "Error parsing scene.json '%s', what: %s", std::string(this->scene_prefix + "/" + scene_name + "/scene.json").c_str(), e.what());
-			throw std::runtime_error("Error parsing scene.json");
+			throw;
 		}
 
-		std::string prefix_scene = this->scene_prefix + std::string("/") + scene_name + std::string("/");
-		this->logger->SimpleLog(Logging::LogLevel::Info, LOGPFX_CURRENT "Loading scene prefix is: %s", prefix_scene.c_str());
+		this->logger->SimpleLog(Logging::LogLevel::Info, LOGPFX_CURRENT "Loading scene prefix is: %s", scene_path.c_str());
 
-		EventHandling::EventType event_type = EventHandling::EventType::EVENT_UNDEFINED;
+		EventHandling::EventType event_type;
 
         AssetManager* asset_manager = this->owner_engine->GetAssetManager();
+
+		this->LoadSceneAssets(data, scene_path);
 
 		// Load scene event handlers
 		for(auto& event_handler_entry : data["eventHandlers"])
 		{
-			if(event_handler_entry["type"] == std::string("onInit"))
+			event_type = EventHandling::EventType::EVENT_UNDEFINED;
+
+			std::string event_handler_type = event_handler_entry["type"];
+			std::string event_handler_file = event_handler_entry["file"];
+			std::string event_handler_function = event_handler_entry["function"];
+
+			auto& mappedType = EventHandling::eventTypeMap.find(event_handler_type);
+
+    		if (mappedType != EventHandling::eventTypeMap.end())
 			{
-				event_type = EventHandling::EventType::ON_INIT;
+				event_type = mappedType->second;
+				this->logger->SimpleLog(Logging::LogLevel::Debug3, LOGPFX_CURRENT "Event handler for type: %s", event_handler_type.c_str());
 			}
-			else if(event_handler_entry["type"] == std::string("onMouseMoved"))
+			else
 			{
-				event_type = EventHandling::EventType::ON_MOUSEMOVED;
-			}
-			else if(event_handler_entry["type"] == std::string("onKeyDown"))
-			{
-				event_type = EventHandling::EventType::ON_KEYDOWN;
-			}
-			else if(event_handler_entry["type"] == std::string("onKeyUp"))
-			{
-				event_type = EventHandling::EventType::ON_KEYUP;
-			}
-			else if(event_handler_entry["type"] == std::string("onUpdate"))
-			{
-				event_type = EventHandling::EventType::ON_UPDATE;
+				this->logger->SimpleLog(Logging::LogLevel::Warning, LOGPFX_CURRENT "Unknown event type '%s'", event_handler_type.c_str());
+				continue;
 			}
 
-			assert(event_type != EventHandling::EventType::EVENT_UNDEFINED);
+			//assert(event_type != EventHandling::EventType::EVENT_UNDEFINED);
 
-			this->logger->SimpleLog(Logging::LogLevel::Debug3, LOGPFX_CURRENT "Event handler for type: %s", static_cast<std::string>(event_handler_entry["type"]).c_str());
-			std::shared_ptr<Scripting::LuaScript> event_handler = asset_manager->GetLuaScript(prefix_scene + std::string(event_handler_entry["file"]));
+			std::shared_ptr<Scripting::LuaScript> event_handler = asset_manager->GetLuaScript(event_handler_file);
 			
 			if(event_handler == nullptr)
 			{
-				asset_manager->AddLuaScript(prefix_scene + std::string(event_handler_entry["file"]), prefix_scene + std::string(event_handler_entry["file"]));
-				event_handler = asset_manager->GetLuaScript(prefix_scene + std::string(event_handler_entry["file"]));
+				// TODO: Don't add assets with name = location!
+				asset_manager->AddLuaScript(scene_path + event_handler_file, scene_path + event_handler_file);
+				event_handler = asset_manager->GetLuaScript(scene_path + event_handler_file);
 			}
 			
 			scene->lua_event_handlers.emplace(event_type, std::make_pair(event_handler, event_handler_entry["function"]));
@@ -107,14 +117,61 @@ namespace Engine
 		}
     }
 
-    std::shared_ptr<Scene> SceneLoader::LoadScene(std::string scene_name)
-    {
-        std::shared_ptr<Scene> new_scene = std::make_shared<Scene>();
-        new_scene->UpdateHeldLogger(this->logger);
-		new_scene->UpdateOwnerEngine(this->owner_engine);
+    void SceneLoader::LoadSceneAssets(nlohmann::json& data, std::string& scene_path)
+	{
+        AssetManager* asset_manager = this->owner_engine->GetAssetManager();
 
-        this->LoadSceneInternal(new_scene, scene_name);
+		for(auto& asset_entry : data["assets"])
+		{
+			try 
+			{
+				std::string asset_type = asset_entry["type"];
+				std::string asset_name = asset_entry["name"];
+				std::string asset_location = asset_entry["location"];
 
-        return new_scene;
-    }
+				if(asset_type == "texture")
+				{
+					asset_manager->AddTexture(asset_name, scene_path + asset_location, Rendering::Texture_InitFiletype::FILE_PNG);
+				}
+				else if(asset_type == "script")
+				{
+					asset_manager->AddLuaScript(asset_name, scene_path + asset_location);
+				}
+				else if(asset_type == "font")
+				{
+					// Font assets currently have to list all textures they use
+					// this is suboptimal design and might TODO: change in the future?
+					for(auto& page_entry : asset_entry["textures"])
+					{
+						std::string page_name = page_entry["name"];
+						std::string page_location = page_entry["location"];
+
+						asset_manager->AddTexture(page_name, scene_path + page_location, Rendering::Texture_InitFiletype::FILE_PNG);
+					}
+				
+					// Once all textures have been loaded, finally load the font
+					asset_manager->AddFont(asset_name, scene_path + asset_location);
+				}
+				/*
+				// TODO: Not implemented
+				else if(asset_type == "texture")
+				{
+
+				} */
+				else
+				{
+					this->logger->SimpleLog(Logging::LogLevel::Warning, LOGPFX_CURRENT "Unknown type '%s' for asset '%s'", asset_type.c_str(), asset_name.c_str());
+					continue;
+				}
+
+				this->logger->SimpleLog(Logging::LogLevel::Info, LOGPFX_CURRENT "Loaded asset '%s' as '%s'", asset_name.c_str(), asset_type.c_str());
+			}
+			catch(std::exception& e)
+			{
+				this->logger->SimpleLog(Logging::LogLevel::Exception, LOGPFX_CURRENT "Exception when parsing asset tree (check scene.json) e.what(): %s", e.what());
+				throw;
+			}
+		}
+
+	}
 }

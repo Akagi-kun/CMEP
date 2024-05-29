@@ -70,6 +70,8 @@ namespace Engine::Rendering
 
 	void VulkanDeviceManager::cleanup()
 	{
+		this->logger->SimpleLog(Logging::LogLevel::Info, LOGPFX_CURRENT "Cleaning up");
+		
 		vkDestroySurfaceKHR(this->vkInstance, this->vkSurface, nullptr);
 		vkDestroyDevice(this->vkLogicalDevice, nullptr);
 		if (this->enableVkValidationLayers)

@@ -192,7 +192,7 @@ namespace Engine::Rendering
 
 		vkDeviceWaitIdle(logicalDevice);
 
-		this->logger->SimpleLog(Logging::LogLevel::Info, LOGPFX_CURRENT "VulkanRenderingEngine: cleaning up");
+		this->logger->SimpleLog(Logging::LogLevel::Info, LOGPFX_CURRENT "Cleaning up");
 
 		this->cleanupVulkanSwapChain();
 

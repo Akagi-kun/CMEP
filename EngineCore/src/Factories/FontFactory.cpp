@@ -186,24 +186,39 @@ namespace Engine::Factories
 					this->logger->SimpleLog(Logging::LogLevel::Debug3, LOGPFX_CURRENT "Font page index %u is %s", page_idx, whole_filename.c_str());
 
 					std::shared_ptr<Rendering::Texture> texture{};
-					if (this->asset_manager == nullptr)
+
+					try
 					{
-						this->logger->SimpleLog(Logging::LogLevel::Debug3, LOGPFX_CURRENT "A Font is not managed by a AssetManager, this may be unintentional");
-						texture = std::make_shared<Rendering::Texture>();
-						if (texture->InitFile(Rendering::Texture_InitFiletype::FILE_PNG, whole_filename.c_str()) != 0)
+						// The unlikely case
+						if (this->asset_manager == nullptr)
 						{
-							this->logger->SimpleLog(Logging::LogLevel::Exception, LOGPFX_CURRENT "Failed initializing texture");
-							throw std::runtime_error("Failed initializing texture!");
+							this->logger->SimpleLog(Logging::LogLevel::Debug3, LOGPFX_CURRENT "A Font is not managed by a AssetManager, this may be unintentional");
+							texture = std::make_shared<Rendering::Texture>();
+							if (texture->InitFile(Rendering::Texture_InitFiletype::FILE_PNG, whole_filename.c_str()) != 0)
+							{
+								this->logger->SimpleLog(Logging::LogLevel::Exception, LOGPFX_CURRENT "Failed initializing texture");
+								throw std::runtime_error("Failed initializing texture!");
+							}
+						}
+						else
+						{
+							texture = this->asset_manager->GetTexture(whole_filename);
+	
+							if(texture == nullptr)
+							{
+								throw std::runtime_error("Texture not found! " + whole_filename);
+							}
+							/* if (texture == nullptr)
+							{
+								this->asset_manager->AddTexture(whole_filename, whole_filename, Rendering::Texture_InitFiletype::FILE_PNG);
+								texture = this->asset_manager->GetTexture(whole_filename);
+							} */
 						}
 					}
-					else
+					catch(std::exception& e)
 					{
-						texture = this->asset_manager->GetTexture(whole_filename);
-						if (texture == nullptr)
-						{
-							this->asset_manager->AddTexture(whole_filename, whole_filename, Rendering::Texture_InitFiletype::FILE_PNG);
-							texture = this->asset_manager->GetTexture(whole_filename);
-						}
+						this->logger->SimpleLog(Logging::LogLevel::Exception, LOGPFX_CURRENT "Could not initialize a Font page texture! e.what(): %s", e.what());
+						throw;
 					}
 
 					// Add page and it's texture to map

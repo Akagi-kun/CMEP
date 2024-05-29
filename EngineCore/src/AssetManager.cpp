@@ -45,7 +45,7 @@ namespace Engine
 
 		texture->UpdateHeldLogger(this->logger);
 
-		if (texture->InitFile(filetype, this->current_load_path + path) != 0)
+		if (texture->InitFile(filetype, path) != 0)
 		{
 			this->logger->SimpleLog(Logging::LogLevel::Error, LOGPFX_CURRENT "Error occured when adding Texture %s as %s, this may be unintentional", path.c_str(), name.c_str());
 			return;
@@ -57,7 +57,7 @@ namespace Engine
 
 	void AssetManager::AddFont(std::string name, std::string path)
 	{
-		std::shared_ptr<Rendering::Font> font = this->fontFactory->InitBMFont(path);
+		std::shared_ptr<Rendering::Font> font = this->fontFactory->InitBMFont(std::move(path));
 		this->fonts.emplace(name, std::move(font));
 	}
 
@@ -74,7 +74,7 @@ namespace Engine
 		mesh->UpdateOwnerEngine(this->owner_engine);
 		mesh->UpdateHeldLogger(this->logger);
 		
-		mesh->CreateMeshFromObj(this->current_load_path + path);
+		mesh->CreateMeshFromObj(path);
 
 		this->models.emplace(name, std::move(mesh));
 	}
@@ -90,10 +90,12 @@ namespace Engine
 		}
 		else
 		{
-			this->logger->SimpleLog(Logging::LogLevel::Debug1, LOGPFX_CURRENT "Texture %s requested and is not loaded", name.c_str());
-			this->AddTexture(name, name, Rendering::Texture_InitFiletype::FILE_PNG);
+			this->logger->SimpleLog(Logging::LogLevel::Error, LOGPFX_CURRENT "Texture asset '%s' not found", name.c_str());
+			//this->logger->SimpleLog(Logging::LogLevel::Debug1, LOGPFX_CURRENT "Texture %s requested and is not loaded", name.c_str());
+			//this->AddTexture(name, name, Rendering::Texture_InitFiletype::FILE_PNG);
 			
-			return this->GetTexture(name);
+			//return this->GetTexture(name);
+			return nullptr;
 		}
 	}
 
@@ -106,9 +108,12 @@ namespace Engine
 		}
 		else
 		{
-			// Recursive!!!
-			this->AddFont(name, this->current_load_path + name);
-			return this->GetFont(name);
+			this->logger->SimpleLog(Logging::LogLevel::Error, LOGPFX_CURRENT "Font asset '%s' not found", name.c_str());
+
+			// TODO: Recursive!!!
+			//this->AddFont(name, name);
+			//return this->GetFont(name);
+			return nullptr;
 
 			//std::shared_ptr<Rendering::Font> font = std::make_shared<Rendering::Font>(this);
 			//
@@ -132,6 +137,7 @@ namespace Engine
 		}
 		else
 		{
+			this->logger->SimpleLog(Logging::LogLevel::Error, LOGPFX_CURRENT "LuaScript asset '%s' not found", name.c_str());
 			return nullptr;
 		}
 	}
@@ -145,7 +151,8 @@ namespace Engine
 		}
 		else
 		{
-			this->logger->SimpleLog(Logging::LogLevel::Debug1, LOGPFX_CURRENT "Model %s requested and is not loaded", name.c_str());
+			this->logger->SimpleLog(Logging::LogLevel::Error, LOGPFX_CURRENT "Model asset '%s' not found", name.c_str());
+			//this->logger->SimpleLog(Logging::LogLevel::Debug1, LOGPFX_CURRENT "Model %s requested and is not loaded", name.c_str());
 			this->AddModel(name, name);
 			return nullptr;
 		}
