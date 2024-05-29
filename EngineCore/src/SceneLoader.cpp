@@ -61,7 +61,7 @@ namespace Engine
 
 		this->LoadSceneAssets(data, scene_path);
 
-		if(auto& locked_asset_manager = asset_manager.lock())
+		if(auto locked_asset_manager = asset_manager.lock())
 		{
 			// Load scene event handlers
 			for(auto& event_handler_entry : data["eventHandlers"])
@@ -124,7 +124,7 @@ namespace Engine
 	{
         std::weak_ptr<AssetManager> asset_manager = this->owner_engine->GetAssetManager();
 
-		if(auto& locked_asset_manager = asset_manager.lock())
+		if(auto locked_asset_manager = asset_manager.lock())
 		{
 			for(auto& asset_entry : data["assets"])
 			{
