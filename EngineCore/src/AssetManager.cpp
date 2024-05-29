@@ -15,14 +15,14 @@ namespace Engine
 
 	AssetManager::~AssetManager()
 	{
+		this->logger->SimpleLog(Logging::LogLevel::Info, LOGPFX_CURRENT "Destructor called");
+
 		for(auto& texture : this->textures)
 		{
 			this->logger->SimpleLog(Logging::LogLevel::Debug3, LOGPFX_CURRENT "Texture %s use_count: %u", texture.first.c_str(), texture.second.use_count());
 		}
 
 		this->textures.clear();
-
-		this->logger->SimpleLog(Logging::LogLevel::Debug3, LOGPFX_CURRENT "Deleting asset manager");
 	}
 
 	void AssetManager::UpdateHeldLogger(std::shared_ptr<Logging::Logger> new_logger)

@@ -15,7 +15,7 @@ namespace Engine
     protected:
         void LoadSceneAssets(nlohmann::json& data, std::string& scene_path);
 
-        void LoadSceneInternal(std::shared_ptr<Scene>& scene, std::string scene_name);
+        void LoadSceneInternal(std::shared_ptr<Scene>& scene, std::string& scene_name);
 
     public:
         std::string scene_prefix;

@@ -86,13 +86,17 @@ namespace Engine::Scripting::API
 			if(auto locked_scene_manager = scene_manager.lock())
 			{
 				transform = locked_scene_manager->GetLightTransform();
+
+				lua_pushnumber(state, transform.x);
+				lua_pushnumber(state, transform.y);
+				lua_pushnumber(state, transform.z);
+				
+				return 3;
 			}
-
-			lua_pushnumber(state, transform.x);
-			lua_pushnumber(state, transform.y);
-			lua_pushnumber(state, transform.z);
-
-			return 3;
+			else
+			{
+				return 0;
+			}
 		}
 
 
@@ -108,6 +112,10 @@ namespace Engine::Scripting::API
 			if(auto locked_scene_manager = scene_manager.lock())
 			{
 				locked_scene_manager->SetLightTransform(glm::vec3(x, y, z));
+			}
+			else
+			{
+				return 0;
 			}
 
 			return 0;

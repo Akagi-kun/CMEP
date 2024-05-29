@@ -342,7 +342,7 @@ namespace Engine
 	{
 		this->logger->SimpleLog(Logging::LogLevel::Info, LOGPFX_CURRENT "Destructor called");
 
-		delete this->asset_manager;
+		this->asset_manager.reset();
 
 		delete this->script_executor;
 
@@ -386,7 +386,7 @@ namespace Engine
 		this->script_executor->UpdateOwnerEngine(this);
 		this->script_executor->UpdateHeldLogger(this->logger);
 
-		this->asset_manager = new AssetManager();
+		this->asset_manager = std::make_shared<AssetManager>();
 		//this->asset_manager->current_load_path = this->config.lookup.scenes + std::string("/") + this->config.defaultScene + std::string("/");
 		this->asset_manager->UpdateOwnerEngine(this);
 		this->asset_manager->UpdateHeldLogger(this->logger);

@@ -68,10 +68,10 @@ namespace Engine
 		EngineConfig config{};
 
 		// Engine parts
-		Rendering::VulkanRenderingEngine* rendering_engine = nullptr;
-		AssetManager* asset_manager = nullptr;
-		Scripting::LuaScriptExecutor* script_executor = nullptr;
         std::shared_ptr<Logging::Logger> logger{};
+		std::shared_ptr<AssetManager> asset_manager{};
+		Scripting::LuaScriptExecutor* script_executor = nullptr;
+		Rendering::VulkanRenderingEngine* rendering_engine = nullptr;
 		std::shared_ptr<Rendering::Factories::VulkanImageFactory> vulkanImageFactory{};
 
 		// Event handler storage
@@ -111,9 +111,9 @@ namespace Engine
 
 		double GetLastDeltaTime();
 
-		inline AssetManager* GetAssetManager() noexcept { return this->asset_manager; }
+		inline std::weak_ptr<AssetManager> GetAssetManager() noexcept { return this->asset_manager; }
 		inline Rendering::VulkanRenderingEngine* GetRenderingEngine() noexcept { return this->rendering_engine; }
 		inline std::weak_ptr<SceneManager> GetSceneManager() noexcept { return std::weak_ptr<SceneManager>(this->scene_manager); }
-		inline std::weak_ptr<Rendering::Factories::VulkanImageFactory> GetVulkanImageFactory() noexcept { return std::weak_ptr<Rendering::Factories::VulkanImageFactory>(this->vulkanImageFactory); }
+		inline std::weak_ptr<Rendering::Factories::VulkanImageFactory> GetVulkanImageFactory() noexcept { return this->vulkanImageFactory; }
 	};
 }

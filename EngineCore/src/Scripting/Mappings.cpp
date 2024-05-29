@@ -46,22 +46,24 @@ namespace Engine::Scripting::Mappings
 #pragma endregion
 
 
+
 #pragma region Engine
 
 		int engine_GetAssetManager(lua_State* state)
 		{
 			Engine* engine = *(Engine**)lua_touserdata(state, 1);
 
-			AssetManager* asset_manager = engine->GetAssetManager();
+			std::weak_ptr<AssetManager> asset_manager = engine->GetAssetManager();
 
-			if (asset_manager != nullptr)
+			if (!asset_manager.expired())
 			{
 				// Generate asset_manager table
+				// TODO: create factory
 				lua_newtable(state);
 
-				AssetManager** ptr_obj = (AssetManager**)lua_newuserdata(state, sizeof(AssetManager*));
-				(*ptr_obj) = asset_manager;
-				lua_setfield(state, -2, "_pointer");
+				void* ptr_obj = lua_newuserdata(state, sizeof(std::weak_ptr<AssetManager>));
+				new(ptr_obj) std::weak_ptr<AssetManager>(asset_manager);
+				lua_setfield(state, -2, "_smart_pointer");
 			}
 			else
 			{
@@ -72,7 +74,7 @@ namespace Engine::Scripting::Mappings
 
 				if(auto locked_logger = logger.lock())
 				{
-					locked_logger->SimpleLog(Logging::LogLevel::Warning, "Lua: AssetManager requested but returned nullptr!");
+					locked_logger->SimpleLog(Logging::LogLevel::Warning, "Lua: AssetManager requested but is expired!");
 				}
 				lua_pushnil(state);
 			}
@@ -181,25 +183,32 @@ namespace Engine::Scripting::Mappings
 
 		int assetManager_GetFont(lua_State* state)
 		{
-			lua_getfield(state, 1, "_pointer");
-			AssetManager* ptr_am = *(AssetManager**)lua_touserdata(state, -1);
+			lua_getfield(state, 1, "_smart_pointer");
+			std::weak_ptr<AssetManager> asset_manager = *(std::weak_ptr<AssetManager>*)lua_touserdata(state, -1);
 
 			std::string path = lua_tostring(state, 2);
 
-			std::shared_ptr<Rendering::Font> font = ptr_am->GetFont(std::move(path));
-
-			if (font != nullptr)
+			if(auto& locked_asset_manager = asset_manager.lock())
 			{
-				// Generate object table
-				lua_newtable(state);
+				std::shared_ptr<Rendering::Font> font = locked_asset_manager->GetFont(std::move(path));
 
-				Rendering::Font** ptr = (Rendering::Font**)lua_newuserdata(state, sizeof(Rendering::Font*));
-				(*ptr) = font.get();
-				lua_setfield(state, -2, "_pointer");
+				if (font != nullptr)
+				{
+					// Generate object table
+					lua_newtable(state);
+
+					Rendering::Font** ptr = (Rendering::Font**)lua_newuserdata(state, sizeof(Rendering::Font*));
+					(*ptr) = font.get();
+					lua_setfield(state, -2, "_pointer");
+				}
+				else
+				{
+					lua_pushnil(state);
+				}
 			}
 			else
 			{
-				lua_pushnil(state);
+
 			}
 
 			return 1;
@@ -207,25 +216,32 @@ namespace Engine::Scripting::Mappings
 
 		int assetManager_GetTexture(lua_State* state)
 		{
-			lua_getfield(state, 1, "_pointer");
-			AssetManager* ptr_am = *(AssetManager**)lua_touserdata(state, -1);
+			lua_getfield(state, 1, "_smart_pointer");
+			std::weak_ptr<AssetManager> asset_manager = *(std::weak_ptr<AssetManager>*)lua_touserdata(state, -1);
 
 			std::string path = lua_tostring(state, 2);
 
-			Rendering::Texture* texture = ptr_am->GetTexture(std::move(path)).get();
-
-			if (texture != nullptr)
+			if(auto& locked_asset_manager = asset_manager.lock())
 			{
-				// Generate object table
-				lua_newtable(state);
+				Rendering::Texture* texture = locked_asset_manager->GetTexture(std::move(path)).get();
 
-				Rendering::Texture** ptr = (Rendering::Texture**)lua_newuserdata(state, sizeof(Rendering::Texture*));
-				(*ptr) = texture;
-				lua_setfield(state, -2, "_pointer");
+				if (texture != nullptr)
+				{
+					// Generate object table
+					lua_newtable(state);
+
+					Rendering::Texture** ptr = (Rendering::Texture**)lua_newuserdata(state, sizeof(Rendering::Texture*));
+					(*ptr) = texture;
+					lua_setfield(state, -2, "_pointer");
+				}
+				else
+				{
+					lua_pushnil(state);
+				}
 			}
 			else
 			{
-				lua_pushnil(state);
+				return 0;
 			}
 
 			return 1;
@@ -233,41 +249,51 @@ namespace Engine::Scripting::Mappings
 
 		int assetManager_AddTexture(lua_State* state)
 		{
-			lua_getfield(state, 1, "_pointer");
-			AssetManager* ptr_am = *(AssetManager**)lua_touserdata(state, -1);
+			lua_getfield(state, 1, "_smart_pointer");
+			std::weak_ptr<AssetManager> asset_manager = *(std::weak_ptr<AssetManager>*)lua_touserdata(state, -1);
 
 			std::string name = lua_tostring(state, 2);
 			std::string path = lua_tostring(state, 3);
 
-			ptr_am->AddTexture(std::move(name), std::move(path), Rendering::Texture_InitFiletype::FILE_PNG);
+			if(auto& locked_asset_manager = asset_manager.lock())
+			{
+				locked_asset_manager->AddTexture(std::move(name), std::move(path), Rendering::Texture_InitFiletype::FILE_PNG);
+			}
 
 			return 1;
 		}
 
 		int assetManager_GetModel(lua_State* state)
 		{
-			lua_getfield(state, 1, "_pointer");
-			AssetManager* ptr_am = *(AssetManager**)lua_touserdata(state, -1);
+			lua_getfield(state, 1, "_smart_pointer");
+			std::weak_ptr<AssetManager> asset_manager = *(std::weak_ptr<AssetManager>*)lua_touserdata(state, -1);
 
 			std::string path = lua_tostring(state, 2);
 
-			std::shared_ptr<Rendering::Mesh> model = ptr_am->GetModel(std::move(path));
-
-			if (model != nullptr)
+			if(auto& locked_asset_manager = asset_manager.lock())
 			{
-				// Generate object table
-				lua_newtable(state);
+				std::shared_ptr<Rendering::Mesh> model = locked_asset_manager->GetModel(std::move(path));
 
-				void* ptr = lua_newuserdata(state, sizeof(std::shared_ptr<Rendering::Mesh>));
-				//(*ptr) = model.get();
-				
-				new(ptr) std::shared_ptr<Rendering::Mesh>(model);
-				
-				lua_setfield(state, -2, "_pointer");
+				if (model != nullptr)
+				{
+					// Generate object table
+					lua_newtable(state);
+
+					void* ptr = lua_newuserdata(state, sizeof(std::shared_ptr<Rendering::Mesh>));
+					//(*ptr) = model.get();
+					
+					new(ptr) std::shared_ptr<Rendering::Mesh>(model);
+					
+					lua_setfield(state, -2, "_smart_pointer");
+				}
+				else
+				{
+					lua_pushnil(state);
+				}
 			}
 			else
 			{
-				lua_pushnil(state);
+				return 0;
 			}
 
 			return 1;
@@ -436,14 +462,6 @@ namespace Engine::Scripting::Mappings
 		CMEP_LUAMAPPING_DEFINE(textRenderer_UpdateText),
 
 		CMEP_LUAMAPPING_DEFINE(meshRenderer_UpdateTexture),
-
-		//CMEP_LUAMAPPING_DEFINE(object_AddChild),
-		//CMEP_LUAMAPPING_DEFINE(object_GetSize),
-		//CMEP_LUAMAPPING_DEFINE(object_Scale),
-		//CMEP_LUAMAPPING_DEFINE(object_GetRotation),
-		//CMEP_LUAMAPPING_DEFINE(object_Rotate),
-		//CMEP_LUAMAPPING_DEFINE(object_GetPosition),
-		//CMEP_LUAMAPPING_DEFINE(object_Translate),
 
 		CMEP_LUAMAPPING_DEFINE(assetManager_GetFont),
 		CMEP_LUAMAPPING_DEFINE(assetManager_GetTexture),

@@ -181,7 +181,7 @@ onUpdate = function(event)
 			gameIsGameOver = true;
 			cmepmeta.logger.SimpleLog(string.format("Game over!"))
 
-			local font = cmepapi.assetManager_GetFont(asset_manager, "fonts/myfont/myfont.fnt");
+			local font = cmepapi.assetManager_GetFont(asset_manager, "myfont");
 			local object = cmepapi.objectFactory_CreateTextObject(scene_manager, 0.4, 0.4, 32, "GAME OVER", font);
 			scene_manager:AddObject("text_gameover", object);
 			return 0;
