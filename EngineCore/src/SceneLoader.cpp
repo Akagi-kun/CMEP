@@ -70,7 +70,7 @@ namespace Engine
 			std::string event_handler_file = event_handler_entry["file"];
 			std::string event_handler_function = event_handler_entry["function"];
 
-			auto& mappedType = EventHandling::eventTypeMap.find(event_handler_type);
+			const auto& mappedType = EventHandling::eventTypeMap.find(event_handler_type);
 
     		if (mappedType != EventHandling::eventTypeMap.end())
 			{
@@ -152,12 +152,10 @@ namespace Engine
 					// Once all textures have been loaded, finally load the font
 					asset_manager->AddFont(asset_name, scene_path + asset_location);
 				}
-				/*
-				// TODO: Not implemented
-				else if(asset_type == "texture")
+				else if(asset_type == "model")
 				{
-
-				} */
+					asset_manager->AddModel(asset_name, scene_path + asset_location);
+				}
 				else
 				{
 					this->logger->SimpleLog(Logging::LogLevel::Warning, LOGPFX_CURRENT "Unknown type '%s' for asset '%s'", asset_type.c_str(), asset_name.c_str());
@@ -168,7 +166,7 @@ namespace Engine
 			}
 			catch(std::exception& e)
 			{
-				this->logger->SimpleLog(Logging::LogLevel::Exception, LOGPFX_CURRENT "Exception when parsing asset tree (check scene.json) e.what(): %s", e.what());
+				this->logger->SimpleLog(Logging::LogLevel::Exception, LOGPFX_CURRENT "Exception when loading assets (check scene.json) e.what(): %s", e.what());
 				throw;
 			}
 		}
