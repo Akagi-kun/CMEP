@@ -147,7 +147,7 @@ onUpdate = function(event)
 				   checkCollisions2DBox(birbx, birby, pxToScreenX(birb_xSize), pxToScreenY(birb_ySize), x2, y2, pxToScreenX(pipe_xSize), pxToScreenY(pipe_ySize))    -- pipe 2
 				then
 					gameIsGameOver = true;
-					local font = cmepapi.assetManager_GetFont(asset_manager, "fonts/myfont/myfont.fnt");
+					local font = asset_manager:GetFont("myfont");
 					local object = cmepapi.objectFactory_CreateTextObject(scene_manager, 0.4, 0.4, 32, "GAME OVER", font);
 					scene_manager:AddObject("text_gameover", object);
 					return 0;
@@ -181,7 +181,7 @@ onUpdate = function(event)
 			gameIsGameOver = true;
 			cmepmeta.logger.SimpleLog(string.format("Game over!"))
 
-			local font = cmepapi.assetManager_GetFont(asset_manager, "myfont");
+			local font = asset_manager:GetFont("myfont");
 			local object = cmepapi.objectFactory_CreateTextObject(scene_manager, 0.4, 0.4, 32, "GAME OVER", font);
 			scene_manager:AddObject("text_gameover", object);
 			return 0;
@@ -211,7 +211,7 @@ onInit = function(event)
 	local scene_manager = cmepapi.engine_GetSceneManager(event.engine);
 
 	-- Create frametime counter and add it to scene
-	local font = cmepapi.assetManager_GetFont(asset_manager, "myfont");
+	local font = asset_manager:GetFont("myfont");
 	local object = cmepapi.objectFactory_CreateTextObject(scene_manager, 0.0, 0.0, 18, "test", font);
 	scene_manager:AddObject("_debug_info", object);
 	

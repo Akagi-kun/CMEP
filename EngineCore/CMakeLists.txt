@@ -35,6 +35,7 @@ set(SRC_FILES
 	
 	src/Scripting/API/LuaFactories.cpp
 	src/Scripting/API/SceneManager_API.cpp
+	src/Scripting/API/AssetManager_API.cpp
 	src/Scripting/API/Object_API.cpp
 
 	../external/lodepng/lodepng.cpp
