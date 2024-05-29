@@ -37,7 +37,7 @@ namespace Engine
 			void* ptr_obj = lua_newuserdata(state, sizeof(std::weak_ptr<Logging::Logger>));
 			new(ptr_obj) std::weak_ptr<Logging::Logger>(this->logger);
 			
-			lua_setfield(state, -2, "_smart_pointer");
+			lua_setfield(state, -2, "_smart_ptr");
 
 			lua_pushcfunction(state, Mappings::Functions::metaLogger_SimpleLog);
 			lua_setfield(state, -2, "SimpleLog");
@@ -56,7 +56,7 @@ namespace Engine
 			// last value on stack is the error object
 			//
 			// last value on stack when returning has to
-			// be an error object original or another
+			// be an error object - original or another
 			//
 			(void)(state);
 
@@ -74,7 +74,7 @@ namespace Engine
 			lua_State* state = script->GetState();
 
 			// Run the start function in a way decided by the ExecuteType
-			lua_pushcfunction(state, LuaErrorHandler);
+			lua_pushcfunction(state, LuaErrorHandler); // Push error handler
 			lua_getglobal(state, function.c_str()); // Get start function
 			int errcall = LUA_OK;
 			switch (etype)

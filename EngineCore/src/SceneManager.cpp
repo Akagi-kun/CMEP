@@ -135,9 +135,4 @@ namespace Engine
 		this->cameraHVRotation = hvrotation;
 		this->CameraUpdated();
 	}
-
-	//void SceneManager::UpdateHeldLogger(std::shared_ptr<Logging::Logger> new_logger)
-	//{
-	//	this->logger = new_logger;
-	//}
 }

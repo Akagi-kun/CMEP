@@ -9,8 +9,9 @@
 #define LOGPFX_CLASS_TEXTURE					"[TEXTURE] "
 #define LOGPFX_CLASS_FONT						"[FONT   ] "
 #define LOGPFX_CLASS_FONT_FACTORY				"[FONT_F ] "
+#define LOGPFX_LUA_MAPPED						"[LUA    ] "
 
-#define LOGPFX_NONE "[???] "
+#define LOGPFX_NONE 							"[ ? ? ? ] "
 
 #ifndef LOGPFX_CURRENT
 	#define LOGPFX_CURRENT LOGPFX_NONE
@@ -19,6 +20,7 @@
 // Include like this:
 /* 
 
+// Prefixes for logging messages
 #define LOGPFX_CURRENT __DESIRED_LOGPFX__
 #include "LoggingPrefix.hpp"
 

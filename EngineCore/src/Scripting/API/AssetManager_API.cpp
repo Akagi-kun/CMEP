@@ -6,14 +6,14 @@ namespace Engine::Scripting::API
 	{
 		int GetFont(lua_State *state)
 		{
-			lua_getfield(state, 1, "_smart_pointer");
+			lua_getfield(state, 1, "_smart_ptr");
 			std::weak_ptr<AssetManager> asset_manager = *(std::weak_ptr<AssetManager> *)lua_touserdata(state, -1);
 
-			std::string path = lua_tostring(state, 2);
+			std::string name = lua_tostring(state, 2);
 
 			if (auto locked_asset_manager = asset_manager.lock())
 			{
-				std::shared_ptr<Rendering::Font> font = locked_asset_manager->GetFont(path);
+				std::shared_ptr<Rendering::Font> font = locked_asset_manager->GetFont(name);
 
 				if (font != nullptr)
 				{
@@ -28,8 +28,7 @@ namespace Engine::Scripting::API
 				}
 				else
 				{
-					return luaL_error(state, "AssetManager returned nullptr; requested font '%s'", path.c_str());
-					// lua_pushnil(state);
+					return luaL_error(state, "AssetManager returned nullptr; GetFont '%s'", name.c_str());
 				}
 			}
 			else
@@ -42,7 +41,7 @@ namespace Engine::Scripting::API
 
 		int GetTexture(lua_State *state)
 		{
-			lua_getfield(state, 1, "_smart_pointer");
+			lua_getfield(state, 1, "_smart_ptr");
 			std::weak_ptr<AssetManager> asset_manager = *(std::weak_ptr<AssetManager> *)lua_touserdata(state, -1);
 
 			std::string path = lua_tostring(state, 2);
@@ -62,28 +61,12 @@ namespace Engine::Scripting::API
 				}
 				else
 				{
-					lua_pushnil(state);
+					return luaL_error(state, "AssetManager returned nullptr; GetTexture '%s'", path.c_str());
 				}
 			}
 			else
 			{
-				return 0;
-			}
-
-			return 1;
-		}
-
-		int AddTexture(lua_State *state)
-		{
-			lua_getfield(state, 1, "_smart_pointer");
-			std::weak_ptr<AssetManager> asset_manager = *(std::weak_ptr<AssetManager> *)lua_touserdata(state, -1);
-
-			std::string name = lua_tostring(state, 2);
-			std::string path = lua_tostring(state, 3);
-
-			if (auto locked_asset_manager = asset_manager.lock())
-			{
-				locked_asset_manager->AddTexture(std::move(name), std::move(path), Rendering::Texture_InitFiletype::FILE_PNG);
+				return luaL_error(state, "Cannot lock AssetManager, invalid object passed");
 			}
 
 			return 1;
@@ -91,7 +74,7 @@ namespace Engine::Scripting::API
 
 		int GetModel(lua_State *state)
 		{
-			lua_getfield(state, 1, "_smart_pointer");
+			lua_getfield(state, 1, "_smart_ptr");
 			std::weak_ptr<AssetManager> asset_manager = *(std::weak_ptr<AssetManager> *)lua_touserdata(state, -1);
 
 			std::string path = lua_tostring(state, 2);
@@ -106,20 +89,38 @@ namespace Engine::Scripting::API
 					lua_newtable(state);
 
 					void *ptr = lua_newuserdata(state, sizeof(std::shared_ptr<Rendering::Mesh>));
-					//(*ptr) = model.get();
-
 					new (ptr) std::shared_ptr<Rendering::Mesh>(model);
 
-					lua_setfield(state, -2, "_smart_pointer");
+					lua_setfield(state, -2, "_smart_ptr");
 				}
 				else
 				{
-					lua_pushnil(state);
+					return luaL_error(state, "AssetManager returned nullptr; GetModel '%s'", path.c_str());
 				}
 			}
 			else
 			{
-				return 0;
+				return luaL_error(state, "Cannot lock AssetManager, invalid object passed");
+			}
+
+			return 1;
+		}
+
+		int AddTexture(lua_State *state)
+		{
+			lua_getfield(state, 1, "_smart_ptr");
+			std::weak_ptr<AssetManager> asset_manager = *(std::weak_ptr<AssetManager> *)lua_touserdata(state, -1);
+
+			std::string name = lua_tostring(state, 2);
+			std::string path = lua_tostring(state, 3);
+
+			if (auto locked_asset_manager = asset_manager.lock())
+			{
+				locked_asset_manager->AddTexture(std::move(name), std::move(path), Rendering::Texture_InitFiletype::FILE_PNG);
+			}
+			else
+			{
+				return luaL_error(state, "Cannot lock AssetManager, invalid object passed");
 			}
 
 			return 1;
@@ -129,7 +130,8 @@ namespace Engine::Scripting::API
 	std::unordered_map<std::string, lua_CFunction> assetManager_Mappings = {
 		CMEP_LUAMAPPING_DEFINE(Functions_AssetManager, GetFont),
 		CMEP_LUAMAPPING_DEFINE(Functions_AssetManager, GetTexture),
-		CMEP_LUAMAPPING_DEFINE(Functions_AssetManager, AddTexture),
 		CMEP_LUAMAPPING_DEFINE(Functions_AssetManager, GetModel),
+
+		CMEP_LUAMAPPING_DEFINE(Functions_AssetManager, AddTexture),
 	};
 }

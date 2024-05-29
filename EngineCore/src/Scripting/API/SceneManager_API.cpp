@@ -10,7 +10,7 @@ namespace Engine::Scripting::API
 
 		int GetCameraHVRotation(lua_State* state)
 		{
-			lua_getfield(state, 1, "_smart_pointer");
+			lua_getfield(state, 1, "_smart_ptr");
 			std::weak_ptr<SceneManager> scene_manager = *(std::weak_ptr<SceneManager>*)lua_touserdata(state, -1);
 
 			glm::vec2 hvrot{};
@@ -27,7 +27,7 @@ namespace Engine::Scripting::API
 
 		int SetCameraHVRotation(lua_State* state)
 		{
-			lua_getfield(state, 1, "_smart_pointer");
+			lua_getfield(state, 1, "_smart_ptr");
 			std::weak_ptr<SceneManager> scene_manager = *(std::weak_ptr<SceneManager>*)lua_touserdata(state, -1);
 
 			double h = lua_tonumber(state, 2);
@@ -43,7 +43,7 @@ namespace Engine::Scripting::API
 
 		int GetCameraTransform(lua_State* state)
 		{
-			lua_getfield(state, 1, "_smart_pointer");
+			lua_getfield(state, 1, "_smart_ptr");
 			std::weak_ptr<SceneManager> scene_manager = *(std::weak_ptr<SceneManager>*)lua_touserdata(state, -1);
 
 			glm::vec3 transform{};
@@ -62,7 +62,7 @@ namespace Engine::Scripting::API
 
 		int SetCameraTransform(lua_State* state)
 		{
-			lua_getfield(state, 1, "_smart_pointer");
+			lua_getfield(state, 1, "_smart_ptr");
 			std::weak_ptr<SceneManager> scene_manager = *(std::weak_ptr<SceneManager>*)lua_touserdata(state, -1);
 
 			double x = lua_tonumber(state, 2);
@@ -79,7 +79,7 @@ namespace Engine::Scripting::API
 
 		int GetLightTransform(lua_State* state)
 		{
-			lua_getfield(state, 1, "_smart_pointer");
+			lua_getfield(state, 1, "_smart_ptr");
 			std::weak_ptr<SceneManager> scene_manager = *(std::weak_ptr<SceneManager>*)lua_touserdata(state, -1);
 
 			glm::vec3 transform{};
@@ -102,7 +102,7 @@ namespace Engine::Scripting::API
 
 		int SetLightTransform(lua_State* state)
 		{
-			lua_getfield(state, 1, "_smart_pointer");
+			lua_getfield(state, 1, "_smart_ptr");
 			std::weak_ptr<SceneManager> scene_manager = *(std::weak_ptr<SceneManager>*)lua_touserdata(state, -1);
 
 			double x = lua_tonumber(state, 2);
@@ -123,7 +123,7 @@ namespace Engine::Scripting::API
 
 		int AddObject(lua_State* state)
 		{
-			lua_getfield(state, 1, "_smart_pointer");
+			lua_getfield(state, 1, "_smart_ptr");
 			std::weak_ptr<SceneManager> scene_manager = *(std::weak_ptr<SceneManager>*)lua_touserdata(state, -1);
 
 			std::string name = lua_tostring(state, 2);
@@ -145,7 +145,7 @@ namespace Engine::Scripting::API
 
 		int FindObject(lua_State* state)
 		{
-			lua_getfield(state, 1, "_smart_pointer");
+			lua_getfield(state, 1, "_smart_ptr");
 			std::weak_ptr<SceneManager> scene_manager = *(std::weak_ptr<SceneManager>*)lua_touserdata(state, -1);
 
 			std::string obj_name = lua_tostring(state, 2);
@@ -182,7 +182,7 @@ namespace Engine::Scripting::API
 
 		int RemoveObject(lua_State* state)
 		{
-			lua_getfield(state, 1, "_smart_pointer");
+			lua_getfield(state, 1, "_smart_ptr");
 			std::weak_ptr<SceneManager> scene_manager = *(std::weak_ptr<SceneManager>*)lua_touserdata(state, -1);
 
 			std::string name = lua_tostring(state, 2);
@@ -197,7 +197,7 @@ namespace Engine::Scripting::API
 
 		int AddTemplatedObject(lua_State* state)
 		{
-			lua_getfield(state, 1, "_smart_pointer");
+			lua_getfield(state, 1, "_smart_ptr");
 			std::weak_ptr<SceneManager> scene_manager = *(std::weak_ptr<SceneManager>*)lua_touserdata(state, -1);
 
 			std::string name = lua_tostring(state, 2);

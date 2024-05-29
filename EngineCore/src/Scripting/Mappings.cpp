@@ -20,6 +20,10 @@
 #define CMEP_LUAMAPPING_DEFINE(mapping) {#mapping, Functions::mapping }
 #endif
 
+// Prefixes for logging messages
+#define LOGPFX_CURRENT LOGPFX_LUA_MAPPED
+#include "Logging/LoggingPrefix.hpp"
+
 namespace Engine::Scripting::Mappings
 {
 	namespace Functions
@@ -32,12 +36,16 @@ namespace Engine::Scripting::Mappings
 
 		lua_getglobal(state, "cmepmeta");
 		lua_getfield(state, -1, "logger");
-		lua_getfield(state, -1, "_smart_pointer");
+		lua_getfield(state, -1, "_smart_ptr");
 		std::weak_ptr<Logging::Logger> logger = *(std::weak_ptr<Logging::Logger>*)lua_touserdata(state, -1);
 
 		if(auto locked_logger = logger.lock())
 		{
-			locked_logger->SimpleLog(Logging::LogLevel::Info, "Lua: %s", string);
+			locked_logger->SimpleLog(Logging::LogLevel::Info, LOGPFX_CURRENT "%s", string);
+		}
+		else
+		{
+			return luaL_error(state, "Could not lock global meta logger");
 		}
 
 		return 0;
@@ -58,29 +66,17 @@ namespace Engine::Scripting::Mappings
 			if (!asset_manager.expired())
 			{
 				API::LuaObjectFactories::AssetManagerFactory(state, asset_manager);
-				/* 
-				// Generate asset_manager table
-				// TODO: create factory
-				lua_newtable(state);
-
-				void* ptr_obj = lua_newuserdata(state, sizeof(std::weak_ptr<AssetManager>));
-				new(ptr_obj) std::weak_ptr<AssetManager>(asset_manager);
-				lua_setfield(state, -2, "_smart_pointer");
-
- */
 			}
 			else
 			{
-				lua_getglobal(state, "cmepmeta");
-				lua_getfield(state, -1, "logger");
-				lua_getfield(state, -1, "_smart_pointer");
-				std::weak_ptr<Logging::Logger> logger = *(std::weak_ptr<Logging::Logger>*)lua_touserdata(state, -1);
+				std::weak_ptr<Logging::Logger> logger = API::LuaObjectFactories::MetaLogger_Factory(state);
 
 				if(auto locked_logger = logger.lock())
 				{
-					locked_logger->SimpleLog(Logging::LogLevel::Warning, "Lua: AssetManager requested but is expired!");
+					locked_logger->SimpleLog(Logging::LogLevel::Warning, LOGPFX_CURRENT "AssetManager requested but is expired!");
 				}
-				lua_pushnil(state);
+
+				return luaL_error(state, "AssetManager is expired");
 			}
 
 			return 1;
@@ -95,28 +91,17 @@ namespace Engine::Scripting::Mappings
 			if (!scene_manager.expired())
 			{
 				API::LuaObjectFactories::SceneManagerFactory(state, scene_manager);
-
-				// Generate scene_manager table
-				//lua_newtable(state);
-
-				//void* ptr_obj = lua_newuserdata(state, sizeof(std::weak_ptr<SceneManager>));
-				////(*ptr_obj) = scene_manager;
-				//new(ptr_obj) std::weak_ptr<SceneManager>(scene_manager);
-				//
-				//lua_setfield(state, -2, "_smart_pointer");
 			}
 			else
 			{
-				lua_getglobal(state, "cmepmeta");
-				lua_getfield(state, -1, "logger");
-				lua_getfield(state, -1, "_smart_pointer");
-				std::weak_ptr<Logging::Logger> logger = *(std::weak_ptr<Logging::Logger>*)lua_touserdata(state, -1);
+				std::weak_ptr<Logging::Logger> logger = API::LuaObjectFactories::MetaLogger_Factory(state);
 
 				if(auto locked_logger = logger.lock())
 				{
-					locked_logger->SimpleLog(Logging::LogLevel::Warning, "Lua: SceneManager requested but is expired!");
+					locked_logger->SimpleLog(Logging::LogLevel::Warning, LOGPFX_CURRENT "SceneManager requested but is expired!");
 				}
-				lua_pushnil(state);
+
+				return luaL_error(state, "SceneManager is expired");
 			}
 
 			return 1;
@@ -187,7 +172,7 @@ namespace Engine::Scripting::Mappings
 
 		int objectFactory_CreateSpriteObject(lua_State* state)
 		{
-			lua_getfield(state, 1, "_smart_pointer");
+			lua_getfield(state, 1, "_smart_ptr");
 			std::weak_ptr<SceneManager> scene_manager = *(std::weak_ptr<SceneManager>*)lua_touserdata(state, -1);
 
 			double x = lua_tonumber(state, 2);
@@ -220,17 +205,14 @@ namespace Engine::Scripting::Mappings
 			}
 			else
 			{
-				lua_getglobal(state, "cmepmeta");
-				lua_getfield(state, -1, "logger");
-				lua_getfield(state, -1, "_smart_pointer");
-				std::weak_ptr<Logging::Logger> logger = *(std::weak_ptr<Logging::Logger>*)lua_touserdata(state, -1);
+				std::weak_ptr<Logging::Logger> logger = API::LuaObjectFactories::MetaLogger_Factory(state);
 
 				if(auto locked_logger = logger.lock())
 				{
 					locked_logger->SimpleLog(Logging::LogLevel::Warning, "Lua: Object creation failed, ObjectFactory::CreateSpriteObject returned nullptr! Params: %f %f %f %f", x, y, sizex, sizey);
 				}
 
-				lua_pushnil(state);
+				return luaL_error(state, "ObjectFactory returned nullptr");
 			}
 
 			return 1;
@@ -238,7 +220,7 @@ namespace Engine::Scripting::Mappings
 
 		int objectFactory_CreateTextObject(lua_State* state)
 		{
-			lua_getfield(state, 1, "_smart_pointer");
+			lua_getfield(state, 1, "_smart_ptr");
 			std::weak_ptr<SceneManager> scene_manager = *(std::weak_ptr<SceneManager>*)lua_touserdata(state, -1);
 
 			double x = lua_tonumber(state, 2);
@@ -270,17 +252,14 @@ namespace Engine::Scripting::Mappings
 			}
 			else
 			{
-				lua_getglobal(state, "cmepmeta");
-				lua_getfield(state, -1, "logger");
-				lua_getfield(state, -1, "_smart_pointer");
-				std::weak_ptr<Logging::Logger> logger = *(std::weak_ptr<Logging::Logger>*)lua_touserdata(state, -1);
+				std::weak_ptr<Logging::Logger> logger = API::LuaObjectFactories::MetaLogger_Factory(state);
 
 				if(auto locked_logger = logger.lock())
 				{
 					locked_logger->SimpleLog(Logging::LogLevel::Warning, "Lua: Object creation failed, ObjectFactory::CreateTextObject returned nullptr! Params: %f %f %u '%s'", x, y, size, text.c_str());
 				}
 
-				lua_pushnil(state);
+				return luaL_error(state, "ObjectFactory returned nullptr");
 			}
 
 			return 1;
@@ -288,7 +267,7 @@ namespace Engine::Scripting::Mappings
 
 		int objectFactory_CreateGeneric3DObject(lua_State* state)
 		{
-			lua_getfield(state, 1, "_smart_pointer");
+			lua_getfield(state, 1, "_smart_ptr");
 			std::weak_ptr<SceneManager> scene_manager = *(std::weak_ptr<SceneManager>*)lua_touserdata(state, -1);
 
 			double x = lua_tonumber(state, 2);
@@ -324,7 +303,7 @@ namespace Engine::Scripting::Mappings
 			}
 			else
 			{
-				lua_pushnil(state);
+				return luaL_error(state, "ObjectFactory returned nullptr");
 			}
 
 			return 1;

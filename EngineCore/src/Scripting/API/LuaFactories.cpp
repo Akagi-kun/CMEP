@@ -24,7 +24,7 @@ namespace Engine::Scripting::API
 			void *ptr_obj = lua_newuserdata(state, sizeof(std::weak_ptr<SceneManager>));
 			new (ptr_obj) std::weak_ptr<SceneManager>(scene_manager_ptr);
 
-			lua_setfield(state, -2, "_smart_pointer");
+			lua_setfield(state, -2, "_smart_ptr");
 		}
 
 		void ObjectFactory(lua_State *state, Object *object_ptr)
@@ -67,14 +67,14 @@ namespace Engine::Scripting::API
 			// Add AssetManager pointer
 			void *ptr_obj = lua_newuserdata(state, sizeof(std::weak_ptr<AssetManager>));
 			new (ptr_obj) std::weak_ptr<AssetManager>(asset_manager_ptr);
-			lua_setfield(state, -2, "_smart_pointer");
+			lua_setfield(state, -2, "_smart_ptr");
 		}
 
 		std::weak_ptr<Logging::Logger> MetaLogger_Factory(lua_State *state)
 		{
 			lua_getglobal(state, "cmepmeta");
 			lua_getfield(state, -1, "logger");
-			lua_getfield(state, -1, "_smart_pointer");
+			lua_getfield(state, -1, "_smart_ptr");
 			std::weak_ptr<Logging::Logger> logger = *(std::weak_ptr<Logging::Logger> *)lua_touserdata(state, -1);
 
 			return logger;
