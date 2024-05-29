@@ -188,7 +188,7 @@ namespace Engine::Scripting::Mappings
 
 			std::string path = lua_tostring(state, 2);
 
-			if(auto& locked_asset_manager = asset_manager.lock())
+			if(auto locked_asset_manager = asset_manager.lock())
 			{
 				std::shared_ptr<Rendering::Font> font = locked_asset_manager->GetFont(std::move(path));
 
@@ -221,7 +221,7 @@ namespace Engine::Scripting::Mappings
 
 			std::string path = lua_tostring(state, 2);
 
-			if(auto& locked_asset_manager = asset_manager.lock())
+			if(auto locked_asset_manager = asset_manager.lock())
 			{
 				Rendering::Texture* texture = locked_asset_manager->GetTexture(std::move(path)).get();
 
@@ -255,7 +255,7 @@ namespace Engine::Scripting::Mappings
 			std::string name = lua_tostring(state, 2);
 			std::string path = lua_tostring(state, 3);
 
-			if(auto& locked_asset_manager = asset_manager.lock())
+			if(auto locked_asset_manager = asset_manager.lock())
 			{
 				locked_asset_manager->AddTexture(std::move(name), std::move(path), Rendering::Texture_InitFiletype::FILE_PNG);
 			}
@@ -270,7 +270,7 @@ namespace Engine::Scripting::Mappings
 
 			std::string path = lua_tostring(state, 2);
 
-			if(auto& locked_asset_manager = asset_manager.lock())
+			if(auto locked_asset_manager = asset_manager.lock())
 			{
 				std::shared_ptr<Rendering::Mesh> model = locked_asset_manager->GetModel(std::move(path));
 
