@@ -57,9 +57,11 @@ namespace Engine::Rendering
 
 		for (size_t i = 0; i < materials.size(); i++)
 		{
-			tinyobj::material_t material = materials[i];
+/* 			tinyobj::material_t material = materials[i];
 			if (material.diffuse_texname != "")
 			{
+				// TODO: Fix this!
+
 				this->logger->SimpleLog(Logging::LogLevel::Debug2, "TinyObjReader: Diffuse texture: '%s' for material: '%s'", material.diffuse_texname.c_str(), material.name.c_str());
 				std::shared_ptr<Rendering::Texture> textureDiffuse = std::make_shared<Rendering::Texture>();
 				textureDiffuse->UsePremadeStagingBuffer(premade_staging_buffer);
@@ -71,7 +73,7 @@ namespace Engine::Rendering
 			{
 				this->diffuse_textures.push_back(nullptr);
 			}
-
+ */
 			// if (material.bump_texname != "")
 			// {
 			// 	Logging::GlobalLogger->SimpleLog(Logging::LogLevel::Debug2, "TinyObjReader: Bump texture: '%s' for material: '%s'", material.bump_texname.c_str(), material.name.c_str());

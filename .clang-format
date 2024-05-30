@@ -1,0 +1,27 @@
+---
+#Language: Cpp
+PointerAlignment: Left
+#BreakBeforeBraces: Allman
+BasedOnStyle: Microsoft
+IndentWidth: 4
+TabWidth: 4
+UseTab: Always
+BinPackArguments: false
+BinPackParameters: false
+AlignAfterOpenBracket: BlockIndent
+BraceWrapping:
+  AfterEnum: true
+  AfterStruct: true
+  SplitEmptyFunction: true
+  AfterClass: true
+  AfterFunction: true
+  AfterCaseLabel: true
+  AfterControlStatement: Always
+BreakBeforeBraces: Custom
+AllowShortIfStatementsOnASingleLine: false
+IndentCaseLabels: true
+#ColumnLimit: 0
+AccessModifierOffset: -4
+NamespaceIndentation: All
+FixNamespaceComments: true
+...

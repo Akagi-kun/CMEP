@@ -1,6 +1,6 @@
+#include "AssetManager.hpp"
 #include "Logging/Logging.hpp"
 #include "Rendering/Font.hpp"
-#include "AssetManager.hpp"
 
 // Prefixes for logging messages
 #define LOGPFX_CURRENT LOGPFX_CLASS_ASSET_MANAGER
@@ -11,15 +11,21 @@ namespace Engine
 	AssetManager::AssetManager()
 	{
 		this->fontFactory = std::make_unique<Factories::FontFactory>(this);
+		this->textureFactory = std::make_unique<Factories::TextureFactory>();
 	}
 
 	AssetManager::~AssetManager()
 	{
 		this->logger->SimpleLog(Logging::LogLevel::Info, LOGPFX_CURRENT "Destructor called");
 
-		for(auto& texture : this->textures)
+		for (auto& texture : this->textures)
 		{
-			this->logger->SimpleLog(Logging::LogLevel::Debug3, LOGPFX_CURRENT "Texture %s use_count: %u", texture.first.c_str(), texture.second.use_count());
+			this->logger->SimpleLog(
+				Logging::LogLevel::Debug3,
+				LOGPFX_CURRENT "Texture %s use_count: %u",
+				texture.first.c_str(),
+				texture.second.use_count()
+			);
 		}
 
 		this->textures.clear();
@@ -29,30 +35,36 @@ namespace Engine
 	{
 		InternalEngineObject::UpdateHeldLogger(new_logger);
 		this->fontFactory->UpdateHeldLogger(new_logger);
+		this->textureFactory->UpdateHeldLogger(new_logger);
 	}
 
-    void AssetManager::UpdateOwnerEngine(Engine* new_owner_engine)
+	void AssetManager::UpdateOwnerEngine(Engine* new_owner_engine)
 	{
 		InternalEngineObject::UpdateOwnerEngine(new_owner_engine);
 		this->fontFactory->UpdateOwnerEngine(new_owner_engine);
+		this->textureFactory->UpdateOwnerEngine(new_owner_engine);
 	}
 
 #pragma region Adding Assets
 	void AssetManager::AddTexture(std::string name, std::string path, Rendering::Texture_InitFiletype filetype)
 	{
-		std::shared_ptr<Rendering::Texture> texture = std::make_shared<Rendering::Texture>();
-		texture->UpdateOwnerEngine(this->owner_engine);
+		std::shared_ptr<Rendering::Texture> texture = this->textureFactory->InitFile(path, nullptr, filetype, 0, 0);
+		/*
+				std::shared_ptr<Rendering::Texture> texture = std::make_shared<Rendering::Texture>();
+				texture->UpdateOwnerEngine(this->owner_engine);
 
-		texture->UpdateHeldLogger(this->logger);
+				texture->UpdateHeldLogger(this->logger);
 
-		if (texture->InitFile(filetype, path) != 0)
-		{
-			this->logger->SimpleLog(Logging::LogLevel::Error, LOGPFX_CURRENT "Error occured when adding Texture %s as %s, this may be unintentional", path.c_str(), name.c_str());
-			return;
-		}
+				if (texture->InitFile(filetype, path) != 0)
+				{
+					this->logger->SimpleLog(Logging::LogLevel::Error, LOGPFX_CURRENT "Error occured when initializing Texture '%s' (Adding as '%s')", path.c_str(), name.c_str()); return;
+				}
+		 */
 
 		this->textures.emplace(name, texture);
-		this->logger->SimpleLog(Logging::LogLevel::Debug2, LOGPFX_CURRENT "Added texture %s as %s", path.c_str(), name.c_str());
+		this->logger->SimpleLog(
+			Logging::LogLevel::Debug2, LOGPFX_CURRENT "Added texture '%s' as '%s'", path.c_str(), name.c_str()
+		);
 	}
 
 	void AssetManager::AddFont(std::string name, std::string path)
@@ -64,7 +76,7 @@ namespace Engine
 	void AssetManager::AddLuaScript(std::string name, std::string path)
 	{
 		Scripting::LuaScript* script = new Scripting::LuaScript(this->lua_executor, std::move(path));
-		
+
 		this->luascripts.emplace(name, script);
 	}
 
@@ -73,7 +85,7 @@ namespace Engine
 		std::shared_ptr<Rendering::Mesh> mesh = std::make_shared<Rendering::Mesh>();
 		mesh->UpdateOwnerEngine(this->owner_engine);
 		mesh->UpdateHeldLogger(this->logger);
-		
+
 		mesh->CreateMeshFromObj(path);
 
 		this->models.emplace(name, std::move(mesh));
@@ -85,16 +97,20 @@ namespace Engine
 	{
 		if (this->textures.find(name) != this->textures.end())
 		{
-			this->logger->SimpleLog(Logging::LogLevel::Debug2, LOGPFX_CURRENT "Texture %s requested and is loaded", name.c_str());
+			this->logger->SimpleLog(
+				Logging::LogLevel::Debug2, LOGPFX_CURRENT "Texture %s requested and is loaded", name.c_str()
+			);
 			return this->textures.at(name);
 		}
 		else
 		{
-			this->logger->SimpleLog(Logging::LogLevel::Error, LOGPFX_CURRENT "Texture asset '%s' not found", name.c_str());
-			//this->logger->SimpleLog(Logging::LogLevel::Debug1, LOGPFX_CURRENT "Texture %s requested and is not loaded", name.c_str());
-			//this->AddTexture(name, name, Rendering::Texture_InitFiletype::FILE_PNG);
-			
-			//return this->GetTexture(name);
+			this->logger->SimpleLog(
+				Logging::LogLevel::Error, LOGPFX_CURRENT "Texture asset '%s' not found", name.c_str()
+			);
+			// this->logger->SimpleLog(Logging::LogLevel::Debug1, LOGPFX_CURRENT "Texture %s requested and is not
+			// loaded", name.c_str()); this->AddTexture(name, name, Rendering::Texture_InitFiletype::FILE_PNG);
+
+			// return this->GetTexture(name);
 			return nullptr;
 		}
 	}
@@ -111,20 +127,20 @@ namespace Engine
 			this->logger->SimpleLog(Logging::LogLevel::Error, LOGPFX_CURRENT "Font asset '%s' not found", name.c_str());
 
 			// TODO: Recursive!!!
-			//this->AddFont(name, name);
-			//return this->GetFont(name);
+			// this->AddFont(name, name);
+			// return this->GetFont(name);
 			return nullptr;
 
-			//std::shared_ptr<Rendering::Font> font = std::make_shared<Rendering::Font>(this);
+			// std::shared_ptr<Rendering::Font> font = std::make_shared<Rendering::Font>(this);
 			//
-			//font->UpdateHeldLogger(this->logger);
-			//if (font->Init(this->current_load_path + name) != 0)
+			// font->UpdateHeldLogger(this->logger);
+			// if (font->Init(this->current_load_path + name) != 0)
 			//{
 			//	return nullptr;
-			//}
+			// }
 			//
-			//this->fonts.emplace(name, font);
-			//return font;
+			// this->fonts.emplace(name, font);
+			// return font;
 		}
 	}
 
@@ -137,7 +153,9 @@ namespace Engine
 		}
 		else
 		{
-			this->logger->SimpleLog(Logging::LogLevel::Error, LOGPFX_CURRENT "LuaScript asset '%s' not found", name.c_str());
+			this->logger->SimpleLog(
+				Logging::LogLevel::Error, LOGPFX_CURRENT "LuaScript asset '%s' not found", name.c_str()
+			);
 			return nullptr;
 		}
 	}
@@ -151,11 +169,14 @@ namespace Engine
 		}
 		else
 		{
-			this->logger->SimpleLog(Logging::LogLevel::Error, LOGPFX_CURRENT "Model asset '%s' not found", name.c_str());
-			//this->logger->SimpleLog(Logging::LogLevel::Debug1, LOGPFX_CURRENT "Model %s requested and is not loaded", name.c_str());
+			this->logger->SimpleLog(
+				Logging::LogLevel::Error, LOGPFX_CURRENT "Model asset '%s' not found", name.c_str()
+			);
+			// this->logger->SimpleLog(Logging::LogLevel::Debug1, LOGPFX_CURRENT "Model %s requested and is not loaded",
+			// name.c_str());
 			this->AddModel(name, name);
 			return nullptr;
 		}
 	}
 #pragma endregion
-}
+} // namespace Engine

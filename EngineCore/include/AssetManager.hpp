@@ -9,6 +9,7 @@
 #include "Rendering/Mesh.hpp"
 
 #include "Factories/FontFactory.hpp"
+#include "Factories/TextureFactory.hpp"
 
 #include "InternalEngineObject.hpp"
 
@@ -28,6 +29,7 @@ namespace Engine
 		std::unordered_map<std::string, std::shared_ptr<Rendering::Mesh>> models{};
 
 		std::unique_ptr<Factories::FontFactory> fontFactory{};
+		std::unique_ptr<Factories::TextureFactory> textureFactory{};
 	public:
 		//std::shared_ptr<Logging::Logger> logger{};
 		//Engine* owner_engine{};

@@ -37,7 +37,7 @@ namespace Engine
 			Font(AssetManager* managed_by = nullptr);
 			~Font();
 
-			int Init(std::unique_ptr<FontData> init_data);
+			void Init(std::unique_ptr<FontData> init_data);
 
 			FontChar* GetChar(char ch);
 			std::shared_ptr<Texture> GetPageTexture(int page);

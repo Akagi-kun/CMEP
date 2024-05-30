@@ -7,6 +7,7 @@
 #define LOGPFX_CLASS_ASSET_MANAGER				"[ASSET_M] "
 #define LOGPFX_CLASS_SCENE						"[SCENE  ] "
 #define LOGPFX_CLASS_TEXTURE					"[TEXTURE] "
+#define LOGPFX_CLASS_TEXTURE_FACTORY			"[TXTR_F ] "
 #define LOGPFX_CLASS_FONT						"[FONT   ] "
 #define LOGPFX_CLASS_FONT_FACTORY				"[FONT_F ] "
 #define LOGPFX_LUA_MAPPED						"[LUA    ] "

@@ -10,6 +10,7 @@ set(SRC_FILES
 	src/SceneManager.cpp
 	src/SceneLoader.cpp
 
+	src/Factories/TextureFactory.cpp
 	src/Factories/ObjectFactory.cpp
 	src/Factories/FontFactory.cpp
 
