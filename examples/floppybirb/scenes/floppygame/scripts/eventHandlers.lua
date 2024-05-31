@@ -149,7 +149,7 @@ onUpdate = function(event)
 				then
 					gameIsGameOver = true;
 					local font = asset_manager:GetFont("myfont");
-					local object = cmepapi.objectFactory_CreateTextObject(scene_manager, 0.4, 0.4, 32, "GAME OVER", font);
+					local object = cmepapi.objectFactory_CreateTextObject(scene_manager, 0.4, 0.4, -0.01, 32, "GAME OVER", font);
 					scene_manager:AddObject("text_gameover", object);
 					return 0;
 				end
@@ -177,15 +177,17 @@ onUpdate = function(event)
 			end
 		end
 		
-		-- Check collisions with floor and roof
-		if 	checkCollisions2DBox(birbx, birby, pxToScreenX(birb_xSize), pxToScreenY(birb_ySize), 0.0, -pxToScreenY(40), 1.0, pxToScreenY(40)) or
-			checkCollisions2DBox(birbx, birby, pxToScreenX(birb_xSize), pxToScreenY(birb_ySize), 0.0, 1.0, 				1.0, pxToScreenY(40))
+		-- Check collisions with grounds
+		if 	checkCollisions2DBox(birbx, birby,						pxToScreenX(birb_xSize), pxToScreenY(birb_ySize),
+								 0.0,	 0.0,						1.0,					 pxToScreenY(60)) or
+			checkCollisions2DBox(birbx, birby, 						pxToScreenX(birb_xSize), pxToScreenY(birb_ySize),
+								  0.0,	pxToScreenY(screenY - 60), 	1.0, 					 pxToScreenY(60))
 		then
 			gameIsGameOver = true;
 			cmepmeta.logger.SimpleLog(string.format("Game over!"))
 
 			local font = asset_manager:GetFont("myfont");
-			local object = cmepapi.objectFactory_CreateTextObject(scene_manager, 0.4, 0.4, 32, "GAME OVER", font);
+			local object = cmepapi.objectFactory_CreateTextObject(scene_manager, 0.4, 0.4, -0.01, 32, "GAME OVER", font);
 			scene_manager:AddObject("text_gameover", object);
 			return 0;
 		end
@@ -195,8 +197,25 @@ onUpdate = function(event)
 		y = y - birbVelocity * event.deltaTime;
 		birb:Translate(x, y, z);
 
-		birbVelocity = birbVelocity - 0.65 * event.deltaTime;
+		local ground1 = scene_manager:FindObject("ground_top");
+		local ground2 = scene_manager:FindObject("ground_bottom");
+		local g1_x, g1_y, g1_z = ground1:GetPosition();
+		local g2_x, g2_y, g2_z = ground2:GetPosition();
 
+		if	(g1_x > pxToScreenX(-60) + 0.001) or
+			(g2_x > pxToScreenX(-60) + 0.001)
+		then
+			g1_x = g1_x - (pipeMoveSpeed * 1.05) * event.deltaTime;
+			g2_x = g2_x - (pipeMoveSpeed * 1.05) * event.deltaTime;
+		else
+			g1_x = 0.0
+			g2_x = 0.0
+		end
+
+		ground1:Translate(g1_x, g1_y, g1_z);
+		ground2:Translate(g2_x, g2_y, g2_z);
+
+		birbVelocity = birbVelocity - 0.65 * event.deltaTime;
 		spawnPipeSinceLast = spawnPipeSinceLast + event.deltaTime;
 	end
 
@@ -226,6 +245,14 @@ onInit = function(event)
 	local background = scene_manager:AddTemplatedObject("background", "background");
 	background:Translate(0.0, 0.0, -0.8);
 	background:Scale(1.0, 1.0);
+
+	-- Add grounds
+	local ground1 = scene_manager:AddTemplatedObject("ground_top", "ground_top");
+	ground1:Translate(0.0, 0.0, -0.1);
+	ground1:Scale(pxToScreenX(1260), pxToScreenY(60));
+	local ground2 = scene_manager:AddTemplatedObject("ground_bottom", "ground_bottom")
+	ground2:Translate(0.0, pxToScreenY(screenY - 60), -0.1)
+	ground2:Scale(pxToScreenX(1260), pxToScreenY(60));
 
 	-- Add birb
 	local birb = scene_manager:AddTemplatedObject("birb", "birb");
