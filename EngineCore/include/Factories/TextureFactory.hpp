@@ -16,8 +16,10 @@ namespace Engine::Factories
 			Rendering::VulkanBuffer* staging_buffer,
 			std::vector<unsigned char> raw_data,
 			int color_format,
-			unsigned int xsize,
-			unsigned int ysize
+			VkFilter filtering,
+		    VkSamplerAddressMode sampler_address_mode,
+			unsigned int sizex,
+			unsigned int sizey
 		);
 
 	public:
@@ -27,8 +29,10 @@ namespace Engine::Factories
 			std::string path,
 			Rendering::VulkanBuffer* staging_buffer,
 			Rendering::Texture_InitFiletype filetype,
-			unsigned int sizex,
-			unsigned int sizey
+			VkFilter filtering = VK_FILTER_LINEAR,
+		    VkSamplerAddressMode sampler_address_mode = VK_SAMPLER_ADDRESS_MODE_REPEAT,
+			unsigned int sizex = 0,
+			unsigned int sizey = 0
 		);
 	};
 } // namespace Engine::Factories

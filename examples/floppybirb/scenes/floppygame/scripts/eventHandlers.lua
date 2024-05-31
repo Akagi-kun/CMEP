@@ -47,7 +47,8 @@ local spawnPipeCount = 0;
 -- Pipes original size is 110x338
 local pipe_xSize <const> = 110;
 local pipe_ySize <const> = 450;
-local pipe_spacing = 250;
+local pipe_spacing_start <const> = 200;
+local pipe_spacing = pipe_spacing_start;
 
 local birb_xSize <const> = 72;
 local birb_ySize <const> = 44;
@@ -113,12 +114,12 @@ onUpdate = function(event)
 
 			--local object1 = cmepapi.objectFactory_CreateSpriteObject(scene_manager, 1.0, offset / 720, 80 / 1100, 400 / 720, asset_manager, "textures/pipe_down.png");
 			local object1 = scene_manager:AddTemplatedObject("sprite_pipe_down"..tostring(spawnPipeLastIdx + 1), "pipe_down");
-			object1:Translate(1.0, pxToScreenY(offset), 0.0);
+			object1:Translate(1.0, pxToScreenY(offset), -0.1);
 			object1:Scale(pxToScreenX(pipe_xSize), pxToScreenY(pipe_ySize), 1.0);
 
 			--local object2 = cmepapi.objectFactory_CreateSpriteObject(scene_manager, 1.0, (400 + 200 + offset) / 720, 80 / 1100, 400 / 720, asset_manager, "textures/pipe_up.png");
 			local object2 = scene_manager:AddTemplatedObject("sprite_pipe_up"..tostring(spawnPipeLastIdx + 1), "pipe_up");
-			object2:Translate(1.0, pxToScreenY(pipe_ySize + pipe_spacing + offset), 0.0);
+			object2:Translate(1.0, pxToScreenY(pipe_ySize + pipe_spacing + offset), -0.1);
 			object2:Scale(pxToScreenX(pipe_xSize), pxToScreenY(pipe_ySize), 1.0);
 
 			spawnPipeLastIdx = spawnPipeLastIdx + 1;
@@ -219,13 +220,18 @@ onInit = function(event)
 	local object = cmepapi.objectFactory_CreateTextObject(scene_manager, 0.5, 0.0, 64, "0", font);
 	scene_manager:AddObject("text_score", object);
 
+	-- Add background
+	local background = scene_manager:AddTemplatedObject("background", "background");
+	background:Translate(0.0, 0.0, -0.5);
+	background:Scale(1.0, 1.0);
+
 	-- Add birb
 	local birb = scene_manager:AddTemplatedObject("birb", "birb");
-	birb:Translate(0.2, pxToScreenY(screenY / 2), 0.0);
+	birb:Translate(0.2, pxToScreenY(screenY / 2), -0.1);
 	birb:Scale(pxToScreenX(birb_xSize), pxToScreenY(birb_ySize), 1.0);
 
 	-- Set-up camera
-	scene_manager:SetCameraTransform(-5.0, 2.0, 0.0);
+	scene_manager:SetCameraTransform(0.0, 0.0, 0.0);
 	scene_manager:SetCameraHVRotation(0, 0);
 
 	-- Set-up light

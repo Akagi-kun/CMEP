@@ -20,6 +20,8 @@ namespace Engine::Rendering
 		std::vector<unsigned char> data;
 		unsigned int x = 0, y = 0;
 		int color_fmt = 4;
+		VkFilter filtering;
+		VkSamplerAddressMode address_mode;
 		VulkanTextureImage* textureImage = nullptr;
 	};
 

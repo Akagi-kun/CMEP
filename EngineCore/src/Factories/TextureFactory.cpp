@@ -24,6 +24,8 @@ namespace Engine::Factories
 		std::string path,
 		Rendering::VulkanBuffer* staging_buffer,
 		Rendering::Texture_InitFiletype filetype,
+		VkFilter filtering,
+		VkSamplerAddressMode sampler_address_mode,
 		unsigned int sizex,
 		unsigned int sizey
 	)
@@ -61,10 +63,11 @@ namespace Engine::Factories
 
 				this->logger->SimpleLog(
 					Logging::LogLevel::Debug1,
-					LOGPFX_CURRENT "Decoded png file %s width %u height %u",
+					LOGPFX_CURRENT "Decoded png file %s; width %u; height %u; filter %u",
 					path.c_str(),
 					xs,
-					ys
+					ys,
+					filtering
 				);
 
 				fclose(file);
@@ -72,7 +75,9 @@ namespace Engine::Factories
 				assert(0 < xs && xs < 0x2fff);
 				assert(0 < ys && ys < 0x2fff);
 
-				this->InitRaw(texture_data, staging_buffer, std::move(data), 4, xs, ys);
+				this->InitRaw(
+					texture_data, staging_buffer, std::move(data), 4, filtering, sampler_address_mode, xs, ys
+				);
 				break;
 			}
 			default:
@@ -104,6 +109,8 @@ namespace Engine::Factories
 		Rendering::VulkanBuffer* staging_buffer,
 		std::vector<unsigned char> raw_data,
 		int color_format,
+		VkFilter filtering,
+		VkSamplerAddressMode sampler_address_mode,
 		unsigned int xsize,
 		unsigned int ysize
 	)
@@ -112,6 +119,8 @@ namespace Engine::Factories
 
 		texture_data->data = raw_data;
 		texture_data->color_fmt = color_format;
+		texture_data->filtering = filtering;
+		texture_data->address_mode = sampler_address_mode;
 		texture_data->x = xsize;
 		texture_data->y = ysize;
 
@@ -158,8 +167,8 @@ namespace Engine::Factories
 				VK_IMAGE_TILING_OPTIMAL,
 				VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
 				VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
-				VK_FILTER_LINEAR,			   // Filter for both mag and min
-				VK_SAMPLER_ADDRESS_MODE_REPEAT // sampler address mode
+				filtering,			 // Filter for both mag and min
+				sampler_address_mode // sampler address mode
 			);
 
 			// Transfer image layout to one usable by the shader

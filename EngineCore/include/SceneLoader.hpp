@@ -6,6 +6,9 @@
 
 #include <memory>
 
+#ifndef JSON_USE_IMPLICIT_CONVERSIONS
+#define JSON_USE_IMPLICIT_CONVERSIONS 0
+#endif
 #include "nlohmann-json/single_include/nlohmann/json.hpp"
 
 namespace Engine

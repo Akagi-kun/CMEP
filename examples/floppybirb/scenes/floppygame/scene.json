@@ -27,6 +27,13 @@
                 "type": "sprite",
                 "sprite": "pipe_down"
             }
+        },
+        {
+            "name": "background",
+            "renderer": {
+                "type": "sprite",
+                "sprite": "background"
+            }
         }
     ],
     "assets": [
@@ -44,17 +51,26 @@
         {
             "type": "texture",
             "name": "birb",
-            "location": "textures/new_birb.png"
+            "location": "textures/new_birb.png",
+            "filtering": "nearest",
+            "sampling_mode": "clamp"
         },
         {
             "type": "texture",
             "name": "pipe_up",
+            "filtering": "nearest",
             "location": "textures/new_pipe_up.png"
         },
         {
             "type": "texture",
             "name": "pipe_down",
+            "filtering": "nearest",
             "location": "textures/new_pipe_down.png"
+        },
+        {
+            "type": "texture",
+            "name": "background",
+            "location": "textures/background.png"
         },
         {
             "type": "script",

@@ -46,20 +46,16 @@ namespace Engine
 	}
 
 #pragma region Adding Assets
-	void AssetManager::AddTexture(std::string name, std::string path, Rendering::Texture_InitFiletype filetype)
+	void AssetManager::AddTexture(
+		std::string name,
+		std::string path,
+		Rendering::Texture_InitFiletype filetype,
+		VkFilter filtering,
+		VkSamplerAddressMode address_mode
+	)
 	{
-		std::shared_ptr<Rendering::Texture> texture = this->textureFactory->InitFile(path, nullptr, filetype, 0, 0);
-		/*
-				std::shared_ptr<Rendering::Texture> texture = std::make_shared<Rendering::Texture>();
-				texture->UpdateOwnerEngine(this->owner_engine);
-
-				texture->UpdateHeldLogger(this->logger);
-
-				if (texture->InitFile(filetype, path) != 0)
-				{
-					this->logger->SimpleLog(Logging::LogLevel::Error, LOGPFX_CURRENT "Error occured when initializing Texture '%s' (Adding as '%s')", path.c_str(), name.c_str()); return;
-				}
-		 */
+		std::shared_ptr<Rendering::Texture> texture =
+			this->textureFactory->InitFile(path, nullptr, filetype, filtering, address_mode, 0, 0);
 
 		this->textures.emplace(name, texture);
 		this->logger->SimpleLog(
