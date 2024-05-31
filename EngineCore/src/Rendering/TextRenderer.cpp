@@ -211,7 +211,7 @@ namespace Engine::Rendering
 			}
 		}
 
-		glm::mat4 Projection = glm::ortho(0.0f, 1.0f, 0.0f, 1.0f, -100.0f, 100.0f);
+		glm::mat4 Projection = glm::ortho(0.0f, 1.0f, 0.0f, 1.0f, -10.0f, 10.0f);
 
 		if (this->_parent_size.x == 0.0f && this->_parent_size.y == 0.0f && this->_parent_size.z == 0.0f)
 		{

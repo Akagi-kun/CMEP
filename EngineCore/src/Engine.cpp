@@ -231,7 +231,9 @@ namespace Engine
 
 	void Engine::RenderCallback(VkCommandBuffer commandBuffer, uint32_t currentFrame, Engine* engine)
 	{
-		auto objects = engine->scene_manager->GetAllObjects();
+		//engine->scene_manager->GetSceneCurrent()->TriggerResort();
+
+		auto objects = engine->scene_manager->GetSceneCurrent()->GetAllObjectsSorted();
 
 		for (auto& [name, ptr] : *objects)
 		{

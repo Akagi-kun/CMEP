@@ -1,9 +1,9 @@
 #pragma once
 
-#include "Object.hpp"
-#include "InternalEngineObject.hpp"
-#include "PlatformSemantics.hpp"
 #include "EventHandling.hpp"
+#include "InternalEngineObject.hpp"
+#include "Object.hpp"
+#include "PlatformSemantics.hpp"
 #include "Scripting/LuaScript.hpp"
 
 #include <map>
@@ -12,30 +12,38 @@
 
 namespace Engine
 {
-    class Engine;
+	class Engine;
 
-    class CMEP_EXPORT Scene : public InternalEngineObject
-    {
-    private:
-    protected:
-        std::unordered_map<std::string, Object*> objects{};
-        std::unordered_map<std::string, Object*> templates{};
+	class CMEP_EXPORT Scene : public InternalEngineObject
+	{
+	private:
+	protected:
+		std::vector<std::pair<std::string, Object*>> objects_sorted{};
 
-		static void InternalSort(std::unordered_map<std::string, Object*>& map);
+		std::unordered_map<std::string, Object*> objects{};
+		std::unordered_map<std::string, Object*> templates{};
 
-    public:
-		std::multimap<EventHandling::EventType, std::pair<std::shared_ptr<Scripting::LuaScript>, std::string>> lua_event_handlers;
+		static void InternalSort(
+			std::unordered_map<std::string, Object*> from_map, std::vector<std::pair<std::string, Object*>>& objects
+		);
 
-        Scene();
-        ~Scene();
+	public:
+		std::multimap<EventHandling::EventType, std::pair<std::shared_ptr<Scripting::LuaScript>, std::string>>
+			lua_event_handlers;
+
+		Scene();
+		~Scene();
 
 		const std::unordered_map<std::string, Object*>* const GetAllObjects() noexcept;
+		const std::vector<std::pair<std::string, Object*>>* const GetAllObjectsSorted() noexcept;
+
+		void TriggerResort();
 
 		void AddObject(std::string name, Object* ptr);
 		Object* AddTemplatedObject(std::string name, std::string template_name);
 		Object* FindObject(std::string name);
 		size_t RemoveObject(std::string name) noexcept;
 
-        void LoadTemplatedObject(std::string name, Object* ptr);
-    };
-}
+		void LoadTemplatedObject(std::string name, Object* ptr);
+	};
+} // namespace Engine
