@@ -2,11 +2,11 @@
 
 #include <memory>
 
-#include "glm/glm.hpp"
-#include "glm/gtc/matrix_transform.hpp"
 #include "IRenderer.hpp"
 #include "Mesh.hpp"
 #include "PlatformSemantics.hpp"
+#include "glm/glm.hpp"
+#include "glm/gtc/matrix_transform.hpp"
 
 namespace Engine::Rendering
 {
@@ -31,14 +31,12 @@ namespace Engine::Rendering
 		glm::mat3 matMV3x3{};
 		glm::mat4 matMVP{};
 
-		/// <summary>
-		/// Currently used shader
-		/// </summary>
 		std::unique_ptr<const Rendering::Texture> texture;
 
 		bool has_updated_meshdata = false;
 
 		std::shared_ptr<Mesh> mesh;
+
 	public:
 		MeshRenderer(Engine* engine);
 		~MeshRenderer();
@@ -46,9 +44,20 @@ namespace Engine::Rendering
 		void AssignMesh(std::shared_ptr<Mesh> new_mesh);
 
 		void UpdateTexture(const Rendering::Texture* texture);
-		void Update(glm::vec3 pos, glm::vec3 size, glm::vec3 rotation, uint_fast16_t screenx, uint_fast16_t screeny, glm::vec3 parent_position, glm::vec3 parent_rotation, glm::vec3 parent_size) override;
+		void Update(
+			glm::vec3 pos,
+			glm::vec3 size,
+			glm::vec3 rotation,
+			uint_fast16_t screenx,
+			uint_fast16_t screeny,
+			glm::vec3 parent_position,
+			glm::vec3 parent_rotation,
+			glm::vec3 parent_size
+		) override;
 		void UpdateMesh() override;
 
 		void Render(VkCommandBuffer commandBuffer, uint32_t currentFrame) override;
+
+		bool GetIsUI() const override { return false; }
 	};
-}
+} // namespace Engine::Rendering

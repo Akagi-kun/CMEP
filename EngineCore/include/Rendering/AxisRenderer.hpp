@@ -44,5 +44,7 @@ namespace Engine::Rendering
 		void UpdateMesh() override;
 
 		void Render(VkCommandBuffer commandBuffer, uint32_t currentFrame) override;
+
+		bool GetIsUI() const override { return false; }
 	};
 }

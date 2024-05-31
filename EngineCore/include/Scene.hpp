@@ -21,6 +21,8 @@ namespace Engine
         std::unordered_map<std::string, Object*> objects{};
         std::unordered_map<std::string, Object*> templates{};
 
+		static void InternalSort(std::unordered_map<std::string, Object*>& map);
+
     public:
 		std::multimap<EventHandling::EventType, std::pair<std::shared_ptr<Scripting::LuaScript>, std::string>> lua_event_handlers;
 

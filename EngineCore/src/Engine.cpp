@@ -231,8 +231,9 @@ namespace Engine
 
 	void Engine::RenderCallback(VkCommandBuffer commandBuffer, uint32_t currentFrame, Engine* engine)
 	{
-		
-		for (auto& [name, ptr] : *(engine->scene_manager->GetAllObjects()))
+		auto objects = engine->scene_manager->GetAllObjects();
+
+		for (auto& [name, ptr] : *objects)
 		{
 			try
 			{

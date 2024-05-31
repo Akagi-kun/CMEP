@@ -33,6 +33,7 @@ namespace Engine
 			uint_fast16_t _screenx = 0, _screeny = 0;
 
 			bool has_updated_mesh = false;
+
 		public:
 			std::weak_ptr<::Engine::SceneManager> scene_manager{};
 
@@ -46,6 +47,8 @@ namespace Engine
 			virtual void UpdateMesh() = 0;
 			
 			virtual void Render(VkCommandBuffer commandBuffer, uint32_t currentFrame) = 0;
+
+			virtual bool GetIsUI() const = 0;
 		};
 	}
 }

@@ -26,9 +26,55 @@ namespace Engine
 
     const std::unordered_map<std::string, Object*>* const Scene::GetAllObjects() noexcept
 	{
+		//Scene::InternalSort(this->objects);
+
 		return &(this->objects);
 	}
 	
+	static bool InternalSort_CmpFunction(std::pair<std::string, Object*>& a, std::pair<std::string, Object*>& b)
+	{
+		const bool isA_UI = a.second->renderer->GetIsUI();
+		const bool isB_UI = b.second->renderer->GetIsUI();
+
+		if(isA_UI && isB_UI)
+		{
+			glm::vec3 a_pos = a.second->position();
+			glm::vec3 b_pos = b.second->position();
+
+			if(a_pos.z < b_pos.z)
+			{
+				return true;
+			}
+			else
+			{
+				return false;
+			}
+		}
+		else
+		{
+			return std::less<std::pair<std::string, Object*>>{}(a, b);
+		}
+	}
+
+	void Scene::InternalSort(std::unordered_map<std::string, Object*>& map)
+	{
+		std::vector<std::pair<std::string, Object*>> a;
+
+		for (auto& it : map)
+		{
+			a.push_back(it);
+		}
+
+		std::sort(a.begin(), a.end(), InternalSort_CmpFunction);
+
+		map.clear();
+
+		for(auto& it : a)
+		{
+			map.insert(it);
+		}
+	}
+
 	Object* Scene::AddTemplatedObject(std::string name, std::string template_name)
 	{
 		auto templated_object = this->templates.find(template_name);
@@ -45,8 +91,8 @@ namespace Engine
 				object->UpdateHeldLogger(this->logger);
 				object->renderer->UpdateHeldLogger(this->logger);
 			}
-
 			this->AddObject(name, object);
+
 			return object;
 		}
 		return nullptr;
@@ -63,6 +109,7 @@ namespace Engine
 			ptr->renderer->UpdateHeldLogger(this->logger);
 			this->objects.emplace(name, ptr);
 		}
+		Scene::InternalSort(this->objects);
 	}
 
 	Object* Scene::FindObject(std::string name)

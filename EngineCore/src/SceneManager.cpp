@@ -1,7 +1,7 @@
 #include "SceneManager.hpp"
+#include "Engine.hpp"
 #include "Logging/Logging.hpp"
 #include "glm/common.hpp"
-#include "Engine.hpp"
 
 namespace Engine
 {
@@ -35,7 +35,7 @@ namespace Engine
 	{
 		this->scene_loader->scene_prefix = scene_prefix;
 	}
-	
+
 	void SceneManager::LoadScene(std::string scene_name)
 	{
 		this->scene_loader->UpdateOwnerEngine(this->owner_engine);
@@ -56,7 +56,7 @@ namespace Engine
 	{
 		return this->scenes.at(this->current_scene)->GetAllObjects();
 	}
-	
+
 	void SceneManager::AddObject(std::string name, Object* ptr)
 	{
 		this->scenes.at(this->current_scene)->UpdateOwnerEngine(this->owner_engine);
@@ -72,7 +72,7 @@ namespace Engine
 	{
 		return this->scenes.at(this->current_scene)->RemoveObject(name);
 	}
-	
+
 	Object* SceneManager::AddTemplatedObject(std::string name, std::string template_name)
 	{
 		return this->scenes.at(this->current_scene)->AddTemplatedObject(name, template_name);
@@ -111,7 +111,7 @@ namespace Engine
 		glm::vec3 up = glm::normalize(glm::cross(right, front));
 
 		glm::mat4 ViewMatrix = glm::lookAt(this->cameraTransform, this->cameraTransform + front, up);
-		
+
 		return ViewMatrix;
 	}
 
@@ -135,4 +135,4 @@ namespace Engine
 		this->cameraHVRotation = hvrotation;
 		this->CameraUpdated();
 	}
-}
+} // namespace Engine

@@ -114,12 +114,12 @@ onUpdate = function(event)
 
 			--local object1 = cmepapi.objectFactory_CreateSpriteObject(scene_manager, 1.0, offset / 720, 80 / 1100, 400 / 720, asset_manager, "textures/pipe_down.png");
 			local object1 = scene_manager:AddTemplatedObject("sprite_pipe_down"..tostring(spawnPipeLastIdx + 1), "pipe_down");
-			object1:Translate(1.0, pxToScreenY(offset), -0.1);
+			object1:Translate(1.0, pxToScreenY(offset), -0.15);
 			object1:Scale(pxToScreenX(pipe_xSize), pxToScreenY(pipe_ySize), 1.0);
 
 			--local object2 = cmepapi.objectFactory_CreateSpriteObject(scene_manager, 1.0, (400 + 200 + offset) / 720, 80 / 1100, 400 / 720, asset_manager, "textures/pipe_up.png");
 			local object2 = scene_manager:AddTemplatedObject("sprite_pipe_up"..tostring(spawnPipeLastIdx + 1), "pipe_up");
-			object2:Translate(1.0, pxToScreenY(pipe_ySize + pipe_spacing + offset), -0.1);
+			object2:Translate(1.0, pxToScreenY(pipe_ySize + pipe_spacing + offset), -0.15);
 			object2:Scale(pxToScreenX(pipe_xSize), pxToScreenY(pipe_ySize), 1.0);
 
 			spawnPipeLastIdx = spawnPipeLastIdx + 1;
@@ -213,7 +213,7 @@ onInit = function(event)
 
 	-- Create frametime counter and add it to scene
 	local font = asset_manager:GetFont("myfont");
-	local object = cmepapi.objectFactory_CreateTextObject(scene_manager, 0.0, 0.0, 18, "test", font);
+	local object = cmepapi.objectFactory_CreateTextObject(scene_manager, 0.0, 0.0, 22, "test", font);
 	scene_manager:AddObject("_debug_info", object);
 	
 	-- Add score
@@ -222,7 +222,7 @@ onInit = function(event)
 
 	-- Add background
 	local background = scene_manager:AddTemplatedObject("background", "background");
-	background:Translate(0.0, 0.0, -0.5);
+	background:Translate(0.0, 0.0, -0.8);
 	background:Scale(1.0, 1.0);
 
 	-- Add birb
