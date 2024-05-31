@@ -39,7 +39,7 @@ local deltaTimeAvg = 0.0;
 local deltaTimeCount = 0;
 
 local spawnPipeEvery = 5.0;
-local spawnPipeSinceLast = spawnPipeEvery - 0.2;
+local spawnPipeSinceLast = spawnPipeEvery - 0.1;
 local spawnPipeLastIdx = 0;
 local spawnPipeFirstIdx = 1;
 local spawnPipeCount = 0;
@@ -163,7 +163,9 @@ onUpdate = function(event)
 					local score_object = scene_manager:FindObject("text_score");
 					cmepapi.textRenderer_UpdateText(score_object.renderer, tostring(gameScore));
 
-					pipeMoveSpeed = pipeMoveSpeed + 0.01;
+					pipeMoveSpeed = pipeMoveSpeed * 1.01;
+					pipe_spacing = pipe_spacing * 0.990;
+					spawnPipeEvery = spawnPipeEvery * 0.98;
 				end
 
 				if x1 < (0.0 - 80 / 1100) then
@@ -213,11 +215,11 @@ onInit = function(event)
 
 	-- Create frametime counter and add it to scene
 	local font = asset_manager:GetFont("myfont");
-	local object = cmepapi.objectFactory_CreateTextObject(scene_manager, 0.0, 0.0, 22, "test", font);
+	local object = cmepapi.objectFactory_CreateTextObject(scene_manager, 0.0, 0.0, -0.01, 22, "test", font);
 	scene_manager:AddObject("_debug_info", object);
 	
 	-- Add score
-	local object = cmepapi.objectFactory_CreateTextObject(scene_manager, 0.5, 0.0, 64, "0", font);
+	local object = cmepapi.objectFactory_CreateTextObject(scene_manager, 0.5, 0.0, -0.01, 64, "0", font);
 	scene_manager:AddObject("text_score", object);
 
 	-- Add background

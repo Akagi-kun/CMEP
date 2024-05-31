@@ -16,6 +16,7 @@ namespace Engine::ObjectFactory
 		std::weak_ptr<SceneManager> scene_manager,
 		double x,
 		double y,
+		double z,
 		double sizex,
 		double sizey,
 		std::shared_ptr<::Engine::Rendering::Texture> sprite
@@ -26,7 +27,7 @@ namespace Engine::ObjectFactory
 		{
 			Object* object = new Object();
 			object->renderer = new Rendering::SpriteRenderer(locked_scene_manager->GetOwnerEngine());
-			object->Translate(glm::vec3(x, y, 0));
+			object->Translate(glm::vec3(x, y, z));
 			object->Scale(glm::vec3(sizex, sizey, 0));
 			((Rendering::SpriteRenderer*)object->renderer)->scene_manager = scene_manager;
 			((Rendering::SpriteRenderer*)object->renderer)->UpdateTexture(sprite);
@@ -40,6 +41,7 @@ namespace Engine::ObjectFactory
 		std::weak_ptr<SceneManager> scene_manager,
 		double x,
 		double y,
+		double z,
 		int size,
 		std::string text,
 		::Engine::Rendering::Font* font
@@ -50,7 +52,7 @@ namespace Engine::ObjectFactory
 		{
 			Object* object = new Object();
 			object->renderer = new Rendering::TextRenderer(locked_scene_manager->GetOwnerEngine());
-			object->Translate(glm::vec3(x, y, 0));
+			object->Translate(glm::vec3(x, y, z));
 			object->Scale(glm::vec3(size, size, 0));
 			((Rendering::TextRenderer*)object->renderer)->scene_manager = scene_manager;
 			((Rendering::TextRenderer*)object->renderer)->UpdateFont(font);

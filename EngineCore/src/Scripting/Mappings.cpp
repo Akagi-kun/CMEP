@@ -177,19 +177,21 @@ namespace Engine::Scripting::Mappings
 
 			double x = lua_tonumber(state, 2);
 			double y = lua_tonumber(state, 3);
-			double sizex = lua_tonumber(state, 4);
-			double sizey = lua_tonumber(state, 5);
+			double z = lua_tonumber(state, 4);
+			double sizex = lua_tonumber(state, 5);
+			double sizey = lua_tonumber(state, 6);
 
-			lua_getfield(state, 6, "_pointer");
+			lua_getfield(state, 7, "_pointer");
 			AssetManager* ptr_am = *(AssetManager**)lua_touserdata(state, -1);
-			std::string sprite_name = lua_tostring(state, 7);
+			std::string sprite_name = lua_tostring(state, 8);
 			//Rendering::Texture* sprite = *(Rendering::Texture**)lua_touserdata(state, -1);
 
-			Object* obj = ObjectFactory::CreateSpriteObject(scene_manager, x, y, sizex, sizey, ptr_am->GetTexture(sprite_name));
+			Object* obj = ObjectFactory::CreateSpriteObject(scene_manager, x, y, z, sizex, sizey, ptr_am->GetTexture(sprite_name));
 
 			if (obj != nullptr)
 			{
-				// Generate object table
+				API::LuaObjectFactories::ObjectFactory(state, obj);
+/* 				// Generate object table
 				lua_newtable(state);
 
 				Object** ptr_obj = (Object**)lua_newuserdata(state, sizeof(Object*));
@@ -201,7 +203,7 @@ namespace Engine::Scripting::Mappings
 				Rendering::IRenderer** ptr_renderer = (Rendering::IRenderer**)lua_newuserdata(state, sizeof(Rendering::IRenderer*));
 				(*ptr_renderer) = obj->renderer;
 				lua_setfield(state, -2, "_pointer");
-				lua_setfield(state, -2, "renderer");
+				lua_setfield(state, -2, "renderer"); */
 			}
 			else
 			{
@@ -225,18 +227,21 @@ namespace Engine::Scripting::Mappings
 
 			double x = lua_tonumber(state, 2);
 			double y = lua_tonumber(state, 3);
-			int size = static_cast<int>(lua_tointeger(state, 4));
+			double z = lua_tonumber(state, 4);
+			int size = static_cast<int>(lua_tointeger(state, 5));
 
-			std::string text = lua_tostring(state, 5);
+			std::string text = lua_tostring(state, 6);
 
-			lua_getfield(state, 6, "_pointer");
+			lua_getfield(state, 7, "_pointer");
 			Rendering::Font* font = *(Rendering::Font**)lua_touserdata(state, -1);
 
-			Object* obj = ObjectFactory::CreateTextObject(scene_manager, x, y, size, text, font);
+			Object* obj = ObjectFactory::CreateTextObject(scene_manager, x, y, z, size, text, font);
 
 			if (obj != nullptr)
 			{
-				// Generate object table
+				API::LuaObjectFactories::ObjectFactory(state, obj);
+				
+				/* // Generate object table
 				lua_newtable(state);
 
 				Object** ptr_obj = (Object**)lua_newuserdata(state, sizeof(Object*));
@@ -248,7 +253,7 @@ namespace Engine::Scripting::Mappings
 				Rendering::IRenderer** ptr_renderer = (Rendering::IRenderer**)lua_newuserdata(state, sizeof(Rendering::IRenderer*));
 				(*ptr_renderer) = obj->renderer;
 				lua_setfield(state, -2, "_pointer");
-				lua_setfield(state, -2, "renderer");
+				lua_setfield(state, -2, "renderer"); */
 			}
 			else
 			{
@@ -287,6 +292,8 @@ namespace Engine::Scripting::Mappings
 
 			if (obj != nullptr)
 			{
+				API::LuaObjectFactories::ObjectFactory(state, obj);
+				/* 
 				// Generate object table
 				lua_newtable(state);
 
@@ -299,7 +306,7 @@ namespace Engine::Scripting::Mappings
 				Rendering::IRenderer** ptr_renderer = (Rendering::IRenderer**)lua_newuserdata(state, sizeof(Rendering::IRenderer*));
 				(*ptr_renderer) = obj->renderer;
 				lua_setfield(state, -2, "_pointer");
-				lua_setfield(state, -2, "renderer");
+				lua_setfield(state, -2, "renderer"); */
 			}
 			else
 			{

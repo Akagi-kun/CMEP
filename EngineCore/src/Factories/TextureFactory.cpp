@@ -163,7 +163,7 @@ namespace Engine::Factories
 			texture_data->textureImage = vulkanImageFactory->createTextureImage(
 				xsize,
 				ysize,
-				VK_FORMAT_R8G8B8A8_SRGB,
+				VK_FORMAT_R8G8B8A8_UNORM,
 				VK_IMAGE_TILING_OPTIMAL,
 				VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
 				VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
@@ -175,7 +175,7 @@ namespace Engine::Factories
 			// TODO: Create utility function for image transfers
 			vulkanImageFactory->transitionImageLayout(
 				texture_data->textureImage->image->image,
-				VK_FORMAT_R8G8B8A8_SRGB,
+				VK_FORMAT_R8G8B8A8_UNORM,
 				VK_IMAGE_LAYOUT_UNDEFINED,
 				VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL
 			);

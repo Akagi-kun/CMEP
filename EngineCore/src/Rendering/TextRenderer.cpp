@@ -169,7 +169,6 @@ namespace Engine::Rendering
 				const float ys = ch->height / (float)this->_screeny * (float)(std::round(_size.y) / fontsize);
 				const float x = accu_x;
 				const float y = accu_y;
-
 				const float z = 0.0f;
 
 				std::array<RenderingVertex, 6> vertices = {};
