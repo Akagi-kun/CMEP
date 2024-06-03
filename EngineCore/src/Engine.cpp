@@ -22,16 +22,22 @@
 #define LOGPFX_CURRENT LOGPFX_CLASS_ENGINE
 #include "Logging/LoggingPrefix.hpp"
 
-#if defined(_MSC_VER)
-	#ifndef _DEBUG
-		#define _DEBUG 0
-	#endif
+//#if defined(_MSC_VER)
+//	#ifndef _DEBUG
+//		#define _DEBUG 0
+//	#endif
+//#endif
+
+#ifdef DEBUG
+	#define IS_DEBUG 1
+#else
+	#define IS_DEBUG 0
 #endif
 
-#if _DEBUG == 0
-	#define BUILDCONFIG "RELEASE"
-#else
+#if IS_DEBUG == 1
 	#define BUILDCONFIG "DEBUG"
+#else
+	#define BUILDCONFIG "RELEASE"
 #endif
 
 #define MACRO_QUOTE(name) #name
@@ -41,7 +47,7 @@ namespace Engine
 {
 	// TODO: Move this abomination elsewhere...
 	//
-	const char* const _build = "CMEP EngineCore " __TIME__ " " __DATE__ " build, configured " BUILDCONFIG;
+	const char* const _build = "CMEP EngineCore " __TIME__ " " __DATE__ " build, configured " BUILDCONFIG " " MACRO_STR(IS_DEBUG);
 #if defined(_MSC_VER)
 	#pragma message("Compiler MSVC detected")
 	const char* const _compiledby = "MSVC " MACRO_STR(_MSC_FULL_VER) "." MACRO_STR(_MSC_BUILD);

@@ -27,6 +27,8 @@ else()
 		)
 endif()
 
+include_directories(include)
+
 add_executable(rungame ${SRC_FILES} ${HEADER_FILES})
 
 include_directories(rungame PUBLIC ../external ../external/lua-prebuilt/include include ../common_include ../EngineCore/include ../external/VulkanMemoryAllocator/include)

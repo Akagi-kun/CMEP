@@ -62,6 +62,8 @@ else()
 		)
 endif()
 
+include_directories(include)
+
 add_library(EngineCore SHARED ${SRC_FILES})
 
 if(MSVC)
