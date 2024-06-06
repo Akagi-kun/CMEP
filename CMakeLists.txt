@@ -14,7 +14,7 @@ add_subdirectory(external/glfw)
 
 include_directories(external/glm)
 
-message("-- Build type is: "${CMAKE_BUILD_TYPE})
+message("-- Build type is: " ${CMAKE_BUILD_TYPE})
 
 # Global compile options
 if(MSVC)
@@ -61,7 +61,7 @@ if(NOT MSVC)
 		add_custom_target(lua_build COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/external/build_lua.sh macosx)
 	endif()
 else()
-	message("-- Will copy lua from prebuilt (Windows)")
+	message("-- Will copy lua from prebuilt (Windows); Workdir is: " ${CMAKE_CURRENT_SOURCE_DIR})
 	add_custom_target(lua_build)
 	add_custom_command(TARGET lua_build
 						COMMAND ${CMAKE_COMMAND} -E
