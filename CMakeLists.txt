@@ -16,8 +16,9 @@ include_directories(external/glm)
 
 message("-- Build type is: "${CMAKE_BUILD_TYPE})
 
+# Global compile options
 if(MSVC)
-    add_compile_options(/std:c++17 /MP /wd4996 /wd4251)
+    add_compile_options(/std:c++17 /MP)
 
 	if(CMAKE_BUILD_TYPE STREQUAL "Debug")
 		message("-- Building Debug")

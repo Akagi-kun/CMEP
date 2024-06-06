@@ -67,9 +67,9 @@ include_directories(include)
 add_library(EngineCore SHARED ${SRC_FILES})
 
 if(MSVC)
-	target_compile_options(EngineCore PRIVATE /W3) # /WX
+	target_compile_options(EngineCore PRIVATE /W3 /WX /wd4996 /wd4251)
 else()
-	#target_compile_options(EngineCore PRIVATE -Wall) # -Wextra -Wpedantic -Werror
+	target_compile_options(EngineCore PRIVATE -Wall) # -Wextra -Wpedantic -Werror
 endif()
 
 target_link_directories(EngineCore PUBLIC lib ../build/Debug ../build)
