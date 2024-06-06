@@ -65,7 +65,7 @@ else()
 	add_custom_target(lua_build)
 	add_custom_command(TARGET lua_build
 						COMMAND ${CMAKE_COMMAND} -E
-						copy external/lua-prebuilt/lua54.dll build/
+						copy external/lua-prebuilt/lua54.dll build/lua54.dll
 						WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
 						)
 	#add_custom_target(lua_build xcopy /s /e /i /y /f "external\\lua-prebuilt\\lua54.dll" "build\\lua54.dll" WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
