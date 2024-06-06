@@ -2,7 +2,7 @@
 #include <cstring>
 
 #include <glm/glm.hpp>
-#include <glm/gtx/quaternion.hpp>
+#include <glm/gtc/quaternion.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
 #include "Rendering/SpriteRenderer.hpp"
@@ -110,12 +110,12 @@ namespace Engine::Rendering
 									glm::translate(glm::mat4(1.0f), 
 									this->_parent_pos)
 										*
-									glm::toMat4(
+									glm::mat4_cast(
 									ParentRotation),
 								this->_parent_size),
 							this->_pos)
 								*
-							glm::toMat4(
+							glm::mat4_cast(
 							ModelRotation),
 						this->_size);
 

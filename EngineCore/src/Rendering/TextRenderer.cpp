@@ -4,7 +4,7 @@
 #include <vector>
 
 #include <glm/gtc/matrix_transform.hpp>
-#include <glm/gtx/quaternion.hpp>
+#include <glm/gtc/quaternion.hpp>
 
 #include "Logging/Logging.hpp"
 #include "Rendering/Font.hpp"
@@ -222,9 +222,9 @@ namespace Engine::Rendering
 		glm::quat ParentRotation = glm::quat(glm::radians(this->_parent_rotation));
 		glm::mat4 Model =
 			glm::translate(
-				glm::translate(glm::mat4(1.0f), this->_parent_pos) * glm::toMat4(ParentRotation), this->_pos
+				glm::translate(glm::mat4(1.0f), this->_parent_pos) * glm::mat4_cast(ParentRotation), this->_pos
 			) *
-			glm::toMat4(ModelRotation);
+			glm::mat4_cast(ModelRotation);
 
 		this->matMVP = Projection * Model;
 
