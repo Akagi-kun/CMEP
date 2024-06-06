@@ -33,7 +33,7 @@ namespace Logging
 	};
 
 	// TODO: Thread unsafe!!!
-	class Logger
+	class CMEP_EXPORT_CLASS Logger
 	{
 	private:
 		std::vector<LoggerInternalMapping*> outputs;

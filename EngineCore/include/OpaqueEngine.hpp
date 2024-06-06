@@ -9,7 +9,7 @@ namespace Engine
 {
 	class Engine;
 
-	class OpaqueEngine
+	class CMEP_EXPORT_CLASS OpaqueEngine
 	{
 	private:
 		std::unique_ptr<Engine> d_engine;
