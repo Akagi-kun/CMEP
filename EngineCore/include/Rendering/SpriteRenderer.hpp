@@ -15,7 +15,7 @@ namespace Engine::Rendering
 	/// Implementation of <seealso cref="IRenderer"/> for 2D sprite renderables.
 	/// </summary>
 	/// <inheritdoc cref="IRenderer"/>
-	class CMEP_EXPORT SpriteRenderer final : public IRenderer
+	class SpriteRenderer final : public IRenderer
 	{
 	private:
 		/// <summary>

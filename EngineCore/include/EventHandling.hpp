@@ -22,7 +22,7 @@ namespace Engine::EventHandling
 		EVENT_UNDEFINED = 0xffff
 	};
 
-	class CMEP_EXPORT Event final
+	class Event final
 	{
 	private:
 	public:

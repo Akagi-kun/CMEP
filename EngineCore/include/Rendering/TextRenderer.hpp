@@ -15,7 +15,7 @@ namespace Engine::Rendering
 	/// Implementation of <seealso cref="IRenderer"/> for text renderables.
 	/// </summary>
 	/// <inheritdoc cref="IRenderer"/>
-	class CMEP_EXPORT TextRenderer final : public IRenderer
+	class TextRenderer final : public IRenderer
 	{
 	private:
 		size_t vbo_vert_count = 0;

@@ -24,7 +24,7 @@ namespace Engine
 			unsigned int char_count = 0;
 		};
 
-		class CMEP_EXPORT Font final : public InternalEngineObject
+		class Font final : public InternalEngineObject
 		{
 		private:
 			AssetManager* asset_manager;

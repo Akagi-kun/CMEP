@@ -10,7 +10,7 @@
 
 namespace Engine::Rendering
 {
-	class CMEP_EXPORT Mesh final : public InternalEngineObject
+	class Mesh final : public InternalEngineObject
 	{
 	private:
 	public:

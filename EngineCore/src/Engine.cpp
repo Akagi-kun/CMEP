@@ -133,6 +133,8 @@ namespace Engine
 	{
 		std::ifstream file(this->config_path);
 		
+		this->config = std::make_unique<EngineConfig>();
+
 		nlohmann::json data;
 		try
 		{
@@ -144,15 +146,15 @@ namespace Engine
 			exit(1);
 		}
 
-		this->config.window.title = data["window"]["title"];
-		this->config.window.sizeX = data["window"]["sizeX"];
-		this->config.window.sizeY = data["window"]["sizeY"];
+		this->config->window.title = data["window"]["title"];
+		this->config->window.sizeX = data["window"]["sizeX"];
+		this->config->window.sizeY = data["window"]["sizeY"];
 
-		this->config.rendering.framerateTarget = data["rendering"]["framerateTarget"];
+		this->config->rendering.framerateTarget = data["rendering"]["framerateTarget"];
 	
-		this->config.lookup.scenes = data["lookup"]["scenes"];
+		this->config->lookup.scenes = data["lookup"]["scenes"];
 
-		this->config.defaultScene = data["defaultScene"];
+		this->config->defaultScene = data["defaultScene"];
 	}
 
 	void Engine::ErrorCallback(int code, const char* message)
@@ -262,7 +264,7 @@ namespace Engine
 		object->Translate(glm::vec3(0, 0, 0));
 		object->Scale(glm::vec3(1, 1, 1));
 		object->Rotate(glm::vec3(0, 0, 0));
-		object->ScreenSizeInform(this->config.window.sizeX, this->config.window.sizeY);
+		object->ScreenSizeInform(this->config->window.sizeX, this->config->window.sizeY);
 		((Rendering::AxisRenderer*)object->renderer)->UpdateMesh();
 		((Rendering::AxisRenderer*)object->renderer)->scene_manager = this->scene_manager;
 		this->scene_manager->AddObject("_axis", object);
@@ -405,7 +407,7 @@ namespace Engine
 		this->scene_manager = std::make_shared<SceneManager>(this->logger);
 		this->scene_manager->UpdateOwnerEngine(this);
 		this->scene_manager->UpdateHeldLogger(this->logger);
-		this->scene_manager->SetSceneLoadPrefix(this->config.lookup.scenes);
+		this->scene_manager->SetSceneLoadPrefix(this->config->lookup.scenes);
 
 		this->rendering_engine = new Rendering::VulkanRenderingEngine();
 		this->rendering_engine->UpdateOwnerEngine(this);
@@ -417,7 +419,7 @@ namespace Engine
 		auto start = std::chrono::steady_clock::now();
 
 		// Initialize rendering engine
-		this->rendering_engine->init(this->config.window.sizeX, this->config.window.sizeY, this->config.window.title);
+		this->rendering_engine->init(this->config->window.sizeX, this->config->window.sizeY, this->config->window.title);
 
 		this->vulkanImageFactory = std::make_shared<Rendering::Factories::VulkanImageFactory>(this->rendering_engine->GetVMAAllocator(), this->rendering_engine);
 		
@@ -427,8 +429,8 @@ namespace Engine
 
 		//return;
 
-		this->scene_manager->LoadScene(this->config.defaultScene);
-		this->scene_manager->SetScene(this->config.defaultScene);
+		this->scene_manager->LoadScene(this->config->defaultScene);
+		this->scene_manager->SetScene(this->config->defaultScene);
 
 		// Set-up GLFW
 		Rendering::GLFWwindowData windowdata = this->rendering_engine->GetWindow();

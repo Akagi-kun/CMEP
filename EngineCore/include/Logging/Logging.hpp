@@ -33,23 +33,23 @@ namespace Logging
 	};
 
 	// TODO: Thread unsafe!!!
-	class CMEP_EXPORT Logger
+	class Logger
 	{
 	private:
 		std::vector<LoggerInternalMapping*> outputs;
 		std::map<int16_t, std::string> threadid_name_map;
 
 	public:
-		Logger() {}
-		~Logger() {};
+		CMEP_EXPORT Logger() {}
+		CMEP_EXPORT ~Logger() {};
 
-		void AddOutputHandle(LogLevel min_level, FILE* handle, bool useColors = false);
-		void MapCurrentThreadToName(std::string name);
+		void CMEP_EXPORT AddOutputHandle(LogLevel min_level, FILE* handle, bool useColors = false);
+		void CMEP_EXPORT MapCurrentThreadToName(std::string name);
 
-		void StartLog(LogLevel level);
-		void Log(const char* format, ...);
-		void StopLog();
+		void CMEP_EXPORT StartLog(LogLevel level);
+		void CMEP_EXPORT Log(const char* format, ...);
+		void CMEP_EXPORT StopLog();
 
-		void SimpleLog(LogLevel level, const char* format, ...);
+		void CMEP_EXPORT SimpleLog(LogLevel level, const char* format, ...);
 	};
 }

@@ -10,7 +10,7 @@ namespace Engine
 {
     class Engine;
 
-    class CMEP_EXPORT InternalEngineObject
+    class InternalEngineObject
     {
     protected:
         std::shared_ptr<Logging::Logger> logger{};

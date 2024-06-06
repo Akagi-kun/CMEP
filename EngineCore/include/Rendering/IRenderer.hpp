@@ -19,7 +19,7 @@ namespace Engine
 		/**
 		 * @brief Interface for Renderers
 		 */
-		class CMEP_EXPORT IRenderer : public InternalEngineObject
+		class IRenderer : public InternalEngineObject
 		{
 		protected:
 			glm::vec3 _pos = glm::vec3();

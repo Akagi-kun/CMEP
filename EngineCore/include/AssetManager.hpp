@@ -20,7 +20,7 @@ namespace Engine
 		class Font;
 	}
 
-	class CMEP_EXPORT AssetManager final : public InternalEngineObject
+	class AssetManager final : public InternalEngineObject
 	{
 	private:
 		std::unordered_map<std::string, std::shared_ptr<Scripting::LuaScript>> luascripts{};

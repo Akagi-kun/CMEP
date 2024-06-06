@@ -1,12 +1,12 @@
-#include <string>
-#include <iomanip>
-#include <cmath>
-#include <cassert>
 #include <array>
+#include <cassert>
+#include <cmath>
+#include <iomanip>
+#include <string>
 #include <thread>
 
 #if defined(_MSC_VER)
-	#include <Windows.h>
+#include <Windows.h>
 #endif
 
 #include "EngineCore.hpp"
@@ -24,8 +24,6 @@ static void initConsoleWin32()
 
 void runEngine()
 {
-	Engine::Engine* engine = nullptr;
-
 	std::shared_ptr<Logging::Logger> myLogger = std::make_shared<Logging::Logger>();
 
 #if _DEBUG == 1 || defined(DEBUG)
@@ -37,31 +35,31 @@ void runEngine()
 	myLogger->SimpleLog(Logging::LogLevel::Info, "Logger initialized");
 
 	// Initialize engine
-	engine = new Engine::Engine(std::move(myLogger));
+	std::unique_ptr<Engine::OpaqueEngine> engine = std::make_unique<Engine::OpaqueEngine>(std::move(myLogger));
 
 	try
 	{
 		engine->ConfigFile("game/config.json");
 	}
-	catch(std::exception e)
+	catch (std::exception e)
 	{
 		printf("Exception loading config! e.what(): %s\n", e.what());
 		throw e;
 	}
-	
+
+	// Start execution
 	engine->Init();
 	engine->Run();
-
-	delete engine;
 }
 
 int main(int argc, char** argv)
 {
+	// Enable colored output on Win32
 #if defined(_MSC_VER)
 	initConsoleWin32();
 #endif
-	
+
 	runEngine();
-	
+
 	return 0;
 }

@@ -1,31 +1,37 @@
 #pragma once
 
-#include <unordered_map>
-#include <functional>
-#include <vector>
-#include <memory>
 #include <atomic>
+#include <functional>
+#include <memory>
+#include <unordered_map>
+#include <vector>
 
-#include "Rendering/Vulkan/VulkanRenderingEngine.hpp"
+
 #include "Rendering/Vulkan/VulkanImageFactory.hpp"
+#include "Rendering/Vulkan/VulkanRenderingEngine.hpp"
 
-#include "SceneManager.hpp"
-#include "Logging/Logging.hpp"
+
 #include "EventHandling.hpp"
+#include "Logging/Logging.hpp"
 #include "PlatformSemantics.hpp"
+#include "SceneManager.hpp"
+
 
 namespace Engine
 {
 	class AssetManager;
 	class ImageObject;
 	class Object;
-	namespace Rendering { class Window; }
+	namespace Rendering
+	{
+		class Window;
+	}
 
 	namespace Scripting
 	{
 		class LuaScriptExecutor;
 		class LuaScript;
-	}
+	} // namespace Scripting
 
 	extern bool EngineIsWindowInFocus;
 	extern bool EngineIsWindowInContent;
@@ -38,24 +44,26 @@ namespace Engine
 		{
 			unsigned int sizeX = 0;
 			unsigned int sizeY = 0;
-			std::string title = "I am an title!";
+			std::string title = "I am a title!";
 		} window;
 
-		struct {
+		struct
+		{
 			unsigned int framerateTarget = 0;
 		} rendering;
 
-		struct {
+		struct
+		{
 			std::string textures;
 			std::string models;
 			std::string scripts;
-			std::string scenes; 
+			std::string scenes;
 		} lookup;
 
 		std::string defaultScene;
 	} EngineConfig;
 
-	class CMEP_EXPORT Engine final
+	class Engine final
 	{
 	private:
 		std::string config_path = "";
@@ -65,10 +73,10 @@ namespace Engine
 
 		double lastDeltaTime = 0.0;
 
-		EngineConfig config{};
+		std::unique_ptr<EngineConfig> config{};
 
 		// Engine parts
-        std::shared_ptr<Logging::Logger> logger{};
+		std::shared_ptr<Logging::Logger> logger{};
 		std::shared_ptr<AssetManager> asset_manager{};
 		Scripting::LuaScriptExecutor* script_executor = nullptr;
 		Rendering::VulkanRenderingEngine* rendering_engine = nullptr;
@@ -76,7 +84,7 @@ namespace Engine
 
 		// Event handler storage
 		std::multimap<EventHandling::EventType, std::function<int(EventHandling::Event&)>> event_handlers;
-		
+
 		static void spinSleep(double seconds);
 
 		static void RenderCallback(VkCommandBuffer commandBuffer, uint32_t currentFrame, Engine* engine);
@@ -95,25 +103,41 @@ namespace Engine
 
 	public:
 		std::shared_ptr<SceneManager> scene_manager{};
-		
-		Engine(std::shared_ptr<Logging::Logger> logger) noexcept;
-		~Engine() noexcept;
 
-		void SetFramerateTarget(unsigned framerate) noexcept;
+		CMEP_EXPORT Engine(std::shared_ptr<Logging::Logger> logger) noexcept;
+		CMEP_EXPORT ~Engine() noexcept;
 
-		void Init();
-		void Run();
+		CMEP_EXPORT void SetFramerateTarget(unsigned framerate) noexcept;
 
-		void ConfigFile(std::string path);
-		void RegisterEventHandler(EventHandling::EventType event_type, std::function<int(EventHandling::Event&)> function);
-		
-		int FireEvent(EventHandling::Event& event);
+		CMEP_EXPORT void Init();
+		CMEP_EXPORT void Run();
 
-		double GetLastDeltaTime();
+		CMEP_EXPORT void ConfigFile(std::string path);
+		CMEP_EXPORT void RegisterEventHandler(
+			EventHandling::EventType event_type, std::function<int(EventHandling::Event&)> function
+		);
 
-		inline std::weak_ptr<AssetManager> GetAssetManager() noexcept { return this->asset_manager; }
-		inline Rendering::VulkanRenderingEngine* GetRenderingEngine() noexcept { return this->rendering_engine; }
-		inline std::weak_ptr<SceneManager> GetSceneManager() noexcept { return std::weak_ptr<SceneManager>(this->scene_manager); }
-		inline std::weak_ptr<Rendering::Factories::VulkanImageFactory> GetVulkanImageFactory() noexcept { return this->vulkanImageFactory; }
+		CMEP_EXPORT void Stop();
+
+		CMEP_EXPORT int FireEvent(EventHandling::Event& event);
+
+		CMEP_EXPORT double GetLastDeltaTime();
+
+		inline std::weak_ptr<AssetManager> GetAssetManager() noexcept
+		{
+			return this->asset_manager;
+		}
+		inline Rendering::VulkanRenderingEngine* GetRenderingEngine() noexcept
+		{
+			return this->rendering_engine;
+		}
+		inline std::weak_ptr<SceneManager> GetSceneManager() noexcept
+		{
+			return std::weak_ptr<SceneManager>(this->scene_manager);
+		}
+		inline std::weak_ptr<Rendering::Factories::VulkanImageFactory> GetVulkanImageFactory() noexcept
+		{
+			return this->vulkanImageFactory;
+		}
 	};
-}
+} // namespace Engine

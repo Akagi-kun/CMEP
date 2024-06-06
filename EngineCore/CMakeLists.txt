@@ -5,6 +5,7 @@ set(SRC_FILES
 	src/AssetManager.cpp
 	src/dllmain.cpp
 	src/Engine.cpp
+	src/OpaqueEngine.cpp
 	src/Object.cpp
 	src/Scene.cpp
 	src/SceneManager.cpp
@@ -68,7 +69,7 @@ add_library(EngineCore SHARED ${SRC_FILES})
 
 if(MSVC)
 	# Remove /wd4251 after ABI fixes
-	target_compile_options(EngineCore PRIVATE /W3 /WX /wd4996 /wd4251)
+	target_compile_options(EngineCore PRIVATE /W3 /WX /wd4996)
 else()
 	target_compile_options(EngineCore PRIVATE -Wall) # -Wextra -Wpedantic -Werror
 endif()

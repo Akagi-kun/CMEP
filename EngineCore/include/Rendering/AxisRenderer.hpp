@@ -19,7 +19,7 @@ namespace Engine::Rendering
 	/// Implementation of <seealso cref="IRenderer"/> for an axis.
 	/// </summary>
 	/// <inheritdoc cref="IRenderer"/>
-	class CMEP_EXPORT AxisRenderer final : public IRenderer
+	class AxisRenderer final : public IRenderer
 	{
 	private:
 		/// <summary>

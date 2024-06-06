@@ -14,7 +14,7 @@ namespace Engine
 {
 	class Engine;
 
-	class CMEP_EXPORT Scene : public InternalEngineObject
+	class Scene : public InternalEngineObject
 	{
 	private:
 	protected:

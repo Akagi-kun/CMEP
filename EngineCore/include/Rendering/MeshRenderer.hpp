@@ -17,7 +17,7 @@ namespace Engine::Rendering
 	/// Implementation of <seealso cref="IRenderer"/> for custom mesh renderables.
 	/// </summary>
 	/// <inheritdoc cref="IRenderer"/>
-	class CMEP_EXPORT MeshRenderer final : public IRenderer
+	class MeshRenderer final : public IRenderer
 	{
 	private:
 		size_t vbo_vert_count = 0;

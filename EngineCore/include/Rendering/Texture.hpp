@@ -25,7 +25,7 @@ namespace Engine::Rendering
 		VulkanTextureImage* textureImage = nullptr;
 	};
 
-	class CMEP_EXPORT Texture final : public InternalEngineObject
+	class Texture final : public InternalEngineObject
 	{
 	private:
 		/*

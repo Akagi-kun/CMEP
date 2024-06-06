@@ -17,7 +17,7 @@
 
 namespace Engine
 {
-	class CMEP_EXPORT SceneManager final : public InternalEngineObject
+	class SceneManager final : public InternalEngineObject
 	{
 	private:
 		std::unordered_map<std::string, std::shared_ptr<Scene>> scenes{};

@@ -12,7 +12,7 @@
 
 namespace Engine
 {
-	class CMEP_EXPORT Object : public InternalEngineObject
+	class Object : public InternalEngineObject
 	{
 	protected:
 		/// <summary>

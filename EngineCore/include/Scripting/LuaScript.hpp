@@ -10,7 +10,7 @@ namespace Engine::Scripting
 {
 	class LuaScriptExecutor;
 
-	class CMEP_EXPORT LuaScript
+	class LuaScript
 	{
 	protected:
 		lua_State* state;
