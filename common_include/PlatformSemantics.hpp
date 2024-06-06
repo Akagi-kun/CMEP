@@ -13,7 +13,7 @@
         #define CMEP_EXPORT __attribute__((visibility("default")))
     #else
         // TODO: fix gcc abi
-        #define CMEP_EXPORT
+        #define CMEP_EXPORT __attribute__((visibility("default")))
     #endif
 #else
     //  do nothing and hope for the best?
