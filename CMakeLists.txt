@@ -42,7 +42,7 @@ else()
 		add_compile_options(-g3)
 	else()
 		message("-- Building Release")
-		add_compile_options()
+		add_compile_options(-O1)
 	endif()
 endif()
 
