@@ -71,6 +71,7 @@ else()
 	#add_custom_target(lua_build xcopy /s /e /i /y /f "external\\lua-prebuilt\\lua54.dll" "build\\lua54.dll" WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
 endif()
 add_dependencies(EngineCore lua_build)
+add_dependencies(rungame EngineCore)
 add_dependencies(rungame lua_build)
 
 set(TESTS_TO_RUN

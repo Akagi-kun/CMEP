@@ -14,11 +14,13 @@
     //  GCC
     #define SEMANTICS_UNIXLIKE
     #if !defined(CMEP_ABI_IMPORT)
-        #define CMEP_EXPORT __attribute__((visibility("default")))
+        #define CMEP_EXPORT
+        // __attribute__((visibility("default")))
         #define CMEP_EXPORT_CLASS __attribute__((visibility("default")))
     #else
         // TODO: fix gcc abi
-        #define CMEP_EXPORT __attribute__((visibility("default")))
+        #define CMEP_EXPORT
+        // __attribute__((visibility("default")))
         #define CMEP_EXPORT_CLASS __attribute__((visibility("default")))
     #endif
 #else

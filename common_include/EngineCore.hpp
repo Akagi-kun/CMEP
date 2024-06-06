@@ -5,6 +5,7 @@
 #include <memory>
 #include <optional>
 #include <vector>
+#include <stdio.h>
 
 #define CMEP_ABI_IMPORT
 #include "PlatformSemantics.hpp"
@@ -32,11 +33,10 @@ namespace Logging
 	private:
 		std::vector<LoggerInternalMapping*> outputs;
 		std::map<int16_t, std::string> threadid_name_map;
-		std::atomic<bool> threadLocked;
 
 	public:
-		CMEP_EXPORT Logger();
-		CMEP_EXPORT ~Logger();
+		CMEP_EXPORT Logger() {}
+		CMEP_EXPORT ~Logger() {};
 
 		void CMEP_EXPORT AddOutputHandle(LogLevel min_level, FILE* handle, bool useColors = false);
 		void CMEP_EXPORT MapCurrentThreadToName(std::string name);

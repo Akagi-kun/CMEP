@@ -71,10 +71,10 @@ if(MSVC)
 	# Remove /wd4251 after ABI fixes
 	target_compile_options(EngineCore PRIVATE /W3 /WX /wd4996)
 else()
-	target_compile_options(EngineCore PRIVATE -Wall) # -Wextra -Wpedantic -Werror
+	target_compile_options(EngineCore PRIVATE -Wall -Wno-unknown-pragmas) # -Wextra -Wpedantic -Werror
 endif()
 
-target_link_directories(EngineCore PUBLIC lib ../build/Debug ../build)
+target_link_directories(EngineCore PUBLIC lib ../build) # ../build/Debug 
 
 if((WIN32 OR UNIX) AND NOT APPLE)
 	target_link_directories(EngineCore PUBLIC ../external/lua-prebuilt)

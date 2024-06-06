@@ -1,7 +1,7 @@
-#include "PlatformSemantics.hpp"
-
 #include <memory>
 #include <string>
+
+#include "PlatformSemantics.hpp"
 
 namespace Logging { class Logger; };
 
