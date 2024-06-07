@@ -21,7 +21,7 @@ if(MSVC)
     add_compile_options(/std:c++17 /MP)
 
 	# Debug only
-	add_compile_definitions($<$<CONFIG:Debug>:"DEBUG=1">)
+	add_compile_definitions($<$<CONFIG:Debug>:DEBUG=1>)
 	add_compile_options($<$<CONFIG:Debug>:/Od>)
 	add_compile_options($<$<CONFIG:Debug>:/DEBUG:FULL>)
 
@@ -37,8 +37,9 @@ else()
 	endif()
 
 	# Debug only
-	add_compile_definitions($<$<CONFIG:Debug>:"DEBUG=1">)
+	add_compile_definitions($<$<CONFIG:Debug>:DEBUG=1>)
 	add_compile_options($<$<CONFIG:Debug>:-g3>)
+
 	# Release only
 	add_compile_options($<$<CONFIG:Release>:-O2>)
 
