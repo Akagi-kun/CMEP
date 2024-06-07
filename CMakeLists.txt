@@ -14,8 +14,6 @@ add_subdirectory(external/glfw)
 
 include_directories(external/glm)
 
-#message("-- Build type is: " ${CMAKE_BUILD_TYPE})
-
 # Global compile options
 if(MSVC)
     add_compile_options(/std:c++17 /MP)

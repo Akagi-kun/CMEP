@@ -51,10 +51,11 @@ jobs:
         cmake -B ${{ steps.strings.outputs.build-output-dir }}
         -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }}
         -DCMAKE_C_COMPILER=${{ matrix.c_compiler }}
-        -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
         -S ${{ github.workspace }}
+      
+      #-DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
 
     - name: Build.sh
       shell: bash
-      run: ./build.sh
+      run: ./build.sh ${{ matrix.build_type }}
 

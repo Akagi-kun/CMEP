@@ -4,18 +4,39 @@
 This is the repository of the CMEP project. A simple scriptable game engine written in C++, using the Vulkan API for rendering.
 This project is currently in alpha and although games (as shown in the `./examples/` subfolder) can be made with it, is very simple and lacks in functionality.
 
-### Install Vulkan SDK
+---
+### Usage
+
+#### Install Vulkan SDK
 Before you build the engine you first have to install the Vulkan SDK, download it from https://vulkan.lunarg.com/ and install it/unpack it.
 
-Depending on your platform (Linux needs this, untested on MacOS), it might be necessary to set the `VULKAN_SDK` environment variable to point to Vulkan SDK so cmake finds all includes. Use either the `setup-env.sh` script that comes with Vulkan SDK or set it manually.
+Depending on your platform (Linux needs this, untested on MacOS), it might be necessary to set the `VULKAN_SDK` environment variable to a valid Vulkan SDK location so cmake finds all includes. Use either the `setup-env.sh` script that comes with Vulkan SDK or set it manually.
 
-### Building
-To build the core libraries and rungame executable use the `build.sh` and `build.bat` scripts depending on your platform or build manually using CMake:
+#### Clone repository and submodules
+First use `git clone "https://github.com/Snezhnaya-chan/CMEP.git"` in a new clean directory to clone repository.
+
+Then `git submodule init` and `git submodule update --recursive` to initialize and clone dependency submodules.
+
+#### Project build
+To build the core libraries and rungame executable use the `build.sh` and `build.bat` scripts depending on your platform.
+Both can be used as follows:
+```
+./build.sh <CONFIG>
+```
+or
+```
+./build.bat <CONFIG>
+```
+> Where `<CONFIG>` can be omitted (which builds Debug by default) and if provided is a valid configuration value (Either `Debug` or `Release`, case-sensitive)
+
+Optionally you can also build manually by directly invoking cmake (not recommended):
 ```
 cmake .
-cmake --build . --target rungame
+cmake --build . --target rungame --config <CONFIG>
 ```
+> (Note that although the configuration can be omitted here, it is not recommended as the default depends on build system used)
 
+#### Build an example
 
 To build any of the examples, use cmake:
 ```
@@ -23,9 +44,12 @@ cmake .
 cmake --build . --target <examplename>
 ```
 where `<examplename>` is a name of a subdirectory under `./examples/` (e.g. `floppybirb`)
+> (Note that examples currently do not use the `--config` syntax and therefore it isn't necessary to provide it)
 
-### Running
-To start the engine use the `rungame` or `rungame.exe` executables depending on your platform. These are located under the `./build/` subdirectory after you build the project and an example.
+#### Running
+To start the engine use the `rungame` executable. This is located under the `./build/` subdirectory if the build is successful. A `./build/game/` directory with valid content is necessary for startup, this can be created by building an exmaple.
+
+---
 
 ### Dependencies
 This project depends on:
@@ -38,5 +62,7 @@ This project depends on:
 all except the Vulkan SDK are prepackaged or built automatically once the build script is run.
 These projects are external to this one and are not affiliated with this project in any way, when using this project take care to follow licenses of the dependencies.
 
+---
+
 ### License
-This project is licensed under the MIT license (see the `LICENSE` file for more information).
+This project is licensed under the MIT license (see the `LICENSE` file for more information). For dependency licenses, see the `./external/` directory 
