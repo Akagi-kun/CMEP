@@ -32,12 +32,13 @@ namespace Logging
 		bool useColors;
 	};
 
-	// TODO: Thread unsafe!!!
+	// TODO: Check thread safety
 	class CMEP_EXPORT_CLASS Logger
 	{
 	private:
 		std::vector<LoggerInternalMapping*> outputs;
 		std::map<int16_t, std::string> threadid_name_map;
+		std::mutex threadMutex{};
 
 	public:
 		CMEP_EXPORT Logger() {}

@@ -5,6 +5,7 @@
 #include <memory>
 #include <optional>
 #include <vector>
+#include <mutex>
 #include <stdio.h>
 
 #define CMEP_ABI_IMPORT
@@ -33,6 +34,7 @@ namespace Logging
 	private:
 		std::vector<LoggerInternalMapping*> outputs;
 		std::map<int16_t, std::string> threadid_name_map;
+		std::mutex threadMutex{};
 
 	public:
 		CMEP_EXPORT Logger() {}

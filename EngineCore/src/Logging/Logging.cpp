@@ -45,7 +45,12 @@ void Logging::Logger::MapCurrentThreadToName(std::string name)
 {
 	int16_t thread_id = std::hash<std::thread::id>{}(std::this_thread::get_id()) & 0xFFFF;
 
+	// Protect member access
+	this->threadMutex.lock();
+
 	this->threadid_name_map.emplace(thread_id, name);
+
+	this->threadMutex.unlock();
 }
 
 void Logging::Logger::StartLog(Logging::LogLevel level)
@@ -55,6 +60,9 @@ void Logging::Logger::StartLog(Logging::LogLevel level)
 	{
 		return;
 	}
+
+	// Protect IO and member access
+	this->threadMutex.lock();
 
 	// StartLog for all outputs
 	for (auto output : this->outputs)
@@ -118,6 +126,9 @@ void Logging::Logger::StopLog()
 			fputc('\n', output->handle);
 		}
 	}
+
+	// All logging must end with StopLog, unlock mutex here
+	this->threadMutex.unlock();
 }
 
 void Logging::Logger::SimpleLog(LogLevel level, const char* format, ...)

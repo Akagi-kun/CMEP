@@ -1,2 +1,2 @@
 cmake .
-cmake --build . -j 6 --target rungame
+cmake --build . -j --parallel --target rungame
