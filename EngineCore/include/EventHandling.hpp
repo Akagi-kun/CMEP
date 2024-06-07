@@ -1,9 +1,9 @@
 #pragma once
 
+#include "PlatformSemantics.hpp"
+#include <map>
 #include <stdint.h>
 #include <string>
-#include <map>
-#include "PlatformSemantics.hpp"
 
 namespace Engine
 {
@@ -22,19 +22,20 @@ namespace Engine::EventHandling
 		EVENT_UNDEFINED = 0xffff
 	};
 
+	// TODO: Make this a struct
 	class Event final
 	{
 	private:
 	public:
 		const EventType event_type;
-		
+
 		Engine* raisedFrom;
 
 		double deltaTime = 0.0;
-		union
-		{
+		union {
 			uint16_t keycode = 0; // ON_KEYDOWN/ON_KEYUP events
-			struct {
+			struct
+			{
 				double x;
 				double y;
 			} mouse; // ON_MOUSEMOVED event
@@ -43,4 +44,4 @@ namespace Engine::EventHandling
 		Event(const EventType eventtype) : event_type(eventtype) {};
 		~Event() {};
 	};
-}
+} // namespace Engine::EventHandling

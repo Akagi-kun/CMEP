@@ -14,20 +14,20 @@ add_subdirectory(external/glfw)
 
 include_directories(external/glm)
 
-message("-- Build type is: " ${CMAKE_BUILD_TYPE})
+#message("-- Build type is: " ${CMAKE_BUILD_TYPE})
 
 # Global compile options
 if(MSVC)
     add_compile_options(/std:c++17 /MP)
 
-	if(CMAKE_BUILD_TYPE STREQUAL "Debug")
-		message("-- Building Debug")
-		add_compile_definitions("DEBUG=1")
-		add_compile_options(/Od /DEBUG:FULL)
-	else()
-		message("-- Building Release")
-		add_compile_options(/O1)
-	endif()
+	# Debug only
+	add_compile_definitions($<$<CONFIG:Debug>:"DEBUG=1">)
+	add_compile_options($<$<CONFIG:Debug>:/Od>)
+	add_compile_options($<$<CONFIG:Debug>:/DEBUG:FULL>)
+
+	# Release only
+	add_compile_options($<$<CONFIG:Release>:/O2>)
+	
 else()
 	add_compile_options(-std=c++17)
 	add_link_options(-lpthread)
@@ -36,14 +36,12 @@ else()
 		add_link_options(--coverage -lgcov)
 	endif()
 
-	if(CMAKE_BUILD_TYPE STREQUAL "Debug")
-		message("-- Building Debug")
-		add_compile_definitions("DEBUG=1")
-		add_compile_options(-g3)
-	else()
-		message("-- Building Release")
-		add_compile_options(-O1)
-	endif()
+	# Debug only
+	add_compile_definitions($<$<CONFIG:Debug>:"DEBUG=1">)
+	add_compile_options($<$<CONFIG:Debug>:-g3>)
+	# Release only
+	add_compile_options($<$<CONFIG:Release>:-O2>)
+
 endif()
 
 add_subdirectory(EngineCore)

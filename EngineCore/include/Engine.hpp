@@ -6,16 +6,13 @@
 #include <unordered_map>
 #include <vector>
 
-
 #include "Rendering/Vulkan/VulkanImageFactory.hpp"
 #include "Rendering/Vulkan/VulkanRenderingEngine.hpp"
-
 
 #include "EventHandling.hpp"
 #include "Logging/Logging.hpp"
 #include "PlatformSemantics.hpp"
 #include "SceneManager.hpp"
-
 
 namespace Engine
 {
@@ -83,7 +80,7 @@ namespace Engine
 		std::shared_ptr<Rendering::Factories::VulkanImageFactory> vulkanImageFactory{};
 
 		// Event handler storage
-		std::multimap<EventHandling::EventType, std::function<int(EventHandling::Event&)>> event_handlers;
+		// std::multimap<EventHandling::EventType, std::function<int(EventHandling::Event&)>> event_handlers;
 
 		static void spinSleep(double seconds);
 
@@ -113,9 +110,8 @@ namespace Engine
 		CMEP_EXPORT void Run();
 
 		CMEP_EXPORT void ConfigFile(std::string path);
-		CMEP_EXPORT void RegisterEventHandler(
-			EventHandling::EventType event_type, std::function<int(EventHandling::Event&)> function
-		);
+		// CMEP_EXPORT void RegisterEventHandler(EventHandling::EventType event_type,
+		// std::function<int(EventHandling::Event&)> function);
 
 		CMEP_EXPORT void Stop();
 

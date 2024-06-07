@@ -168,7 +168,7 @@ onUpdate = function(event)
 					spawnPipeEvery = spawnPipeEvery * 0.98;
 				end
 
-				if x1 < (0.0 - 80 / 1100) then
+				if x1 < (0.0 - pxToScreenX(pipe_xSize + 5)) then
 					-- Destroy objects
 					scene_manager:RemoveObject("sprite_pipe_down"..tostring(pipeIdx));
 					scene_manager:RemoveObject("sprite_pipe_up"..tostring(pipeIdx));

@@ -67,8 +67,9 @@ include_directories(include)
 
 add_library(EngineCore SHARED ${SRC_FILES})
 
+
 if(MSVC)
-	# Remove /wd4251 after ABI fixes
+# TODO: Remove /wd4996 after deprecation fixes
 	target_compile_options(EngineCore PRIVATE /W3 /WX /wd4996)
 else()
 	target_compile_options(EngineCore PRIVATE -Wall -Wno-unknown-pragmas) # -Wextra -Wpedantic -Werror
