@@ -5,7 +5,7 @@
         "sizeY": 720 
     },
     "rendering": {
-        "framerateTarget": 60
+        "framerateTarget": 0
     },
     "lookup": {
         "scenes": "game/scenes"

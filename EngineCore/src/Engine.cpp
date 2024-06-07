@@ -311,7 +311,7 @@ namespace Engine
 
 			const auto frameClock = std::chrono::steady_clock::now();
 			const double sleepSecs = 1.0 / this->framerateTarget - (frameClock - nextClock).count() / 1e9;
-			if (sleepSecs > 0 && framerateTarget != 0)
+			if (sleepSecs > 0 && framerateTarget != 0) // spin sleep if sleep necessary and VSYNC disabled
 			{
 				spinSleep(sleepSecs);
 			}
