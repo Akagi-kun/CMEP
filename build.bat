@@ -10,4 +10,4 @@ IF "%CURRENTCFG%"=="" SET CURRENTCFG=Debug
 ECHO Building %CURRENTCFG%
 
 cmake .
-cmake --build . -j --parallel --target rungame --config CURRENTCFG
+cmake --build . -j --parallel --target rungame --config %CURRENTCFG%
