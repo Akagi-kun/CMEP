@@ -11,28 +11,17 @@ namespace Engine::Rendering
 	class Texture;
 	class Shader;
 
-	/// <summary>
-	/// Implementation of <seealso cref="IRenderer"/> for 2D sprite renderables.
-	/// </summary>
-	/// <inheritdoc cref="IRenderer"/>
 	class SpriteRenderer final : public IRenderer
 	{
 	private:
-		/// <summary>
-		/// GL Vertex Array Object
-		/// </summary>
 		unsigned int vao = 0;
-		/// <summary>
-		/// GL Vertex Buffer Object
-		/// </summary>
 		VulkanBuffer* vbo = nullptr;
-		// unsigned int vbo = 0;
 
 		glm::mat4 matMVP{};
 
 		VulkanPipeline* pipeline = nullptr;
-		// std::unique_ptr<Rendering::Shader> program;
 
+		void UpdateTexture(std::shared_ptr<Rendering::Texture> new_texture);
 	public:
 		std::shared_ptr<const Rendering::Texture> texture;
 
@@ -49,7 +38,9 @@ namespace Engine::Rendering
 			glm::vec3 parent_rotation,
 			glm::vec3 parent_size
 		) override;
-		void UpdateTexture(std::shared_ptr<Rendering::Texture> new_texture);
+		
+		int SupplyData(RendererSupplyData data) override;
+
 		void UpdateMesh() override;
 
 		void Render(VkCommandBuffer commandBuffer, uint32_t currentFrame) override;

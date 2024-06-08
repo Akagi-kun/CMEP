@@ -29,8 +29,14 @@ namespace Engine::ObjectFactory
 			object->renderer = new Rendering::SpriteRenderer(locked_scene_manager->GetOwnerEngine());
 			object->Translate(glm::vec3(x, y, z));
 			object->Scale(glm::vec3(sizex, sizey, 0));
+
+			Rendering::RendererSupplyData data = {};
+			data.type = Rendering::RendererSupplyDataType::TEXTURE;
+			data.payload = sprite;
+
 			((Rendering::SpriteRenderer*)object->renderer)->scene_manager = scene_manager;
-			((Rendering::SpriteRenderer*)object->renderer)->UpdateTexture(sprite);
+			object->renderer->SupplyData(data);
+			//((Rendering::SpriteRenderer*)object->renderer)->UpdateTexture(sprite);
 			((Rendering::SpriteRenderer*)object->renderer)->UpdateMesh();
 			return object;
 		}

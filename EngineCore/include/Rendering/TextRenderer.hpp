@@ -11,10 +11,6 @@ namespace Engine::Rendering
 	class Texture;
 	class Font;
 
-	/// <summary>
-	/// Implementation of <seealso cref="IRenderer"/> for text renderables.
-	/// </summary>
-	/// <inheritdoc cref="IRenderer"/>
 	class TextRenderer final : public IRenderer
 	{
 	private:
@@ -45,11 +41,12 @@ namespace Engine::Rendering
 			glm::vec3 parent_size
 		) override;
 
+		int SupplyData(RendererSupplyData data) override { return 1; };
+
 		int UpdateFont(Rendering::Font* const font);
-
 		int UpdateText(const std::string text);
-
 		void UpdateMesh() override;
+
 		void Render(VkCommandBuffer commandBuffer, uint32_t currentFrame) override;
 
 		bool GetIsUI() const override { return true; }

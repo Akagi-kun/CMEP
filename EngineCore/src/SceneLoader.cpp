@@ -137,10 +137,19 @@ namespace Engine
 				if (template_entry["renderer"]["type"] == std::string("sprite"))
 				{
 					object->renderer = new Rendering::SpriteRenderer(this->owner_engine);
-					((Rendering::SpriteRenderer*)object->renderer)
-						->UpdateTexture(
-							locked_asset_manager->GetTexture(template_entry["renderer"]["sprite"].get<std::string>())
-						);
+
+					std::string sprite_str = template_entry["renderer"]["sprite"].get<std::string>();
+					std::shared_ptr<Rendering::Texture> texture = locked_asset_manager->GetTexture(sprite_str);
+
+					Rendering::RendererSupplyData supply_data = {};
+					supply_data.type = Rendering::RendererSupplyDataType::TEXTURE;
+					supply_data.payload = texture;
+
+					object->renderer->SupplyData(supply_data);
+					//((Rendering::SpriteRenderer*)object->renderer)
+					//	->UpdateTexture(
+					//		locked_asset_manager->GetTexture(template_entry["renderer"]["sprite"].get<std::string>())
+					//	);
 					((Rendering::SpriteRenderer*)object->renderer)->scene_manager =
 						this->owner_engine->GetSceneManager();
 					object->renderer_type = "sprite";

@@ -41,9 +41,6 @@ namespace Engine::Rendering
 		MeshRenderer(Engine* engine);
 		~MeshRenderer();
 
-		void AssignMesh(std::shared_ptr<Mesh> new_mesh);
-
-		void UpdateTexture(const Rendering::Texture* texture);
 		void Update(
 			glm::vec3 pos,
 			glm::vec3 size,
@@ -54,6 +51,11 @@ namespace Engine::Rendering
 			glm::vec3 parent_rotation,
 			glm::vec3 parent_size
 		) override;
+		
+		int SupplyData(RendererSupplyData data) override { return 1; };
+
+		void AssignMesh(std::shared_ptr<Mesh> new_mesh);
+		void UpdateTexture(const Rendering::Texture* texture);
 		void UpdateMesh() override;
 
 		void Render(VkCommandBuffer commandBuffer, uint32_t currentFrame) override;
