@@ -17,11 +17,12 @@ include_directories(external/glm)
 # Global compile options
 if(MSVC)
     add_compile_options(/std:c++17 /MP)
+	add_link_options(/DEBUG)
 
 	# Debug only
 	add_compile_definitions($<$<CONFIG:Debug>:DEBUG=1>)
 	add_compile_options($<$<CONFIG:Debug>:/Od>)
-	add_compile_options($<$<CONFIG:Debug>:/DEBUG:FULL>)
+	#add_compile_options($<$<CONFIG:Debug>:/DEBUG:FULL>)
 
 	# Release only
 	add_compile_options($<$<CONFIG:Release>:/O2>)
