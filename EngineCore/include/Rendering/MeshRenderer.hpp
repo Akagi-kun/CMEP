@@ -52,7 +52,7 @@ namespace Engine::Rendering
 			glm::vec3 parent_size
 		) override;
 		
-		int SupplyData(RendererSupplyData data) override { return 1; };
+		void SupplyData(RendererSupplyData data) override { };
 
 		void AssignMesh(std::shared_ptr<Mesh> new_mesh);
 		void UpdateTexture(const Rendering::Texture* texture);

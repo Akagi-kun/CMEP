@@ -15,6 +15,7 @@ namespace Engine::Rendering
 		TEXTURE = 1,
 		MESH = 2,
 		FONT = 3,
+		TEXT = 4,
 
 		MAX_ENUM = 0xFFFF,
 	};
@@ -22,10 +23,15 @@ namespace Engine::Rendering
 	typedef struct structRendererSupplyData
 	{
 		RendererSupplyDataType type = RendererSupplyDataType::MIN_ENUM;
-
 		std::shared_ptr<void> payload = nullptr;
-
+		
 		structRendererSupplyData() = default;
+		structRendererSupplyData(RendererSupplyDataType type, std::shared_ptr<void> data)
+		{
+			this->type = type;
+			this->payload = data;
+		}
+
 		~structRendererSupplyData() = default;
 	} RendererSupplyData;
 } // namespace Engine::Rendering

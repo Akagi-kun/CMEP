@@ -20,9 +20,10 @@ namespace Engine::Scripting::API
 					// Generate object table
 					lua_newtable(state);
 
-					Rendering::Font **ptr = (Rendering::Font **)lua_newuserdata(state, sizeof(Rendering::Font *));
-					(*ptr) = font.get();
-					lua_setfield(state, -2, "_pointer");
+					void* ptr = lua_newuserdata(state, sizeof(std::shared_ptr<Rendering::Font>));
+					new (ptr) std::shared_ptr<Rendering::Font>(font);
+					
+					lua_setfield(state, -2, "_smart_ptr");
 
 					return 1;
 				}

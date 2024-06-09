@@ -191,19 +191,6 @@ namespace Engine::Scripting::Mappings
 			if (obj != nullptr)
 			{
 				API::LuaObjectFactories::ObjectFactory(state, obj);
-/* 				// Generate object table
-				lua_newtable(state);
-
-				Object** ptr_obj = (Object**)lua_newuserdata(state, sizeof(Object*));
-				(*ptr_obj) = obj;
-				lua_setfield(state, -2, "_pointer");
-
-				// Generate renderer table
-				lua_newtable(state);
-				Rendering::IRenderer** ptr_renderer = (Rendering::IRenderer**)lua_newuserdata(state, sizeof(Rendering::IRenderer*));
-				(*ptr_renderer) = obj->renderer;
-				lua_setfield(state, -2, "_pointer");
-				lua_setfield(state, -2, "renderer"); */
 			}
 			else
 			{
@@ -232,28 +219,14 @@ namespace Engine::Scripting::Mappings
 
 			std::string text = lua_tostring(state, 6);
 
-			lua_getfield(state, 7, "_pointer");
-			Rendering::Font* font = *(Rendering::Font**)lua_touserdata(state, -1);
+			lua_getfield(state, 7, "_smart_ptr");
+			std::shared_ptr<Rendering::Font> font = *(std::shared_ptr<Rendering::Font>*)lua_touserdata(state, -1);
 
 			Object* obj = ObjectFactory::CreateTextObject(scene_manager, x, y, z, size, text, font);
 
 			if (obj != nullptr)
 			{
 				API::LuaObjectFactories::ObjectFactory(state, obj);
-				
-				/* // Generate object table
-				lua_newtable(state);
-
-				Object** ptr_obj = (Object**)lua_newuserdata(state, sizeof(Object*));
-				(*ptr_obj) = obj;
-				lua_setfield(state, -2, "_pointer");
-
-				// Generate renderer table
-				lua_newtable(state);
-				Rendering::IRenderer** ptr_renderer = (Rendering::IRenderer**)lua_newuserdata(state, sizeof(Rendering::IRenderer*));
-				(*ptr_renderer) = obj->renderer;
-				lua_setfield(state, -2, "_pointer");
-				lua_setfield(state, -2, "renderer"); */
 			}
 			else
 			{
@@ -293,20 +266,6 @@ namespace Engine::Scripting::Mappings
 			if (obj != nullptr)
 			{
 				API::LuaObjectFactories::ObjectFactory(state, obj);
-				/* 
-				// Generate object table
-				lua_newtable(state);
-
-				Object** ptr_obj = (Object**)lua_newuserdata(state, sizeof(Object*));
-				(*ptr_obj) = obj;
-				lua_setfield(state, -2, "_pointer");
-
-				// Generate renderer table
-				lua_newtable(state);
-				Rendering::IRenderer** ptr_renderer = (Rendering::IRenderer**)lua_newuserdata(state, sizeof(Rendering::IRenderer*));
-				(*ptr_renderer) = obj->renderer;
-				lua_setfield(state, -2, "_pointer");
-				lua_setfield(state, -2, "renderer"); */
 			}
 			else
 			{

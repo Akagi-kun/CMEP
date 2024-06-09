@@ -39,7 +39,7 @@ namespace Engine::Rendering
 			glm::vec3 parent_size
 		) override;
 		
-		int SupplyData(RendererSupplyData data) override;
+		void SupplyData(RendererSupplyData data) override;
 
 		void UpdateMesh() override;
 

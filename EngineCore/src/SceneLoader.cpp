@@ -141,9 +141,7 @@ namespace Engine
 					std::string sprite_str = template_entry["renderer"]["sprite"].get<std::string>();
 					std::shared_ptr<Rendering::Texture> texture = locked_asset_manager->GetTexture(sprite_str);
 
-					Rendering::RendererSupplyData supply_data = {};
-					supply_data.type = Rendering::RendererSupplyDataType::TEXTURE;
-					supply_data.payload = texture;
+					Rendering::RendererSupplyData supply_data(Rendering::RendererSupplyDataType::TEXTURE, texture);
 
 					object->renderer->SupplyData(supply_data);
 					//((Rendering::SpriteRenderer*)object->renderer)
@@ -204,7 +202,9 @@ namespace Engine
 							if (found_filtering != filteringMap.end())
 							{
 								this->logger->SimpleLog(
-									Logging::LogLevel::Debug2, LOGPFX_CURRENT "Using filtering '%s'", filtering_value.c_str()
+									Logging::LogLevel::Debug2,
+									LOGPFX_CURRENT "Using filtering '%s'",
+									filtering_value.c_str()
 								);
 								filtering = found_filtering->second;
 							}
@@ -229,7 +229,9 @@ namespace Engine
 							if (found_sampling_mode != samplingMap.end())
 							{
 								this->logger->SimpleLog(
-									Logging::LogLevel::Debug2, LOGPFX_CURRENT "Using sampling mode '%s'", sampling_mode_value.c_str()
+									Logging::LogLevel::Debug2,
+									LOGPFX_CURRENT "Using sampling mode '%s'",
+									sampling_mode_value.c_str()
 								);
 								sampling_mode = found_sampling_mode->second;
 							}

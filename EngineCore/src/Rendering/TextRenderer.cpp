@@ -76,7 +76,22 @@ namespace Engine::Rendering
 		this->has_updated_mesh = false;
 	}
 
-	int TextRenderer::UpdateFont(Rendering::Font* const font)
+	void TextRenderer::SupplyData(RendererSupplyData data)
+	{
+		switch(data.type)
+		{
+			case RendererSupplyDataType::FONT:
+			{
+				this->UpdateFont(std::static_pointer_cast<Font>(data.payload));
+				//this->UpdateTexture(std::static_pointer_cast<Texture>(data.payload));
+				return;
+			}
+		}
+
+		throw std::runtime_error("Tried to supply Renderer data with payload type unsupported by the renderer!");
+	}
+
+	int TextRenderer::UpdateFont(std::shared_ptr<Rendering::Font> font)
 	{
 		this->font = font;
 

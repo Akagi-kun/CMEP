@@ -55,7 +55,7 @@ namespace Engine
 				glm::vec3 parent_size
 			) = 0;
 
-			virtual int SupplyData(RendererSupplyData data) = 0;
+			virtual void SupplyData(RendererSupplyData data) = 0;
 
 			virtual void UpdateMesh() = 0;
 

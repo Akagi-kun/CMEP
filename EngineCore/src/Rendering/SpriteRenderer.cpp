@@ -65,7 +65,7 @@ namespace Engine::Rendering
 		this->has_updated_mesh = false;
 	}
 
-	int SpriteRenderer::SupplyData(RendererSupplyData data)
+	void SpriteRenderer::SupplyData(RendererSupplyData data)
 	{
 		switch(data.type)
 		{
@@ -73,13 +73,11 @@ namespace Engine::Rendering
 			{
 				this->UpdateTexture(std::static_pointer_cast<Texture>(data.payload));
 				//this->logger->SimpleLog(Logging::LogLevel::Info, "Supplied texture to SpriteRenderer");
-				return 0;
+				return;
 			}
 		}
 
 		throw std::runtime_error("Tried to supply Renderer data with payload type unsupported by the renderer!");
-
-		return 1;
 	}
 
 	void SpriteRenderer::UpdateTexture(std::shared_ptr<Rendering::Texture> new_texture)

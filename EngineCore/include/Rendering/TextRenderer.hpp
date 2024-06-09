@@ -22,10 +22,12 @@ namespace Engine::Rendering
 		VulkanBuffer* vbo = nullptr;
 		VulkanTextureImage* textureImage = nullptr;
 
-		Rendering::Font* font;
+		std::shared_ptr<Rendering::Font> font = nullptr;
 
 		glm::mat4 matMVP{};
 
+		int UpdateFont(std::shared_ptr<Rendering::Font> font);
+		
 	public:
 		TextRenderer(Engine* engine);
 		~TextRenderer();
@@ -41,9 +43,8 @@ namespace Engine::Rendering
 			glm::vec3 parent_size
 		) override;
 
-		int SupplyData(RendererSupplyData data) override { return 1; };
+		void SupplyData(RendererSupplyData data) override;
 
-		int UpdateFont(Rendering::Font* const font);
 		int UpdateText(const std::string text);
 		void UpdateMesh() override;
 
