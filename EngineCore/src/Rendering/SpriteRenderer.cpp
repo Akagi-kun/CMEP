@@ -71,20 +71,13 @@ namespace Engine::Rendering
 		{
 			case RendererSupplyDataType::TEXTURE:
 			{
-				this->UpdateTexture(std::static_pointer_cast<Texture>(data.payload_ptr));
-				//this->logger->SimpleLog(Logging::LogLevel::Info, "Supplied texture to SpriteRenderer");
+				this->texture = std::static_pointer_cast<Texture>(data.payload_ptr);
+				this->has_updated_mesh = false;
 				return;
 			}
 		}
 
 		throw std::runtime_error("Tried to supply Renderer data with payload type unsupported by the renderer!");
-	}
-
-	void SpriteRenderer::UpdateTexture(std::shared_ptr<Rendering::Texture> new_texture)
-	{
-		this->texture = new_texture;
-
-		this->has_updated_mesh = false;
 	}
 
 	void SpriteRenderer::UpdateMesh()

@@ -78,17 +78,18 @@ namespace Engine::Rendering
 
 	void TextRenderer::SupplyData(RendererSupplyData data)
 	{
-		switch(data.type)
+		switch (data.type)
 		{
 			case RendererSupplyDataType::FONT:
 			{
-				this->UpdateFont(std::static_pointer_cast<Font>(data.payload_ptr));
-				//this->UpdateTexture(std::static_pointer_cast<Texture>(data.payload));
+				this->font = std::static_pointer_cast<Font>(data.payload_ptr);
+				this->has_updated_mesh = false;
 				return;
 			}
 			case RendererSupplyDataType::TEXT:
 			{
-				this->UpdateText(data.payload_string);
+				this->text.assign(data.payload_string);
+				this->has_updated_mesh = false;
 				return;
 			}
 		}
@@ -96,37 +97,9 @@ namespace Engine::Rendering
 		throw std::runtime_error("Tried to supply Renderer data with payload type unsupported by the renderer!");
 	}
 
-	int TextRenderer::UpdateFont(std::shared_ptr<Rendering::Font> font)
-	{
-		this->font = font;
-
-		this->has_updated_mesh = false;
-
-		return 0;
-	}
-
-	int TextRenderer::UpdateText(const std::string text)
-	{
-		this->text.assign(text);
-
-		this->has_updated_mesh = false;
-
-		return 0;
-	}
-
 	void TextRenderer::UpdateMesh()
 	{
 		this->has_updated_mesh = true;
-
-		/*if (this->vao == 0)
-		{
-			glCreateVertexArrays(1, &this->vao);
-		}
-
-		if (this->vbo == 0)
-		{
-			glCreateBuffers(1, &this->vbo);
-		}*/
 
 		VulkanRenderingEngine* renderer = this->owner_engine->GetRenderingEngine();
 
@@ -141,7 +114,6 @@ namespace Engine::Rendering
 
 		assert(fontsize > 0);
 
-		// std::vector<GLfloat> generated_mesh = {};
 		std::vector<RenderingVertex> generated_mesh = {};
 
 		unsigned int vbo_ = 0;
