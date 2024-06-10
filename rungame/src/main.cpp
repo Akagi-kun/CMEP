@@ -41,15 +41,23 @@ void runEngine()
 	{
 		engine->ConfigFile("game/config.json");
 	}
-	catch (std::exception e)
+	catch (std::exception& e)
 	{
-		printf("Exception loading config! e.what(): %s\n", e.what());
-		throw e;
+		myLogger->SimpleLog(Logging::LogLevel::Exception, "Exception loading config! e.what(): %s", e.what());
+		throw;
 	}
 
 	// Start execution
-	engine->Init();
-	engine->Run();
+	try
+	{
+		engine->Init();
+		engine->Run();
+	}
+	catch (std::exception& e)
+	{
+		myLogger->SimpleLog(Logging::LogLevel::Exception, "Exception caught in rungame! e.what(): %s", e.what());
+		throw;
+	}
 }
 
 int main(int argc, char** argv)

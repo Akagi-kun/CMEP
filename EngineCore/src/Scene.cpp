@@ -19,10 +19,6 @@ namespace Engine
 		}
 		this->objects.clear();
 
-		for (auto& [name, ptr] : this->templates)
-		{
-			delete ptr;
-		}
 		this->templates.clear();
 	}
 
@@ -78,17 +74,12 @@ namespace Engine
 			a.push_back(it);
 		}
 
-		// printf("\n");
-
 		std::sort(a.begin(), a.end(), InternalSort_CmpFunction);
-
-		// printf("sorted\n");
 
 		objects.clear();
 
 		for (auto& it : a)
 		{
-			// printf("%s\t\t%lf\n", it.first.c_str(), it.second->position().z);
 			objects.push_back(it);
 		}
 	}
@@ -104,22 +95,35 @@ namespace Engine
 
 		if (templated_object != this->templates.end())
 		{
-			Object* object = new Object();
+			Object* object = nullptr;
 
-			if (templated_object->second->renderer_type == "sprite")
+			ObjectTemplate object_template = templated_object->second;
+
+			switch(object_template.withRenderer)
 			{
-				object->renderer = new Rendering::SpriteRenderer(this->owner_engine);
-				//*(Rendering::SpriteRenderer*)object->renderer =
-				//*(Rendering::SpriteRenderer*)templated_object->second->renderer;
-				((Rendering::SpriteRenderer*)object->renderer)->texture =
-					((Rendering::SpriteRenderer*)templated_object->second->renderer)->texture;
-				object->UpdateHeldLogger(this->logger);
-				object->renderer->UpdateHeldLogger(this->logger);
+			case RendererType::SPRITE:
+				{
+					object = new Object();
+					object->renderer = new Rendering::SpriteRenderer(this->owner_engine);
+
+					// TODO: Overload object UpdateHeldLogger
+					object->UpdateHeldLogger(this->logger);
+					object->renderer->UpdateHeldLogger(this->logger);
+
+					break;
+				}
 			}
+
+			for(auto& supply : object_template.supplyList)
+			{
+				object->renderer->SupplyData(supply);
+			}
+
 			this->AddObject(name, object);
 
 			return object;
 		}
+
 		return nullptr;
 	}
 
@@ -169,15 +173,8 @@ namespace Engine
 		return returnVal;
 	}
 
-	void Scene::LoadTemplatedObject(std::string name, Object* ptr)
+	void Scene::LoadTemplatedObject(std::string name, ObjectTemplate object)
 	{
-		if (ptr != nullptr)
-		{
-			Rendering::GLFWwindowData data = this->owner_engine->GetRenderingEngine()->GetWindow();
-			ptr->ScreenSizeInform(data.windowX, data.windowY);
-			ptr->UpdateHeldLogger(this->logger);
-			ptr->renderer->UpdateHeldLogger(this->logger);
-			this->templates.emplace(name, ptr);
-		}
+		this->templates.emplace(name, object);
 	}
 } // namespace Engine

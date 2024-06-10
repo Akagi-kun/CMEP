@@ -1,53 +1,89 @@
 {
     "eventHandlers": [
-        { "type": "onInit", "file": "event_handler_script", "function": "onInit" },
-        { "type": "onUpdate", "file": "event_handler_script", "function": "onUpdate" },
-        { "type": "onKeyDown", "file": "event_handler_script", "function": "onKeyDown" },
-        { "type": "onKeyUp", "file": "event_handler_script", "function": "onKeyUp" },
-        { "type": "onMouseMoved", "file": "event_handler_script", "function": "onMouseMoved" }
+        {
+            "type": "onInit",
+            "file": "event_handler_script",
+            "function": "onInit"
+        },
+        {
+            "type": "onUpdate",
+            "file": "event_handler_script",
+            "function": "onUpdate"
+        },
+        {
+            "type": "onKeyDown",
+            "file": "event_handler_script",
+            "function": "onKeyDown"
+        },
+        {
+            "type": "onKeyUp",
+            "file": "event_handler_script",
+            "function": "onKeyUp"
+        },
+        {
+            "type": "onMouseMoved",
+            "file": "event_handler_script",
+            "function": "onMouseMoved"
+        }
     ],
-    "templates": [
-        {
-            "name": "birb",
-            "renderer": {
-                "type": "sprite",
-                "sprite": "birb"
-            }
-        },
-        {
-            "name": "pipe_up",
-            "renderer": {
-                "type": "sprite",
-                "sprite": "pipe_up"
-            }
-        },
-        {
-            "name": "pipe_down",
-            "renderer": {
-                "type": "sprite",
-                "sprite": "pipe_down"
-            }
-        },
-        {
-            "name": "background",
-            "renderer": {
-                "type": "sprite",
-                "sprite": "background"
-            }
-        },
+    "scene": [
         {
             "name": "ground_bottom",
-            "renderer": {
-                "type": "sprite",
-                "sprite": "ground_bottom"
-            }
+            "position": [ 0.0, 60, -0.1 ],
+            "pos_sub_aspixel": [ false, true ],
+            "scale": [ 1260, 60, 1.0 ],
+            "scale_aspixel": [ true, true ],
+            "renderer": "sprite",
+            "renderer_supply_textures": [
+                "ground_bottom"
+            ]
         },
         {
             "name": "ground_top",
-            "renderer": {
-                "type": "sprite",
-                "sprite": "ground_top"
-            }
+            "position": [ 0.0, 0.0, -0.1 ],
+            "pos_aspixel": [ false, true ],
+            "scale": [ 1260, 60, 1.0 ],
+            "scale_aspixel": [ true, true ],
+            "renderer": "sprite",
+            "renderer_supply_textures": [
+                "ground_top"
+            ]
+        },
+        {
+            "name": "background",
+            "position": [ 0.0, 0.0, -0.8 ],
+            "scale": [ 1.0, 1.0, 1.0 ],
+            "renderer": "sprite",
+            "renderer_supply_textures": [
+                "background"
+            ]
+        },
+        {
+            "name": "birb",
+            "position": [ 0.2, 360, 0.0 ],
+            "pos_aspixel": [ false, true ],
+            "scale": [ 72, 44, 1.0 ],
+            "scale_aspixel": [ true, true ],
+            "renderer": "sprite",
+            "renderer_supply_textures": [
+                "birb"
+            ]
+        }
+    ],
+    "templates": [
+        {
+            "name": "pipe_up",
+            "renderer": "sprite",
+            "renderer_supply_textures": [
+                "pipe_up"
+            ]
+        },
+        {
+            "name": "pipe_down",
+            "renderer": "sprite",
+            "renderer_supply_textures": [
+                "pipe_down"
+            ]
         }
     ],
     "assets": [
@@ -56,7 +92,7 @@
             "name": "myfont",
             "location": "fonts/myfont/myfont.fnt",
             "textures": [
-                { 
+                {
                     "name": "myfont_0.png",
                     "location": "fonts/myfont/myfont_0.png"
                 }

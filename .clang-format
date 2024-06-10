@@ -24,4 +24,6 @@ IndentCaseLabels: true
 AccessModifierOffset: -4
 NamespaceIndentation: All
 FixNamespaceComments: true
+BitFieldColonSpacing: Both
+PenaltyBreakAssignment: 200
 ...

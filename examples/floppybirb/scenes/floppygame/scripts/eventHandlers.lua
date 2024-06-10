@@ -241,23 +241,10 @@ onInit = function(event)
 	local object = cmepapi.objectFactory_CreateTextObject(scene_manager, 0.5, 0.0, -0.01, 64, "0", font);
 	scene_manager:AddObject("text_score", object);
 
-	-- Add background
-	local background = scene_manager:AddTemplatedObject("background", "background");
-	background:Translate(0.0, 0.0, -0.8);
-	background:Scale(1.0, 1.0);
-
-	-- Add grounds
-	local ground1 = scene_manager:AddTemplatedObject("ground_top", "ground_top");
-	ground1:Translate(0.0, 0.0, -0.1);
-	ground1:Scale(pxToScreenX(1260), pxToScreenY(60));
-	local ground2 = scene_manager:AddTemplatedObject("ground_bottom", "ground_bottom")
-	ground2:Translate(0.0, pxToScreenY(screenY - 60), -0.1)
-	ground2:Scale(pxToScreenX(1260), pxToScreenY(60));
-
 	-- Add birb
-	local birb = scene_manager:AddTemplatedObject("birb", "birb");
-	birb:Translate(0.2, pxToScreenY(screenY / 2), -0.1);
-	birb:Scale(pxToScreenX(birb_xSize), pxToScreenY(birb_ySize), 1.0);
+	--local birb = scene_manager:AddTemplatedObject("birb", "birb");
+	--birb:Translate(0.2, pxToScreenY(screenY / 2), -0.1);
+	--birb:Scale(pxToScreenX(birb_xSize), pxToScreenY(birb_ySize), 1.0);
 
 	-- Set-up camera
 	scene_manager:SetCameraTransform(0.0, 0.0, 0.0);

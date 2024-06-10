@@ -36,9 +36,6 @@ namespace Engine::Rendering
 
 		bool has_updated_meshdata = false;
 
-		void AssignMesh(std::shared_ptr<Mesh> new_mesh);
-		void UpdateTexture(std::shared_ptr<Rendering::Texture> texture);
-
 	public:
 		MeshRenderer(Engine* engine);
 		~MeshRenderer();
@@ -53,12 +50,15 @@ namespace Engine::Rendering
 			glm::vec3 parent_rotation,
 			glm::vec3 parent_size
 		) override;
-		
+
 		void SupplyData(RendererSupplyData data) override;
 		void UpdateMesh() override;
 
 		void Render(VkCommandBuffer commandBuffer, uint32_t currentFrame) override;
 
-		bool GetIsUI() const override { return false; }
+		bool GetIsUI() const override
+		{
+			return false;
+		}
 	};
 } // namespace Engine::Rendering

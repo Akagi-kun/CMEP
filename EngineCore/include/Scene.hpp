@@ -10,18 +10,38 @@
 
 #include <unordered_map>
 
+#include "Rendering/SupplyData.hpp"
+
 namespace Engine
 {
 	class Engine;
+
+	enum class RendererType {
+		MIN_ENUM = 0x0000,
+
+		TEXT = 1,
+		SPRITE = 2,
+		MESH = 3,
+
+		MAX_ENUM = 0XFFFF
+	};
+
+	typedef struct ObjectTemplate_struct {
+		RendererType withRenderer;
+		std::vector<Rendering::RendererSupplyData> supplyList;
+
+	} ObjectTemplate;
 
 	class Scene : public InternalEngineObject
 	{
 	private:
 	protected:
+		// TODO: Convert all object vectors and maps to std::shared_ptr<Object>
+
 		std::vector<std::pair<std::string, Object*>> objects_sorted{};
 
 		std::unordered_map<std::string, Object*> objects{};
-		std::unordered_map<std::string, Object*> templates{};
+		std::unordered_map<std::string, ObjectTemplate> templates{};
 
 		static void InternalSort(
 			std::unordered_map<std::string, Object*> from_map, std::vector<std::pair<std::string, Object*>>& objects
@@ -44,6 +64,6 @@ namespace Engine
 		Object* FindObject(std::string name);
 		size_t RemoveObject(std::string name) noexcept;
 
-		void LoadTemplatedObject(std::string name, Object* ptr);
+		void LoadTemplatedObject(std::string name, ObjectTemplate object);
 	};
 } // namespace Engine

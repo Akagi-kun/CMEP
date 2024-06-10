@@ -53,37 +53,25 @@ namespace Engine::Rendering
 
 	void MeshRenderer::SupplyData(RendererSupplyData data)
 	{
-		switch(data.type)
+		switch (data.type)
 		{
 			case RendererSupplyDataType::TEXTURE:
 			{
-				this->UpdateTexture(std::static_pointer_cast<Texture>(data.payload_ptr));
-				//this->UpdateTexture(std::static_pointer_cast<Texture>(data.payload));
+				this->texture = std::static_pointer_cast<Texture>(data.payload_ptr);
+				this->has_updated_mesh = false;
+				this->has_updated_meshdata = false;
 				return;
 			}
 			case RendererSupplyDataType::MESH:
 			{
-				this->AssignMesh(std::static_pointer_cast<Mesh>(data.payload_ptr));
+				this->mesh = std::static_pointer_cast<Mesh>(data.payload_ptr);
+				this->has_updated_mesh = false;
+				this->has_updated_meshdata = false;
 				return;
 			}
 		}
 
 		throw std::runtime_error("Tried to supply Renderer data with payload type unsupported by the renderer!");
-	}
-
-	void MeshRenderer::AssignMesh(std::shared_ptr<Mesh> new_mesh)
-	{
-		this->mesh = new_mesh;
-
-		this->has_updated_mesh = false;
-		this->has_updated_meshdata = false;
-	}
-
-	void MeshRenderer::UpdateTexture(std::shared_ptr<Rendering::Texture> texture)
-	{
-		this->texture = texture;
-
-		this->has_updated_mesh = false;
 	}
 
 	void MeshRenderer::Update(
@@ -142,7 +130,8 @@ namespace Engine::Rendering
 		glm::mat4 Model = glm::scale(
 			glm::translate(
 				glm::scale(
-					glm::translate(glm::mat4(1.0f), this->_parent_pos) * glm::mat4_cast(ParentRotation), this->_parent_size
+					glm::translate(glm::mat4(1.0f), this->_parent_pos) * glm::mat4_cast(ParentRotation),
+					this->_parent_size
 				),
 				this->_pos
 			) * glm::mat4_cast(ModelRotation),
@@ -278,7 +267,7 @@ namespace Engine::Rendering
 			//	// Vertices, UVs and Normals
 			//	glNamedBufferData(this->vbo,
 			//		this->mesh->mesh_vertices.size() * sizeof(glm::vec3) + this->mesh->mesh_uvs.size() *
-			//sizeof(glm::vec2) + this->mesh->mesh_normals.size() * sizeof(glm::vec3), 		NULL, GL_STATIC_DRAW
+			// sizeof(glm::vec2) + this->mesh->mesh_normals.size() * sizeof(glm::vec3), 		NULL, GL_STATIC_DRAW
 			//	);
 
 			//	glNamedBufferSubData(this->vbo,
@@ -295,7 +284,7 @@ namespace Engine::Rendering
 
 			//	glNamedBufferSubData(this->vbo,
 			//		this->mesh->mesh_vertices.size() * sizeof(glm::vec3) + this->mesh->mesh_uvs.size() *
-			//sizeof(glm::vec2), 		this->mesh->mesh_normals.size() * sizeof(glm::vec3),
+			// sizeof(glm::vec2), 		this->mesh->mesh_normals.size() * sizeof(glm::vec3),
 			//		(void*)&(this->mesh->mesh_normals[0])
 			//	);
 
@@ -372,8 +361,8 @@ namespace Engine::Rendering
 			//	);
 
 			//	//Logging::GlobalLogger->SimpleLog(Logging::LogLevel::Info, "%u %u %u %u %u",
-			//this->mesh->mesh_vertices.size(), this->mesh->mesh_diffuse.size(), this->mesh->mesh_specular.size(),
-			//this->mesh->matids.size(), this->mesh->mesh_dissolve.size());
+			// this->mesh->mesh_vertices.size(), this->mesh->mesh_diffuse.size(), this->mesh->mesh_specular.size(),
+			// this->mesh->matids.size(), this->mesh->mesh_dissolve.size());
 			//
 
 			//	glBindVertexArray(this->vao);
@@ -381,32 +370,34 @@ namespace Engine::Rendering
 			//	glBindBuffer(GL_ARRAY_BUFFER, this->vbo);
 			//	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, nullptr); // vertices
 			//	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 0, (void*)(this->mesh->mesh_vertices.size() *
-			//sizeof(glm::vec3))); // uvs 	glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 0,
+			// sizeof(glm::vec3))); // uvs 	glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 0,
 			//(void*)(this->mesh->mesh_vertices.size() * sizeof(glm::vec3) + this->mesh->mesh_uvs.size() *
-			//sizeof(glm::vec2))); // normals
+			// sizeof(glm::vec2))); // normals
 
 			//	// Bind mbo and material data
 			//	glBindBuffer(GL_ARRAY_BUFFER, this->mbo);
 			//	glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, 0, nullptr); // material ambient
 			//	glVertexAttribPointer(4, 3, GL_FLOAT, GL_FALSE, 0, (void*)(this->mesh->mesh_ambient.size() *
-			//sizeof(glm::vec3))); // material diffuse 	glVertexAttribPointer(5, 3, GL_FLOAT, GL_FALSE, 0,
+			// sizeof(glm::vec3))); // material diffuse 	glVertexAttribPointer(5, 3, GL_FLOAT, GL_FALSE, 0,
 			//(void*)(this->mesh->mesh_ambient.size() * sizeof(glm::vec3) + this->mesh->mesh_diffuse.size() *
-			//sizeof(glm::vec3))); // material specular 	glVertexAttribIPointer(6, 1, GL_UNSIGNED_INT, 0,
+			// sizeof(glm::vec3))); // material specular 	glVertexAttribIPointer(6, 1, GL_UNSIGNED_INT, 0,
 			//(void*)(this->mesh->mesh_ambient.size() * sizeof(glm::vec3) + this->mesh->mesh_diffuse.size() *
-			//sizeof(glm::vec3) + this->mesh->mesh_specular.size() * sizeof(glm::vec3))); // material ids
+			// sizeof(glm::vec3) + this->mesh->mesh_specular.size() * sizeof(glm::vec3))); // material ids
 			//	glVertexAttribPointer(7, 1, GL_FLOAT, GL_FALSE, 0, (void*)(this->mesh->mesh_ambient.size() *
-			//sizeof(glm::vec3) + this->mesh->mesh_diffuse.size() * sizeof(glm::vec3) + this->mesh->mesh_specular.size()
+			// sizeof(glm::vec3) + this->mesh->mesh_diffuse.size() * sizeof(glm::vec3) +
+			// this->mesh->mesh_specular.size()
 			//* sizeof(glm::vec3) + this->mesh->matids.size() * sizeof(GLuint))); // material dissolve
 			//	glVertexAttribPointer(8, 3, GL_FLOAT, GL_FALSE, 0, (void*)(this->mesh->mesh_ambient.size() *
-			//sizeof(glm::vec3) + this->mesh->mesh_diffuse.size() * sizeof(glm::vec3) + this->mesh->mesh_specular.size()
+			// sizeof(glm::vec3) + this->mesh->mesh_diffuse.size() * sizeof(glm::vec3) +
+			// this->mesh->mesh_specular.size()
 			//* sizeof(glm::vec3) + this->mesh->matids.size() * sizeof(GLuint) + this->mesh->mesh_dissolve.size() *
-			//sizeof(float))); // material emission
+			// sizeof(float))); // material emission
 
 			//	// Bind tbbo and tangent/bitangent data
 			//	glBindBuffer(GL_ARRAY_BUFFER, this->tbbo);
 			//	glVertexAttribPointer(9, 3, GL_FLOAT, GL_FALSE, 0, nullptr); // material ambient
 			//	glVertexAttribPointer(10, 3, GL_FLOAT, GL_FALSE, 0, (void*)(this->mesh->mesh_tangents.size() *
-			//sizeof(glm::vec3))); // material diffuse
+			// sizeof(glm::vec3))); // material diffuse
 		}
 	}
 
@@ -500,8 +491,8 @@ namespace Engine::Rendering
 		//		glBindTexture(GL_TEXTURE_2D, 0);
 
 		//		GLuint textureUsedLocation = glGetUniformLocation(shader,
-		//std::string("used_textureDiffuse").append(std::to_string(offset)).c_str()); 		glUniform1i(textureUsedLocation,
-		//0);
+		// std::string("used_textureDiffuse").append(std::to_string(offset)).c_str());
+		// glUniform1i(textureUsedLocation, 0);
 		//	}
 		//	textureoffset++;
 		//}
@@ -513,15 +504,15 @@ namespace Engine::Rendering
 		//		std::shared_ptr<Rendering::Texture> texture = this->mesh->bump_textures[offset];
 
 		//		GLuint textureLocation = glGetUniformLocation(shader,
-		//std::string("textureNormal").append(std::to_string(offset)).c_str());
+		// std::string("textureNormal").append(std::to_string(offset)).c_str());
 
 		//		glUniform1i(textureLocation, offset);
 		//		glActiveTexture(GL_TEXTURE0 + textureoffset);
 		//		glBindTexture(GL_TEXTURE_2D, texture->GetTexture());
 
 		//		GLuint textureUsedLocation = glGetUniformLocation(shader,
-		//std::string("used_textureNormal").append(std::to_string(offset)).c_str()); 		glUniform1i(textureUsedLocation,
-		//1);
+		// std::string("used_textureNormal").append(std::to_string(offset)).c_str());
+		// glUniform1i(textureUsedLocation, 1);
 
 		//		if (textureoffset > maxTextures)
 		//		{
@@ -534,8 +525,8 @@ namespace Engine::Rendering
 		//		glBindTexture(GL_TEXTURE_2D, 0);
 
 		//		GLuint textureUsedLocation = glGetUniformLocation(shader,
-		//std::string("used_textureNormal").append(std::to_string(offset)).c_str()); 		glUniform1i(textureUsedLocation,
-		//0);
+		// std::string("used_textureNormal").append(std::to_string(offset)).c_str());
+		// glUniform1i(textureUsedLocation, 0);
 		//	}
 		//	textureoffset++;
 		//}
