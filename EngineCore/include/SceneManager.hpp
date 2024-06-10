@@ -23,10 +23,10 @@ namespace Engine
 		std::unordered_map<std::string, std::shared_ptr<Scene>> scenes{};
 		std::string current_scene = "_default";
 
-		glm::vec3 cameraTransform{}; // XYZ position
-		glm::vec2 cameraHVRotation{}; // Horizontal and Vertical rotation
+		glm::vec3 camera_transform{}; // XYZ position
+		glm::vec2 camera_hv_rotation{}; // Horizontal and Vertical rotation
 
-		glm::vec3 lightPosition{};
+		glm::vec3 light_position{};
 
 		void CameraUpdated();
 

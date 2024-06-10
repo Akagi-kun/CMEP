@@ -25,11 +25,11 @@ namespace Engine::Rendering
 		VulkanPipeline* pipeline = nullptr;
 		VulkanBuffer* vbo = nullptr;
 
-		glm::mat4 matM{};
-		glm::mat4 matV{};
-		glm::mat4 matMV{};
-		glm::mat3 matMV3x3{};
-		glm::mat4 matMVP{};
+		glm::mat4 mat_m{};
+		glm::mat4 mat_v{};
+		glm::mat4 mat_mv{};
+		glm::mat3 mat_mv_3x3{};
+		glm::mat4 mat_mvp{};
 
 		std::shared_ptr<Rendering::Texture> texture;
 		std::shared_ptr<Mesh> mesh;

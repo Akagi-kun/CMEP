@@ -14,34 +14,34 @@ namespace Engine::Scripting::Mappings
 {
 	namespace Functions
 	{
-		int metaLogger_SimpleLog(lua_State* state);
+		int MetaLoggerSimpleLog(lua_State* state);
 
-		int sm_GetCameraHVRotation(lua_State* state);
-		int sm_SetCameraHVRotation(lua_State* state);
-		int sm_GetCameraTransform(lua_State* state);
-		int sm_SetCameraTransform(lua_State* state);
-		int sm_GetLightTransform(lua_State* state);
-		int sm_SetLightTransform(lua_State* state);
-		int sm_AddObject(lua_State* state);
-		int sm_FindObject(lua_State* state);
-		int sm_RemoveObject(lua_State* state);
+		int SmGetCameraHvRotation(lua_State* state);
+		int SmSetCameraHvRotation(lua_State* state);
+		int SmGetCameraTransform(lua_State* state);
+		int SmSetCameraTransform(lua_State* state);
+		int SmGetLightTransform(lua_State* state);
+		int SmSetLightTransform(lua_State* state);
+		int SmAddObject(lua_State* state);
+		int SmFindObject(lua_State* state);
+		int SmRemoveObject(lua_State* state);
 
-		int engine_GetAssetManager(lua_State* state);
-		int engine_SetFramerateTarget(lua_State* state);
+		int EngineGetAssetManager(lua_State* state);
+		int EngineSetFramerateTarget(lua_State* state);
 
-		int textRenderer_UpdateText(lua_State* state);
+		int TextRendererUpdateText(lua_State* state);
 
-		int meshRenderer_UpdateTexture(lua_State* state);
+		int MeshRendererUpdateTexture(lua_State* state);
 
-		int object_GetRotation(lua_State* state);
+		int ObjectGetRotation(lua_State* state);
 
-		int assetManager_GetFont(lua_State* state);
-		int assetManager_GetTexture(lua_State* state);
-		int assetManager_AddTexture(lua_State* state);
+		int AssetManagerGetFont(lua_State* state);
+		int AssetManagerGetTexture(lua_State* state);
+		int AssetManagerAddTexture(lua_State* state);
 
-		int objectFactory_CreateSpriteObject(lua_State* state);
-		int objectFactory_CreateTextObject(lua_State* state);
-		int objectFactory_CreateGeneric3DObject(lua_State* state);
+		int ObjectFactoryCreateSpriteObject(lua_State* state);
+		int ObjectFactoryCreateTextObject(lua_State* state);
+		int ObjectFactoryCreateGeneric3DObject(lua_State* state);
 
 		//int mesh_Mesh(lua_State* state);
 		//int mesh_CreateMeshFromObj(lua_State* state);
@@ -49,8 +49,8 @@ namespace Engine::Scripting::Mappings
 
 	// const uint32_t countMappings = 24;
 
-	extern std::unordered_map<std::string, lua_CFunction> sceneManager_Mappings;
-	extern std::unordered_map<std::string, lua_CFunction> object_Mappings;
+	extern std::unordered_map<std::string, lua_CFunction> scene_manager_mappings;
+	extern std::unordered_map<std::string, lua_CFunction> object_mappings;
 
 	[[deprecated]]
 	extern std::unordered_map<std::string, lua_CFunction> mappings;

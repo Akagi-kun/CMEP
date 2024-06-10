@@ -22,7 +22,7 @@ namespace Engine::Rendering
 		int color_fmt = 4;
 		VkFilter filtering;
 		VkSamplerAddressMode address_mode;
-		VulkanTextureImage* textureImage = nullptr;
+		VulkanTextureImage* texture_image = nullptr;
 	};
 
 	class Texture final : public InternalEngineObject

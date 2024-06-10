@@ -10,8 +10,8 @@ namespace Engine
 {
 	AssetManager::AssetManager()
 	{
-		this->fontFactory = std::make_unique<Factories::FontFactory>(this);
-		this->textureFactory = std::make_unique<Factories::TextureFactory>();
+		this->font_factory = std::make_unique<Factories::FontFactory>(this);
+		this->texture_factory = std::make_unique<Factories::TextureFactory>();
 	}
 
 	AssetManager::~AssetManager()
@@ -34,15 +34,15 @@ namespace Engine
 	void AssetManager::UpdateHeldLogger(std::shared_ptr<Logging::Logger> new_logger)
 	{
 		InternalEngineObject::UpdateHeldLogger(new_logger);
-		this->fontFactory->UpdateHeldLogger(new_logger);
-		this->textureFactory->UpdateHeldLogger(new_logger);
+		this->font_factory->UpdateHeldLogger(new_logger);
+		this->texture_factory->UpdateHeldLogger(new_logger);
 	}
 
 	void AssetManager::UpdateOwnerEngine(Engine* new_owner_engine)
 	{
 		InternalEngineObject::UpdateOwnerEngine(new_owner_engine);
-		this->fontFactory->UpdateOwnerEngine(new_owner_engine);
-		this->textureFactory->UpdateOwnerEngine(new_owner_engine);
+		this->font_factory->UpdateOwnerEngine(new_owner_engine);
+		this->texture_factory->UpdateOwnerEngine(new_owner_engine);
 	}
 
 #pragma region Adding Assets
@@ -54,8 +54,9 @@ namespace Engine
 		VkSamplerAddressMode address_mode
 	)
 	{
-		std::shared_ptr<Rendering::Texture> texture =
-			this->textureFactory->InitFile(path, nullptr, filetype, filtering, address_mode, 0, 0);
+		std::shared_ptr<Rendering::Texture> texture = this->texture_factory->InitFile(
+			path, nullptr, filetype, filtering, address_mode, 0, 0
+		);
 
 		this->textures.emplace(name, texture);
 		this->logger->SimpleLog(
@@ -65,7 +66,7 @@ namespace Engine
 
 	void AssetManager::AddFont(std::string name, std::string path)
 	{
-		std::shared_ptr<Rendering::Font> font = this->fontFactory->InitBMFont(std::move(path));
+		std::shared_ptr<Rendering::Font> font = this->font_factory->InitBMFont(std::move(path));
 		this->fonts.emplace(name, std::move(font));
 	}
 

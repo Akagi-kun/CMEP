@@ -18,87 +18,87 @@ namespace Engine
 		if (this->renderer != nullptr)
 		{
 			this->renderer->Update(
-				this->_pos,
-				this->_size,
-				this->_rotation,
+				this->pos,
+				this->size,
+				this->rotation,
 				this->screenx,
 				this->screeny,
-				this->_parent_pos,
-				this->_parent_rotation,
-				this->_parent_size
+				this->parent_pos,
+				this->parent_rotation,
+				this->parent_size
 			);
 		}
 	}
 
 	void Object::Translate(const glm::vec3 pos) noexcept
 	{
-		this->_pos = pos;
+		this->pos = pos;
 		if (this->renderer != nullptr)
 		{
 			this->renderer->Update(
-				this->_pos,
-				this->_size,
-				this->_rotation,
+				this->pos,
+				this->size,
+				this->rotation,
 				this->screenx,
 				this->screeny,
-				this->_parent_pos,
-				this->_parent_rotation,
-				this->_parent_size
+				this->parent_pos,
+				this->parent_rotation,
+				this->parent_size
 			);
 		}
 
 		for (auto& child : this->children)
 		{
-			child->SetParentPositionRotationSize(this->_pos, this->_rotation, this->_size);
+			child->SetParentPositionRotationSize(this->pos, this->rotation, this->size);
 			child->UpdateRenderer();
 		}
 	}
 
 	void Object::Scale(const glm::vec3 size) noexcept
 	{
-		this->_size = size;
+		this->size = size;
 		if (this->renderer != nullptr)
 		{
 			this->renderer->Update(
-				this->_pos,
-				this->_size,
-				this->_rotation,
+				this->pos,
+				this->size,
+				this->rotation,
 				this->screenx,
 				this->screeny,
-				this->_parent_pos,
-				this->_parent_rotation,
-				this->_parent_size
+				this->parent_pos,
+				this->parent_rotation,
+				this->parent_size
 			);
 		}
 
 		for (auto& child : this->children)
 		{
-			child->SetParentPositionRotationSize(this->_pos, this->_rotation, this->_size);
+			child->SetParentPositionRotationSize(this->pos, this->rotation, this->size);
 			child->UpdateRenderer();
 		}
 	}
 
 	void Object::Rotate(const glm::vec3 rotation) noexcept
 	{
-		this->_rotation = rotation;
+		this->rotation = rotation;
 
 		if (this->renderer != nullptr)
 		{
 			this->renderer->Update(
-				this->_pos,
-				this->_size,
-				this->_rotation,
+				this->pos,
+				this->size,
+				this->rotation,
 				this->screenx,
 				this->screeny,
-				this->_parent_pos,
-				this->_parent_rotation,
-				this->_parent_size
+				this->parent_pos,
+				this->parent_rotation,
+				this->parent_size
 			);
 		}
 
 		for (auto& child : this->children)
 		{
-			child->SetParentPositionRotationSize(this->_pos, this->_rotation, this->_size);
+			child->SetParentPositionRotationSize(this->pos, this->rotation, this->size);
 			child->UpdateRenderer();
 		}
 	}
@@ -108,14 +108,14 @@ namespace Engine
 		if (this->renderer != nullptr)
 		{
 			this->renderer->Update(
-				this->_pos,
-				this->_size,
-				this->_rotation,
+				this->pos,
+				this->size,
+				this->rotation,
 				this->screenx,
 				this->screeny,
-				this->_parent_pos,
-				this->_parent_rotation,
-				this->_parent_size
+				this->parent_pos,
+				this->parent_rotation,
+				this->parent_size
 			);
 		}
 	}
@@ -129,30 +129,30 @@ namespace Engine
 		return 0;
 	}
 
-	glm::vec3 Object::position() const noexcept
+	glm::vec3 Object::Position() const noexcept
 	{
-		return this->_pos;
+		return this->pos;
 	}
-	glm::vec3 Object::size() const noexcept
+	glm::vec3 Object::Size() const noexcept
 	{
-		return this->_size;
+		return this->size;
 	}
-	glm::vec3 Object::rotation() const noexcept
+	glm::vec3 Object::Rotation() const noexcept
 	{
-		return this->_rotation;
+		return this->rotation;
 	}
 
 	void Object::SetParentPositionRotationSize(glm::vec3 position, glm::vec3 rotation, glm::vec3 size)
 	{
-		this->_parent_pos = position;
-		this->_parent_rotation = rotation;
-		this->_parent_size = size;
+		this->parent_pos = position;
+		this->parent_rotation = rotation;
+		this->parent_size = size;
 	}
 
 	void Object::AddChild(Object* object)
 	{
 		object->SetParent(this);
-		object->SetParentPositionRotationSize(this->_pos, this->_rotation, this->_size);
+		object->SetParentPositionRotationSize(this->pos, this->rotation, this->size);
 		object->UpdateRenderer();
 		this->children.push_back(object);
 	}

@@ -6,5 +6,5 @@
 
 namespace Engine::Scripting::API
 {
-	extern std::unordered_map<std::string, lua_CFunction> sceneManager_Mappings;
+	extern std::unordered_map<std::string, lua_CFunction> scene_manager_mappings;
 }

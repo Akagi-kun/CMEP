@@ -10,7 +10,7 @@ birbIsVelociting = true;
 onKeyDown = function(event)
 	-- check for esc
 	if event.keycode == 256 then
-		cmepapi.engine_Stop(event.engine);
+		cmepapi.EngineStop(event.engine);
 		return 0;
 	end
 
@@ -90,8 +90,8 @@ onUpdate = function(event)
 	deltaTimeAvg = deltaTimeAvg + event.deltaTime;
 	deltaTimeCount = deltaTimeCount + 1;
 
-	local asset_manager = cmepapi.engine_GetAssetManager(event.engine);
-	local scene_manager = cmepapi.engine_GetSceneManager(event.engine);
+	local asset_manager = cmepapi.EngineGetAssetManager(event.engine);
+	local scene_manager = cmepapi.EngineGetSceneManager(event.engine);
 
 	-- Update frametime counter, recommend to leave this here for debugging purposes
 	if deltaTimeCount >= 30 then
@@ -99,7 +99,7 @@ onUpdate = function(event)
 		--cmepmeta.logger.SimpleLog(string.format("Test (%f, %f) (%f, %f)", pxToScreenX(80), pxToScreenY(400), 80/1100, 400/720))
 		--local object = cmepapi.sm_FindObject(scene_manager, "_debug_info");
 		local object = scene_manager:FindObject("_debug_info");
-		cmepapi.textRenderer_UpdateText(object.renderer, "FT: "..tostring(deltaTimeAvg / deltaTimeCount * 1000).." ms");
+		cmepapi.TextRendererUpdateText(object.renderer, "FT: "..tostring(deltaTimeAvg / deltaTimeCount * 1000).." ms");
 		
 		deltaTimeAvg = 0;
 		deltaTimeCount = 0;
@@ -112,12 +112,12 @@ onUpdate = function(event)
 		if spawnPipeSinceLast > spawnPipeEvery then
 			-- Spawn new pipes
 
-			--local object1 = cmepapi.objectFactory_CreateSpriteObject(scene_manager, 1.0, offset / 720, 80 / 1100, 400 / 720, asset_manager, "textures/pipe_down.png");
+			--local object1 = cmepapi.ObjectFactoryCreateSpriteObject(scene_manager, 1.0, offset / 720, 80 / 1100, 400 / 720, asset_manager, "textures/pipe_down.png");
 			local object1 = scene_manager:AddTemplatedObject("sprite_pipe_down"..tostring(spawnPipeLastIdx + 1), "pipe_down");
 			object1:Translate(1.0, pxToScreenY(offset), -0.15);
 			object1:Scale(pxToScreenX(pipe_xSize), pxToScreenY(pipe_ySize), 1.0);
 
-			--local object2 = cmepapi.objectFactory_CreateSpriteObject(scene_manager, 1.0, (400 + 200 + offset) / 720, 80 / 1100, 400 / 720, asset_manager, "textures/pipe_up.png");
+			--local object2 = cmepapi.ObjectFactoryCreateSpriteObject(scene_manager, 1.0, (400 + 200 + offset) / 720, 80 / 1100, 400 / 720, asset_manager, "textures/pipe_up.png");
 			local object2 = scene_manager:AddTemplatedObject("sprite_pipe_up"..tostring(spawnPipeLastIdx + 1), "pipe_up");
 			object2:Translate(1.0, pxToScreenY(pipe_ySize + pipe_spacing + offset), -0.15);
 			object2:Scale(pxToScreenX(pipe_xSize), pxToScreenY(pipe_ySize), 1.0);
@@ -149,7 +149,7 @@ onUpdate = function(event)
 				then
 					gameIsGameOver = true;
 					local font = asset_manager:GetFont("myfont");
-					local object = cmepapi.objectFactory_CreateTextObject(scene_manager, 0.4, 0.4, -0.01, 32, "GAME OVER", font);
+					local object = cmepapi.ObjectFactoryCreateTextObject(scene_manager, 0.4, 0.4, -0.01, 32, "GAME OVER", font);
 					scene_manager:AddObject("text_gameover", object);
 					return 0;
 				end
@@ -161,7 +161,7 @@ onUpdate = function(event)
 					gameScore = gameScore + 1;
 					gameLastScoredPipeIdx = pipeIdx;
 					local score_object = scene_manager:FindObject("text_score");
-					cmepapi.textRenderer_UpdateText(score_object.renderer, tostring(gameScore));
+					cmepapi.TextRendererUpdateText(score_object.renderer, tostring(gameScore));
 
 					pipeMoveSpeed = pipeMoveSpeed * 1.01;
 					pipe_spacing = pipe_spacing * 0.990;
@@ -187,7 +187,7 @@ onUpdate = function(event)
 			cmepmeta.logger.SimpleLog(string.format("Game over!"))
 
 			local font = asset_manager:GetFont("myfont");
-			local object = cmepapi.objectFactory_CreateTextObject(scene_manager, 0.4, 0.4, -0.01, 32, "GAME OVER", font);
+			local object = cmepapi.ObjectFactoryCreateTextObject(scene_manager, 0.4, 0.4, -0.01, 32, "GAME OVER", font);
 			scene_manager:AddObject("text_gameover", object);
 			return 0;
 		end
@@ -226,19 +226,19 @@ onUpdate = function(event)
 end
 
 onInit = function(event)
-	cmepapi.engine_SetFramerateTarget(event.engine, 0); -- VSYNC enabled
+	cmepapi.EngineSetFramerateTarget(event.engine, 0); -- VSYNC enabled
 
 	-- Get managers
-	local asset_manager = cmepapi.engine_GetAssetManager(event.engine);
-	local scene_manager = cmepapi.engine_GetSceneManager(event.engine);
+	local asset_manager = cmepapi.EngineGetAssetManager(event.engine);
+	local scene_manager = cmepapi.EngineGetSceneManager(event.engine);
 
 	-- Create frametime counter and add it to scene
 	local font = asset_manager:GetFont("myfont");
-	local object = cmepapi.objectFactory_CreateTextObject(scene_manager, 0.0, 0.0, -0.01, 22, "test", font);
+	local object = cmepapi.ObjectFactoryCreateTextObject(scene_manager, 0.0, 0.0, -0.01, 22, "test", font);
 	scene_manager:AddObject("_debug_info", object);
 	
 	-- Add score
-	local object = cmepapi.objectFactory_CreateTextObject(scene_manager, 0.5, 0.0, -0.01, 64, "0", font);
+	local object = cmepapi.ObjectFactoryCreateTextObject(scene_manager, 0.5, 0.0, -0.01, 64, "0", font);
 	scene_manager:AddObject("text_score", object);
 
 	-- Add birb

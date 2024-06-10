@@ -1,11 +1,11 @@
-#include "glm/glm.hpp"
-#include "Rendering/TextRenderer.hpp"
-#include "Rendering/MeshRenderer.hpp"
 #include "Scripting/Mappings.hpp"
+#include "Rendering/MeshRenderer.hpp"
+#include "Rendering/TextRenderer.hpp"
 #include "Rendering/Texture.hpp"
+#include "glm/glm.hpp"
 
-#include "SceneManager.hpp"
 #include "AssetManager.hpp"
+#include "SceneManager.hpp"
 
 #include "Factories/ObjectFactory.hpp"
 
@@ -17,7 +17,7 @@
 
 #ifdef CMEP_LUAMAPPING_DEFINE
 #undef CMEP_LUAMAPPING_DEFINE
-#define CMEP_LUAMAPPING_DEFINE(mapping) {#mapping, Functions::mapping }
+#define CMEP_LUAMAPPING_DEFINE(mapping) {#mapping, Functions::mapping}
 #endif
 
 // Prefixes for logging messages
@@ -30,34 +30,32 @@ namespace Engine::Scripting::Mappings
 	{
 #pragma region Meta
 
-	int metaLogger_SimpleLog(lua_State* state)
-	{
-		const char* string = lua_tostring(state, 1);
-
-		lua_getglobal(state, "cmepmeta");
-		lua_getfield(state, -1, "logger");
-		lua_getfield(state, -1, "_smart_ptr");
-		std::weak_ptr<Logging::Logger> logger = *(std::weak_ptr<Logging::Logger>*)lua_touserdata(state, -1);
-
-		if(auto locked_logger = logger.lock())
+		int MetaLoggerSimpleLog(lua_State* state)
 		{
-			locked_logger->SimpleLog(Logging::LogLevel::Info, LOGPFX_CURRENT "%s", string);
-		}
-		else
-		{
-			return luaL_error(state, "Could not lock global meta logger");
-		}
+			const char* string = lua_tostring(state, 1);
 
-		return 0;
-	}
+			lua_getglobal(state, "cmepmeta");
+			lua_getfield(state, -1, "logger");
+			lua_getfield(state, -1, "_smart_ptr");
+			std::weak_ptr<Logging::Logger> logger = *(std::weak_ptr<Logging::Logger>*)lua_touserdata(state, -1);
+
+			if (auto locked_logger = logger.lock())
+			{
+				locked_logger->SimpleLog(Logging::LogLevel::Info, LOGPFX_CURRENT "%s", string);
+			}
+			else
+			{
+				return luaL_error(state, "Could not lock global meta logger");
+			}
+
+			return 0;
+		}
 
 #pragma endregion
 
-
-
 #pragma region Engine
 
-		int engine_GetAssetManager(lua_State* state)
+		int EngineGetAssetManager(lua_State* state)
 		{
 			Engine* engine = *(Engine**)lua_touserdata(state, 1);
 
@@ -69,11 +67,13 @@ namespace Engine::Scripting::Mappings
 			}
 			else
 			{
-				std::weak_ptr<Logging::Logger> logger = API::LuaObjectFactories::MetaLogger_Factory(state);
+				std::weak_ptr<Logging::Logger> logger = API::LuaObjectFactories::MetaLoggerFactory(state);
 
-				if(auto locked_logger = logger.lock())
+				if (auto locked_logger = logger.lock())
 				{
-					locked_logger->SimpleLog(Logging::LogLevel::Warning, LOGPFX_CURRENT "AssetManager requested but is expired!");
+					locked_logger->SimpleLog(
+						Logging::LogLevel::Warning, LOGPFX_CURRENT "AssetManager requested but is expired!"
+					);
 				}
 
 				return luaL_error(state, "AssetManager is expired");
@@ -82,7 +82,7 @@ namespace Engine::Scripting::Mappings
 			return 1;
 		}
 
-		int engine_GetSceneManager(lua_State* state)
+		int EngineGetSceneManager(lua_State* state)
 		{
 			Engine* engine = *(Engine**)lua_touserdata(state, 1);
 
@@ -94,11 +94,13 @@ namespace Engine::Scripting::Mappings
 			}
 			else
 			{
-				std::weak_ptr<Logging::Logger> logger = API::LuaObjectFactories::MetaLogger_Factory(state);
+				std::weak_ptr<Logging::Logger> logger = API::LuaObjectFactories::MetaLoggerFactory(state);
 
-				if(auto locked_logger = logger.lock())
+				if (auto locked_logger = logger.lock())
 				{
-					locked_logger->SimpleLog(Logging::LogLevel::Warning, LOGPFX_CURRENT "SceneManager requested but is expired!");
+					locked_logger->SimpleLog(
+						Logging::LogLevel::Warning, LOGPFX_CURRENT "SceneManager requested but is expired!"
+					);
 				}
 
 				return luaL_error(state, "SceneManager is expired");
@@ -107,7 +109,7 @@ namespace Engine::Scripting::Mappings
 			return 1;
 		}
 
-		int engine_SetFramerateTarget(lua_State* state)
+		int EngineSetFramerateTarget(lua_State* state)
 		{
 			Engine* engine = *(Engine**)lua_touserdata(state, 1);
 
@@ -118,22 +120,20 @@ namespace Engine::Scripting::Mappings
 			return 0;
 		}
 
-		int engine_Stop(lua_State* state)
+		int EngineStop(lua_State* state)
 		{
 			Engine* engine = *(Engine**)lua_touserdata(state, 1);
 
 			engine->Stop();
-			
+
 			return 0;
 		}
 
 #pragma endregion
 
-
-
 #pragma region TextRenderer
 
-		int textRenderer_UpdateText(lua_State* state)
+		int TextRendererUpdateText(lua_State* state)
 		{
 			lua_getfield(state, 1, "_pointer");
 			Rendering::IRenderer* renderer = *(Rendering::IRenderer**)lua_touserdata(state, -1);
@@ -150,17 +150,17 @@ namespace Engine::Scripting::Mappings
 
 #pragma endregion
 
-
-
 #pragma region MeshRenderer
 
-		int meshRenderer_UpdateTexture(lua_State* state)
+		int MeshRendererUpdateTexture(lua_State* state)
 		{
 			lua_getfield(state, 1, "_pointer");
 			Rendering::IRenderer* renderer = *(Rendering::IRenderer**)lua_touserdata(state, -1);
 
 			lua_getfield(state, 2, "_smart_ptr");
-			std::shared_ptr<Rendering::Texture> texture = *(std::shared_ptr<Rendering::Texture>*)lua_touserdata(state, -1);
+			std::shared_ptr<Rendering::Texture> texture = *(std::shared_ptr<Rendering::Texture>*)lua_touserdata(
+				state, -1
+			);
 
 			Rendering::RendererSupplyData texture_supply(Rendering::RendererSupplyDataType::TEXTURE, texture);
 			renderer->SupplyData(texture_supply);
@@ -171,11 +171,9 @@ namespace Engine::Scripting::Mappings
 
 #pragma endregion
 
-
-
 #pragma region ObjectFactory
 
-		int objectFactory_CreateSpriteObject(lua_State* state)
+		int ObjectFactoryCreateSpriteObject(lua_State* state)
 		{
 			lua_getfield(state, 1, "_smart_ptr");
 			std::weak_ptr<SceneManager> scene_manager = *(std::weak_ptr<SceneManager>*)lua_touserdata(state, -1);
@@ -189,9 +187,11 @@ namespace Engine::Scripting::Mappings
 			lua_getfield(state, 7, "_pointer");
 			AssetManager* ptr_am = *(AssetManager**)lua_touserdata(state, -1);
 			std::string sprite_name = lua_tostring(state, 8);
-			//Rendering::Texture* sprite = *(Rendering::Texture**)lua_touserdata(state, -1);
+			// Rendering::Texture* sprite = *(Rendering::Texture**)lua_touserdata(state, -1);
 
-			Object* obj = ObjectFactory::CreateSpriteObject(scene_manager, x, y, z, sizex, sizey, ptr_am->GetTexture(sprite_name));
+			Object* obj = ObjectFactory::CreateSpriteObject(
+				scene_manager, x, y, z, sizex, sizey, ptr_am->GetTexture(sprite_name)
+			);
 
 			if (obj != nullptr)
 			{
@@ -199,11 +199,19 @@ namespace Engine::Scripting::Mappings
 			}
 			else
 			{
-				std::weak_ptr<Logging::Logger> logger = API::LuaObjectFactories::MetaLogger_Factory(state);
+				std::weak_ptr<Logging::Logger> logger = API::LuaObjectFactories::MetaLoggerFactory(state);
 
-				if(auto locked_logger = logger.lock())
+				if (auto locked_logger = logger.lock())
 				{
-					locked_logger->SimpleLog(Logging::LogLevel::Warning, "Lua: Object creation failed, ObjectFactory::CreateSpriteObject returned nullptr! Params: %f %f %f %f", x, y, sizex, sizey);
+					locked_logger->SimpleLog(
+						Logging::LogLevel::Warning,
+						"Lua: Object creation failed, ObjectFactory::CreateSpriteObject returned nullptr! Params: %f "
+						"%f %f %f",
+						x,
+						y,
+						sizex,
+						sizey
+					);
 				}
 
 				return luaL_error(state, "ObjectFactory returned nullptr");
@@ -212,7 +220,7 @@ namespace Engine::Scripting::Mappings
 			return 1;
 		}
 
-		int objectFactory_CreateTextObject(lua_State* state)
+		int ObjectFactoryCreateTextObject(lua_State* state)
 		{
 			lua_getfield(state, 1, "_smart_ptr");
 			std::weak_ptr<SceneManager> scene_manager = *(std::weak_ptr<SceneManager>*)lua_touserdata(state, -1);
@@ -235,11 +243,19 @@ namespace Engine::Scripting::Mappings
 			}
 			else
 			{
-				std::weak_ptr<Logging::Logger> logger = API::LuaObjectFactories::MetaLogger_Factory(state);
+				std::weak_ptr<Logging::Logger> logger = API::LuaObjectFactories::MetaLoggerFactory(state);
 
-				if(auto locked_logger = logger.lock())
+				if (auto locked_logger = logger.lock())
 				{
-					locked_logger->SimpleLog(Logging::LogLevel::Warning, "Lua: Object creation failed, ObjectFactory::CreateTextObject returned nullptr! Params: %f %f %u '%s'", x, y, size, text.c_str());
+					locked_logger->SimpleLog(
+						Logging::LogLevel::Warning,
+						"Lua: Object creation failed, ObjectFactory::CreateTextObject returned nullptr! Params: %f %f "
+						"%u '%s'",
+						x,
+						y,
+						size,
+						text.c_str()
+					);
 				}
 
 				return luaL_error(state, "ObjectFactory returned nullptr");
@@ -248,7 +264,7 @@ namespace Engine::Scripting::Mappings
 			return 1;
 		}
 
-		int objectFactory_CreateGeneric3DObject(lua_State* state)
+		int ObjectFactoryCreateGeneric3DObject(lua_State* state)
 		{
 			lua_getfield(state, 1, "_smart_ptr");
 			std::weak_ptr<SceneManager> scene_manager = *(std::weak_ptr<SceneManager>*)lua_touserdata(state, -1);
@@ -266,7 +282,9 @@ namespace Engine::Scripting::Mappings
 			std::shared_ptr<Rendering::Mesh> mesh = std::make_shared<Rendering::Mesh>();
 			mesh->CreateMeshFromObj(std::string(lua_tostring(state, 11)));
 
-			Object* obj = ObjectFactory::CreateGeneric3DObject(scene_manager, x, y, z, xsize, ysize, zsize, xrot, yrot, zrot, mesh);
+			Object* obj = ObjectFactory::CreateGeneric3DObject(
+				scene_manager, x, y, z, xsize, ysize, zsize, xrot, yrot, zrot, mesh
+			);
 
 			if (obj != nullptr)
 			{
@@ -280,21 +298,21 @@ namespace Engine::Scripting::Mappings
 			return 1;
 		}
 #pragma endregion
-	
-	}
+
+	} // namespace Functions
 
 	std::unordered_map<std::string, lua_CFunction> mappings = {
-		CMEP_LUAMAPPING_DEFINE(engine_GetAssetManager),
-		CMEP_LUAMAPPING_DEFINE(engine_SetFramerateTarget),
-		CMEP_LUAMAPPING_DEFINE(engine_GetSceneManager),
-		CMEP_LUAMAPPING_DEFINE(engine_Stop),
+		CMEP_LUAMAPPING_DEFINE(EngineGetAssetManager),
+		CMEP_LUAMAPPING_DEFINE(EngineSetFramerateTarget),
+		CMEP_LUAMAPPING_DEFINE(EngineGetSceneManager),
+		CMEP_LUAMAPPING_DEFINE(EngineStop),
 
-		CMEP_LUAMAPPING_DEFINE(textRenderer_UpdateText),
+		CMEP_LUAMAPPING_DEFINE(TextRendererUpdateText),
 
-		CMEP_LUAMAPPING_DEFINE(meshRenderer_UpdateTexture),
+		CMEP_LUAMAPPING_DEFINE(MeshRendererUpdateTexture),
 
-		CMEP_LUAMAPPING_DEFINE(objectFactory_CreateSpriteObject),
-		CMEP_LUAMAPPING_DEFINE(objectFactory_CreateTextObject),
-		CMEP_LUAMAPPING_DEFINE(objectFactory_CreateGeneric3DObject)
+		CMEP_LUAMAPPING_DEFINE(ObjectFactoryCreateSpriteObject),
+		CMEP_LUAMAPPING_DEFINE(ObjectFactoryCreateTextObject),
+		CMEP_LUAMAPPING_DEFINE(ObjectFactoryCreateGeneric3DObject)
 	};
-}
+} // namespace Engine::Scripting::Mappings

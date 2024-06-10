@@ -32,21 +32,15 @@ namespace Engine
 		return &(this->objects_sorted);
 	}
 
-	static bool InternalSort_CmpFunction(std::pair<std::string, Object*>& a, std::pair<std::string, Object*>& b)
+	static bool InternalSortCmpFunction(std::pair<std::string, Object*>& a, std::pair<std::string, Object*>& b)
 	{
-		const bool isA_UI = a.second->renderer->GetIsUI();
-		const bool isB_UI = b.second->renderer->GetIsUI();
+		const bool is_a_ui = a.second->renderer->GetIsUI();
+		const bool is_b_ui = b.second->renderer->GetIsUI();
 
-		if (isA_UI && isB_UI)
+		if (is_a_ui && is_b_ui)
 		{
-			float a_z = a.second->position().z + 10.0f;
-			float b_z = b.second->position().z + 10.0f;
-			/*
-						if ((a.first.rfind("sprite_pipe", 0) == 0 || b.first.rfind("sprite_pipe", 0) == 0) &&
-							(a.first.rfind("background", 0) || b.first.rfind("background", 0)))
-						{
-							printf("%s %lf %s %lf\n", a.first.c_str(), a_z, b.first.c_str(), b_z);
-						} */
+			float a_z = a.second->Position().z + 10.0f;
+			float b_z = b.second->Position().z + 10.0f;
 
 			if (a_z < b_z)
 			{
@@ -74,7 +68,7 @@ namespace Engine
 			a.push_back(it);
 		}
 
-		std::sort(a.begin(), a.end(), InternalSort_CmpFunction);
+		std::sort(a.begin(), a.end(), InternalSortCmpFunction);
 
 		objects.clear();
 
@@ -99,9 +93,9 @@ namespace Engine
 
 			ObjectTemplate object_template = templated_object->second;
 
-			switch(object_template.withRenderer)
+			switch (object_template.with_renderer)
 			{
-			case RendererType::SPRITE:
+				case RendererType::SPRITE:
 				{
 					object = new Object();
 					object->renderer = new Rendering::SpriteRenderer(this->owner_engine);
@@ -114,7 +108,7 @@ namespace Engine
 				}
 			}
 
-			for(auto& supply : object_template.supplyList)
+			for (auto& supply : object_template.supply_list)
 			{
 				object->renderer->SupplyData(supply);
 			}
@@ -165,12 +159,12 @@ namespace Engine
 			delete object;
 		}
 
-		size_t returnVal = this->objects.erase(name);
+		size_t return_val = this->objects.erase(name);
 
 		// TODO: Bad performance? a resort should be done after all removals
 		Scene::InternalSort(this->objects, this->objects_sorted);
 
-		return returnVal;
+		return return_val;
 	}
 
 	void Scene::LoadTemplatedObject(std::string name, ObjectTemplate object)

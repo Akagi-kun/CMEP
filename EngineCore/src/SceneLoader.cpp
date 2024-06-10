@@ -17,7 +17,7 @@ namespace Engine
 {
 	namespace EventHandling
 	{
-		const std::map<std::string, EventType> eventTypeMap = {
+		const std::map<std::string, EventType> event_type_map = {
 			{"onInit", EventHandling::EventType::ON_INIT},
 			{"onMouseMoved", EventHandling::EventType::ON_MOUSEMOVED},
 			{"onKeyDown", EventHandling::EventType::ON_KEYDOWN},
@@ -79,7 +79,7 @@ namespace Engine
 		this->LoadSceneAssets(data, scene_path);
 
 		// Get window config
-		const Rendering::GLFWwindowData windowConfig = this->owner_engine->GetRenderingEngine()->GetWindow();
+		const Rendering::GLFWwindowData window_config = this->owner_engine->GetRenderingEngine()->GetWindow();
 
 		if (auto locked_asset_manager = asset_manager.lock())
 		{
@@ -92,9 +92,9 @@ namespace Engine
 				std::string event_handler_file = event_handler_entry["file"].get<std::string>();
 				std::string event_handler_function = event_handler_entry["function"].get<std::string>();
 
-				const auto& mappedType = EventHandling::eventTypeMap.find(event_handler_type);
+				const auto& mappedType = EventHandling::event_type_map.find(event_handler_type);
 
-				if (mappedType != EventHandling::eventTypeMap.end())
+				if (mappedType != EventHandling::event_type_map.end())
 				{
 					event_type = mappedType->second;
 					this->logger->SimpleLog(
@@ -149,11 +149,11 @@ namespace Engine
 
 					if (pos_aspixel[0].get<bool>())
 					{
-						position.x /= windowConfig.windowX;
+						position.x /= window_config.windowX;
 					}
 					if (pos_aspixel[1].get<bool>())
 					{
-						position.y /= windowConfig.windowY;
+						position.y /= window_config.windowY;
 					}
 				}
 				else if (scene_entry["pos_sub_aspixel"].is_array())
@@ -162,11 +162,11 @@ namespace Engine
 
 					if (pos_sub_aspixel[0].get<bool>())
 					{
-						position.x = (windowConfig.windowX - position.x) / windowConfig.windowX;
+						position.x = (window_config.windowX - position.x) / window_config.windowX;
 					}
 					if (pos_sub_aspixel[1].get<bool>())
 					{
-						position.y = (windowConfig.windowY - position.y) / windowConfig.windowY;
+						position.y = (window_config.windowY - position.y) / window_config.windowY;
 					}
 				}
 
@@ -181,12 +181,12 @@ namespace Engine
 
 					if (scale_aspixel[0].get<bool>())
 					{
-						scale.x /= windowConfig.windowX;
+						scale.x /= window_config.windowX;
 					}
 
 					if (scale_aspixel[1].get<bool>())
 					{
-						scale.y /= windowConfig.windowY;
+						scale.y /= window_config.windowY;
 					}
 				}
 
@@ -247,16 +247,16 @@ namespace Engine
 
 	RendererType SceneLoader::InterpretRendererType(nlohmann::json& from)
 	{
-		static const std::map<std::string, RendererType> rendererTypeMap = {
+		static const std::map<std::string, RendererType> renderer_type_map = {
 			{"text", RendererType::TEXT},
 			{"sprite", RendererType::SPRITE},
 			{"mesh", RendererType::MESH},
 		};
 
 		std::string renderer_type = from.get<std::string>();
-		const auto& found_renderer_type = rendererTypeMap.find(renderer_type);
+		const auto& found_renderer_type = renderer_type_map.find(renderer_type);
 
-		if (found_renderer_type != rendererTypeMap.end())
+		if (found_renderer_type != renderer_type_map.end())
 		{
 			return found_renderer_type->second;
 		}
@@ -280,7 +280,7 @@ namespace Engine
 
 				if (RendererType::MIN_ENUM < useRendererType && useRendererType < RendererType::MAX_ENUM)
 				{
-					object.withRenderer = useRendererType;
+					object.with_renderer = useRendererType;
 				}
 				else
 				{
@@ -293,10 +293,12 @@ namespace Engine
 
 				for (auto& texture_supply_entry : template_entry["renderer_supply_textures"])
 				{
-					std::shared_ptr<Rendering::Texture> texture = locked_asset_manager->GetTexture(texture_supply_entry.get<std::string>());
+					std::shared_ptr<Rendering::Texture> texture = locked_asset_manager->GetTexture(
+						texture_supply_entry.get<std::string>()
+					);
 
 					Rendering::RendererSupplyData texture_supply(Rendering::RendererSupplyDataType::TEXTURE, texture);
-					object.supplyList.insert(object.supplyList.end(), texture_supply);
+					object.supply_list.insert(object.supply_list.end(), texture_supply);
 				}
 
 				std::string name = template_entry["name"].get<std::string>();
@@ -310,12 +312,12 @@ namespace Engine
 	{
 		std::weak_ptr<AssetManager> asset_manager = this->owner_engine->GetAssetManager();
 
-		static const std::map<std::string, VkFilter> filteringMap = {
+		static const std::map<std::string, VkFilter> filtering_map = {
 			{"nearest", VK_FILTER_NEAREST},
 			{"linear", VK_FILTER_LINEAR},
 		};
 
-		static const std::map<std::string, VkSamplerAddressMode> samplingMap = {
+		static const std::map<std::string, VkSamplerAddressMode> sampling_map = {
 			{"repeat", VK_SAMPLER_ADDRESS_MODE_REPEAT},
 			{"clamp", VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE},
 			{"clamp_border", VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_BORDER},
@@ -340,9 +342,9 @@ namespace Engine
 						{
 							std::string filtering_value = asset_entry["filtering"].get<std::string>();
 
-							const auto& found_filtering = filteringMap.find(filtering_value);
+							const auto& found_filtering = filtering_map.find(filtering_value);
 
-							if (found_filtering != filteringMap.end())
+							if (found_filtering != filtering_map.end())
 							{
 								this->logger->SimpleLog(
 									Logging::LogLevel::Debug2,
@@ -367,9 +369,9 @@ namespace Engine
 						{
 							std::string sampling_mode_value = asset_entry["sampling_mode"].get<std::string>();
 
-							const auto& found_sampling_mode = samplingMap.find(sampling_mode_value);
+							const auto& found_sampling_mode = sampling_map.find(sampling_mode_value);
 
-							if (found_sampling_mode != samplingMap.end())
+							if (found_sampling_mode != sampling_map.end())
 							{
 								this->logger->SimpleLog(
 									Logging::LogLevel::Debug2,

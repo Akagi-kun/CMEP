@@ -29,9 +29,9 @@ namespace Engine::EventHandling
 	public:
 		const EventType event_type;
 
-		Engine* raisedFrom;
+		Engine* raised_from;
 
-		double deltaTime = 0.0;
+		double delta_time = 0.0;
 		union {
 			uint16_t keycode = 0; // ON_KEYDOWN/ON_KEYUP events
 			struct

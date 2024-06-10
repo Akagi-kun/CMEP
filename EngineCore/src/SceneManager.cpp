@@ -8,8 +8,8 @@ namespace Engine
 	SceneManager::SceneManager(std::shared_ptr<Logging::Logger> logger)
 	{
 		// Reset transform and rotation
-		this->cameraTransform = glm::vec3(2.0, 0, 1.0);
-		this->cameraHVRotation = glm::vec2(0.0, 0.0);
+		this->camera_transform = glm::vec3(2.0, 0, 1.0);
+		this->camera_hv_rotation = glm::vec2(0.0, 0.0);
 
 		this->logger = logger;
 
@@ -80,44 +80,44 @@ namespace Engine
 
 	glm::vec3 SceneManager::GetLightTransform()
 	{
-		return this->lightPosition;
+		return this->light_position;
 	}
 
 	void SceneManager::SetLightTransform(glm::vec3 newpos)
 	{
-		this->lightPosition = newpos;
+		this->light_position = newpos;
 	}
 
 	glm::vec3 SceneManager::GetCameraTransform()
 	{
-		return this->cameraTransform;
+		return this->camera_transform;
 	}
 
 	glm::vec2 SceneManager::GetCameraHVRotation()
 	{
-		return this->cameraHVRotation;
+		return this->camera_hv_rotation;
 	}
 
 	glm::mat4 SceneManager::GetCameraViewMatrix()
 	{
 		glm::vec3 direction = glm::vec3(
-			cos(this->cameraHVRotation.x) * cos(this->cameraHVRotation.y),
-			sin(this->cameraHVRotation.y),
-			sin(this->cameraHVRotation.x) * cos(this->cameraHVRotation.y)
+			cos(this->camera_hv_rotation.x) * cos(this->camera_hv_rotation.y),
+			sin(this->camera_hv_rotation.y),
+			sin(this->camera_hv_rotation.x) * cos(this->camera_hv_rotation.y)
 		);
 
 		glm::vec3 front = glm::normalize(direction);
 		glm::vec3 right = glm::normalize(glm::cross(direction, glm::vec3(0, 1, 0)));
 		glm::vec3 up = glm::normalize(glm::cross(right, front));
 
-		glm::mat4 ViewMatrix = glm::lookAt(this->cameraTransform, this->cameraTransform + front, up);
+		glm::mat4 view_matrix = glm::lookAt(this->camera_transform, this->camera_transform + front, up);
 
-		return ViewMatrix;
+		return view_matrix;
 	}
 
 	void SceneManager::SetCameraTransform(glm::vec3 transform)
 	{
-		this->cameraTransform = transform;
+		this->camera_transform = transform;
 		this->CameraUpdated();
 	}
 
@@ -132,7 +132,7 @@ namespace Engine
 			hvrotation.y = 4.5f;
 		}
 
-		this->cameraHVRotation = hvrotation;
+		this->camera_hv_rotation = hvrotation;
 		this->CameraUpdated();
 	}
 } // namespace Engine

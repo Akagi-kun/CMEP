@@ -34,7 +34,7 @@ namespace Engine::Rendering
 			pipeline_settings, "game/shaders/vulkan/meshrenderer_vert.spv", "game/shaders/vulkan/meshrenderer_frag.spv"
 		);
 
-		this->matMVP = glm::mat4();
+		this->mat_mvp = glm::mat4();
 	}
 
 	MeshRenderer::~MeshRenderer()
@@ -85,16 +85,16 @@ namespace Engine::Rendering
 		glm::vec3 parent_size
 	)
 	{
-		this->_pos = pos;
-		this->_size = size;
-		this->_rotation = rotation;
+		this->pos = pos;
+		this->size = size;
+		this->rotation = rotation;
 
-		this->_parent_pos = parent_position;
-		this->_parent_rotation = parent_rotation;
-		this->_parent_size = parent_size;
+		this->parent_pos = parent_position;
+		this->parent_rotation = parent_rotation;
+		this->parent_size = parent_size;
 
-		this->_screenx = screenx;
-		this->_screeny = screeny;
+		this->screenx = screenx;
+		this->screeny = screeny;
 
 		this->has_updated_mesh = false;
 	}
@@ -110,40 +110,40 @@ namespace Engine::Rendering
 
 		VulkanRenderingEngine* renderer = this->owner_engine->GetRenderingEngine();
 
-		glm::mat4 Projection = glm::perspective(
-			glm::radians(45.0f), (float)this->_screenx / this->_screeny, 0.1f, 100.0f
+		glm::mat4 projection = glm::perspective(
+			glm::radians(45.0f), (float)this->screenx / this->screeny, 0.1f, 100.0f
 		);
-		Projection[1][1] *= -1;
+		projection[1][1] *= -1;
 
-		glm::mat4 View;
+		glm::mat4 view;
 		if (auto locked_scene_manager = this->scene_manager.lock())
 		{
-			View = locked_scene_manager->GetCameraViewMatrix();
+			view = locked_scene_manager->GetCameraViewMatrix();
 		}
 
-		if (this->_parent_size.x == 0.0f && this->_parent_size.y == 0.0f && this->_parent_size.z == 0.0f)
+		if (this->parent_size.x == 0.0f && this->parent_size.y == 0.0f && this->parent_size.z == 0.0f)
 		{
-			this->_parent_size = glm::vec3(1, 1, 1);
+			this->parent_size = glm::vec3(1, 1, 1);
 		}
 
-		glm::quat ModelRotation = glm::quat(glm::radians(this->_rotation));
-		glm::quat ParentRotation = glm::quat(glm::radians(this->_parent_rotation));
-		glm::mat4 Model = glm::scale(
+		glm::quat model_rotation = glm::quat(glm::radians(this->rotation));
+		glm::quat parent_rotation = glm::quat(glm::radians(this->parent_rotation));
+		glm::mat4 model = glm::scale(
 			glm::translate(
 				glm::scale(
-					glm::translate(glm::mat4(1.0f), this->_parent_pos) * glm::mat4_cast(ParentRotation),
-					this->_parent_size
+					glm::translate(glm::mat4(1.0f), this->parent_pos) * glm::mat4_cast(parent_rotation),
+					this->parent_size
 				),
-				this->_pos
-			) * glm::mat4_cast(ModelRotation),
-			this->_size
+				this->pos
+			) * glm::mat4_cast(model_rotation),
+			this->size
 		);
 
-		this->matM = Model;
-		this->matV = View;
-		this->matMV = View * Model;
-		this->matMV3x3 = glm::mat3(View * Model);
-		this->matMVP = Projection * View * Model;
+		this->mat_m = model;
+		this->mat_v = view;
+		this->mat_mv = view * model;
+		this->mat_mv_3x3 = glm::mat3(view * model);
+		this->mat_mvp = projection * view * model;
 
 		if (!this->has_updated_meshdata)
 		{
@@ -186,29 +186,29 @@ namespace Engine::Rendering
 
 			this->vbo_vert_count = generated_mesh.size();
 
-			std::vector<VkDescriptorImageInfo> diffuseImageBufferInfos{};
-			diffuseImageBufferInfos.resize(this->mesh->diffuse_textures.size());
-			for (size_t diffuseTextureIndex = 0; diffuseTextureIndex < this->mesh->diffuse_textures.size();
-				 diffuseTextureIndex++)
+			std::vector<VkDescriptorImageInfo> diffuse_image_buffer_infos{};
+			diffuse_image_buffer_infos.resize(this->mesh->diffuse_textures.size());
+			for (size_t diffuse_texture_index = 0; diffuse_texture_index < this->mesh->diffuse_textures.size();
+				 diffuse_texture_index++)
 			{
 				// Logging::GlobalLogger->SimpleLog(Logging::LogLevel::Debug2, "Filling imageBufferInfos at index %u",
 				// diffuseTextureIndex);
 
-				if (this->mesh->diffuse_textures[diffuseTextureIndex] != nullptr)
+				if (this->mesh->diffuse_textures[diffuse_texture_index] != nullptr)
 				{
-					VulkanTextureImage* currentDiffuseTextureImage = this->mesh->diffuse_textures[diffuseTextureIndex]
-																		 ->GetTextureImage();
+					VulkanTextureImage* current_diffuse_texture_image =
+						this->mesh->diffuse_textures[diffuse_texture_index]->GetTextureImage();
 
-					if (currentDiffuseTextureImage != nullptr)
+					if (current_diffuse_texture_image != nullptr)
 					{
-						if (currentDiffuseTextureImage->image != nullptr ||
-							currentDiffuseTextureImage->textureSampler != VK_NULL_HANDLE)
+						if (current_diffuse_texture_image->image != nullptr ||
+							current_diffuse_texture_image->textureSampler != VK_NULL_HANDLE)
 						{
-							VkDescriptorImageInfo diffuseImageBufferInfo{};
-							diffuseImageBufferInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-							diffuseImageBufferInfo.imageView = currentDiffuseTextureImage->image->imageView;
-							diffuseImageBufferInfo.sampler = currentDiffuseTextureImage->textureSampler;
-							diffuseImageBufferInfos[diffuseTextureIndex] = diffuseImageBufferInfo;
+							VkDescriptorImageInfo diffuse_image_buffer_info{};
+							diffuse_image_buffer_info.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+							diffuse_image_buffer_info.imageView = current_diffuse_texture_image->image->imageView;
+							diffuse_image_buffer_info.sampler = current_diffuse_texture_image->textureSampler;
+							diffuse_image_buffer_infos[diffuse_texture_index] = diffuse_image_buffer_info;
 						}
 					}
 				}
@@ -216,49 +216,49 @@ namespace Engine::Rendering
 
 			for (size_t i = 0; i < renderer->GetMaxFramesInFlight(); i++)
 			{
-				VkDescriptorBufferInfo uniformBufferInfo{};
-				uniformBufferInfo.buffer = pipeline->uniformBuffers[i]->buffer;
-				uniformBufferInfo.offset = 0;
-				uniformBufferInfo.range = sizeof(glm::mat4);
+				VkDescriptorBufferInfo uniform_buffer_info{};
+				uniform_buffer_info.buffer = pipeline->uniformBuffers[i]->buffer;
+				uniform_buffer_info.offset = 0;
+				uniform_buffer_info.range = sizeof(glm::mat4);
 
-				std::vector<VkWriteDescriptorSet> descriptorWrites{};
-				descriptorWrites.resize(1);
+				std::vector<VkWriteDescriptorSet> descriptor_writes{};
+				descriptor_writes.resize(1);
 
-				descriptorWrites[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-				descriptorWrites[0].dstSet = pipeline->vkDescriptorSets[i];
-				descriptorWrites[0].dstBinding = 0;
-				descriptorWrites[0].dstArrayElement = 0;
-				descriptorWrites[0].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-				descriptorWrites[0].descriptorCount = 1;
-				descriptorWrites[0].pBufferInfo = &uniformBufferInfo;
+				descriptor_writes[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+				descriptor_writes[0].dstSet = pipeline->vkDescriptorSets[i];
+				descriptor_writes[0].dstBinding = 0;
+				descriptor_writes[0].dstArrayElement = 0;
+				descriptor_writes[0].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+				descriptor_writes[0].descriptorCount = 1;
+				descriptor_writes[0].pBufferInfo = &uniform_buffer_info;
 
-				if (diffuseImageBufferInfos.size() > 0)
+				if (diffuse_image_buffer_infos.size() > 0)
 				{
 					this->logger->SimpleLog(
 						Logging::LogLevel::Debug3, "Updating set 0x%x binding 1", pipeline->vkDescriptorSets[i]
 					);
 
-					descriptorWrites.resize(2);
-					descriptorWrites[1].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-					descriptorWrites[1].dstSet = pipeline->vkDescriptorSets[i];
-					descriptorWrites[1].dstBinding = 1;
-					descriptorWrites[1].dstArrayElement = 0;
-					descriptorWrites[1].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-					descriptorWrites[1].descriptorCount = static_cast<uint32_t>(diffuseImageBufferInfos.size());
-					descriptorWrites[1].pImageInfo = diffuseImageBufferInfos.data();
+					descriptor_writes.resize(2);
+					descriptor_writes[1].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+					descriptor_writes[1].dstSet = pipeline->vkDescriptorSets[i];
+					descriptor_writes[1].dstBinding = 1;
+					descriptor_writes[1].dstArrayElement = 0;
+					descriptor_writes[1].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+					descriptor_writes[1].descriptorCount = static_cast<uint32_t>(diffuse_image_buffer_infos.size());
+					descriptor_writes[1].pImageInfo = diffuse_image_buffer_infos.data();
 				}
 				this->logger->SimpleLog(
 					Logging::LogLevel::Debug3,
 					"Descriptor set 0x%x write of index 1 has binding %u, descriptorWrite size is %u",
 					pipeline->vkDescriptorSets[i],
-					descriptorWrites[1].dstBinding,
-					static_cast<unsigned int>(descriptorWrites.size())
+					descriptor_writes[1].dstBinding,
+					static_cast<unsigned int>(descriptor_writes.size())
 				);
 
 				vkUpdateDescriptorSets(
 					renderer->GetLogicalDevice(),
-					static_cast<uint32_t>(descriptorWrites.size()),
-					descriptorWrites.data(),
+					static_cast<uint32_t>(descriptor_writes.size()),
+					descriptor_writes.data(),
 					0,
 					nullptr
 				);
@@ -426,7 +426,7 @@ namespace Engine::Rendering
 			&(pipeline->uniformBuffers[currentFrame]->mappedData)
 		);
 
-		memcpy(this->pipeline->uniformBuffers[currentFrame]->mappedData, &this->matMVP, sizeof(glm::mat4));
+		memcpy(this->pipeline->uniformBuffers[currentFrame]->mappedData, &this->mat_mvp, sizeof(glm::mat4));
 		vkUnmapMemory(
 			renderer->GetLogicalDevice(), pipeline->uniformBuffers[currentFrame]->allocationInfo.deviceMemory
 		);
@@ -443,9 +443,9 @@ namespace Engine::Rendering
 		);
 
 		vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, this->pipeline->pipeline);
-		VkBuffer vertexBuffers[] = {this->vbo->buffer};
+		VkBuffer vertex_buffers[] = {this->vbo->buffer};
 		VkDeviceSize offsets[] = {0};
-		vkCmdBindVertexBuffers(commandBuffer, 0, 1, vertexBuffers, offsets);
+		vkCmdBindVertexBuffers(commandBuffer, 0, 1, vertex_buffers, offsets);
 
 		vkCmdDraw(commandBuffer, static_cast<uint32_t>(this->vbo_vert_count), 1, 0, 0);
 

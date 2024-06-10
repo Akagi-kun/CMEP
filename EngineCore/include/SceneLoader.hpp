@@ -1,8 +1,8 @@
 #pragma once
 
-#include "Scene.hpp"
-#include "Logging/Logging.hpp"
 #include "InternalEngineObject.hpp"
+#include "Logging/Logging.hpp"
+#include "Scene.hpp"
 
 #include <memory>
 
@@ -13,22 +13,22 @@
 
 namespace Engine
 {
-    class SceneLoader : public InternalEngineObject
-    {
-    protected:
-        void LoadSceneAssets(nlohmann::json& data, std::string& scene_path);
-        void LoadSceneTemplates(nlohmann::json& data, std::shared_ptr<Scene>& scene);
+	class SceneLoader : public InternalEngineObject
+	{
+	protected:
+		void LoadSceneAssets(nlohmann::json& data, std::string& scene_path);
+		void LoadSceneTemplates(nlohmann::json& data, std::shared_ptr<Scene>& scene);
 
-        void LoadSceneInternal(std::shared_ptr<Scene>& scene, std::string& scene_name);
+		void LoadSceneInternal(std::shared_ptr<Scene>& scene, std::string& scene_name);
 
-        RendererType InterpretRendererType(nlohmann::json& from);
+		RendererType InterpretRendererType(nlohmann::json& from);
 
-    public:
-        std::string scene_prefix;
+	public:
+		std::string scene_prefix;
 
-        SceneLoader(std::shared_ptr<Logging::Logger> logger);
-        ~SceneLoader();
+		SceneLoader(std::shared_ptr<Logging::Logger> logger);
+		~SceneLoader();
 
-        std::shared_ptr<Scene> LoadScene(std::string name);
-    };
-}
+		std::shared_ptr<Scene> LoadScene(std::string name);
+	};
+} // namespace Engine

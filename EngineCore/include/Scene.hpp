@@ -27,8 +27,8 @@ namespace Engine
 	};
 
 	typedef struct ObjectTemplate_struct {
-		RendererType withRenderer;
-		std::vector<Rendering::RendererSupplyData> supplyList;
+		RendererType with_renderer;
+		std::vector<Rendering::RendererSupplyData> supply_list;
 
 	} ObjectTemplate;
 

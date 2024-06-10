@@ -26,4 +26,5 @@ NamespaceIndentation: All
 FixNamespaceComments: true
 BitFieldColonSpacing: Both
 PenaltyBreakAssignment: 200
+SortIncludes: CaseSensitive
 ...

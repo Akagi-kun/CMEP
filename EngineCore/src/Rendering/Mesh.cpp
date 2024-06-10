@@ -1,5 +1,5 @@
-#include <glm/ext/vector_float3.hpp>
 #include <glm/ext/vector_float2.hpp>
+#include <glm/ext/vector_float3.hpp>
 
 #include "Logging/Logging.hpp"
 #include "Rendering/Mesh.hpp"
@@ -13,7 +13,6 @@ namespace Engine::Rendering
 {
 	Mesh::Mesh()
 	{
-
 	}
 
 	Mesh::~Mesh()
@@ -30,14 +29,17 @@ namespace Engine::Rendering
 
 		tinyobj::ObjReader reader;
 
-		if (!reader.ParseFromFile(path, reader_config)) {
-			if (!reader.Error().empty()) {
+		if (!reader.ParseFromFile(path, reader_config))
+		{
+			if (!reader.Error().empty())
+			{
 				this->logger->SimpleLog(Logging::LogLevel::Error, "TinyObjReader: %s", reader.Error().c_str());
 			}
 			exit(1);
 		}
 
-		if (!reader.Warning().empty()) {
+		if (!reader.Warning().empty())
+		{
 			this->logger->SimpleLog(Logging::LogLevel::Warning, "TinyObjReader: %s", reader.Warning().c_str());
 		}
 
@@ -50,33 +52,39 @@ namespace Engine::Rendering
 		int roughness_count = 0;
 		int metallic_count = 0;
 		int reflection_count = 0;
-		
+
 		VulkanRenderingEngine* renderer = this->owner_engine->GetRenderingEngine();
 
-		VulkanBuffer* premade_staging_buffer = renderer->createVulkanBuffer(5120 * 5120 * 4, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, 0);// renderer->createVulkanStagingBufferPreMapped(10240 * 10240 * 4); // 10240x1024 4-channel staging buffer
+		VulkanBuffer* premade_staging_buffer = renderer->createVulkanBuffer(
+			5120 * 5120 * 4,
+			VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
+			VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
+			0
+		); // renderer->createVulkanStagingBufferPreMapped(10240 * 10240 * 4); // 10240x1024 4-channel staging buffer
 
 		for (size_t i = 0; i < materials.size(); i++)
 		{
-/* 			tinyobj::material_t material = materials[i];
-			if (material.diffuse_texname != "")
-			{
-				// TODO: Fix this!
+			/* 			tinyobj::material_t material = materials[i];
+						if (material.diffuse_texname != "")
+						{
+							// TODO: Fix this!
 
-				this->logger->SimpleLog(Logging::LogLevel::Debug2, "TinyObjReader: Diffuse texture: '%s' for material: '%s'", material.diffuse_texname.c_str(), material.name.c_str());
-				std::shared_ptr<Rendering::Texture> textureDiffuse = std::make_shared<Rendering::Texture>();
-				textureDiffuse->UsePremadeStagingBuffer(premade_staging_buffer);
-				textureDiffuse->InitFile(Rendering::Texture_InitFiletype::FILE_PNG, material.diffuse_texname);
-				this->diffuse_textures.push_back(textureDiffuse);
-				diffuse_count++;
-			}
-			else
-			{
-				this->diffuse_textures.push_back(nullptr);
-			}
- */
+							this->logger->SimpleLog(Logging::LogLevel::Debug2, "TinyObjReader: Diffuse texture: '%s' for
+			   material: '%s'", material.diffuse_texname.c_str(), material.name.c_str());
+							std::shared_ptr<Rendering::Texture> textureDiffuse = std::make_shared<Rendering::Texture>();
+							textureDiffuse->UsePremadeStagingBuffer(premade_staging_buffer);
+							textureDiffuse->InitFile(Rendering::Texture_InitFiletype::FILE_PNG,
+			   material.diffuse_texname); this->diffuse_textures.push_back(textureDiffuse); diffuse_count++;
+						}
+						else
+						{
+							this->diffuse_textures.push_back(nullptr);
+						}
+			 */
 			// if (material.bump_texname != "")
 			// {
-			// 	Logging::GlobalLogger->SimpleLog(Logging::LogLevel::Debug2, "TinyObjReader: Bump texture: '%s' for material: '%s'", material.bump_texname.c_str(), material.name.c_str());
+			// 	Logging::GlobalLogger->SimpleLog(Logging::LogLevel::Debug2, "TinyObjReader: Bump texture: '%s' for
+			// material: '%s'", material.bump_texname.c_str(), material.name.c_str());
 			// 	std::shared_ptr<Rendering::Texture> textureBump = std::make_shared<Rendering::Texture>();
 			// 	textureBump->UsePremadeStagingBuffer(premade_staging_buffer);
 			// 	textureBump->InitFile(Rendering::Texture_InitFiletype::FILE_PNG, material.bump_texname);
@@ -90,7 +98,8 @@ namespace Engine::Rendering
 
 			// if (material.roughness_texname != "")
 			// {
-			// 	Logging::GlobalLogger->SimpleLog(Logging::LogLevel::Debug2, "TinyObjReader: Roughness texture: '%s' for material: '%s'", material.roughness_texname.c_str(), material.name.c_str());
+			// 	Logging::GlobalLogger->SimpleLog(Logging::LogLevel::Debug2, "TinyObjReader: Roughness texture: '%s' for
+			// material: '%s'", material.roughness_texname.c_str(), material.name.c_str());
 			// 	std::shared_ptr<Rendering::Texture> textureRoughness = std::make_shared<Rendering::Texture>();
 			// 	textureRoughness->UsePremadeStagingBuffer(premade_staging_buffer);
 			// 	textureRoughness->InitFile(Rendering::Texture_InitFiletype::FILE_PNG, material.roughness_texname);
@@ -104,7 +113,8 @@ namespace Engine::Rendering
 
 			// if (material.reflection_texname != "")
 			// {
-			// 	Logging::GlobalLogger->SimpleLog(Logging::LogLevel::Debug2, "TinyObjReader: Reflection texture: '%s' for material: '%s'", material.reflection_texname.c_str(), material.name.c_str());
+			// 	Logging::GlobalLogger->SimpleLog(Logging::LogLevel::Debug2, "TinyObjReader: Reflection texture: '%s' for
+			// material: '%s'", material.reflection_texname.c_str(), material.name.c_str());
 			// 	std::shared_ptr<Rendering::Texture> textureReflection = std::make_shared<Rendering::Texture>();
 			// 	textureReflection->UsePremadeStagingBuffer(premade_staging_buffer);
 			// 	textureReflection->InitFile(Rendering::Texture_InitFiletype::FILE_PNG, material.reflection_texname);
@@ -119,18 +129,27 @@ namespace Engine::Rendering
 
 		renderer->cleanupVulkanBuffer(premade_staging_buffer);
 
-		this->logger->SimpleLog(Logging::LogLevel::Info, "\nTinyObjReader:\n  Loaded %u materials\n  %u diffuse textures\n"
+		this->logger->SimpleLog(
+			Logging::LogLevel::Info,
+			"\nTinyObjReader:\n  Loaded %u materials\n  %u diffuse textures\n"
 			"  %u bump textures\n  %u roughness textures\n  %u metallic textures\n  %u reflective textures",
-			materials.size(), diffuse_count, bump_count, roughness_count, metallic_count, reflection_count);
+			materials.size(),
+			diffuse_count,
+			bump_count,
+			roughness_count,
+			metallic_count,
+			reflection_count
+		);
 
 		// Loop over shapes
 		for (size_t s = 0; s < shapes.size(); s++)
 		{
 			// Loop over faces(polygon)
 			size_t index_offset = 0;
-			for (size_t f = 0; f < shapes[s].mesh.num_face_vertices.size(); f++) {
+			for (size_t f = 0; f < shapes[s].mesh.num_face_vertices.size(); f++)
+			{
 				size_t fv = size_t(shapes[s].mesh.num_face_vertices[f]);
-				
+
 				// Loop over vertices in the face.
 				for (size_t v = 0; v < fv; v++)
 				{
@@ -178,11 +197,9 @@ namespace Engine::Rendering
 					}
 				}
 				index_offset += fv;
-
 			}
-
 		}
-		
+
 		for (size_t idx = 0; idx < this->mesh_vertices.size(); idx += 3)
 		{
 			// Shortcuts for vertices
@@ -196,16 +213,16 @@ namespace Engine::Rendering
 			glm::vec2& uv2 = this->mesh_uvs[idx + 2];
 
 			// Edges of the triangle : position delta
-			glm::vec3 deltaPos1 = v1 - v0;
-			glm::vec3 deltaPos2 = v2 - v0;
+			glm::vec3 delta_pos1 = v1 - v0;
+			glm::vec3 delta_pos2 = v2 - v0;
 
 			// UV delta
-			glm::vec2 deltaUV1 = uv1 - uv0;
-			glm::vec2 deltaUV2 = uv2 - uv0;
+			glm::vec2 delta_uv_1 = uv1 - uv0;
+			glm::vec2 delta_uv_2 = uv2 - uv0;
 
-			float r = 1.0f / (deltaUV1.x * deltaUV2.y - deltaUV1.y * deltaUV2.x);
-			glm::vec3 tangent = (deltaPos1 * deltaUV2.y - deltaPos2 * deltaUV1.y) * r;
-			glm::vec3 bitangent = (deltaPos2 * deltaUV1.x - deltaPos1 * deltaUV2.x) * r;
+			float r = 1.0f / (delta_uv_1.x * delta_uv_1.y - delta_uv_1.y * delta_uv_2.x);
+			glm::vec3 tangent = (delta_pos1 * delta_uv_2.y - delta_pos2 * delta_uv_1.y) * r;
+			glm::vec3 bitangent = (delta_pos2 * delta_uv_1.x - delta_pos1 * delta_uv_2.x) * r;
 
 			this->mesh_tangents.push_back(tangent);
 			this->mesh_tangents.push_back(tangent);
@@ -217,6 +234,8 @@ namespace Engine::Rendering
 			this->mesh_bitangents.push_back(bitangent);
 		}
 
-		this->logger->SimpleLog(Logging::LogLevel::Info, "Reading OBJ file: Successfully read and parsed file '%s", path.c_str());
+		this->logger->SimpleLog(
+			Logging::LogLevel::Info, "Reading OBJ file: Successfully read and parsed file '%s", path.c_str()
+		);
 	}
-}
+} // namespace Engine::Rendering

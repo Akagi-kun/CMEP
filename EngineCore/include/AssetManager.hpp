@@ -28,8 +28,8 @@ namespace Engine
 		std::unordered_map<std::string, std::shared_ptr<Rendering::Font>> fonts{};
 		std::unordered_map<std::string, std::shared_ptr<Rendering::Mesh>> models{};
 
-		std::unique_ptr<Factories::FontFactory> fontFactory{};
-		std::unique_ptr<Factories::TextureFactory> textureFactory{};
+		std::unique_ptr<Factories::FontFactory> font_factory{};
+		std::unique_ptr<Factories::TextureFactory> texture_factory{};
 
 	public:
 		// std::shared_ptr<Logging::Logger> logger{};

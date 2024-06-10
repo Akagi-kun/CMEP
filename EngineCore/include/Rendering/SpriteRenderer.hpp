@@ -16,7 +16,7 @@ namespace Engine::Rendering
 	private:
 		VulkanBuffer* vbo = nullptr;
 
-		glm::mat4 matMVP{};
+		glm::mat4 mat_mvp{};
 
 		VulkanPipeline* pipeline = nullptr;
 

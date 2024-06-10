@@ -25,7 +25,7 @@ namespace Engine::Rendering
 
 		VulkanRenderingEngine* renderer = this->owner_engine->GetRenderingEngine();
 
-		renderer->cleanupVulkanTextureImage(this->data->textureImage);
+		renderer->cleanupVulkanTextureImage(this->data->texture_image);
 
 		this->data.release();
 	}
@@ -53,7 +53,7 @@ namespace Engine::Rendering
 
 	VulkanTextureImage* Texture::GetTextureImage() const noexcept
 	{
-		return this->data->textureImage;
+		return this->data->texture_image;
 	}
 
 	int Texture::GetColorFormat() const noexcept

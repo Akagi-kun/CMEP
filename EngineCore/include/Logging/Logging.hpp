@@ -28,8 +28,8 @@ namespace Logging
 	{
 		LogLevel min_level;
 		FILE* handle;
-		bool hasStartedLogging;
-		bool useColors;
+		bool has_started_logging;
+		bool use_colors;
 	};
 
 	// TODO: Check thread safety
@@ -38,7 +38,7 @@ namespace Logging
 	private:
 		std::vector<LoggerInternalMapping*> outputs;
 		std::map<int16_t, std::string> threadid_name_map;
-		std::mutex threadMutex{};
+		std::mutex thread_mutex{};
 
 	public:
 		CMEP_EXPORT Logger() {}

@@ -4,5 +4,5 @@
 
 namespace Engine::Scripting::API
 {
-	extern std::unordered_map<std::string, lua_CFunction> object_Mappings;
+	extern std::unordered_map<std::string, lua_CFunction> object_mappings;
 }

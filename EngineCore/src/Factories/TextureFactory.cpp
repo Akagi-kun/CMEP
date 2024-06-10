@@ -160,7 +160,7 @@ namespace Engine::Factories
 
 		if (const auto& vulkanImageFactory = this->owner_engine->GetVulkanImageFactory().lock())
 		{
-			texture_data->textureImage = vulkanImageFactory->createTextureImage(
+			texture_data->texture_image = vulkanImageFactory->createTextureImage(
 				xsize,
 				ysize,
 				VK_FORMAT_R8G8B8A8_UNORM,
@@ -174,19 +174,19 @@ namespace Engine::Factories
 			// Transfer image layout to one usable by the shader
 			// TODO: Create utility function for image transfers
 			vulkanImageFactory->transitionImageLayout(
-				texture_data->textureImage->image->image,
+				texture_data->texture_image->image->image,
 				VK_FORMAT_R8G8B8A8_UNORM,
 				VK_IMAGE_LAYOUT_UNDEFINED,
 				VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL
 			);
 			renderer->copyVulcanBufferToImage(
 				used_staging_buffer->buffer,
-				texture_data->textureImage->image->image,
+				texture_data->texture_image->image->image,
 				static_cast<uint32_t>(xsize),
 				static_cast<uint32_t>(ysize)
 			);
 			vulkanImageFactory->transitionImageLayout(
-				texture_data->textureImage->image->image,
+				texture_data->texture_image->image->image,
 				VK_FORMAT_R8G8B8A8_SRGB,
 				VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
 				VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL
@@ -199,8 +199,8 @@ namespace Engine::Factories
 				renderer->cleanupVulkanBuffer(used_staging_buffer);
 			}
 
-			vulkanImageFactory->appendImageViewToTextureImage(texture_data->textureImage);
-			renderer->appendVulkanSamplerToVulkanTextureImage(texture_data->textureImage);
+			vulkanImageFactory->appendImageViewToTextureImage(texture_data->texture_image);
+			renderer->appendVulkanSamplerToVulkanTextureImage(texture_data->texture_image);
 		}
 		else
 		{

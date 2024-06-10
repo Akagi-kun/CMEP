@@ -9,15 +9,15 @@ namespace Engine::Scripting::API
 		int AddChild(lua_State* state)
 		{
 			lua_getfield(state, 1, "_pointer");
-			
+
 			Object* ptr_obj = *(Object**)lua_touserdata(state, -1);
 
 			lua_getfield(state, 2, "_pointer");
 
 			Object* ptr_child = *(Object**)lua_touserdata(state, -1);
-			
+
 			ptr_obj->AddChild(ptr_child);
-			
+
 			return 0;
 		}
 
@@ -26,7 +26,7 @@ namespace Engine::Scripting::API
 			lua_getfield(state, 1, "_pointer");
 			Object* ptr_obj = *(Object**)lua_touserdata(state, -1);
 
-			glm::vec3 rotation = ptr_obj->rotation();
+			glm::vec3 rotation = ptr_obj->Rotation();
 
 			lua_pushnumber(state, rotation.x);
 			lua_pushnumber(state, rotation.y);
@@ -56,7 +56,7 @@ namespace Engine::Scripting::API
 			lua_getfield(state, 1, "_pointer");
 			Object* ptr_obj = *(Object**)lua_touserdata(state, -1);
 
-			glm::vec3 size = ptr_obj->size();
+			glm::vec3 size = ptr_obj->Size();
 
 			lua_pushnumber(state, size.x);
 			lua_pushnumber(state, size.y);
@@ -86,7 +86,7 @@ namespace Engine::Scripting::API
 			lua_getfield(state, 1, "_pointer");
 			Object* ptr_obj = *(Object**)lua_touserdata(state, -1);
 
-			glm::vec3 rotation = ptr_obj->position();
+			glm::vec3 rotation = ptr_obj->Position();
 
 			lua_pushnumber(state, rotation.x);
 			lua_pushnumber(state, rotation.y);
@@ -110,9 +110,9 @@ namespace Engine::Scripting::API
 
 			return 0;
 		}
-	}
+	} // namespace Functions_Object
 
-	std::unordered_map<std::string, lua_CFunction> object_Mappings = {
+	std::unordered_map<std::string, lua_CFunction> object_mappings = {
 		CMEP_LUAMAPPING_DEFINE(Functions_Object, AddChild),
 		CMEP_LUAMAPPING_DEFINE(Functions_Object, GetSize),
 		CMEP_LUAMAPPING_DEFINE(Functions_Object, Scale),
@@ -121,4 +121,4 @@ namespace Engine::Scripting::API
 		CMEP_LUAMAPPING_DEFINE(Functions_Object, GetPosition),
 		CMEP_LUAMAPPING_DEFINE(Functions_Object, Translate)
 	};
-}
+} // namespace Engine::Scripting::API

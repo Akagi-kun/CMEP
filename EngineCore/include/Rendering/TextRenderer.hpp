@@ -20,11 +20,11 @@ namespace Engine::Rendering
 
 		VulkanPipeline* pipeline = nullptr;
 		VulkanBuffer* vbo = nullptr;
-		VulkanTextureImage* textureImage = nullptr;
+		VulkanTextureImage* texture_image = nullptr;
 
 		std::shared_ptr<Rendering::Font> font = nullptr;
 
-		glm::mat4 matMVP{};
+		glm::mat4 mat_mvp{};
 
 	public:
 		TextRenderer(Engine* engine);

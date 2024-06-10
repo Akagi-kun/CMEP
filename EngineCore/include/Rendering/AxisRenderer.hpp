@@ -21,7 +21,7 @@ namespace Engine::Rendering
 		VulkanPipeline* pipeline = nullptr;
 		VulkanBuffer* vbo = nullptr;
 
-		glm::mat4 matMVP{};
+		glm::mat4 mat_mvp{};
 
 	public:
 		AxisRenderer(Engine* engine);

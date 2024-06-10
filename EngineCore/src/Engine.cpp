@@ -47,28 +47,28 @@ namespace Engine
 {
 	// TODO: Move this abomination elsewhere...
 	//
-	const char* const _build =
-		"CMEP EngineCore " __TIME__ " " __DATE__ " build, configured " BUILDCONFIG " " MACRO_STR(IS_DEBUG);
+	const char* const build = "CMEP EngineCore " __TIME__ " " __DATE__ " build, configured " BUILDCONFIG
+							  " " MACRO_STR(IS_DEBUG);
 #if defined(_MSC_VER)
 #pragma message("Compiler MSVC detected")
-	const char* const _compiledby = "MSVC " MACRO_STR(_MSC_FULL_VER) "." MACRO_STR(_MSC_BUILD);
+	const char* const compiledby = "MSVC " MACRO_STR(_MSC_FULL_VER) "." MACRO_STR(_MSC_BUILD);
 #elif defined(__GNUC__)
 #pragma message("Compiler GNU-like detected")
 #if defined(__llvm__)
 #pragma message("Compiler LLVM detected")
 #if defined(__clang__)
 #pragma message("Compiler LLVM-clang detected")
-	const char* const _compiledby =
-		"LLVM-clang " MACRO_STR(__clang_major__) "." MACRO_STR(__clang_minor__) "." MACRO_STR(__clang_patchlevel__);
+	const char* const _compiledby = "LLVM-clang " MACRO_STR(__clang_major__) "." MACRO_STR(__clang_minor__
+	) "." MACRO_STR(__clang_patchlevel__);
 #else
 #pragma message("Compiler LLVM-gcc detected")
-	const char* const _compiledby =
-		"LLVM-GCC " MACRO_STR(__GNUC__) "." MACRO_STR(__GNUC_MINOR__) "." MACRO_STR(__GNUC_PATCHLEVEL__);
+	const char* const _compiledby = "LLVM-GCC " MACRO_STR(__GNUC__) "." MACRO_STR(__GNUC_MINOR__
+	) "." MACRO_STR(__GNUC_PATCHLEVEL__);
 #endif
 #else
 #pragma message("Compiler gcc detected")
-	const char* const _compiledby =
-		"GCC " MACRO_STR(__GNUC__) "." MACRO_STR(__GNUC_MINOR__) "." MACRO_STR(__GNUC_PATCHLEVEL__);
+	const char* const _compiledby = "GCC " MACRO_STR(__GNUC__) "." MACRO_STR(__GNUC_MINOR__
+	) "." MACRO_STR(__GNUC_PATCHLEVEL__);
 #endif
 #else
 #pragma warning "Compiler could not be identified"
@@ -76,13 +76,13 @@ namespace Engine
 #endif
 
 	// TODO: Does this have to be global?
-	bool EngineIsWindowInFocus = false;
-	bool EngineIsWindowInContent = false;
-	double EngineMouseXPos = 0.0;
-	double EngineMouseYPos = 0.0;
+	bool engine_is_window_in_focus = false;
+	bool engine_is_window_in_content = false;
+	double engine_mouse_x_pos = 0.0;
+	double engine_mouse_y_pos = 0.0;
 
 	// Utility sleep function
-	void Engine::spinSleep(double seconds)
+	void Engine::SpinSleep(double seconds)
 	{
 		static double estimate = 5e-3;
 		static double mean = 5e-3;
@@ -113,25 +113,25 @@ namespace Engine
 		};
 	}
 
-	void Engine::handleInput(const double deltaTime) noexcept
+	void Engine::HandleInput(const double deltaTime) noexcept
 	{
 		Rendering::GLFWwindowData windowdata = this->rendering_engine->GetWindow();
 
-		static double lastX = (windowdata.windowX / 2.0), lastY = (windowdata.windowY / 2.0);
+		static double last_x = (windowdata.windowX / 2.0), last_y = (windowdata.windowY / 2.0);
 
-		if (EngineIsWindowInFocus && EngineIsWindowInContent)
+		if (engine_is_window_in_focus && engine_is_window_in_content)
 		{
-			if ((EngineMouseXPos - lastX) != 0.0 || (EngineMouseYPos - lastY) != 0.0)
+			if ((engine_mouse_x_pos - last_x) != 0.0 || (engine_mouse_y_pos - last_y) != 0.0)
 			{
 				EventHandling::Event event = EventHandling::Event(EventHandling::EventType::ON_MOUSEMOVED);
-				event.mouse.x = EngineMouseXPos - lastX;
-				event.mouse.y = EngineMouseYPos - lastY;
-				event.deltaTime = deltaTime;
-				event.raisedFrom = this;
+				event.mouse.x = engine_mouse_x_pos - last_x;
+				event.mouse.y = engine_mouse_y_pos - last_y;
+				event.delta_time = deltaTime;
+				event.raised_from = this;
 				this->FireEvent(event);
 
-				lastX = EngineMouseXPos;
-				lastY = EngineMouseYPos;
+				last_x = engine_mouse_x_pos;
+				last_y = engine_mouse_y_pos;
 			}
 		}
 	}
@@ -159,14 +159,14 @@ namespace Engine
 		}
 
 		this->config->window.title = data["window"]["title"];
-		this->config->window.sizeX = data["window"]["sizeX"];
-		this->config->window.sizeY = data["window"]["sizeY"];
+		this->config->window.size_x = data["window"]["sizeX"];
+		this->config->window.size_y = data["window"]["sizeY"];
 
-		this->config->rendering.framerateTarget = data["rendering"]["framerateTarget"];
+		this->config->rendering.framerate_target = data["rendering"]["framerateTarget"];
 
 		this->config->lookup.scenes = data["lookup"]["scenes"];
 
-		this->config->defaultScene = data["defaultScene"];
+		this->config->default_scene = data["defaultScene"];
 	}
 
 	void Engine::ErrorCallback(int code, const char* message)
@@ -181,11 +181,11 @@ namespace Engine
 
 		if (focused)
 		{
-			EngineIsWindowInFocus = true;
+			engine_is_window_in_focus = true;
 		}
 		else
 		{
-			EngineIsWindowInFocus = false;
+			engine_is_window_in_focus = false;
 		}
 	}
 
@@ -194,15 +194,15 @@ namespace Engine
 		// Unused
 		(void)(window);
 
-		if (EngineIsWindowInFocus)
+		if (engine_is_window_in_focus)
 		{
-			EngineMouseXPos = xpos;
-			EngineMouseYPos = ypos;
+			engine_mouse_x_pos = xpos;
+			engine_mouse_y_pos = ypos;
 		}
 		else
 		{
-			EngineMouseXPos = 0.0;
-			EngineMouseYPos = 0.0;
+			engine_mouse_x_pos = 0.0;
+			engine_mouse_y_pos = 0.0;
 		}
 	}
 
@@ -212,14 +212,14 @@ namespace Engine
 		// TODO: use entered?
 		(void)(entered);
 
-		if (EngineIsWindowInFocus)
+		if (engine_is_window_in_focus)
 		{
-			EngineIsWindowInContent = true;
+			engine_is_window_in_content = true;
 			glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 		}
 		else
 		{
-			EngineIsWindowInContent = false;
+			engine_is_window_in_content = false;
 			glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
 		}
 	}
@@ -232,20 +232,24 @@ namespace Engine
 
 		if (action == GLFW_PRESS)
 		{
-			Rendering::VulkanRenderingEngine* renderer = (Rendering::VulkanRenderingEngine*)glfwGetWindowUserPointer(window);
+			Rendering::VulkanRenderingEngine* renderer = (Rendering::VulkanRenderingEngine*)glfwGetWindowUserPointer(
+				window
+			);
 			EventHandling::Event event = EventHandling::Event(EventHandling::EventType::ON_KEYDOWN);
 			event.keycode = static_cast<uint16_t>(key);
-			event.deltaTime = renderer->GetOwnerEngine()->GetLastDeltaTime();
-			event.raisedFrom = renderer->GetOwnerEngine();
+			event.delta_time = renderer->GetOwnerEngine()->GetLastDeltaTime();
+			event.raised_from = renderer->GetOwnerEngine();
 			renderer->GetOwnerEngine()->FireEvent(event);
 		}
 		else if (action == GLFW_RELEASE)
 		{
-			Rendering::VulkanRenderingEngine* renderer = (Rendering::VulkanRenderingEngine*)glfwGetWindowUserPointer(window);
+			Rendering::VulkanRenderingEngine* renderer = (Rendering::VulkanRenderingEngine*)glfwGetWindowUserPointer(
+				window
+			);
 			EventHandling::Event event = EventHandling::Event(EventHandling::EventType::ON_KEYUP);
 			event.keycode = static_cast<uint16_t>(key);
-			event.deltaTime = renderer->GetOwnerEngine()->GetLastDeltaTime();
-			event.raisedFrom = renderer->GetOwnerEngine();
+			event.delta_time = renderer->GetOwnerEngine()->GetLastDeltaTime();
+			event.raised_from = renderer->GetOwnerEngine();
 			renderer->GetOwnerEngine()->FireEvent(event);
 		}
 	}
@@ -275,7 +279,7 @@ namespace Engine
 		}
 	}
 
-	void Engine::engineLoop()
+	void Engine::EngineLoop()
 	{
 		// TODO: Remove this!
 		// Create axis object
@@ -284,35 +288,35 @@ namespace Engine
 		object->Translate(glm::vec3(0, 0, 0));
 		object->Scale(glm::vec3(1, 1, 1));
 		object->Rotate(glm::vec3(0, 0, 0));
-		object->ScreenSizeInform(this->config->window.sizeX, this->config->window.sizeY);
+		object->ScreenSizeInform(this->config->window.size_x, this->config->window.size_y);
 		((Rendering::AxisRenderer*)object->renderer)->UpdateMesh();
 		((Rendering::AxisRenderer*)object->renderer)->scene_manager = this->scene_manager;
 		this->scene_manager->AddObject("_axis", object);
 
 		// Pre-make ON_UPDATE event so we don't have to create it over and over again in hot loop
-		EventHandling::Event premadeOnUpdateEvent = EventHandling::Event(EventHandling::EventType::ON_UPDATE);
-		premadeOnUpdateEvent.raisedFrom = this;
+		EventHandling::Event premade_on_update_event = EventHandling::Event(EventHandling::EventType::ON_UPDATE);
+		premade_on_update_event.raised_from = this;
 
 		glfwShowWindow(this->rendering_engine->GetWindow().window);
 
-		//uint16_t counter = 0;
-		auto prevClock = std::chrono::steady_clock::now();
+		// uint16_t counter = 0;
+		auto prev_clock = std::chrono::steady_clock::now();
 		// hot loop
 		while (!glfwWindowShouldClose(this->rendering_engine->GetWindow().window))
 		{
-			const auto nextClock = std::chrono::steady_clock::now();
-			const double deltaTime = (nextClock - prevClock).count() / 1e9;
-			//if (counter == this->framerateTarget)
+			const auto next_clock = std::chrono::steady_clock::now();
+			const double delta_time = (next_clock - prev_clock).count() / 1e9;
+			// if (counter == this->framerateTarget)
 			//{
 			//	// For debugging, use onscreen counter if possible
 			//	// printf("current frame time: %.2lf ms (%.1lf fps)\n", deltaTime * 1e3, (1 / (deltaTime)));
 			//	counter = 0;
-			//}
-			this->lastDeltaTime = deltaTime;
+			// }
+			this->last_delta_time = delta_time;
 
 			// Update deltaTime of premade ON_UPDATE event and fire it
-			premadeOnUpdateEvent.deltaTime = deltaTime;
-			if (this->FireEvent(premadeOnUpdateEvent) != 0)
+			premade_on_update_event.delta_time = delta_time;
+			if (this->FireEvent(premade_on_update_event) != 0)
 			{
 				break;
 			}
@@ -323,16 +327,16 @@ namespace Engine
 			// Sync with glfw event loop
 			glfwPollEvents();
 
-			const auto frameClock = std::chrono::steady_clock::now();
-			const double sleepSecs = 1.0 / this->framerateTarget - (frameClock - nextClock).count() / 1e9;
+			const auto frame_clock = std::chrono::steady_clock::now();
+			const double sleep_secs = 1.0 / this->framerate_target - (frame_clock - next_clock).count() / 1e9;
 			// spin sleep if sleep necessary and VSYNC disabled
-			if (sleepSecs > 0 && framerateTarget != 0)
+			if (sleep_secs > 0 && this->framerate_target != 0)
 			{
-				spinSleep(sleepSecs);
+				SpinSleep(sleep_secs);
 			}
 
-			prevClock = nextClock;
-			//counter++;
+			prev_clock = next_clock;
+			// counter++;
 		}
 	}
 
@@ -341,14 +345,14 @@ namespace Engine
 		int sum = 0;
 
 		// Allow binary handlers
-		//auto handler_range = this->event_handlers.equal_range(event.event_type);
-		//for (auto handler = handler_range.first; handler != handler_range.second; ++handler)
+		// auto handler_range = this->event_handlers.equal_range(event.event_type);
+		// for (auto handler = handler_range.first; handler != handler_range.second; ++handler)
 		//{
 		//	sum += handler->second(event);
 		//}
 
-		auto lua_handler_range =
-			this->scene_manager->GetSceneCurrent()->lua_event_handlers.equal_range(event.event_type);
+		auto lua_handler_range = this->scene_manager->GetSceneCurrent()->lua_event_handlers.equal_range(event.event_type
+		);
 		for (auto handler = lua_handler_range.first; handler != lua_handler_range.second; ++handler)
 		{
 			sum += this->script_executor->CallIntoScript(
@@ -360,7 +364,7 @@ namespace Engine
 
 	double Engine::GetLastDeltaTime()
 	{
-		return this->lastDeltaTime;
+		return this->last_delta_time;
 	}
 
 	Engine::Engine(std::shared_ptr<Logging::Logger> logger) noexcept : logger(logger)
@@ -384,7 +388,7 @@ namespace Engine
 
 	void Engine::SetFramerateTarget(unsigned framerate) noexcept
 	{
-		this->framerateTarget = framerate;
+		this->framerate_target = framerate;
 	}
 
 	void Engine::Init()
@@ -395,8 +399,8 @@ namespace Engine
 		this->logger->SimpleLog(
 			Logging::LogLevel::Info,
 			LOGPFX_CURRENT "build info:\n////\nRunning %s\nCompiled by %s\n////\n",
-			_build,
-			_compiledby
+			build,
+			compiledby
 		);
 
 		// Load configuration
@@ -444,10 +448,10 @@ namespace Engine
 
 		// Initialize rendering engine
 		this->rendering_engine->init(
-			this->config->window.sizeX, this->config->window.sizeY, this->config->window.title
+			this->config->window.size_x, this->config->window.size_y, this->config->window.title
 		);
 
-		this->vulkanImageFactory = std::make_shared<Rendering::Factories::VulkanImageFactory>(
+		this->vulkan_image_factory = std::make_shared<Rendering::Factories::VulkanImageFactory>(
 			this->rendering_engine->GetVMAAllocator(), this->rendering_engine
 		);
 
@@ -457,8 +461,8 @@ namespace Engine
 
 		// return;
 
-		this->scene_manager->LoadScene(this->config->defaultScene);
-		this->scene_manager->SetScene(this->config->defaultScene);
+		this->scene_manager->LoadScene(this->config->default_scene);
+		this->scene_manager->SetScene(this->config->default_scene);
 
 		// Set-up GLFW
 		Rendering::GLFWwindowData windowdata = this->rendering_engine->GetWindow();
@@ -469,9 +473,9 @@ namespace Engine
 		glfwSetErrorCallback(Engine::ErrorCallback);
 
 		// Fire ON_INIT event
-		EventHandling::Event onInitEvent = EventHandling::Event(EventHandling::EventType::ON_INIT);
-		onInitEvent.raisedFrom = this;
-		int onInitEventRet = this->FireEvent(onInitEvent);
+		EventHandling::Event on_init_event = EventHandling::Event(EventHandling::EventType::ON_INIT);
+		on_init_event.raised_from = this;
+		int on_init_event_ret = this->FireEvent(on_init_event);
 
 		// Measure and log ON_INIT time
 		double total = (std::chrono::steady_clock::now() - start).count() / 1e6;
@@ -479,29 +483,29 @@ namespace Engine
 			Logging::LogLevel::Debug1,
 			LOGPFX_CURRENT "Handling ON_INIT took %.3lf ms total and returned %i",
 			total,
-			onInitEventRet
+			on_init_event_ret
 		);
 
 		// return;
 
-		if (onInitEventRet != 0)
+		if (on_init_event_ret != 0)
 		{
 			return;
 		}
 
-		this->engineLoop();
+		this->EngineLoop();
 	}
 
 	void Engine::ConfigFile(std::string path)
 	{
 		this->config_path = std::move(path);
 	}
-/* 
-	void Engine::RegisterEventHandler(
-		EventHandling::EventType event_type, std::function<int(EventHandling::Event&)> function
-	)
-	{
-		this->event_handlers.emplace(event_type, function);
-	}
-	 */
+	/*
+		void Engine::RegisterEventHandler(
+			EventHandling::EventType event_type, std::function<int(EventHandling::Event&)> function
+		)
+		{
+			this->event_handlers.emplace(event_type, function);
+		}
+		 */
 } // namespace Engine

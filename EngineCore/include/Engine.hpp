@@ -30,23 +30,23 @@ namespace Engine
 		class LuaScript;
 	} // namespace Scripting
 
-	extern bool EngineIsWindowInFocus;
-	extern bool EngineIsWindowInContent;
-	extern double EngineMouseXPos;
-	extern double EngineMouseYPos;
+	extern bool engine_is_window_in_focus;
+	extern bool engine_is_window_in_content;
+	extern double engine_mouse_x_pos;
+	extern double engine_mouse_y_pos;
 
 	typedef struct structEngineConfig
 	{
 		struct
 		{
-			unsigned int sizeX = 0;
-			unsigned int sizeY = 0;
+			unsigned int size_x = 0;
+			unsigned int size_y = 0;
 			std::string title = "I am a title!";
 		} window;
 
 		struct
 		{
-			unsigned int framerateTarget = 0;
+			unsigned int framerate_target = 0;
 		} rendering;
 
 		struct
@@ -57,7 +57,7 @@ namespace Engine
 			std::string scenes;
 		} lookup;
 
-		std::string defaultScene;
+		std::string default_scene;
 	} EngineConfig;
 
 	class Engine final
@@ -66,9 +66,9 @@ namespace Engine
 		std::string config_path = "";
 
 		// Window
-		unsigned int framerateTarget = 30;
+		unsigned int framerate_target = 30;
 
-		double lastDeltaTime = 0.0;
+		double last_delta_time = 0.0;
 
 		std::unique_ptr<EngineConfig> config{};
 
@@ -77,12 +77,12 @@ namespace Engine
 		std::shared_ptr<AssetManager> asset_manager{};
 		Scripting::LuaScriptExecutor* script_executor = nullptr;
 		Rendering::VulkanRenderingEngine* rendering_engine = nullptr;
-		std::shared_ptr<Rendering::Factories::VulkanImageFactory> vulkanImageFactory{};
+		std::shared_ptr<Rendering::Factories::VulkanImageFactory> vulkan_image_factory{};
 
 		// Event handler storage
 		// std::multimap<EventHandling::EventType, std::function<int(EventHandling::Event&)>> event_handlers;
 
-		static void spinSleep(double seconds);
+		static void SpinSleep(double seconds);
 
 		static void RenderCallback(VkCommandBuffer commandBuffer, uint32_t currentFrame, Engine* engine);
 
@@ -92,9 +92,9 @@ namespace Engine
 		static void CursorEnterLeaveCallback(GLFWwindow* window, int entered);
 		static void OnKeyEventCallback(GLFWwindow* window, int key, int scancode, int action, int mods);
 
-		void handleInput(const double deltaTime) noexcept;
+		void HandleInput(const double deltaTime) noexcept;
 
-		void engineLoop();
+		void EngineLoop();
 
 		void HandleConfig();
 
@@ -133,7 +133,7 @@ namespace Engine
 		}
 		inline std::weak_ptr<Rendering::Factories::VulkanImageFactory> GetVulkanImageFactory() noexcept
 		{
-			return this->vulkanImageFactory;
+			return this->vulkan_image_factory;
 		}
 	};
 } // namespace Engine

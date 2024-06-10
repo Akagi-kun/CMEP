@@ -25,15 +25,15 @@ namespace Engine
 		class IRenderer : public InternalEngineObject
 		{
 		protected:
-			glm::vec3 _pos = glm::vec3();
-			glm::vec3 _size = glm::vec3();
-			glm::vec3 _rotation = glm::vec3();
+			glm::vec3 pos = glm::vec3();
+			glm::vec3 size = glm::vec3();
+			glm::vec3 rotation = glm::vec3();
 
-			glm::vec3 _parent_pos = glm::vec3();
-			glm::vec3 _parent_size = glm::vec3();
-			glm::vec3 _parent_rotation = glm::vec3();
+			glm::vec3 parent_pos = glm::vec3();
+			glm::vec3 parent_size = glm::vec3();
+			glm::vec3 parent_rotation = glm::vec3();
 
-			uint_fast16_t _screenx = 0, _screeny = 0;
+			uint_fast16_t screenx = 0, screeny = 0;
 
 			bool has_updated_mesh = false;
 

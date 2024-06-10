@@ -18,24 +18,24 @@ namespace Engine
 		/// <summary>
 		/// Position of object in worldspace.
 		/// </summary>
-		glm::vec3 _pos = glm::vec3();
+		glm::vec3 pos = glm::vec3();
 
 		/// <summary>
 		/// Size of object.
 		/// </summary>
-		glm::vec3 _size = glm::vec3();
+		glm::vec3 size = glm::vec3();
 
 		/// <summary>
 		/// Rotation of object.
 		/// </summary>
-		glm::vec3 _rotation = glm::vec3();
+		glm::vec3 rotation = glm::vec3();
 
 		/// <summary>
 		/// Parent pos size and rot
 		/// </summary>
-		glm::vec3 _parent_pos = glm::vec3();
-		glm::vec3 _parent_size = glm::vec3();
-		glm::vec3 _parent_rotation = glm::vec3();
+		glm::vec3 parent_pos = glm::vec3();
+		glm::vec3 parent_size = glm::vec3();
+		glm::vec3 parent_rotation = glm::vec3();
 
 		Object* parent = nullptr;
 
@@ -43,7 +43,7 @@ namespace Engine
 
 		unsigned int screenx = 0, screeny = 0;
 
-		std::function<void(Object*)> _onClick = nullptr;
+		std::function<void(Object*)> on_click = nullptr;
 
 	public:
 		Rendering::IRenderer* renderer = nullptr;
@@ -64,9 +64,9 @@ namespace Engine
 
 		virtual int Render(VkCommandBuffer commandBuffer, uint32_t currentFrame);
 
-		glm::vec3 position() const noexcept;
-		glm::vec3 size() const noexcept;
-		glm::vec3 rotation() const noexcept;
+		glm::vec3 Position() const noexcept;
+		glm::vec3 Size() const noexcept;
+		glm::vec3 Rotation() const noexcept;
 
 		void SetParentPositionRotationSize(glm::vec3 position, glm::vec3 rotation, glm::vec3 size);
 

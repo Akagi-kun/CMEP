@@ -19,9 +19,9 @@ namespace Engine
 		class LuaScriptExecutor : public InternalEngineObject
 		{
 		protected:
-			static void registerCallbacks(lua_State* state);
+			static void RegisterCallbacks(lua_State* state);
 		
-			void registerMeta(lua_State* state);
+			void RegisterMeta(lua_State* state);
 		public:
 			LuaScriptExecutor() {};
 			~LuaScriptExecutor() {};
