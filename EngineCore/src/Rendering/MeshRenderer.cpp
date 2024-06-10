@@ -110,8 +110,9 @@ namespace Engine::Rendering
 
 		VulkanRenderingEngine* renderer = this->owner_engine->GetRenderingEngine();
 
-		glm::mat4 Projection =
-			glm::perspective(glm::radians(45.0f), (float)this->_screenx / this->_screeny, 0.1f, 100.0f);
+		glm::mat4 Projection = glm::perspective(
+			glm::radians(45.0f), (float)this->_screenx / this->_screeny, 0.1f, 100.0f
+		);
 		Projection[1][1] *= -1;
 
 		glm::mat4 View;
@@ -187,7 +188,7 @@ namespace Engine::Rendering
 
 			std::vector<VkDescriptorImageInfo> diffuseImageBufferInfos{};
 			diffuseImageBufferInfos.resize(this->mesh->diffuse_textures.size());
-			for (int diffuseTextureIndex = 0; diffuseTextureIndex < this->mesh->diffuse_textures.size();
+			for (size_t diffuseTextureIndex = 0; diffuseTextureIndex < this->mesh->diffuse_textures.size();
 				 diffuseTextureIndex++)
 			{
 				// Logging::GlobalLogger->SimpleLog(Logging::LogLevel::Debug2, "Filling imageBufferInfos at index %u",
@@ -195,8 +196,8 @@ namespace Engine::Rendering
 
 				if (this->mesh->diffuse_textures[diffuseTextureIndex] != nullptr)
 				{
-					VulkanTextureImage* currentDiffuseTextureImage =
-						this->mesh->diffuse_textures[diffuseTextureIndex]->GetTextureImage();
+					VulkanTextureImage* currentDiffuseTextureImage = this->mesh->diffuse_textures[diffuseTextureIndex]
+																		 ->GetTextureImage();
 
 					if (currentDiffuseTextureImage != nullptr)
 					{

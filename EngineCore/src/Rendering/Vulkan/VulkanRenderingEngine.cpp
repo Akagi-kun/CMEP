@@ -779,7 +779,7 @@ namespace Engine::Rendering
 		std::vector<VkDescriptorPoolSize> poolSizes{};
 
 		poolSizes.resize(settings.binding.size());
-		for (int i = 0; i < settings.binding.size(); i++)
+		for (size_t i = 0; i < settings.binding.size(); i++)
 		{
 			VkDescriptorPoolSize poolSize{};
 			poolSize.type = settings.types[i];

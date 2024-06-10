@@ -119,7 +119,7 @@ namespace Engine::Rendering
 		unsigned int vbo_ = 0;
 		float accu_x = 0.f;
 		float accu_y = 0.f;
-		for (int i = 0; i < this->text.size(); i++)
+		for (size_t i = 0; i < this->text.size(); i++)
 		{
 			vbo_ = 0;
 			if (this->text[i] == '\n')
