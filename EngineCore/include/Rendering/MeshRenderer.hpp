@@ -31,11 +31,13 @@ namespace Engine::Rendering
 		glm::mat3 matMV3x3{};
 		glm::mat4 matMVP{};
 
-		std::unique_ptr<const Rendering::Texture> texture;
+		std::shared_ptr<Rendering::Texture> texture;
+		std::shared_ptr<Mesh> mesh;
 
 		bool has_updated_meshdata = false;
 
-		std::shared_ptr<Mesh> mesh;
+		void AssignMesh(std::shared_ptr<Mesh> new_mesh);
+		void UpdateTexture(std::shared_ptr<Rendering::Texture> texture);
 
 	public:
 		MeshRenderer(Engine* engine);
@@ -52,10 +54,7 @@ namespace Engine::Rendering
 			glm::vec3 parent_size
 		) override;
 		
-		void SupplyData(RendererSupplyData data) override { };
-
-		void AssignMesh(std::shared_ptr<Mesh> new_mesh);
-		void UpdateTexture(const Rendering::Texture* texture);
+		void SupplyData(RendererSupplyData data) override;
 		void UpdateMesh() override;
 
 		void Render(VkCommandBuffer commandBuffer, uint32_t currentFrame) override;

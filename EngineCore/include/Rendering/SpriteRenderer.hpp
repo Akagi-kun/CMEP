@@ -22,7 +22,9 @@ namespace Engine::Rendering
 		VulkanPipeline* pipeline = nullptr;
 
 		void UpdateTexture(std::shared_ptr<Rendering::Texture> new_texture);
+		
 	public:
+		// TODO: Make private after fixes in Scene
 		std::shared_ptr<const Rendering::Texture> texture;
 
 		SpriteRenderer(Engine* engine);

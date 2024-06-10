@@ -27,6 +27,7 @@ namespace Engine::Rendering
 		glm::mat4 matMVP{};
 
 		int UpdateFont(std::shared_ptr<Rendering::Font> font);
+		int UpdateText(const std::string text);
 		
 	public:
 		TextRenderer(Engine* engine);
@@ -45,7 +46,6 @@ namespace Engine::Rendering
 
 		void SupplyData(RendererSupplyData data) override;
 
-		int UpdateText(const std::string text);
 		void UpdateMesh() override;
 
 		void Render(VkCommandBuffer commandBuffer, uint32_t currentFrame) override;

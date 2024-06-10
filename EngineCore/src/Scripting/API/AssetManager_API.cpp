@@ -49,15 +49,15 @@ namespace Engine::Scripting::API
 
 			if (auto locked_asset_manager = asset_manager.lock())
 			{
-				Rendering::Texture *texture = locked_asset_manager->GetTexture(std::move(path)).get();
+				std::shared_ptr<Rendering::Texture> texture = locked_asset_manager->GetTexture(std::move(path));
 
 				if (texture != nullptr)
 				{
 					// Generate object table
 					lua_newtable(state);
 
-					Rendering::Texture **ptr = (Rendering::Texture **)lua_newuserdata(state, sizeof(Rendering::Texture *));
-					(*ptr) = texture;
+					std::shared_ptr<Rendering::Texture>* ptr = (std::shared_ptr<Rendering::Texture>*)lua_newuserdata(state, sizeof(std::shared_ptr<Rendering::Texture>));
+					new (ptr) std::shared_ptr<Rendering::Texture>(texture);
 					lua_setfield(state, -2, "_pointer");
 				}
 				else

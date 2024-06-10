@@ -51,6 +51,26 @@ namespace Engine::Rendering
 		renderer->cleanupVulkanPipeline(this->pipeline);
 	}
 
+	void MeshRenderer::SupplyData(RendererSupplyData data)
+	{
+		switch(data.type)
+		{
+			case RendererSupplyDataType::TEXTURE:
+			{
+				this->UpdateTexture(std::static_pointer_cast<Texture>(data.payload_ptr));
+				//this->UpdateTexture(std::static_pointer_cast<Texture>(data.payload));
+				return;
+			}
+			case RendererSupplyDataType::MESH:
+			{
+				this->AssignMesh(std::static_pointer_cast<Mesh>(data.payload_ptr));
+				return;
+			}
+		}
+
+		throw std::runtime_error("Tried to supply Renderer data with payload type unsupported by the renderer!");
+	}
+
 	void MeshRenderer::AssignMesh(std::shared_ptr<Mesh> new_mesh)
 	{
 		this->mesh = new_mesh;
@@ -59,9 +79,9 @@ namespace Engine::Rendering
 		this->has_updated_meshdata = false;
 	}
 
-	void MeshRenderer::UpdateTexture(const Rendering::Texture* texture)
+	void MeshRenderer::UpdateTexture(std::shared_ptr<Rendering::Texture> texture)
 	{
-		this->texture.reset(texture);
+		this->texture = texture;
 
 		this->has_updated_mesh = false;
 	}

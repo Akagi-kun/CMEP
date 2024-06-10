@@ -71,7 +71,7 @@ namespace Engine::Rendering
 		{
 			case RendererSupplyDataType::TEXTURE:
 			{
-				this->UpdateTexture(std::static_pointer_cast<Texture>(data.payload));
+				this->UpdateTexture(std::static_pointer_cast<Texture>(data.payload_ptr));
 				//this->logger->SimpleLog(Logging::LogLevel::Info, "Supplied texture to SpriteRenderer");
 				return;
 			}

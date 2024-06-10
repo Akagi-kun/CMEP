@@ -30,15 +30,14 @@ namespace Engine::ObjectFactory
 			object->Translate(glm::vec3(x, y, z));
 			object->Scale(glm::vec3(sizex, sizey, 0));
 
-			Rendering::RendererSupplyData texture_supply(Rendering::RendererSupplyDataType::TEXTURE, sprite);
-			// data.type = Rendering::RendererSupplyDataType::TEXTURE;
-			// data.payload = sprite;
-
 			object->renderer->scene_manager = scene_manager;
-
+			
+			Rendering::RendererSupplyData texture_supply(Rendering::RendererSupplyDataType::TEXTURE, sprite);
 			object->renderer->SupplyData(texture_supply);
 
-			((Rendering::SpriteRenderer*)object->renderer)->UpdateMesh();
+			//((Rendering::SpriteRenderer*)object->renderer)->UpdateMesh();
+			object->renderer->UpdateMesh();
+
 			return object;
 		}
 		return nullptr;
@@ -69,12 +68,15 @@ namespace Engine::ObjectFactory
 			object->renderer->scene_manager = scene_manager;
 
 			Rendering::RendererSupplyData font_supply(Rendering::RendererSupplyDataType::FONT, font);
-
 			object->renderer->SupplyData(font_supply);
 
+			Rendering::RendererSupplyData text_supply(Rendering::RendererSupplyDataType::TEXT, text);
+			object->renderer->SupplyData(text_supply);
+
 			//((Rendering::TextRenderer*)object->renderer)->UpdateFont(font);
-			((Rendering::TextRenderer*)object->renderer)->UpdateText(std::move(text));
-			((Rendering::TextRenderer*)object->renderer)->UpdateMesh();
+			//((Rendering::TextRenderer*)object->renderer)->UpdateText(std::move(text));
+			//((Rendering::TextRenderer*)object->renderer)->UpdateMesh();
+			object->renderer->UpdateMesh();
 
 			return object;
 		}
@@ -107,7 +109,10 @@ namespace Engine::ObjectFactory
 
 			object->renderer->scene_manager = scene_manager;
 
-			((Rendering::MeshRenderer*)object->renderer)->AssignMesh(mesh);
+			Rendering::RendererSupplyData mesh_supply(Rendering::RendererSupplyDataType::MESH, mesh);
+			object->renderer->SupplyData(mesh_supply);
+
+			//((Rendering::MeshRenderer*)object->renderer)->AssignMesh(mesh);
 			return object;
 		}
 		return nullptr;

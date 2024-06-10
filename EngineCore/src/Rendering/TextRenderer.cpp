@@ -82,8 +82,13 @@ namespace Engine::Rendering
 		{
 			case RendererSupplyDataType::FONT:
 			{
-				this->UpdateFont(std::static_pointer_cast<Font>(data.payload));
+				this->UpdateFont(std::static_pointer_cast<Font>(data.payload_ptr));
 				//this->UpdateTexture(std::static_pointer_cast<Texture>(data.payload));
+				return;
+			}
+			case RendererSupplyDataType::TEXT:
+			{
+				this->UpdateText(data.payload_string);
 				return;
 			}
 		}

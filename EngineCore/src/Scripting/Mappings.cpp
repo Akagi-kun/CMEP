@@ -138,9 +138,12 @@ namespace Engine::Scripting::Mappings
 			lua_getfield(state, 1, "_pointer");
 			Rendering::IRenderer* renderer = *(Rendering::IRenderer**)lua_touserdata(state, -1);
 
-			const char* newtext = lua_tostring(state, 2);
+			const char* text = lua_tostring(state, 2);
 
-			((::Engine::Rendering::TextRenderer*)renderer)->UpdateText(std::string(newtext));
+			Rendering::RendererSupplyData text_supply(Rendering::RendererSupplyDataType::TEXT, text);
+			renderer->SupplyData(text_supply);
+
+			//((::Engine::Rendering::TextRenderer*)renderer)->UpdateText(std::string(text));
 
 			return 0;
 		}
@@ -156,10 +159,12 @@ namespace Engine::Scripting::Mappings
 			lua_getfield(state, 1, "_pointer");
 			Rendering::IRenderer* renderer = *(Rendering::IRenderer**)lua_touserdata(state, -1);
 
-			lua_getfield(state, 2, "_pointer");
-			Rendering::Texture* texture = *(Rendering::Texture**)lua_touserdata(state, -1);
+			lua_getfield(state, 2, "_smart_ptr");
+			std::shared_ptr<Rendering::Texture> texture = *(std::shared_ptr<Rendering::Texture>*)lua_touserdata(state, -1);
 
-			((::Engine::Rendering::MeshRenderer*)renderer)->UpdateTexture(texture);
+			Rendering::RendererSupplyData texture_supply(Rendering::RendererSupplyDataType::TEXTURE, texture);
+			renderer->SupplyData(texture_supply);
+			//((::Engine::Rendering::MeshRenderer*)renderer)->UpdateTexture(texture);
 
 			return 0;
 		}
