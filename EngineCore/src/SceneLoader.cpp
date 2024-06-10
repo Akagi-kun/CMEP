@@ -268,7 +268,8 @@ namespace Engine
 
 	void SceneLoader::LoadSceneTemplates(nlohmann::json& data, std::shared_ptr<Scene>& scene)
 	{
-		if (auto& locked_asset_manager = this->GetOwnerEngine()->GetAssetManager().lock())
+		std::weak_ptr<AssetManager> asset_manager = this->owner_engine->GetAssetManager();
+		if (auto locked_asset_manager = asset_manager.lock())
 		{
 			// Load scene object templates
 			for (auto& template_entry : data["templates"])
