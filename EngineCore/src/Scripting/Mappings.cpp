@@ -47,86 +47,6 @@ namespace Engine::Scripting::Mappings
 
 #pragma endregion
 
-		/*
-		#pragma region Engine
-
-				int EngineGetAssetManager(lua_State* state)
-				{
-					Engine* engine = *(Engine**)lua_touserdata(state, 1);
-
-					std::weak_ptr<AssetManager> asset_manager = engine->GetAssetManager();
-
-					if (!asset_manager.expired())
-					{
-						API::LuaObjectFactories::AssetManagerFactory(state, asset_manager);
-					}
-					else
-					{
-						std::weak_ptr<Logging::Logger> logger = API::LuaObjectFactories::MetaLoggerFactory(state);
-
-						if (auto locked_logger = logger.lock())
-						{
-							locked_logger->SimpleLog(
-								Logging::LogLevel::Warning, LOGPFX_CURRENT "AssetManager requested but is expired!"
-							);
-						}
-
-						return luaL_error(state, "AssetManager is expired");
-					}
-
-					return 1;
-				}
-
-				int EngineGetSceneManager(lua_State* state)
-				{
-					Engine* engine = *(Engine**)lua_touserdata(state, 1);
-
-					std::weak_ptr<SceneManager> scene_manager = engine->GetSceneManager();
-
-					if (!scene_manager.expired())
-					{
-						API::LuaObjectFactories::SceneManagerFactory(state, scene_manager);
-					}
-					else
-					{
-						std::weak_ptr<Logging::Logger> logger = API::LuaObjectFactories::MetaLoggerFactory(state);
-
-						if (auto locked_logger = logger.lock())
-						{
-							locked_logger->SimpleLog(
-								Logging::LogLevel::Warning, LOGPFX_CURRENT "SceneManager requested but is expired!"
-							);
-						}
-
-						return luaL_error(state, "SceneManager is expired");
-					}
-
-					return 1;
-				}
-
-				int EngineSetFramerateTarget(lua_State* state)
-				{
-					Engine* engine = *(Engine**)lua_touserdata(state, 1);
-
-					unsigned int framerate_target = static_cast<unsigned int>(lua_tointeger(state, 2));
-
-					engine->SetFramerateTarget(framerate_target);
-
-					return 0;
-				}
-
-				int EngineStop(lua_State* state)
-				{
-					Engine* engine = *(Engine**)lua_touserdata(state, 1);
-
-					engine->Stop();
-
-					return 0;
-				}
-
-		#pragma endregion
-		 */
-
 #pragma region TextRenderer
 
 		int TextRendererUpdateText(lua_State* state)
@@ -298,11 +218,6 @@ namespace Engine::Scripting::Mappings
 	} // namespace Functions
 
 	std::unordered_map<std::string, lua_CFunction> mappings = {
-		// CMEP_LUAMAPPING_DEFINE(EngineGetAssetManager),
-		// CMEP_LUAMAPPING_DEFINE(EngineSetFramerateTarget),
-		// CMEP_LUAMAPPING_DEFINE(EngineGetSceneManager),
-		// CMEP_LUAMAPPING_DEFINE(EngineStop),
-
 		CMEP_LUAMAPPING_DEFINE(TextRendererUpdateText),
 
 		CMEP_LUAMAPPING_DEFINE(MeshRendererUpdateTexture),
