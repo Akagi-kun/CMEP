@@ -1,6 +1,6 @@
-#include "Engine.hpp"
 #include "OpaqueEngine.hpp"
-#include "PlatformSemantics.hpp"
+#include "Engine.hpp"
+
 
 namespace Engine
 {
@@ -28,4 +28,4 @@ namespace Engine
 	{
 		this->d_engine->ConfigFile(path);
 	}
-}
+} // namespace Engine

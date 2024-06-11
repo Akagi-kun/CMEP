@@ -3,33 +3,19 @@
 #include <functional>
 
 #include "InternalEngineObject.hpp"
-#include "Logging/Logging.hpp"
-#include "PlatformSemantics.hpp"
 #include "Rendering/IRenderer.hpp"
 
 namespace Engine
 {
-	class Object : public InternalEngineObject
+	class Object final : public InternalEngineObject
 	{
 	protected:
-		/// <summary>
-		/// Position of object in worldspace.
-		/// </summary>
 		glm::vec3 pos = glm::vec3();
 
-		/// <summary>
-		/// Size of object.
-		/// </summary>
 		glm::vec3 size = glm::vec3();
 
-		/// <summary>
-		/// Rotation of object.
-		/// </summary>
 		glm::vec3 rotation = glm::vec3();
 
-		/// <summary>
-		/// Parent pos size and rot
-		/// </summary>
 		glm::vec3 parent_pos = glm::vec3();
 		glm::vec3 parent_size = glm::vec3();
 		glm::vec3 parent_rotation = glm::vec3();
