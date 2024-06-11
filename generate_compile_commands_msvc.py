@@ -44,9 +44,12 @@ def generate_compile_commands(vs_project_path, output_path, root_path, default_i
 
 	default_includes_as_str: list[str] = [str(include) for include in default_includes]
 
+	files_listing: list[str] = []
+
+	print(f"- Generating compile_commands.json")
 	for project_file in Path(vs_project_path).rglob('*.vcxproj'):
 		includes, defines, files, warning_level = parse_vcxproj(project_file)
-		print(f"- Parsing {project_file}")
+		print(f"  Parsing {project_file}")
 
 		processed_file: str = str()
 		processed_includes: list[str] = []
@@ -77,6 +80,8 @@ def generate_compile_commands(vs_project_path, output_path, root_path, default_i
 			else:
 				processed_file = str(Path(file).relative_to(root_path))
 
+			files_listing.append(processed_file + "\n")
+
 			command = {
 				'directory': str(Path(root_path).absolute()),
 				#'command': f'cl /showIncludes /W{warning_level} /I{" /I".join(processed_includes)} /D{" /D".join(defines)} /c {file}',
@@ -85,8 +90,11 @@ def generate_compile_commands(vs_project_path, output_path, root_path, default_i
 			}
 			compile_commands.append(command)
 
-	with open(output_path, 'w') as f:
+	with open(output_path + "compile_commands.json", 'w') as f:
 		json.dump(compile_commands, f, indent=2)
+
+	with open(output_path + "source_files.txt", "w") as f:
+		f.writelines(files_listing)
 
 def get_default_includes():
 	vswhere_path = os.path.expandvars("%ProgramFiles(x86)%\\Microsoft Visual Studio\\Installer\\vswhere.exe")
@@ -103,26 +111,24 @@ def get_default_includes():
 	print(f"- VS Installed at '{str(install_path)}'")
 
 	tool_path: Path = install_path.joinpath("VC", "Auxiliary", "Build")
+	vcvars_path: str = (str(tool_path) + "\\vcvarsall.bat")
 
-	print(f"- vcvarsall.bat at '{str(tool_path)}'")
-
-	vcvars_path = (str(tool_path) + "\\vcvarsall.bat")
+	print(f"- vcvarsall.bat at '{ vcvars_path }'")
 
 	p = subprocess.Popen(['cmd', '/v:on', '/q', '/c', vcvars_path, "x64", '&echo(!INCLUDE!'], stdin=subprocess.PIPE, stdout=subprocess.PIPE)
 	stdout, _ = p.communicate()
+	lines: list[str] = stdout.decode().splitlines()
 
-	lines = stdout.decode().splitlines()
-
-	paths = [Path(line.strip()) for line in lines[5:][0].split(";")]
+	paths: list[Path] = [Path(line.strip()) for line in lines[5:][0].split(";")]
 
 	return paths
 
 if __name__ == '__main__':
 	vs_project_path = 'build/'
-	output_path = './compile_commands.json'
+	output_path = './'
 	root_path = Path().absolute()
 
-	print(f"Generating '{output_path}' from projects '{vs_project_path}'")
+	print(f"Generating cmake-tidy files at '{output_path}' from projects at '{vs_project_path}'")
 	print(f"- Root is '{str(root_path)}'")
 
 	default_includes = get_default_includes()

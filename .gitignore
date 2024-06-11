@@ -399,3 +399,4 @@ cov-int
 *.info
 
 /compile_commands.json
+/source_files.txt

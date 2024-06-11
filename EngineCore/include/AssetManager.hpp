@@ -3,7 +3,6 @@
 #include <string>
 #include <unordered_map>
 
-#include "PlatformSemantics.hpp"
 #include "Rendering/Mesh.hpp"
 #include "Rendering/Texture.hpp"
 #include "Scripting/LuaScript.hpp"
