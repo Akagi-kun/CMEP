@@ -3,6 +3,9 @@
 #include "Logging/Logging.hpp"
 #include "Scripting/Mappings.hpp"
 
+#include "Scripting/API/LuaFactories.hpp"
+#include "Scripting/lualib/lua.h"
+
 namespace Engine
 {
 	namespace Scripting
@@ -73,10 +76,19 @@ namespace Engine
 			// Get script state
 			lua_State* state = script->GetState();
 
-			// Run the start function in a way decided by the ExecuteType
-			lua_pushcfunction(state, LuaErrorHandler); // Push error handler
-			lua_getglobal(state, function.c_str());	   // Get start function
+			// Clear stack
+			lua_settop(state, 0);
+
+			// Push error handler
+			lua_pushcfunction(state, LuaErrorHandler);
+
+			// Get start function
+			lua_getglobal(state, function.c_str());
+
+			// Lua return code
 			int errcall = LUA_OK;
+
+			// Run the start function in a way decided by the ExecuteType
 			switch (etype)
 			{
 				case ExecuteType::EventHandler:
@@ -91,8 +103,7 @@ namespace Engine
 					lua_pushinteger(state, event->keycode);
 					lua_setfield(state, -2, "keycode");
 
-					Engine** engine = (Engine**)lua_newuserdata(state, sizeof(Engine*));
-					*engine = event->raised_from;
+					Scripting::API::LuaObjectFactories::EngineFactory(state, event->raised_from);
 					lua_setfield(state, -2, "engine");
 
 					// Mouse table
@@ -104,7 +115,14 @@ namespace Engine
 					lua_setfield(state, -2, "mouse");
 
 					// Call into script
-					errcall = lua_pcall(state, 1, 1, -3); // Call
+					// Stack content: [
+					//		...,
+					//		(-3, func)LuaErrorHandler,
+					//		(-2, func)StartFunction,
+					//		(-1, table)Event
+					//	] <- stack top is here
+					//
+					errcall = lua_pcall(state, 1, 1, -3);
 					break;
 				}
 				default:
@@ -120,7 +138,8 @@ namespace Engine
 
 				this->logger->SimpleLog(
 					Logging::LogLevel::Warning,
-					"Error when calling Lua\n\tscript '%s' function: '%s'\n\tCall error code: %i\n\tError message: %s",
+					"Error when calling Lua\n\tscript '%s' function: "
+					"'%s'\n\tCall error code: %i\n\tError message: %s",
 					script->path.c_str(),
 					function.c_str(),
 					errcall,
@@ -152,7 +171,8 @@ namespace Engine
 			{
 				this->logger->SimpleLog(
 					Logging::LogLevel::Error,
-					"Error when loading and compiling Lua script '%s'\n   Error codes:\n    load: %i\n    compile: "
+					"Error when loading and compiling Lua script "
+					"'%s'\n   Error codes:\n    load: %i\n    compile: "
 					"%i\n  Compilation error: %s",
 					script->path.c_str(),
 					errload,

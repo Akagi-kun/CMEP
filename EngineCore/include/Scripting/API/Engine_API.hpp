@@ -6,5 +6,5 @@
 
 namespace Engine::Scripting::API
 {
-	extern std::unordered_map<std::string, lua_CFunction> asset_manager_mappings;
+	extern std::unordered_map<std::string, lua_CFunction> engine_mappings;
 }

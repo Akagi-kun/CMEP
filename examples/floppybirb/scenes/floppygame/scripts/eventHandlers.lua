@@ -90,7 +90,7 @@ onKeyDown = function(event)
 	-- 256 is the keycode of the ESC key
 	--
 	if event.keycode == 256 then
-		cmepapi.EngineStop(event.engine);
+		event.engine:Stop();
 		return 0;
 	end
 
@@ -130,8 +130,10 @@ onUpdate = function(event)
 	deltaTimeAvg = deltaTimeAvg + event.deltaTime;
 	deltaTimeCount = deltaTimeCount + 1;
 
-	local asset_manager = cmepapi.EngineGetAssetManager(event.engine);
-	local scene_manager = cmepapi.EngineGetSceneManager(event.engine);
+	local asset_manager = event.engine:GetAssetManager();
+	local scene_manager = event.engine:GetSceneManager();
+	--local asset_manager = cmepapi.EngineGetAssetManager(event.engine);
+	--local scene_manager = cmepapi.EngineGetSceneManager(event.engine);
 
 	-- Update frametime counter, recommend to leave this here for debugging purposes
 	if deltaTimeCount >= 30 then
@@ -260,11 +262,14 @@ onUpdate = function(event)
 end
 
 onInit = function(event)
-	cmepapi.EngineSetFramerateTarget(event.engine, 0); -- VSYNC enabled
+	event.engine:SetFramerateTarget(event.engine, 0); -- VSYNC enabled if target is 0
+	--cmepapi.EngineSetFramerateTarget(event.engine, 0); -- VSYNC enabled
 
 	-- Get managers
-	local asset_manager = cmepapi.EngineGetAssetManager(event.engine);
-	local scene_manager = cmepapi.EngineGetSceneManager(event.engine);
+	local asset_manager = event.engine:GetAssetManager();
+	local scene_manager = event.engine:GetSceneManager();
+	--local asset_manager = cmepapi.EngineGetAssetManager(event.engine);
+	--local scene_manager = cmepapi.EngineGetSceneManager(event.engine);
 
 	-- Create frametime counter and add it to scene
 	local font = asset_manager:GetFont("myfont");

@@ -2,6 +2,8 @@
 
 #include "Object.hpp"
 
+#include "Scripting/API/framework.hpp"
+
 namespace Engine::Scripting::API
 {
 	namespace Functions_Object

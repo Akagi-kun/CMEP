@@ -92,6 +92,10 @@ namespace Engine::Rendering
 				this->has_updated_mesh = false;
 				return;
 			}
+			default:
+			{
+				break;
+			}
 		}
 
 		throw std::runtime_error("Tried to supply Renderer data with payload type unsupported by the renderer!");
@@ -116,7 +120,6 @@ namespace Engine::Rendering
 
 		std::vector<RenderingVertex> generated_mesh = {};
 
-		unsigned int vbo = 0;
 		float accu_x = 0.f;
 		float accu_y = 0.f;
 		for (size_t i = 0; i < this->text.size(); i++)
@@ -166,32 +169,32 @@ namespace Engine::Rendering
 				std::array<RenderingVertex, 6> vertices = {};
 				vertices[0] = {
 					glm::vec3(x, ys + y, z),
-					glm::vec3(1.f, 0.f, 0.f),
+					glm::vec3(1.f, 1.f, 1.f),
 					glm::vec2((ch->x) / (float)texture_x, (ch->y + ch->height) / (float)texture_y)
 				};
 				vertices[1] = {
 					glm::vec3(xs + x, ys + y, z),
-					glm::vec3(1.f, 0.f, 0.f),
+					glm::vec3(1.f, 1.f, 1.f),
 					glm::vec2((ch->x + ch->width) / (float)texture_x, (ch->y + ch->height) / (float)texture_y)
 				};
 				vertices[2] = {
 					glm::vec3(x, y, z),
-					glm::vec3(1.f, 0.f, 0.f),
+					glm::vec3(1.f, 1.f, 1.f),
 					glm::vec2((ch->x) / (float)texture_x, (ch->y) / (float)texture_y)
 				};
 				vertices[3] = {
 					glm::vec3(xs + x, ys + y, z),
-					glm::vec3(1.f, 0.f, 0.f),
+					glm::vec3(1.f, 1.f, 1.f),
 					glm::vec2((ch->x + ch->width) / (float)texture_x, (ch->y + ch->height) / (float)texture_y)
 				};
 				vertices[4] = {
 					glm::vec3(xs + x, y, z),
-					glm::vec3(1.f, 0.f, 0.f),
+					glm::vec3(1.f, 1.f, 1.f),
 					glm::vec2((ch->x + ch->width) / (float)texture_x, (ch->y) / (float)texture_y)
 				};
 				vertices[5] = {
 					glm::vec3(x, y, z),
-					glm::vec3(1.f, 0.f, 0.f),
+					glm::vec3(1.f, 1.f, 1.f),
 					glm::vec2((ch->x) / (float)texture_x, (ch->y) / (float)texture_y)
 				};
 

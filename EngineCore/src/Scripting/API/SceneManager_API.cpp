@@ -1,5 +1,12 @@
 #include "Scripting/API/SceneManager_API.hpp"
+#include "SceneManager.hpp"
 #include "Scripting/API/LuaFactories.hpp"
+
+#include "Scripting/API/framework.hpp"
+
+// Prefixes for logging messages
+#define LOGPFX_CURRENT LOGPFX_LUA_MAPPED
+#include "Logging/LoggingPrefix.hpp"
 
 namespace Engine::Scripting::API
 {
@@ -170,7 +177,9 @@ namespace Engine::Scripting::API
 				if (auto locked_logger = logger.lock())
 				{
 					locked_logger->SimpleLog(
-						Logging::LogLevel::Warning, "Lua: Object %s requested but returned nullptr!", obj_name.c_str()
+						Logging::LogLevel::Warning,
+						LOGPFX_CURRENT "Object %s requested but returned nullptr!",
+						obj_name.c_str()
 					);
 				}
 
@@ -222,7 +231,7 @@ namespace Engine::Scripting::API
 					{
 						locked_logger->SimpleLog(
 							Logging::LogLevel::Warning,
-							"Lua: Templated Object %s could not be added ! (check if valid?)",
+							LOGPFX_CURRENT "Templated Object '%s' could not be added! (check if valid?)",
 							name.c_str()
 						);
 					}
@@ -234,7 +243,9 @@ namespace Engine::Scripting::API
 
 				if (auto locked_logger = logger.lock())
 				{
-					locked_logger->SimpleLog(Logging::LogLevel::Error, "Lua: Scene manager could not be locked!");
+					locked_logger->SimpleLog(
+						Logging::LogLevel::Error, LOGPFX_CURRENT "Scene manager could not be locked!"
+					);
 				}
 				// TODO: Possible lua_error?
 			}

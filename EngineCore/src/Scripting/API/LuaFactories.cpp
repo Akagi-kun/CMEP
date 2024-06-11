@@ -1,6 +1,7 @@
 #include "Scripting/API/LuaFactories.hpp"
 
 #include "Scripting/API/AssetManager_API.hpp"
+#include "Scripting/API/Engine_API.hpp"
 #include "Scripting/API/Object_API.hpp"
 #include "Scripting/API/SceneManager_API.hpp"
 
@@ -70,6 +71,25 @@ namespace Engine::Scripting::API
 			void* ptr_obj = lua_newuserdata(state, sizeof(std::weak_ptr<AssetManager>));
 			new (ptr_obj) std::weak_ptr<AssetManager>(asset_manager_ptr);
 			lua_setfield(state, -2, "_smart_ptr");
+		}
+
+		void EngineFactory(lua_State* state, Engine* engine_ptr)
+		{
+			// Generate Engine table
+			lua_newtable(state);
+
+			// Engine mappings
+			for (auto& mapping : engine_mappings)
+			{
+				lua_pushcfunction(state, mapping.second);
+				lua_setfield(state, -2, mapping.first.c_str());
+			}
+
+			// Add Engine pointer
+			Engine** ptr_obj = (Engine**)lua_newuserdata(state, sizeof(Engine*));
+			// new (ptr_obj) engine_ptr;
+			(*ptr_obj) = engine_ptr;
+			lua_setfield(state, -2, "_pointer");
 		}
 
 		std::weak_ptr<Logging::Logger> MetaLoggerFactory(lua_State* state)

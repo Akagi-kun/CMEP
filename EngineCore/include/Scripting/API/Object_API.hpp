@@ -1,6 +1,8 @@
 #pragma once
 
-#include "framework.hpp"
+#include "Scripting/lualib/lua.hpp"
+#include <string>
+#include <unordered_map>
 
 namespace Engine::Scripting::API
 {

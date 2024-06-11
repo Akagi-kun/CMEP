@@ -1,14 +1,7 @@
 #pragma once
 
 #include "lualib/lua.hpp"
-#include "SceneManager.hpp"
-
 #include <unordered_map>
-
-#ifdef CMEP_LUAMAPPING_DEFINE
-#undef CMEP_LUAMAPPING_DEFINE
-#define CMEP_LUAMAPPING_DEFINE(mapping) {#mapping, Functions::mapping }
-#endif
 
 namespace Engine::Scripting::Mappings
 {
@@ -43,11 +36,9 @@ namespace Engine::Scripting::Mappings
 		int ObjectFactoryCreateTextObject(lua_State* state);
 		int ObjectFactoryCreateGeneric3DObject(lua_State* state);
 
-		//int mesh_Mesh(lua_State* state);
-		//int mesh_CreateMeshFromObj(lua_State* state);
-	}
-
-	// const uint32_t countMappings = 24;
+		// int mesh_Mesh(lua_State* state);
+		// int mesh_CreateMeshFromObj(lua_State* state);
+	} // namespace Functions
 
 	extern std::unordered_map<std::string, lua_CFunction> scene_manager_mappings;
 	extern std::unordered_map<std::string, lua_CFunction> object_mappings;
@@ -55,6 +46,4 @@ namespace Engine::Scripting::Mappings
 	[[deprecated]]
 	extern std::unordered_map<std::string, lua_CFunction> mappings;
 
-	// extern const char* nameMappings[];
-	// extern lua_CFunction functionMappings[];
-}
+} // namespace Engine::Scripting::Mappings
