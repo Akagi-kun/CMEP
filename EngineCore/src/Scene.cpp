@@ -106,6 +106,11 @@ namespace Engine
 
 					break;
 				}
+				default:
+				{
+					// Unknow renderer type, cannot add object
+					return nullptr;
+				}
 			}
 
 			for (auto& supply : object_template.supply_list)

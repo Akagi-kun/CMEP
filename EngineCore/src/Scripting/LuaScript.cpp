@@ -10,4 +10,4 @@ namespace Engine::Scripting
 
 		executor->LoadAndCompileScript(this);
 	}
-}
+} // namespace Engine::Scripting

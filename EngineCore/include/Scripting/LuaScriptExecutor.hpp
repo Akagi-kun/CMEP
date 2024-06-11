@@ -2,33 +2,29 @@
 
 #include "lualib/lua.hpp"
 
-#include "EventHandling.hpp"
-#include "LuaScript.hpp"
-#include "PlatformSemantics.hpp"
 #include "InternalEngineObject.hpp"
+#include "LuaScript.hpp"
 
-namespace Engine
+namespace Engine::Scripting
 {
-	namespace Scripting
+	enum class ExecuteType
 	{
-		enum class ExecuteType {
-			EventHandler,
-			ObjectScript
-		};
+		EventHandler
+	};
 
-		class LuaScriptExecutor : public InternalEngineObject
-		{
-		protected:
-			static void RegisterCallbacks(lua_State* state);
-		
-			void RegisterMeta(lua_State* state);
-		public:
-			LuaScriptExecutor() {};
-			~LuaScriptExecutor() {};
+	class LuaScriptExecutor : public InternalEngineObject
+	{
+	protected:
+		static void RegisterCallbacks(lua_State* state);
 
-			int CallIntoScript(ExecuteType etype, std::shared_ptr<LuaScript> script, std::string function, void* data);
+		void RegisterMeta(lua_State* state);
 
-			int LoadAndCompileScript(LuaScript* script);
-		};
-	}
-}
+	public:
+		LuaScriptExecutor() {};
+		~LuaScriptExecutor() {};
+
+		int CallIntoScript(ExecuteType etype, std::shared_ptr<LuaScript> script, std::string function, void* data);
+
+		int LoadAndCompileScript(LuaScript* script);
+	};
+} // namespace Engine::Scripting

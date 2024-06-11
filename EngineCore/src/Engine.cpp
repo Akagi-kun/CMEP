@@ -44,33 +44,33 @@ namespace Engine
 {
 	// TODO: Move this abomination elsewhere...
 	//
-	const char* const build = "CMEP EngineCore " __TIME__ " " __DATE__ " build, configured " BUILDCONFIG
-							  " " MACRO_STR(IS_DEBUG);
+	const char* const buildinfo_build = "CMEP EngineCore " __TIME__ " " __DATE__ " build, configured " BUILDCONFIG
+										" " MACRO_STR(IS_DEBUG);
 #if defined(_MSC_VER)
 #	pragma clang diagnostic ignored "-W#pragma-messages"
 #	pragma message("Compiler MSVC detected")
-	const char* const compiledby = "MSVC " MACRO_STR(_MSC_FULL_VER) "." MACRO_STR(_MSC_BUILD);
+	const char* const buildinfo_compiledby = "MSVC " MACRO_STR(_MSC_FULL_VER) "." MACRO_STR(_MSC_BUILD);
 #elif defined(__GNUC__)
 #	pragma message("Compiler GNU-like detected")
 #	if defined(__llvm__)
 #		pragma message("Compiler LLVM detected")
 #		if defined(__clang__)
 #			pragma message("Compiler LLVM-clang detected")
-	const char* const _compiledby = "LLVM-clang " MACRO_STR(__clang_major__) "." MACRO_STR(__clang_minor__
+	const char* const buildinfo_compiledby = "LLVM-clang " MACRO_STR(__clang_major__) "." MACRO_STR(__clang_minor__
 	) "." MACRO_STR(__clang_patchlevel__);
 #		else
 #			pragma message("Compiler LLVM-gcc detected")
-	const char* const _compiledby = "LLVM-GCC " MACRO_STR(__GNUC__) "." MACRO_STR(__GNUC_MINOR__
+	const char* const buildinfo_compiledby = "LLVM-GCC " MACRO_STR(__GNUC__) "." MACRO_STR(__GNUC_MINOR__
 	) "." MACRO_STR(__GNUC_PATCHLEVEL__);
 #		endif
 #	else
 #		pragma message("Compiler gcc detected")
-	const char* const _compiledby = "GCC " MACRO_STR(__GNUC__) "." MACRO_STR(__GNUC_MINOR__
+	const char* const buildinfo_compiledby = "GCC " MACRO_STR(__GNUC__) "." MACRO_STR(__GNUC_MINOR__
 	) "." MACRO_STR(__GNUC_PATCHLEVEL__);
 #	endif
 #else
 #	pragma warning "Compiler could not be identified"
-	const char* const _compiledby = "Nil";
+	const char* const buildinfo_compiledby = "Nil";
 #endif
 
 	// TODO: Does this have to be global?
@@ -397,8 +397,8 @@ namespace Engine
 		this->logger->SimpleLog(
 			Logging::LogLevel::Info,
 			LOGPFX_CURRENT "build info:\n////\nRunning %s\nCompiled by %s\n////\n",
-			build,
-			compiledby
+			buildinfo_build,
+			buildinfo_compiledby
 		);
 
 		// Load configuration

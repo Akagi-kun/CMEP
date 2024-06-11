@@ -2,7 +2,6 @@
 #include "Rendering/MeshRenderer.hpp"
 #include "Rendering/TextRenderer.hpp"
 #include "Rendering/Texture.hpp"
-#include "glm/glm.hpp"
 
 #include "AssetManager.hpp"
 #include "SceneManager.hpp"
@@ -12,12 +11,10 @@
 #include "Engine.hpp"
 
 #include "Scripting/API/LuaFactories.hpp"
-#include "Scripting/API/Object_API.hpp"
-#include "Scripting/API/SceneManager_API.hpp"
 
 #ifdef CMEP_LUAMAPPING_DEFINE
-#undef CMEP_LUAMAPPING_DEFINE
-#define CMEP_LUAMAPPING_DEFINE(mapping) {#mapping, Functions::mapping}
+#	undef CMEP_LUAMAPPING_DEFINE
+#	define CMEP_LUAMAPPING_DEFINE(mapping) {#mapping, Functions::mapping}
 #endif
 
 // Prefixes for logging messages

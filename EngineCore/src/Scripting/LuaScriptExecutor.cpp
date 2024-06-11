@@ -1,8 +1,6 @@
 #include "Scripting/LuaScriptExecutor.hpp"
-#include "AssetManager.hpp"
 #include "Engine.hpp"
 #include "Logging/Logging.hpp"
-#include "SceneManager.hpp"
 #include "Scripting/Mappings.hpp"
 
 namespace Engine
@@ -82,6 +80,7 @@ namespace Engine
 			switch (etype)
 			{
 				case ExecuteType::EventHandler:
+				{
 					EventHandling::Event* event = (EventHandling::Event*)data;
 
 					// Event table
@@ -107,6 +106,11 @@ namespace Engine
 					// Call into script
 					errcall = lua_pcall(state, 1, 1, -3); // Call
 					break;
+				}
+				default:
+				{
+					return 1;
+				}
 			}
 
 			if (errcall != LUA_OK)
