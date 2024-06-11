@@ -16,7 +16,6 @@ namespace Engine
 
 	namespace Rendering
 	{
-
 		class Shader;
 
 		/**

@@ -397,3 +397,5 @@ cov-int
 /*.css
 **.html
 *.info
+
+/compile_commands.json

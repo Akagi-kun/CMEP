@@ -1,12 +1,10 @@
-#include <assert.h>
+// #include <cassert>
 #include <chrono>
 #include <fstream>
 #include <memory>
 #include <thread>
 
 #include "nlohmann-json/single_include/nlohmann/json.hpp"
-
-#include "glm/glm.hpp"
 
 #include "Rendering/AxisRenderer.hpp"
 
@@ -15,7 +13,6 @@
 
 #include "AssetManager.hpp"
 #include "Engine.hpp"
-#include "Factories/ObjectFactory.hpp"
 #include "Object.hpp"
 
 // Prefixes for logging messages
@@ -29,15 +26,15 @@
 // #endif
 
 #ifdef DEBUG
-#define IS_DEBUG 1
+#	define IS_DEBUG 1
 #else
-#define IS_DEBUG 0
+#	define IS_DEBUG 0
 #endif
 
 #if IS_DEBUG == 1
-#define BUILDCONFIG "DEBUG"
+#	define BUILDCONFIG "DEBUG"
 #else
-#define BUILDCONFIG "RELEASE"
+#	define BUILDCONFIG "RELEASE"
 #endif
 
 #define MACRO_QUOTE(name) #name
@@ -50,28 +47,29 @@ namespace Engine
 	const char* const build = "CMEP EngineCore " __TIME__ " " __DATE__ " build, configured " BUILDCONFIG
 							  " " MACRO_STR(IS_DEBUG);
 #if defined(_MSC_VER)
-#pragma message("Compiler MSVC detected")
+#	pragma clang diagnostic ignored "-W#pragma-messages"
+#	pragma message("Compiler MSVC detected")
 	const char* const compiledby = "MSVC " MACRO_STR(_MSC_FULL_VER) "." MACRO_STR(_MSC_BUILD);
 #elif defined(__GNUC__)
-#pragma message("Compiler GNU-like detected")
-#if defined(__llvm__)
-#pragma message("Compiler LLVM detected")
-#if defined(__clang__)
-#pragma message("Compiler LLVM-clang detected")
+#	pragma message("Compiler GNU-like detected")
+#	if defined(__llvm__)
+#		pragma message("Compiler LLVM detected")
+#		if defined(__clang__)
+#			pragma message("Compiler LLVM-clang detected")
 	const char* const _compiledby = "LLVM-clang " MACRO_STR(__clang_major__) "." MACRO_STR(__clang_minor__
 	) "." MACRO_STR(__clang_patchlevel__);
-#else
-#pragma message("Compiler LLVM-gcc detected")
+#		else
+#			pragma message("Compiler LLVM-gcc detected")
 	const char* const _compiledby = "LLVM-GCC " MACRO_STR(__GNUC__) "." MACRO_STR(__GNUC_MINOR__
 	) "." MACRO_STR(__GNUC_PATCHLEVEL__);
-#endif
-#else
-#pragma message("Compiler gcc detected")
+#		endif
+#	else
+#		pragma message("Compiler gcc detected")
 	const char* const _compiledby = "GCC " MACRO_STR(__GNUC__) "." MACRO_STR(__GNUC_MINOR__
 	) "." MACRO_STR(__GNUC_PATCHLEVEL__);
-#endif
+#	endif
 #else
-#pragma warning "Compiler could not be identified"
+#	pragma warning "Compiler could not be identified"
 	const char* const _compiledby = "Nil";
 #endif
 

@@ -1,10 +1,6 @@
 #pragma once
 
-#include <atomic>
-#include <functional>
 #include <memory>
-#include <unordered_map>
-#include <vector>
 
 #include "Rendering/Vulkan/VulkanImageFactory.hpp"
 #include "Rendering/Vulkan/VulkanRenderingEngine.hpp"

@@ -1,14 +1,11 @@
 #pragma once
 
 #include <functional>
-#include <optional>
 
-#include "glm/matrix.hpp"
-
-#include "Logging/Logging.hpp"
-#include "Rendering/IRenderer.hpp"
-#include "PlatformSemantics.hpp"
 #include "InternalEngineObject.hpp"
+#include "Logging/Logging.hpp"
+#include "PlatformSemantics.hpp"
+#include "Rendering/IRenderer.hpp"
 
 namespace Engine
 {
@@ -48,7 +45,7 @@ namespace Engine
 	public:
 		Rendering::IRenderer* renderer = nullptr;
 		std::string renderer_type = "";
-		
+
 		Object() noexcept;
 		~Object() noexcept;
 
@@ -74,4 +71,4 @@ namespace Engine
 		void RemoveChildren();
 		void SetParent(Object* object);
 	};
-}
+} // namespace Engine
