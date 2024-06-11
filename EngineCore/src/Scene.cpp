@@ -156,11 +156,7 @@ namespace Engine
 
 		if (object)
 		{
-			this->logger->SimpleLog(
-				Logging::LogLevel::Info,
-				LOGPFX_CURRENT "Removing object \"%s\" from scene, deleting object",
-				name.c_str()
-			);
+			this->logger->SimpleLog(Logging::LogLevel::Info, LOGPFX_CURRENT "Removing object '%s'", name.c_str());
 			delete object;
 		}
 

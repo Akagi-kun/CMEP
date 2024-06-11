@@ -90,9 +90,11 @@ def generate_compile_commands(vs_project_path, output_path, root_path, default_i
 			}
 			compile_commands.append(command)
 
+	print(f"- Writing compile_commands.json")
 	with open(output_path + "compile_commands.json", 'w') as f:
 		json.dump(compile_commands, f, indent=2)
 
+	print(f"- Writing source_files.txt")
 	with open(output_path + "source_files.txt", "w") as f:
 		f.writelines(files_listing)
 

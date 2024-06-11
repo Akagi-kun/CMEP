@@ -1,39 +1,5 @@
--- ON_MOUSEMOVED event, left here for your usage!
-onMouseMoved = function(event)
-	return 0;
-end
-
-birbVelocity = 0.1;
-birbIsVelociting = true;
-
--- ON_KEYDOWN event
-onKeyDown = function(event)
-	-- check for esc
-	if event.keycode == 256 then
-		cmepapi.EngineStop(event.engine);
-		return 0;
-	end
-
-	-- check for space press
-	if string.char(event.keycode) == ' ' then
-		if birbIsVelociting == false then
-			birbVelocity = 0.3;
-			birbIsVelociting = true;
-		end
-	end
-
-	return 0;
-end
-
--- ON_KEYUP event
-onKeyUp = function(event)
-	if string.char(event.keycode) == ' ' then
-		birbIsVelociting = false;
-	end
-end
-
----------------------
-----  Game data  ----
+-----------------------
+---->  Game data  <----
 
 local deltaTimeAvg = 0.0;
 local deltaTimeCount = 0;
@@ -58,8 +24,17 @@ local gameLastScoredPipeIdx = 0;
 local gameScore = 0;
 local pipeMoveSpeed = 0.1;
 
-----  Game data  ----
----------------------
+local birbSetVelocityTo <const> = 0.36;
+local birbFallSpeed <const> = 0.68;
+
+birbVelocity = 0.1;
+birbIsVelociting = false;
+
+---->  Game data  <----
+-----------------------
+
+-----------------------
+--> Local functions <--
 
 local checkCollisions2DBox = function(x1, y1, w1, h1, x2, y2, w2, h2)
 	if (
@@ -85,6 +60,71 @@ local pxToScreenY = function(y)
 	return y / screenY
 end
 
+--> Local functions <--
+-----------------------
+
+-----------------------
+--->  Game events  <---
+
+
+-- ON_MOUSEMOVED event
+-- 
+-- this event is called when the mouse moved
+--
+-- while specifying event handlers is optional
+-- (events for which no event handler is specified are discarded)
+-- it is left here for illustration purposes
+-- 
+onMouseMoved = function(event)
+	return 0;
+end
+
+-- ON_KEYDOWN event
+-- 
+-- this event is called every time the engine receives a keypress
+-- for non-toggleable keys this event may be fired multiple times
+-- always check whether a key was unpressed when necessary
+-- 
+onKeyDown = function(event)
+	-- Stop engine if ESC is pressed
+	-- 256 is the keycode of the ESC key
+	--
+	if event.keycode == 256 then
+		cmepapi.EngineStop(event.engine);
+		return 0;
+	end
+
+	-- Check for space press
+	--
+	-- note: it is not recommended to convert event.keycode with string.char
+	--       as it may fail when encoutering a non-character value
+	--
+	-- note: event.keycode is a 16-bit value
+	--       ASCII characters match keycode if converted with string.byte
+	--       for function key keycodes search for "GLFW key tokens"
+	--
+	if event.keycode == string.byte(' ') then
+		if birbIsVelociting == false then
+			birbVelocity = birbSetVelocityTo;
+			birbIsVelociting = true;
+		end
+	end
+
+	return 0;
+end
+
+-- ON_KEYUP event
+-- 
+-- this event is called exactly once for every release of a key
+-- 
+onKeyUp = function(event)
+	-- event.keycode is the same for ON_KEYUP and ON_KEYDOWN events
+	--
+	if event.keycode == string.byte(' ') then
+		birbIsVelociting = false;
+	end
+end
+
 -- ON_UPDATE event
 onUpdate = function(event)
 	deltaTimeAvg = deltaTimeAvg + event.deltaTime;
@@ -96,8 +136,6 @@ onUpdate = function(event)
 	-- Update frametime counter, recommend to leave this here for debugging purposes
 	if deltaTimeCount >= 30 then
 		--cmepmeta.logger.SimpleLog(string.format("Hello from Lua! Last FT is: %f ms!", deltaTimeAvg / deltaTimeCount * 1000))
-		--cmepmeta.logger.SimpleLog(string.format("Test (%f, %f) (%f, %f)", pxToScreenX(80), pxToScreenY(400), 80/1100, 400/720))
-		--local object = cmepapi.sm_FindObject(scene_manager, "_debug_info");
 		local object = scene_manager:FindObject("_debug_info");
 		cmepapi.TextRendererUpdateText(object.renderer, "FT: "..tostring(deltaTimeAvg / deltaTimeCount * 1000).." ms");
 		
@@ -112,12 +150,10 @@ onUpdate = function(event)
 		if spawnPipeSinceLast > spawnPipeEvery then
 			-- Spawn new pipes
 
-			--local object1 = cmepapi.ObjectFactoryCreateSpriteObject(scene_manager, 1.0, offset / 720, 80 / 1100, 400 / 720, asset_manager, "textures/pipe_down.png");
 			local object1 = scene_manager:AddTemplatedObject("sprite_pipe_down"..tostring(spawnPipeLastIdx + 1), "pipe_down");
 			object1:Translate(1.0, pxToScreenY(offset), -0.15);
 			object1:Scale(pxToScreenX(pipe_xSize), pxToScreenY(pipe_ySize), 1.0);
 
-			--local object2 = cmepapi.ObjectFactoryCreateSpriteObject(scene_manager, 1.0, (400 + 200 + offset) / 720, 80 / 1100, 400 / 720, asset_manager, "textures/pipe_up.png");
 			local object2 = scene_manager:AddTemplatedObject("sprite_pipe_up"..tostring(spawnPipeLastIdx + 1), "pipe_up");
 			object2:Translate(1.0, pxToScreenY(pipe_ySize + pipe_spacing + offset), -0.15);
 			object2:Scale(pxToScreenX(pipe_xSize), pxToScreenY(pipe_ySize), 1.0);
@@ -192,6 +228,7 @@ onUpdate = function(event)
 			return 0;
 		end
 
+		-- Fall birb
 		local birb = scene_manager:FindObject("birb");
 		local x, y, z = birb:GetPosition();
 		y = y - birbVelocity * event.deltaTime;
@@ -215,12 +252,9 @@ onUpdate = function(event)
 		ground1:Translate(g1_x, g1_y, g1_z);
 		ground2:Translate(g2_x, g2_y, g2_z);
 
-		birbVelocity = birbVelocity - 0.65 * event.deltaTime;
+		birbVelocity = birbVelocity - birbFallSpeed * event.deltaTime;
 		spawnPipeSinceLast = spawnPipeSinceLast + event.deltaTime;
 	end
-
-	--local camrotx, camroty = scene_manager:GetCameraHVRotation();
-	--scene_manager:SetCameraHVRotation(camrotx, camroty + 60.0 * event.deltaTime);
 
 	return 0;
 end
@@ -241,11 +275,6 @@ onInit = function(event)
 	local object = cmepapi.ObjectFactoryCreateTextObject(scene_manager, 0.5, 0.0, -0.01, 64, "0", font);
 	scene_manager:AddObject("text_score", object);
 
-	-- Add birb
-	--local birb = scene_manager:AddTemplatedObject("birb", "birb");
-	--birb:Translate(0.2, pxToScreenY(screenY / 2), -0.1);
-	--birb:Scale(pxToScreenX(birb_xSize), pxToScreenY(birb_ySize), 1.0);
-
 	-- Set-up camera
 	scene_manager:SetCameraTransform(0.0, 0.0, 0.0);
 	scene_manager:SetCameraHVRotation(0, 0);
@@ -255,3 +284,6 @@ onInit = function(event)
 
 	return 0;
 end
+
+--->  Game events  <---
+-----------------------
