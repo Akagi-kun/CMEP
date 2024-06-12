@@ -1,6 +1,7 @@
 #include "AssetManager.hpp"
 #include "Logging/Logging.hpp"
 #include "Rendering/Font.hpp"
+#include "Rendering/Mesh.hpp"
 
 // Prefixes for logging messages
 #define LOGPFX_CURRENT LOGPFX_CLASS_ASSET_MANAGER

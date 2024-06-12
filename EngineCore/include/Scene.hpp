@@ -3,7 +3,6 @@
 #include "EventHandling.hpp"
 #include "InternalEngineObject.hpp"
 #include "Object.hpp"
-#include "PlatformSemantics.hpp"
 #include "Scripting/LuaScript.hpp"
 
 #include <map>
@@ -16,7 +15,8 @@ namespace Engine
 {
 	class Engine;
 
-	enum class RendererType {
+	enum class RendererType
+	{
 		MIN_ENUM = 0x0000,
 
 		TEXT = 1,
@@ -26,7 +26,8 @@ namespace Engine
 		MAX_ENUM = 0XFFFF
 	};
 
-	typedef struct ObjectTemplate_struct {
+	typedef struct ObjectTemplate_struct
+	{
 		RendererType with_renderer;
 		std::vector<Rendering::RendererSupplyData> supply_list;
 
@@ -54,8 +55,8 @@ namespace Engine
 		Scene();
 		~Scene();
 
-		const std::unordered_map<std::string, Object*>* const GetAllObjects() noexcept;
-		const std::vector<std::pair<std::string, Object*>>* const GetAllObjectsSorted() noexcept;
+		const std::unordered_map<std::string, Object*>* GetAllObjects() noexcept;
+		const std::vector<std::pair<std::string, Object*>>* GetAllObjectsSorted() noexcept;
 
 		void TriggerResort();
 

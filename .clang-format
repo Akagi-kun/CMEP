@@ -29,4 +29,5 @@ PenaltyBreakAssignment: 200
 PenaltyBreakComment: 2000000
 SortIncludes: CaseSensitive
 IndentPPDirectives: AfterHash
+InsertNewlineAtEOF: true
 ...

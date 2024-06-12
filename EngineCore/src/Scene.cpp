@@ -22,12 +22,12 @@ namespace Engine
 		this->templates.clear();
 	}
 
-	const std::unordered_map<std::string, Object*>* const Scene::GetAllObjects() noexcept
+	const std::unordered_map<std::string, Object*>* Scene::GetAllObjects() noexcept
 	{
 		return &(this->objects);
 	}
 
-	const std::vector<std::pair<std::string, Object*>>* const Scene::GetAllObjectsSorted() noexcept
+	const std::vector<std::pair<std::string, Object*>>* Scene::GetAllObjectsSorted() noexcept
 	{
 		return &(this->objects_sorted);
 	}

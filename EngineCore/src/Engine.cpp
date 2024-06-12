@@ -93,22 +93,22 @@ namespace Engine
 			std::this_thread::sleep_for(std::chrono::milliseconds(2));
 			const auto end = std::chrono::steady_clock::now();
 
-			const double observed = (end - start).count() / 1e9;
+			const double observed = static_cast<double>((end - start).count()) / 1.e9;
 			seconds -= observed;
 
 			count++;
 			const double delta = observed - mean;
-			mean += delta / count;
+			mean += delta / static_cast<double>(count);
 			m2 += delta * (observed - mean);
-			const double stddev = sqrt(m2 / (count - 1));
+			const double stddev = sqrt(m2 / static_cast<double>(count - 1));
 			estimate = mean + stddev;
 		}
 
 		// spin lock
 		const auto start = std::chrono::steady_clock::now();
-		while ((std::chrono::steady_clock::now() - start).count() / 1e9 < seconds)
+		while (static_cast<double>((std::chrono::steady_clock::now() - start).count()) / 1.e9 < seconds)
 		{
-		};
+		}
 	}
 
 	void Engine::HandleInput(const double deltaTime) noexcept
@@ -230,8 +230,8 @@ namespace Engine
 
 		if (action == GLFW_PRESS)
 		{
-			Rendering::VulkanRenderingEngine* renderer = (Rendering::VulkanRenderingEngine*)glfwGetWindowUserPointer(
-				window
+			Rendering::VulkanRenderingEngine* renderer = static_cast<Rendering::VulkanRenderingEngine*>(
+				glfwGetWindowUserPointer(window)
 			);
 			EventHandling::Event event = EventHandling::Event(EventHandling::EventType::ON_KEYDOWN);
 			event.keycode = static_cast<uint16_t>(key);
@@ -241,8 +241,8 @@ namespace Engine
 		}
 		else if (action == GLFW_RELEASE)
 		{
-			Rendering::VulkanRenderingEngine* renderer = (Rendering::VulkanRenderingEngine*)glfwGetWindowUserPointer(
-				window
+			Rendering::VulkanRenderingEngine* renderer = static_cast<Rendering::VulkanRenderingEngine*>(
+				glfwGetWindowUserPointer(window)
 			);
 			EventHandling::Event event = EventHandling::Event(EventHandling::EventType::ON_KEYUP);
 			event.keycode = static_cast<uint16_t>(key);
@@ -287,8 +287,8 @@ namespace Engine
 		object->Scale(glm::vec3(1, 1, 1));
 		object->Rotate(glm::vec3(0, 0, 0));
 		object->ScreenSizeInform(this->config->window.size_x, this->config->window.size_y);
-		((Rendering::AxisRenderer*)object->renderer)->UpdateMesh();
-		((Rendering::AxisRenderer*)object->renderer)->scene_manager = this->scene_manager;
+		object->renderer->UpdateMesh();
+		object->renderer->scene_manager = this->scene_manager;
 		this->scene_manager->AddObject("_axis", object);
 
 		// Pre-make ON_UPDATE event so we don't have to create it over and over again in hot loop
@@ -303,7 +303,7 @@ namespace Engine
 		while (!glfwWindowShouldClose(this->rendering_engine->GetWindow().window))
 		{
 			const auto next_clock = std::chrono::steady_clock::now();
-			const double delta_time = (next_clock - prev_clock).count() / 1e9;
+			const double delta_time = static_cast<double>((next_clock - prev_clock).count()) / 1.e9;
 			// if (counter == this->framerateTarget)
 			//{
 			//	// For debugging, use onscreen counter if possible
@@ -326,7 +326,8 @@ namespace Engine
 			glfwPollEvents();
 
 			const auto frame_clock = std::chrono::steady_clock::now();
-			const double sleep_secs = 1.0 / this->framerate_target - (frame_clock - next_clock).count() / 1e9;
+			const double sleep_secs = 1.0 / this->framerate_target -
+									  static_cast<double>((frame_clock - next_clock).count()) / 1.e9;
 			// spin sleep if sleep necessary and VSYNC disabled
 			if (sleep_secs > 0 && this->framerate_target != 0)
 			{
@@ -365,7 +366,7 @@ namespace Engine
 		return this->last_delta_time;
 	}
 
-	Engine::Engine(std::shared_ptr<Logging::Logger> logger) noexcept : logger(logger)
+	Engine::Engine(std::shared_ptr<Logging::Logger> new_logger) noexcept : logger(new_logger)
 	{
 	}
 
@@ -476,7 +477,7 @@ namespace Engine
 		int on_init_event_ret = this->FireEvent(on_init_event);
 
 		// Measure and log ON_INIT time
-		double total = (std::chrono::steady_clock::now() - start).count() / 1e6;
+		double total = static_cast<double>((std::chrono::steady_clock::now() - start).count()) / 1.e6;
 		this->logger->SimpleLog(
 			Logging::LogLevel::Debug1,
 			LOGPFX_CURRENT "Handling ON_INIT took %.3lf ms total and returned %i",

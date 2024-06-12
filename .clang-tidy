@@ -1,4 +1,4 @@
-Checks: '-*,readability-identifier-naming'
+Checks: '-*,clang-analyzer-*,readability-identifier-naming'
 CheckOptions:
   - key: readability-identifier-naming.VariableCase
     value: 'lower_case'
