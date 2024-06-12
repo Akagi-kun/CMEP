@@ -10,7 +10,6 @@
 
 #include <fstream>
 
-
 // Prefixes for logging messages
 #define LOGPFX_CURRENT LOGPFX_CLASS_SCENE_LOADER
 #include "Logging/LoggingPrefix.hpp"
@@ -65,7 +64,7 @@ namespace Engine
 		{
 			this->logger->SimpleLog(
 				Logging::LogLevel::Exception,
-				LOGPFX_CURRENT "Error parsing scene.json '%s', what: %s",
+				LOGPFX_CURRENT "Error parsing scene.json '%s'! e.what(): %s",
 				std::string(this->scene_prefix + "/" + scene_name + "/scene.json").c_str(),
 				e.what()
 			);
@@ -151,11 +150,11 @@ namespace Engine
 
 					if (pos_aspixel[0].get<bool>())
 					{
-						position.x /= window_config.windowX;
+						position.x /= static_cast<float>(window_config.windowX);
 					}
 					if (pos_aspixel[1].get<bool>())
 					{
-						position.y /= window_config.windowY;
+						position.y /= static_cast<float>(window_config.windowY);
 					}
 				}
 				else if (scene_entry["pos_sub_aspixel"].is_array())
@@ -164,11 +163,13 @@ namespace Engine
 
 					if (pos_sub_aspixel[0].get<bool>())
 					{
-						position.x = (window_config.windowX - position.x) / window_config.windowX;
+						position.x = (static_cast<float>(window_config.windowX) - position.x) /
+									 static_cast<float>(window_config.windowX);
 					}
 					if (pos_sub_aspixel[1].get<bool>())
 					{
-						position.y = (window_config.windowY - position.y) / window_config.windowY;
+						position.y = (static_cast<float>(window_config.windowY) - position.y) /
+									 static_cast<float>(window_config.windowY);
 					}
 				}
 
@@ -192,25 +193,25 @@ namespace Engine
 					}
 				}
 
-				RendererType useRendererType = this->InterpretRendererType(scene_entry["renderer"]);
+				RendererType use_renderer_type = this->InterpretRendererType(scene_entry["renderer"]);
 
 				Object* object = nullptr;
 
-				if (RendererType::MIN_ENUM < useRendererType && useRendererType < RendererType::MAX_ENUM)
+				if (RendererType::MIN_ENUM < use_renderer_type && use_renderer_type < RendererType::MAX_ENUM)
 				{
 					// Allocate new object when renderer type is known
 					object = new Object();
 
-					switch (useRendererType)
+					switch (use_renderer_type)
 					{
 						case RendererType::SPRITE:
 						{
 							object->renderer = new Rendering::SpriteRenderer(this->GetOwnerEngine());
 
-							for (auto& supplyTexture : scene_entry["renderer_supply_textures"])
+							for (auto& supply_texture : scene_entry["renderer_supply_textures"])
 							{
 								std::shared_ptr<Rendering::Texture> texture = locked_asset_manager->GetTexture(
-									supplyTexture.get<std::string>()
+									supply_texture.get<std::string>()
 								);
 
 								Rendering::RendererSupplyData texture_supply(

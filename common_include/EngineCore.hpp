@@ -1,12 +1,10 @@
 #pragma once
 
-#include <atomic>
 #include <map>
 #include <memory>
-#include <optional>
-#include <vector>
 #include <mutex>
 #include <stdio.h>
+#include <vector>
 
 #define CMEP_ABI_IMPORT
 #include "PlatformSemantics.hpp"
@@ -21,24 +19,32 @@ namespace Logging
 		Debug2,
 		Debug1,
 		Info,
-		Success,
 		Warning,
 		Error,
 		Exception
 	};
 
-	struct LoggerInternalMapping;
+	// TODO: Remove this from common_include
+	struct LoggerInternalMapping
+	{
+		LogLevel min_level;
+		FILE* handle;
+		bool has_started_logging;
+		bool use_colors;
+	};
 
 	class CMEP_EXPORT_CLASS Logger
 	{
 	private:
-		std::vector<LoggerInternalMapping*> outputs;
+		std::vector<LoggerInternalMapping> outputs;
 		std::map<int16_t, std::string> threadid_name_map;
-		std::mutex threadMutex{};
+		std::mutex thread_mutex;
 
 	public:
-		CMEP_EXPORT Logger() {}
-		CMEP_EXPORT ~Logger() {};
+		CMEP_EXPORT Logger() = default;
+		CMEP_EXPORT ~Logger()
+		{
+		}
 
 		void CMEP_EXPORT AddOutputHandle(LogLevel min_level, FILE* handle, bool useColors = false);
 		void CMEP_EXPORT MapCurrentThreadToName(std::string name);

@@ -16,7 +16,7 @@ include_directories(external/glm)
 
 # Global compile options
 if(MSVC)
-    add_compile_options(/std:c++17 /MP)
+    add_compile_options(/std:c++17 /MP /EHs)
 	add_link_options(/DEBUG)
 
 	# Debug only

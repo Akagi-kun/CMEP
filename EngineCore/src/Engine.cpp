@@ -1,19 +1,18 @@
 // #include <cassert>
+#include "Engine.hpp"
+
+#include "AssetManager.hpp"
+#include "Object.hpp"
+#include "Rendering/AxisRenderer.hpp"
+#include "Scripting/LuaScript.hpp"
+#include "Scripting/LuaScriptExecutor.hpp"
+#include "nlohmann-json/single_include/nlohmann/json.hpp"
+
 #include <chrono>
+#include <exception>
 #include <fstream>
 #include <memory>
 #include <thread>
-
-#include "nlohmann-json/single_include/nlohmann/json.hpp"
-
-#include "Rendering/AxisRenderer.hpp"
-
-#include "Scripting/LuaScript.hpp"
-#include "Scripting/LuaScriptExecutor.hpp"
-
-#include "AssetManager.hpp"
-#include "Engine.hpp"
-#include "Object.hpp"
 
 // Prefixes for logging messages
 #define LOGPFX_CURRENT LOGPFX_CLASS_ENGINE
@@ -159,15 +158,15 @@ namespace Engine
 			exit(1);
 		}
 
-		this->config->window.title = data["window"]["title"];
-		this->config->window.size_x = data["window"]["sizeX"];
-		this->config->window.size_y = data["window"]["sizeY"];
+		this->config->window.title = data["window"]["title"].get<std::string>();
+		this->config->window.size_x = data["window"]["sizeX"].get<uint16_t>();
+		this->config->window.size_y = data["window"]["sizeY"].get<uint16_t>();
 
-		this->config->rendering.framerate_target = data["rendering"]["framerateTarget"];
+		this->config->rendering.framerate_target = data["rendering"]["framerateTarget"].get<uint16_t>();
 
-		this->config->lookup.scenes = data["lookup"]["scenes"];
+		this->config->lookup.scenes = data["lookup"]["scenes"].get<std::string>();
 
-		this->config->default_scene = data["defaultScene"];
+		this->config->default_scene = data["defaultScene"].get<std::string>();
 	}
 
 	void Engine::ErrorCallback(int code, const char* message)

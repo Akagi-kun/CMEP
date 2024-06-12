@@ -34,7 +34,7 @@ namespace Logging
 	class CMEP_EXPORT_CLASS Logger
 	{
 	private:
-		std::vector<LoggerInternalMapping*> outputs;
+		std::vector<LoggerInternalMapping> outputs;
 		std::map<int16_t, std::string> threadid_name_map;
 		std::mutex thread_mutex;
 

@@ -4,7 +4,6 @@
 
 #include <memory>
 
-
 namespace Engine
 {
 	class Engine;
@@ -16,9 +15,7 @@ namespace Engine
 		Engine* owner_engine;
 
 	public:
-		InternalEngineObject()
-		{
-		}
+		InternalEngineObject() = default;
 		InternalEngineObject(Engine* engine) : owner_engine(engine)
 		{
 		}

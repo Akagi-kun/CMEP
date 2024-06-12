@@ -1,41 +1,40 @@
-#include <array>
 #include <cassert>
-#include <cmath>
-#include <iomanip>
+#include <exception>
+#include <ostream>
 #include <string>
 #include <thread>
 
 #if defined(_MSC_VER)
-#include <Windows.h>
+#	include <Windows.h>
 #endif
 
 #include "EngineCore.hpp"
 
 #if defined(_MSC_VER)
-static void initConsoleWin32()
+static void InitConsoleWin32()
 {
-	HANDLE myConsole = GetStdHandle(STD_OUTPUT_HANDLE);
-	DWORD dwMode = 0;
-	GetConsoleMode(myConsole, &dwMode);
-	dwMode |= ENABLE_VIRTUAL_TERMINAL_PROCESSING;
-	SetConsoleMode(myConsole, dwMode);
+	HANDLE my_console = GetStdHandle(STD_OUTPUT_HANDLE);
+	DWORD dw_mode = 0;
+	GetConsoleMode(my_console, &dw_mode);
+	dw_mode |= ENABLE_VIRTUAL_TERMINAL_PROCESSING;
+	SetConsoleMode(my_console, dw_mode);
 }
 #endif
 
-void runEngine()
+static void RunEngine()
 {
-	std::shared_ptr<Logging::Logger> myLogger = std::make_shared<Logging::Logger>();
+	std::shared_ptr<Logging::Logger> my_logger = std::make_shared<Logging::Logger>();
 
 #if _DEBUG == 1 || defined(DEBUG)
-	myLogger->AddOutputHandle(Logging::LogLevel::Debug2, stdout, true);
+	my_logger->AddOutputHandle(Logging::LogLevel::Debug2, stdout, true);
 #else
 	myLogger->AddOutputHandle(Logging::LogLevel::Debug1, stdout, true);
 #endif
 
-	myLogger->SimpleLog(Logging::LogLevel::Info, "Logger initialized");
+	my_logger->SimpleLog(Logging::LogLevel::Info, "Logger initialized");
 
 	// Initialize engine
-	std::unique_ptr<Engine::OpaqueEngine> engine = std::make_unique<Engine::OpaqueEngine>(std::move(myLogger));
+	std::unique_ptr<Engine::OpaqueEngine> engine = std::make_unique<Engine::OpaqueEngine>(my_logger);
 
 	try
 	{
@@ -43,7 +42,7 @@ void runEngine()
 	}
 	catch (std::exception& e)
 	{
-		myLogger->SimpleLog(Logging::LogLevel::Exception, "Exception loading config! e.what(): %s", e.what());
+		my_logger->SimpleLog(Logging::LogLevel::Exception, "Exception loading config! e.what(): %s", e.what());
 		throw;
 	}
 
@@ -55,7 +54,7 @@ void runEngine()
 	}
 	catch (std::exception& e)
 	{
-		myLogger->SimpleLog(Logging::LogLevel::Exception, "Exception caught in rungame! e.what(): %s", e.what());
+		my_logger->SimpleLog(Logging::LogLevel::Exception, "Exception caught in rungame! e.what(): %s", e.what());
 		throw;
 	}
 }
@@ -64,10 +63,10 @@ int main(int argc, char** argv)
 {
 	// Enable colored output on Win32
 #if defined(_MSC_VER)
-	initConsoleWin32();
+	InitConsoleWin32();
 #endif
 
-	runEngine();
+	RunEngine();
 
 	return 0;
 }

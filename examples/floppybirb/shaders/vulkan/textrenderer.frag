@@ -8,5 +8,5 @@ layout(location = 1) in vec2 fragTexCoord;
 layout(location = 0) out vec4 outColor;
 
 void main() {
-	outColor = vec4(fragColor, texture(texSampler, fragTexCoord).a);
+	outColor = vec4(fragColor.rgb, texture(texSampler, fragTexCoord).a);
 }
