@@ -1,10 +1,11 @@
 #include "Logging/Logging.hpp"
+
 #include "Logging/ConsoleColors.hpp"
 
 #include <chrono>
 #include <cstdarg>
-#include <exception>
 #include <stdio.h>
+#include <thread>
 
 // Prefixes for logging messages
 #define LOGPFX_CURRENT LOGPFX_CLASS_LOGGER

@@ -1,4 +1,5 @@
 #include "SceneLoader.hpp"
+
 #include "AssetManager.hpp"
 #include "Engine.hpp"
 #include "EventHandling.hpp"
@@ -8,6 +9,7 @@
 #include "Rendering/TextRenderer.hpp"
 
 #include <fstream>
+
 
 // Prefixes for logging messages
 #define LOGPFX_CURRENT LOGPFX_CLASS_SCENE_LOADER

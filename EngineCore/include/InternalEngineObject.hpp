@@ -2,6 +2,9 @@
 
 #include "Logging/Logging.hpp"
 
+#include <memory>
+
+
 namespace Engine
 {
 	class Engine;
@@ -9,7 +12,7 @@ namespace Engine
 	class InternalEngineObject
 	{
 	protected:
-		std::shared_ptr<Logging::Logger> logger{};
+		std::shared_ptr<Logging::Logger> logger;
 		Engine* owner_engine;
 
 	public:
