@@ -30,4 +30,5 @@ PenaltyBreakComment: 2000000
 SortIncludes: CaseSensitive
 IndentPPDirectives: AfterHash
 InsertNewlineAtEOF: true
+IncludeBlocks: Regroup
 ...

@@ -1,29 +1,25 @@
 #pragma once
 
-#include "glm/glm.hpp"
-#include "glm/gtc/matrix_transform.hpp"
-
 #include "Object.hpp"
-#include "PlatformSemantics.hpp"
-#include "SceneLoader.hpp"
 #include "Scene.hpp"
+#include "SceneLoader.hpp"
 
 #include "InternalEngineObject.hpp"
 
 #include "Logging/Logging.hpp"
 
-#include <unordered_map>
 #include <memory>
+#include <unordered_map>
 
 namespace Engine
 {
 	class SceneManager final : public InternalEngineObject
 	{
 	private:
-		std::unordered_map<std::string, std::shared_ptr<Scene>> scenes{};
+		std::unordered_map<std::string, std::shared_ptr<Scene>> scenes;
 		std::string current_scene = "_default";
 
-		glm::vec3 camera_transform{}; // XYZ position
+		glm::vec3 camera_transform{};	// XYZ position
 		glm::vec2 camera_hv_rotation{}; // Horizontal and Vertical rotation
 
 		glm::vec3 light_position{};
@@ -31,6 +27,7 @@ namespace Engine
 		void CameraUpdated();
 
 		std::shared_ptr<SceneLoader> scene_loader;
+
 	public:
 		SceneManager(std::shared_ptr<Logging::Logger> logger);
 		~SceneManager();
@@ -40,7 +37,7 @@ namespace Engine
 		void SetScene(std::string scene_name);
 		std::shared_ptr<Scene> GetSceneCurrent();
 
-		const std::unordered_map<std::string, Object*>* const GetAllObjects() noexcept;
+		const std::unordered_map<std::string, Object*>* GetAllObjects() noexcept;
 
 		void AddObject(std::string name, Object* ptr);
 		Object* FindObject(std::string name);
@@ -57,4 +54,4 @@ namespace Engine
 		void SetCameraTransform(glm::vec3 transform);
 		void SetCameraHVRotation(glm::vec2 hvrotation);
 	};
-}
+} // namespace Engine

@@ -1,4 +1,4 @@
-Checks: '-*,clang-analyzer-*,readability-identifier-naming'
+Checks: '-*,clang-analyzer-*,readability-identifier-naming,readability-redundant-*,readability-magic-numbers,modernize-use-*,-modernize-use-trailing-return-type'
 CheckOptions:
   - key: readability-identifier-naming.VariableCase
     value: 'lower_case'
@@ -8,3 +8,5 @@ CheckOptions:
     value: 'lower_case'
   - key: readability-identifier-naming.MethodCase
     value: 'CamelCase'
+  - key: readability-magic-numbers.IgnorePowersOf2IntegerValues
+    value: true

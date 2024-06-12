@@ -1,8 +1,8 @@
 #pragma once
 
+#include <array>
 #include <optional>
 #include <vector>
-#include <array>
 
 #include "glm/glm.hpp"
 
@@ -10,11 +10,13 @@
 
 namespace Engine::Rendering
 {
-	struct QueueFamilyIndices {
+	struct QueueFamilyIndices
+	{
 		std::optional<uint32_t> graphicsFamily;
 		std::optional<uint32_t> presentFamily;
 
-		bool isComplete() {
+		bool isComplete()
+		{
 			return graphicsFamily.has_value() && presentFamily.has_value();
 		}
 	};
@@ -26,7 +28,8 @@ namespace Engine::Rendering
 		std::string windowTitle;
 	};
 
-	struct SwapChainSupportDetails {
+	struct SwapChainSupportDetails
+	{
 		VkSurfaceCapabilitiesKHR capabilities;
 		std::vector<VkSurfaceFormatKHR> formats;
 		std::vector<VkPresentModeKHR> presentModes;
@@ -83,53 +86,56 @@ namespace Engine::Rendering
 	struct VulkanPipeline
 	{
 		VkPipeline pipeline;
-		VkPipelineLayout vkPipelineLayout;
-		VkDescriptorPool vkDescriptorPool;
-		VkDescriptorSetLayout vkDescriptorSetLayout;
-		std::vector<VkDescriptorSet> vkDescriptorSets{};
-		std::vector<VulkanBuffer*> uniformBuffers;
+		VkPipelineLayout vk_pipeline_layout;
+		VkDescriptorPool vk_descriptor_pool;
+		VkDescriptorSetLayout vk_descriptor_set_layout;
+		std::vector<VkDescriptorSet> vk_descriptor_sets;
+		std::vector<VulkanBuffer*> uniform_buffers;
 	};
-	
-	struct RenderingVertex {
+
+	struct RenderingVertex
+	{
 		glm::vec3 pos{};
 		glm::vec3 color{};
 		glm::vec2 texcoord{};
 		glm::vec3 normal{};
 
-		static VkVertexInputBindingDescription getBindingDescription() {
-			VkVertexInputBindingDescription bindingDescription{};
+		static VkVertexInputBindingDescription GetBindingDescription()
+		{
+			VkVertexInputBindingDescription binding_description{};
 
-			bindingDescription.binding = 0;
-			bindingDescription.stride = sizeof(RenderingVertex);
-			bindingDescription.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
+			binding_description.binding = 0;
+			binding_description.stride = sizeof(RenderingVertex);
+			binding_description.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
 
-			return bindingDescription;
+			return binding_description;
 		}
 
-		static std::array<VkVertexInputAttributeDescription, 4> getAttributeDescriptions() {
-			std::array<VkVertexInputAttributeDescription, 4> attributeDescriptions{};
-			
-			attributeDescriptions[0].binding = 0;
-			attributeDescriptions[0].location = 0;
-			attributeDescriptions[0].format = VK_FORMAT_R32G32B32_SFLOAT;
-			attributeDescriptions[0].offset = offsetof(RenderingVertex, pos);
+		static std::array<VkVertexInputAttributeDescription, 4> GetAttributeDescriptions()
+		{
+			std::array<VkVertexInputAttributeDescription, 4> attribute_descriptions{};
 
-			attributeDescriptions[1].binding = 0;
-			attributeDescriptions[1].location = 1;
-			attributeDescriptions[1].format = VK_FORMAT_R32G32B32_SFLOAT;
-			attributeDescriptions[1].offset = offsetof(RenderingVertex, color);
+			attribute_descriptions[0].binding = 0;
+			attribute_descriptions[0].location = 0;
+			attribute_descriptions[0].format = VK_FORMAT_R32G32B32_SFLOAT;
+			attribute_descriptions[0].offset = offsetof(RenderingVertex, pos);
 
-			attributeDescriptions[2].binding = 0;
-			attributeDescriptions[2].location = 2;
-			attributeDescriptions[2].format = VK_FORMAT_R32G32_SFLOAT;
-			attributeDescriptions[2].offset = offsetof(RenderingVertex, texcoord);
-			
-			attributeDescriptions[3].binding = 0;
-			attributeDescriptions[3].location = 3;
-			attributeDescriptions[3].format = VK_FORMAT_R32G32B32_SFLOAT;
-			attributeDescriptions[3].offset = offsetof(RenderingVertex, normal);
+			attribute_descriptions[1].binding = 0;
+			attribute_descriptions[1].location = 1;
+			attribute_descriptions[1].format = VK_FORMAT_R32G32B32_SFLOAT;
+			attribute_descriptions[1].offset = offsetof(RenderingVertex, color);
 
-			return attributeDescriptions;
+			attribute_descriptions[2].binding = 0;
+			attribute_descriptions[2].location = 2;
+			attribute_descriptions[2].format = VK_FORMAT_R32G32_SFLOAT;
+			attribute_descriptions[2].offset = offsetof(RenderingVertex, texcoord);
+
+			attribute_descriptions[3].binding = 0;
+			attribute_descriptions[3].location = 3;
+			attribute_descriptions[3].format = VK_FORMAT_R32G32B32_SFLOAT;
+			attribute_descriptions[3].offset = offsetof(RenderingVertex, normal);
+
+			return attribute_descriptions;
 		}
 	};
-}
+} // namespace Engine::Rendering

@@ -1,21 +1,22 @@
 #include "SceneManager.hpp"
 #include "Engine.hpp"
 #include "Logging/Logging.hpp"
+#include "glm/ext/matrix_transform.hpp"
 
 namespace Engine
 {
-	SceneManager::SceneManager(std::shared_ptr<Logging::Logger> logger)
+	SceneManager::SceneManager(std::shared_ptr<Logging::Logger> with_logger)
 	{
 		// Reset transform and rotation
-		this->camera_transform = glm::vec3(2.0, 0, 1.0);
+		this->camera_transform = glm::vec3(0.0, 0.0, 0.0);
 		this->camera_hv_rotation = glm::vec2(0.0, 0.0);
 
-		this->logger = logger;
+		this->logger = with_logger;
 
 		this->scenes.emplace("_default", std::make_shared<Scene>());
 		this->scenes.at(this->current_scene)->UpdateHeldLogger(this->logger);
 
-		this->scene_loader = std::make_shared<SceneLoader>(logger);
+		this->scene_loader = std::make_shared<SceneLoader>(with_logger);
 	}
 
 	SceneManager::~SceneManager()
@@ -51,7 +52,7 @@ namespace Engine
 		return this->scenes.at(this->current_scene);
 	}
 
-	const std::unordered_map<std::string, Object*>* const SceneManager::GetAllObjects() noexcept
+	const std::unordered_map<std::string, Object*>* SceneManager::GetAllObjects() noexcept
 	{
 		return this->scenes.at(this->current_scene)->GetAllObjects();
 	}
@@ -122,13 +123,16 @@ namespace Engine
 
 	void SceneManager::SetCameraHVRotation(glm::vec2 hvrotation)
 	{
-		if (hvrotation.y < 1.7f)
+		static const float rotation_y_limit = 1.7f;
+		static const float rotation_x_limit = 4.5f;
+
+		if (hvrotation.y < rotation_y_limit)
 		{
-			hvrotation.y = 1.7f;
+			hvrotation.y = rotation_y_limit;
 		}
-		else if (hvrotation.y > 4.5f)
+		else if (hvrotation.y > rotation_x_limit)
 		{
-			hvrotation.y = 4.5f;
+			hvrotation.y = rotation_x_limit;
 		}
 
 		this->camera_hv_rotation = hvrotation;

@@ -1,7 +1,5 @@
 #include <assert.h>
 #include <cstring>
-#include <fstream>
-#include <sstream>
 
 #include "Logging/Logging.hpp"
 #include "Rendering/MeshRenderer.hpp"
@@ -69,6 +67,8 @@ namespace Engine::Rendering
 				this->has_updated_meshdata = false;
 				return;
 			}
+			default:
+				break;
 		}
 
 		throw std::runtime_error("Tried to supply Renderer data with payload type unsupported by the renderer!");
@@ -111,7 +111,7 @@ namespace Engine::Rendering
 		VulkanRenderingEngine* renderer = this->owner_engine->GetRenderingEngine();
 
 		glm::mat4 projection = glm::perspective(
-			glm::radians(45.0f), (float)this->screenx / this->screeny, 0.1f, 100.0f
+			glm::radians(45.0f), static_cast<float>(this->screenx / this->screeny), 0.1f, 100.0f
 		);
 		projection[1][1] *= -1;
 
@@ -169,9 +169,9 @@ namespace Engine::Rendering
 			}
 
 			i = 0;
-			for (glm::vec2 texCoord : this->mesh->mesh_uvs)
+			for (glm::vec2 tex_coord : this->mesh->mesh_uvs)
 			{
-				generated_mesh[i].texcoord = texCoord;
+				generated_mesh[i].texcoord = tex_coord;
 				i++;
 			}
 
@@ -217,7 +217,7 @@ namespace Engine::Rendering
 			for (size_t i = 0; i < renderer->GetMaxFramesInFlight(); i++)
 			{
 				VkDescriptorBufferInfo uniform_buffer_info{};
-				uniform_buffer_info.buffer = pipeline->uniformBuffers[i]->buffer;
+				uniform_buffer_info.buffer = pipeline->uniform_buffers[i]->buffer;
 				uniform_buffer_info.offset = 0;
 				uniform_buffer_info.range = sizeof(glm::mat4);
 
@@ -225,7 +225,7 @@ namespace Engine::Rendering
 				descriptor_writes.resize(1);
 
 				descriptor_writes[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-				descriptor_writes[0].dstSet = pipeline->vkDescriptorSets[i];
+				descriptor_writes[0].dstSet = pipeline->vk_descriptor_sets[i];
 				descriptor_writes[0].dstBinding = 0;
 				descriptor_writes[0].dstArrayElement = 0;
 				descriptor_writes[0].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
@@ -235,12 +235,12 @@ namespace Engine::Rendering
 				if (diffuse_image_buffer_infos.size() > 0)
 				{
 					this->logger->SimpleLog(
-						Logging::LogLevel::Debug3, "Updating set 0x%x binding 1", pipeline->vkDescriptorSets[i]
+						Logging::LogLevel::Debug3, "Updating set 0x%x binding 1", pipeline->vk_descriptor_sets[i]
 					);
 
 					descriptor_writes.resize(2);
 					descriptor_writes[1].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-					descriptor_writes[1].dstSet = pipeline->vkDescriptorSets[i];
+					descriptor_writes[1].dstSet = pipeline->vk_descriptor_sets[i];
 					descriptor_writes[1].dstBinding = 1;
 					descriptor_writes[1].dstArrayElement = 0;
 					descriptor_writes[1].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
@@ -250,7 +250,7 @@ namespace Engine::Rendering
 				this->logger->SimpleLog(
 					Logging::LogLevel::Debug3,
 					"Descriptor set 0x%x write of index 1 has binding %u, descriptorWrite size is %u",
-					pipeline->vkDescriptorSets[i],
+					pipeline->vk_descriptor_sets[i],
 					descriptor_writes[1].dstBinding,
 					static_cast<unsigned int>(descriptor_writes.size())
 				);
@@ -419,25 +419,25 @@ namespace Engine::Rendering
 		VulkanRenderingEngine* renderer = this->owner_engine->GetRenderingEngine();
 		vkMapMemory(
 			renderer->GetLogicalDevice(),
-			pipeline->uniformBuffers[currentFrame]->allocationInfo.deviceMemory,
-			pipeline->uniformBuffers[currentFrame]->allocationInfo.offset,
-			pipeline->uniformBuffers[currentFrame]->allocationInfo.size,
+			pipeline->uniform_buffers[currentFrame]->allocationInfo.deviceMemory,
+			pipeline->uniform_buffers[currentFrame]->allocationInfo.offset,
+			pipeline->uniform_buffers[currentFrame]->allocationInfo.size,
 			0,
-			&(pipeline->uniformBuffers[currentFrame]->mappedData)
+			&(pipeline->uniform_buffers[currentFrame]->mappedData)
 		);
 
-		memcpy(this->pipeline->uniformBuffers[currentFrame]->mappedData, &this->mat_mvp, sizeof(glm::mat4));
+		memcpy(this->pipeline->uniform_buffers[currentFrame]->mappedData, &this->mat_mvp, sizeof(glm::mat4));
 		vkUnmapMemory(
-			renderer->GetLogicalDevice(), pipeline->uniformBuffers[currentFrame]->allocationInfo.deviceMemory
+			renderer->GetLogicalDevice(), pipeline->uniform_buffers[currentFrame]->allocationInfo.deviceMemory
 		);
 
 		vkCmdBindDescriptorSets(
 			commandBuffer,
 			VK_PIPELINE_BIND_POINT_GRAPHICS,
-			this->pipeline->vkPipelineLayout,
+			this->pipeline->vk_pipeline_layout,
 			0,
 			1,
-			&this->pipeline->vkDescriptorSets[currentFrame],
+			&this->pipeline->vk_descriptor_sets[currentFrame],
 			0,
 			nullptr
 		);

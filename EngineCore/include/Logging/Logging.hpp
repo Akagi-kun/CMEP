@@ -1,13 +1,11 @@
 #pragma once
 
 #include <cstdio>
-#include <vector>
 #include <map>
-//#include <atomic>
 #include <mutex>
 #include <string>
-#include <thread>
-#include <memory>
+#include <vector>
+// #include <atomic>
 
 #include "PlatformSemantics.hpp"
 
@@ -38,11 +36,13 @@ namespace Logging
 	private:
 		std::vector<LoggerInternalMapping*> outputs;
 		std::map<int16_t, std::string> threadid_name_map;
-		std::mutex thread_mutex{};
+		std::mutex thread_mutex;
 
 	public:
-		CMEP_EXPORT Logger() {}
-		CMEP_EXPORT ~Logger() {};
+		CMEP_EXPORT Logger() = default;
+		CMEP_EXPORT ~Logger()
+		{
+		}
 
 		void CMEP_EXPORT AddOutputHandle(LogLevel min_level, FILE* handle, bool useColors = false);
 		void CMEP_EXPORT MapCurrentThreadToName(std::string name);
@@ -53,4 +53,4 @@ namespace Logging
 
 		void CMEP_EXPORT SimpleLog(LogLevel level, const char* format, ...);
 	};
-}
+} // namespace Logging

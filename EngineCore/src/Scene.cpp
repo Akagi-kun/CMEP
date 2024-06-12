@@ -39,8 +39,9 @@ namespace Engine
 
 		if (is_a_ui && is_b_ui)
 		{
-			float a_z = a.second->Position().z + 10.0f;
-			float b_z = b.second->Position().z + 10.0f;
+			static const float positive_offset = 10.f;
+			float a_z = a.second->Position().z + positive_offset;
+			float b_z = b.second->Position().z + positive_offset;
 
 			if (a_z < b_z)
 			{

@@ -93,7 +93,7 @@ namespace Engine
 			{
 				case ExecuteType::EventHandler:
 				{
-					EventHandling::Event* event = (EventHandling::Event*)data;
+					auto* event = static_cast<EventHandling::Event*>(data);
 
 					// Event table
 					lua_newtable(state);

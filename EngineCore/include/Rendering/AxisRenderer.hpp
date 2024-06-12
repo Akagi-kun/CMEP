@@ -1,13 +1,6 @@
 #pragma once
 
-#include <memory>
-
 #include "IRenderer.hpp"
-
-#include "glm/glm.hpp"
-#include "glm/gtc/matrix_transform.hpp"
-
-#include "PlatformSemantics.hpp"
 #include "Rendering/Vulkan/VulkanRenderingEngine.hpp"
 
 namespace Engine::Rendering
@@ -25,7 +18,7 @@ namespace Engine::Rendering
 
 	public:
 		AxisRenderer(Engine* engine);
-		~AxisRenderer();
+		~AxisRenderer() override;
 
 		void Update(
 			glm::vec3 pos,
@@ -38,7 +31,9 @@ namespace Engine::Rendering
 			glm::vec3 parent_size
 		) override;
 
-		void SupplyData(RendererSupplyData data) override { };
+		void SupplyData(RendererSupplyData data) override
+		{
+		}
 
 		void UpdateMesh() override;
 

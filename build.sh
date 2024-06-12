@@ -9,7 +9,13 @@ then
 	CURRENTCFG=Debug	
 fi
 
-echo Building $CURRENTCFG
+if [[ "$CURRENTCFG" != "Debug" ]] && [[ "$CURRENTCFG" != "Release" ]]
+then
+	echo Unknown config "$CURRENTCFG"
+    exit
+fi
+
+echo Building "$CURRENTCFG"
 
 cmake .
 cmake --build . -j --parallel --target rungame --config $CURRENTCFG

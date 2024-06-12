@@ -82,8 +82,11 @@ namespace Engine
 	// Utility sleep function
 	void Engine::SpinSleep(double seconds)
 	{
-		static double estimate = 5e-3;
-		static double mean = 5e-3;
+		static const double nano_to_sec = 1.e9;
+		static const double spin_init = 5e-3;
+
+		static double estimate = spin_init;
+		static double mean = spin_init;
 		static double m2 = 0;
 		static int64_t count = 1;
 
@@ -93,7 +96,7 @@ namespace Engine
 			std::this_thread::sleep_for(std::chrono::milliseconds(2));
 			const auto end = std::chrono::steady_clock::now();
 
-			const double observed = static_cast<double>((end - start).count()) / 1.e9;
+			const double observed = static_cast<double>((end - start).count()) / nano_to_sec;
 			seconds -= observed;
 
 			count++;
@@ -106,7 +109,7 @@ namespace Engine
 
 		// spin lock
 		const auto start = std::chrono::steady_clock::now();
-		while (static_cast<double>((std::chrono::steady_clock::now() - start).count()) / 1.e9 < seconds)
+		while (static_cast<double>((std::chrono::steady_clock::now() - start).count()) / nano_to_sec < seconds)
 		{
 		}
 	}
@@ -115,7 +118,7 @@ namespace Engine
 	{
 		Rendering::GLFWwindowData windowdata = this->rendering_engine->GetWindow();
 
-		static double last_x = (windowdata.windowX / 2.0), last_y = (windowdata.windowY / 2.0);
+		static double last_x = (windowdata.windowX / 2), last_y = (windowdata.windowY / 2);
 
 		if (engine_is_window_in_focus && engine_is_window_in_content)
 		{
@@ -230,9 +233,7 @@ namespace Engine
 
 		if (action == GLFW_PRESS)
 		{
-			Rendering::VulkanRenderingEngine* renderer = static_cast<Rendering::VulkanRenderingEngine*>(
-				glfwGetWindowUserPointer(window)
-			);
+			auto* renderer = static_cast<Rendering::VulkanRenderingEngine*>(glfwGetWindowUserPointer(window));
 			EventHandling::Event event = EventHandling::Event(EventHandling::EventType::ON_KEYDOWN);
 			event.keycode = static_cast<uint16_t>(key);
 			event.delta_time = renderer->GetOwnerEngine()->GetLastDeltaTime();
@@ -241,9 +242,7 @@ namespace Engine
 		}
 		else if (action == GLFW_RELEASE)
 		{
-			Rendering::VulkanRenderingEngine* renderer = static_cast<Rendering::VulkanRenderingEngine*>(
-				glfwGetWindowUserPointer(window)
-			);
+			auto* renderer = static_cast<Rendering::VulkanRenderingEngine*>(glfwGetWindowUserPointer(window));
 			EventHandling::Event event = EventHandling::Event(EventHandling::EventType::ON_KEYUP);
 			event.keycode = static_cast<uint16_t>(key);
 			event.delta_time = renderer->GetOwnerEngine()->GetLastDeltaTime();
@@ -326,7 +325,8 @@ namespace Engine
 			glfwPollEvents();
 
 			const auto frame_clock = std::chrono::steady_clock::now();
-			const double sleep_secs = 1.0 / this->framerate_target -
+			const double framerate2second_ratio = 1.0 / this->framerate_target;
+			const double sleep_secs = framerate2second_ratio -
 									  static_cast<double>((frame_clock - next_clock).count()) / 1.e9;
 			// spin sleep if sleep necessary and VSYNC disabled
 			if (sleep_secs > 0 && this->framerate_target != 0)
@@ -366,7 +366,7 @@ namespace Engine
 		return this->last_delta_time;
 	}
 
-	Engine::Engine(std::shared_ptr<Logging::Logger> new_logger) noexcept : logger(new_logger)
+	Engine::Engine(std::shared_ptr<Logging::Logger> with_logger) noexcept : logger(with_logger)
 	{
 	}
 
@@ -419,7 +419,6 @@ namespace Engine
 		//  Order matters here due to interdependency
 
 		this->script_executor = new Scripting::LuaScriptExecutor();
-		// Will LuaScriptExecutor need to access owner engine? UpdateOwnerEngine
 		this->script_executor->UpdateOwnerEngine(this);
 		this->script_executor->UpdateHeldLogger(this->logger);
 
@@ -477,7 +476,8 @@ namespace Engine
 		int on_init_event_ret = this->FireEvent(on_init_event);
 
 		// Measure and log ON_INIT time
-		double total = static_cast<double>((std::chrono::steady_clock::now() - start).count()) / 1.e6;
+		static const double nano_to_ms = 1.e6;
+		double total = static_cast<double>((std::chrono::steady_clock::now() - start).count()) / nano_to_ms;
 		this->logger->SimpleLog(
 			Logging::LogLevel::Debug1,
 			LOGPFX_CURRENT "Handling ON_INIT took %.3lf ms total and returned %i",
