@@ -1,5 +1,8 @@
 #pragma once
 
+#include "Rendering/Transform.hpp"
+
+#include <cstdint>
 #include <memory>
 #include <string>
 
@@ -20,6 +23,13 @@ namespace Engine::Rendering
 		TEXT = 32,
 
 		MAX_ENUM = 0xFF
+	};
+
+	struct RendererTransformUpdate
+	{
+		Transform current;
+		Transform parent;
+		uint_fast16_t screen_x, screen_y;
 	};
 
 	typedef struct RendererSupplyData_struct

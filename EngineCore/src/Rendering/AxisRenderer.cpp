@@ -1,13 +1,13 @@
-#include <assert.h>
-
-#include <cstring>
+#include "Rendering/AxisRenderer.hpp"
 
 #include "Logging/Logging.hpp"
-#include "Rendering/AxisRenderer.hpp"
-#include "SceneManager.hpp"
 
 #include "Engine.hpp"
+#include "SceneManager.hpp"
 #include "glm/ext/matrix_clip_space.hpp"
+
+#include <cassert>
+#include <cstring>
 
 namespace Engine::Rendering
 {
@@ -34,32 +34,32 @@ namespace Engine::Rendering
 		this->owner_engine->GetRenderingEngine()->cleanupVulkanBuffer(this->vbo);
 		this->owner_engine->GetRenderingEngine()->cleanupVulkanPipeline(this->pipeline);
 	}
+	/*
+		void AxisRenderer::Update(
+			glm::vec3 pos,
+			glm::vec3 size,
+			glm::vec3 rotation,
+			uint_fast16_t screenx,
+			uint_fast16_t screeny,
+			glm::vec3 parent_position,
+			glm::vec3 parent_rotation,
+			glm::vec3 parent_size
+		)
+		{
+			this->transform.pos = pos;
+			this->transform.size = size;
+			this->transform.rotation = rotation;
 
-	void AxisRenderer::Update(
-		glm::vec3 pos,
-		glm::vec3 size,
-		glm::vec3 rotation,
-		uint_fast16_t screenx,
-		uint_fast16_t screeny,
-		glm::vec3 parent_position,
-		glm::vec3 parent_rotation,
-		glm::vec3 parent_size
-	)
-	{
-		this->pos = pos;
-		this->size = size;
-		this->rotation = rotation;
+			this->parent_transform.pos = parent_position;
+			this->parent_transform.rotation = parent_rotation;
+			this->parent_transform.size = parent_size;
 
-		this->parent_pos = parent_position;
-		this->parent_rotation = parent_rotation;
-		this->parent_size = parent_size;
+			this->screenx = screenx;
+			this->screeny = screeny;
 
-		this->screenx = screenx;
-		this->screeny = screeny;
-
-		this->has_updated_mesh = false;
-	}
-
+			this->has_updated_mesh = false;
+		}
+	 */
 	void AxisRenderer::UpdateMesh()
 	{
 		this->has_updated_mesh = true;
@@ -74,7 +74,7 @@ namespace Engine::Rendering
 		};
 
 		glm::mat4 projection = glm::perspective(
-			glm::radians(45.0f), static_cast<float>(this->screenx / this->screeny), 0.1f, 100.0f
+			glm::radians(45.0f), static_cast<float>(this->screen.x / this->screen.y), 0.1f, 100.0f
 		);
 
 		glm::mat4 view;

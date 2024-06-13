@@ -1,15 +1,16 @@
 #include "Rendering/MeshRenderer.hpp"
 
 #include "Assets/Texture.hpp"
-#include "Engine.hpp"
+
 #include "Logging/Logging.hpp"
+
+#include "Engine.hpp"
 #include "SceneManager.hpp"
 #include "glm/trigonometric.hpp"
 
 #include <assert.h>
 #include <cstring>
 #include <glm/gtc/quaternion.hpp>
-
 
 namespace Engine::Rendering
 {
@@ -76,31 +77,6 @@ namespace Engine::Rendering
 		throw std::runtime_error("Tried to supply Renderer data with payload type unsupported by the renderer!");
 	}
 
-	void MeshRenderer::Update(
-		glm::vec3 pos,
-		glm::vec3 size,
-		glm::vec3 rotation,
-		uint_fast16_t screenx,
-		uint_fast16_t screeny,
-		glm::vec3 parent_position,
-		glm::vec3 parent_rotation,
-		glm::vec3 parent_size
-	)
-	{
-		this->pos = pos;
-		this->size = size;
-		this->rotation = rotation;
-
-		this->parent_pos = parent_position;
-		this->parent_rotation = parent_rotation;
-		this->parent_size = parent_size;
-
-		this->screenx = screenx;
-		this->screeny = screeny;
-
-		this->has_updated_mesh = false;
-	}
-
 	void MeshRenderer::UpdateMesh()
 	{
 		if (!this->mesh)
@@ -113,7 +89,7 @@ namespace Engine::Rendering
 		VulkanRenderingEngine* renderer = this->owner_engine->GetRenderingEngine();
 
 		glm::mat4 projection = glm::perspective<float>(
-			glm::radians(45.0f), static_cast<float>(this->screenx / this->screeny), 0.1f, 100.0f
+			glm::radians(45.0f), static_cast<float>(this->screen.x / this->screen.y), 0.1f, 100.0f
 		);
 		projection[1][1] *= -1;
 
@@ -123,22 +99,23 @@ namespace Engine::Rendering
 			view = locked_scene_manager->GetCameraViewMatrix();
 		}
 
-		if (this->parent_size.x == 0.0f && this->parent_size.y == 0.0f && this->parent_size.z == 0.0f)
+		if (this->parent_transform.size.x == 0.0f && this->parent_transform.size.y == 0.0f &&
+			this->parent_transform.size.z == 0.0f)
 		{
-			this->parent_size = glm::vec3(1, 1, 1);
+			this->parent_transform.size = glm::vec3(1, 1, 1);
 		}
 
-		glm::quat model_rotation = glm::quat(glm::radians(this->rotation));
-		glm::quat parent_rotation = glm::quat(glm::radians(this->parent_rotation));
+		glm::quat model_rotation = glm::quat(glm::radians(this->transform.rotation));
+		glm::quat parent_rotation = glm::quat(glm::radians(this->parent_transform.rotation));
 		glm::mat4 model = glm::scale(
 			glm::translate(
 				glm::scale(
-					glm::translate(glm::mat4(1.0f), this->parent_pos) * glm::mat4_cast(parent_rotation),
-					this->parent_size
+					glm::translate(glm::mat4(1.0f), this->parent_transform.pos) * glm::mat4_cast(parent_rotation),
+					this->parent_transform.size
 				),
-				this->pos
+				this->transform.pos
 			) * glm::mat4_cast(model_rotation),
-			this->size
+			this->transform.size
 		);
 
 		this->mat_m = model;

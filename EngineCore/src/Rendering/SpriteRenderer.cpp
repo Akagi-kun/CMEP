@@ -1,6 +1,7 @@
 #include "Rendering/SpriteRenderer.hpp"
 
 #include "Assets/Texture.hpp"
+
 #include "Engine.hpp"
 
 #include <assert.h>
@@ -50,31 +51,6 @@ namespace Engine::Rendering
 		renderer->cleanupVulkanPipeline(this->pipeline);
 	}
 
-	void SpriteRenderer::Update(
-		glm::vec3 pos,
-		glm::vec3 size,
-		glm::vec3 rotation,
-		uint_fast16_t screenx,
-		uint_fast16_t screeny,
-		glm::vec3 parent_position,
-		glm::vec3 parent_rotation,
-		glm::vec3 parent_size
-	)
-	{
-		this->pos = pos;
-		this->size = size;
-		this->rotation = rotation;
-
-		this->parent_pos = parent_position;
-		this->parent_rotation = parent_rotation;
-		this->parent_size = parent_size;
-
-		this->screenx = screenx;
-		this->screeny = screeny;
-
-		this->has_updated_mesh = false;
-	}
-
 	void SpriteRenderer::SupplyData(RendererSupplyData data)
 	{
 		switch (data.type)
@@ -116,22 +92,23 @@ namespace Engine::Rendering
 
 		glm::mat4 projection = glm::ortho(0.0f, 1.0f, 0.0f, 1.0f, -10.0f, 10.0f);
 
-		if (this->parent_size.x == 0.0f && this->parent_size.y == 0.0f && this->parent_size.z == 0.0f)
+		if (this->parent_transform.size.x == 0.0f && this->parent_transform.size.y == 0.0f &&
+			this->parent_transform.size.z == 0.0f)
 		{
-			this->parent_size = glm::vec3(1, 1, 1);
+			this->parent_transform.size = glm::vec3(1, 1, 1);
 		}
 
-		glm::quat model_rotation = glm::quat(glm::radians(this->rotation));
-		glm::quat parent_rotation = glm::quat(glm::radians(this->parent_rotation));
+		glm::quat model_rotation = glm::quat(glm::radians(this->transform.rotation));
+		glm::quat parent_rotation = glm::quat(glm::radians(this->parent_transform.rotation));
 		glm::mat4 model = glm::scale(
 			glm::translate(
 				glm::scale(
-					glm::translate(glm::mat4(1.0f), this->parent_pos) * glm::mat4_cast(parent_rotation),
-					this->parent_size
+					glm::translate(glm::mat4(1.0f), this->parent_transform.pos) * glm::mat4_cast(parent_rotation),
+					this->parent_transform.size
 				),
-				this->pos
+				this->transform.pos
 			) * glm::mat4_cast(model_rotation),
-			this->size
+			this->transform.size
 		);
 
 		this->mat_mvp = projection * model;

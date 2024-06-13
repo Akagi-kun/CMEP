@@ -74,15 +74,10 @@ namespace Engine
 	{
 		if (this->renderer != nullptr)
 		{
-			this->renderer->Update(
-				this->pos,
-				this->size,
-				this->rotation,
-				this->screenx,
-				this->screeny,
-				this->parent_pos,
-				this->parent_rotation,
-				this->parent_size
+			this->renderer->UpdateTransform(
+				{this->pos, this->size, this->rotation},
+				{this->parent_pos, this->parent_size, this->parent_rotation},
+				{this->screenx, this->screeny}
 			);
 		}
 	}

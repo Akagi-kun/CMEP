@@ -8,6 +8,7 @@ TabWidth: 4
 UseTab: Always
 BinPackArguments: false
 BinPackParameters: false
+AllowAllParametersOfDeclarationOnNextLine: false
 AlignAfterOpenBracket: BlockIndent
 BraceWrapping:
   AfterEnum: true

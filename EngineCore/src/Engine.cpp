@@ -232,8 +232,7 @@ namespace Engine
 	{
 		// TODO: Remove this!
 		// Create axis object
-		Object* object = new Object();
-		// object->renderer = new Rendering::AxisRenderer(this);
+		auto* object = new Object();
 		object->Translate(glm::vec3(0, 0, 0));
 		object->Scale(glm::vec3(1, 1, 1));
 		object->Rotate(glm::vec3(0, 0, 0));
@@ -243,8 +242,6 @@ namespace Engine
 		with_renderer->scene_manager = this->scene_manager;
 
 		assert(object->AssignRenderer(with_renderer) == nullptr);
-		// with_renderer->UpdateMesh();
-
 		this->scene_manager->AddObject("_axis", object);
 
 		// Pre-make ON_UPDATE event so we don't have to create it over and over again in hot loop

@@ -1,5 +1,6 @@
 #pragma once
 #include "Assets/Mesh.hpp"
+
 #include "IRenderer.hpp"
 
 #include <memory>
@@ -35,17 +36,6 @@ namespace Engine::Rendering
 	public:
 		MeshRenderer(Engine* engine);
 		~MeshRenderer() override;
-
-		void Update(
-			glm::vec3 pos,
-			glm::vec3 size,
-			glm::vec3 rotation,
-			uint_fast16_t screenx,
-			uint_fast16_t screeny,
-			glm::vec3 parent_position,
-			glm::vec3 parent_rotation,
-			glm::vec3 parent_size
-		) override;
 
 		void SupplyData(RendererSupplyData data) override;
 		void UpdateMesh() override;

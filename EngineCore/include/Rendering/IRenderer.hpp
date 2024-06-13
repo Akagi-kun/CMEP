@@ -1,9 +1,15 @@
 #pragma once
 
-#include "InternalEngineObject.hpp"
+#include "Rendering/Transform.hpp"
 #include "Rendering/Vulkan/VulkanRenderingEngine.hpp"
+
+#include "IModule.hpp"
+#include "InternalEngineObject.hpp"
 #include "SupplyData.hpp"
+#include "Transform.hpp"
 #include "glm/glm.hpp"
+
+#include <cstdint>
 
 namespace Engine
 {
@@ -15,41 +21,43 @@ namespace Engine
 	{
 		class Shader;
 
-		/**
-		 * @brief Interface for Renderers
-		 */
-		class IRenderer : public InternalEngineObject
+		// Interface for Renderers
+		class IRenderer : public IModule
 		{
 		protected:
-			glm::vec3 pos = glm::vec3();
-			glm::vec3 size = glm::vec3();
-			glm::vec3 rotation = glm::vec3();
+			Transform transform;
+			Transform parent_transform;
 
-			glm::vec3 parent_pos = glm::vec3();
-			glm::vec3 parent_size = glm::vec3();
-			glm::vec3 parent_rotation = glm::vec3();
+			ScreenSize screen;
 
-			uint_fast16_t screenx = 0, screeny = 0;
-
+			// If this is false, UpdateMesh shall be internally called on next Render
 			bool has_updated_mesh = false;
 
 		public:
 			std::weak_ptr<::Engine::SceneManager> scene_manager{};
 
 			IRenderer() = delete;
-			IRenderer(Engine* engine) : InternalEngineObject(engine) {};
-			virtual ~IRenderer() {};
+			IRenderer(Engine* engine) : IModule(engine)
+			{
+			}
+			virtual ~IRenderer() override = default;
 
-			virtual void Update(
-				glm::vec3 pos,
-				glm::vec3 size,
-				glm::vec3 rotation,
-				uint_fast16_t screenx,
-				uint_fast16_t screeny,
-				glm::vec3 parent_position,
-				glm::vec3 parent_rotation,
-				glm::vec3 parent_size
-			) = 0;
+			virtual void UpdateTransform(
+				Transform with_transform,
+				Transform with_parent_transform,
+				ScreenSize with_screen
+			)
+			{
+				this->transform = with_transform;
+				this->parent_transform = with_parent_transform;
+				this->screen = with_screen;
+
+				this->has_updated_mesh = false;
+			}
+
+			void Communicate(const ModuleMessage& data) override
+			{
+			}
 
 			virtual void SupplyData(RendererSupplyData data) = 0;
 

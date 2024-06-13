@@ -89,5 +89,5 @@ add_dependencies(rungame lua_build)
 #foreach(test_to_run ${TESTS_TO_RUN})
 #	add_test(NAME runtest_${test_to_run} COMMAND runtest ${test_to_run} WORKING_DIRECTORY .\\build\\)
 #endforeach()
-#
-#add_subdirectory(examples)
+
+add_subdirectory(examples)

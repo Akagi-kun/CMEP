@@ -1,10 +1,11 @@
 #pragma once
 
+#include "IRenderer.hpp"
+#include "PlatformSemantics.hpp"
+
 #include <memory>
 #include <string>
 
-#include "IRenderer.hpp"
-#include "PlatformSemantics.hpp"
 
 namespace Engine::Rendering
 {
@@ -29,18 +30,18 @@ namespace Engine::Rendering
 	public:
 		TextRenderer(Engine* engine);
 		~TextRenderer();
-
-		void Update(
-			glm::vec3 pos,
-			glm::vec3 size,
-			glm::vec3 rotation,
-			uint_fast16_t screenx,
-			uint_fast16_t screeny,
-			glm::vec3 parent_position,
-			glm::vec3 parent_rotation,
-			glm::vec3 parent_size
-		) override;
-
+		/*
+				void Update(
+					glm::vec3 pos,
+					glm::vec3 size,
+					glm::vec3 rotation,
+					uint_fast16_t screenx,
+					uint_fast16_t screeny,
+					glm::vec3 parent_position,
+					glm::vec3 parent_rotation,
+					glm::vec3 parent_size
+				) override;
+		 */
 		void SupplyData(RendererSupplyData data) override;
 
 		void UpdateMesh() override;

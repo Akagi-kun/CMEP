@@ -2,11 +2,13 @@
 
 #include "Assets/Font.hpp"
 #include "Assets/Texture.hpp"
-#include "Engine.hpp"
+
 #include "Logging/Logging.hpp"
 
+#include "Engine.hpp"
+
 #include <array>
-#include <assert.h>
+#include <cassert>
 #include <cstring>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/quaternion.hpp>
@@ -48,31 +50,6 @@ namespace Engine::Rendering
 			renderer->cleanupVulkanBuffer(this->vbo);
 		}
 		renderer->cleanupVulkanPipeline(this->pipeline);
-	}
-
-	void TextRenderer::Update(
-		glm::vec3 pos,
-		glm::vec3 size,
-		glm::vec3 rotation,
-		uint_fast16_t screenx,
-		uint_fast16_t screeny,
-		glm::vec3 parent_position,
-		glm::vec3 parent_rotation,
-		glm::vec3 parent_size
-	)
-	{
-		this->pos = pos;
-		this->size = size;
-		this->rotation = rotation;
-
-		this->parent_pos = parent_position;
-		this->parent_rotation = parent_rotation;
-		this->parent_size = parent_size;
-
-		this->screenx = screenx;
-		this->screeny = screeny;
-
-		this->has_updated_mesh = false;
 	}
 
 	void TextRenderer::SupplyData(RendererSupplyData data)
@@ -126,12 +103,12 @@ namespace Engine::Rendering
 			vbo = 0;
 			if (this->text[i] == '\n')
 			{
-				accu_y -= 0.35f * (float)(std::round(this->size.y) / fontsize);
+				accu_y -= 0.35f * (float)(std::round(this->transform.size.y) / fontsize);
 				accu_x = 0.f;
 			}
 			else if (this->text[i] == ' ')
 			{
-				accu_x += 0.05f * (float)(std::round(this->size.x) / fontsize);
+				accu_x += 0.05f * (float)(std::round(this->transform.size.x) / fontsize);
 			}
 			else
 			{
@@ -159,8 +136,10 @@ namespace Engine::Rendering
 				// const float x = (float)this->_pos.x * 2 - 1.f + accu_x;
 				// const float y = (float)this->_pos.y * 2 - 1.f + accu_y;
 
-				const float xs = ch->width / (float)this->screenx * (float)(std::round(size.x) / fontsize);
-				const float ys = ch->height / (float)this->screeny * (float)(std::round(size.y) / fontsize);
+				const float xs = ch->width / (float)this->screen.x *
+								 (float)(std::round(this->transform.size.x) / fontsize);
+				const float ys = ch->height / (float)this->screen.y *
+								 (float)(std::round(this->transform.size.y) / fontsize);
 				const float x = accu_x;
 				const float y = accu_y;
 				const float z = 0.0f;
@@ -197,7 +176,7 @@ namespace Engine::Rendering
 					glm::vec2((ch->x) / (float)texture_x, (ch->y) / (float)texture_y)
 				};
 
-				accu_x += xs + (2.f / this->screenx);
+				accu_x += xs + (2.f / this->screen.x);
 
 				generated_mesh.insert(generated_mesh.end(), vertices.begin(), vertices.end());
 
@@ -207,16 +186,18 @@ namespace Engine::Rendering
 
 		glm::mat4 projection = glm::ortho(0.0f, 1.0f, 0.0f, 1.0f, -10.0f, 10.0f);
 
-		if (this->parent_size.x == 0.0f && this->parent_size.y == 0.0f && this->parent_size.z == 0.0f)
+		if (this->parent_transform.size.x == 0.0f && this->parent_transform.size.y == 0.0f &&
+			this->parent_transform.size.z == 0.0f)
 		{
-			this->parent_size = glm::vec3(1, 1, 1);
+			this->parent_transform.size = glm::vec3(1, 1, 1);
 		}
 
-		glm::quat model_rotation = glm::quat(glm::radians(this->rotation));
-		glm::quat parent_rotation = glm::quat(glm::radians(this->parent_rotation));
+		glm::quat model_rotation = glm::quat(glm::radians(this->transform.rotation));
+		glm::quat parent_rotation = glm::quat(glm::radians(this->parent_transform.rotation));
 		glm::mat4 model = glm::translate(
-							  glm::translate(glm::mat4(1.0f), this->parent_pos) * glm::mat4_cast(parent_rotation),
-							  this->pos
+							  glm::translate(glm::mat4(1.0f), this->parent_transform.pos) *
+								  glm::mat4_cast(parent_rotation),
+							  this->transform.pos
 						  ) *
 						  glm::mat4_cast(model_rotation);
 
