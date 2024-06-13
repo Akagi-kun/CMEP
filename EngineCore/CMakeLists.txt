@@ -74,7 +74,7 @@ if(MSVC)
 # TODO: Remove /wd4996 after deprecation fixes
 	target_compile_options(EngineCore PRIVATE /W3 /WX /wd4996 /wd4068)
 else()
-	target_compile_options(EngineCore PRIVATE -Wall -Wno-unknown-pragmas) # -Wextra -Wpedantic -Werror
+	target_compile_options(EngineCore PRIVATE -Wall -Wno-unknown-pragmas -Wno-nullability) # -Wextra -Wpedantic -Werror
 endif()
 
 target_link_directories(EngineCore PUBLIC lib ../build) # ../build/Debug 

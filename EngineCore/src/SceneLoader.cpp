@@ -1,6 +1,6 @@
 #include "SceneLoader.hpp"
 
-#include "AssetManager.hpp"
+#include "Assets/AssetManager.hpp"
 #include "Engine.hpp"
 #include "EventHandling.hpp"
 #include "Rendering/AxisRenderer.hpp"

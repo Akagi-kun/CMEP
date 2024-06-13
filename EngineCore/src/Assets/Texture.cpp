@@ -1,12 +1,14 @@
-#include <assert.h>
+#include <cassert>
 
 #pragma warning(push, 2)
 #include "lodepng.h"
 #pragma warning(pop)
 
-#include "Engine.hpp"
+#include "Assets/Texture.hpp"
+
 #include "Logging/Logging.hpp"
-#include "Rendering/Texture.hpp"
+
+#include "Engine.hpp"
 
 // Prefixes for logging messages
 #define LOGPFX_CURRENT LOGPFX_CLASS_TEXTURE

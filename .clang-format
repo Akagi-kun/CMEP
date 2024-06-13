@@ -31,4 +31,20 @@ SortIncludes: CaseSensitive
 IndentPPDirectives: AfterHash
 InsertNewlineAtEOF: true
 IncludeBlocks: Regroup
+IncludeCategories:
+  - Regex:           '^"(Scripting)/'
+    Priority:        5
+    CaseSensitive:   true
+  - Regex:           '^"(Rendering)/'
+    Priority:        4
+    CaseSensitive:   true
+  - Regex:           '^"(Logging)/'
+    Priority:        10
+    CaseSensitive:   true
+  - Regex:           '^"(Factories)/'
+    Priority:        8
+    CaseSensitive:   true
+  - Regex:           '^"(Assets)/'
+    Priority:        4
+    CaseSensitive:   true
 ...

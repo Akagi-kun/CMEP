@@ -1,6 +1,9 @@
 #include "Scripting/API/AssetManager_API.hpp"
-#include "AssetManager.hpp"
+
 #include "Scripting/API/framework.hpp"
+
+#include "Assets/AssetManager.hpp"
+
 #include <memory>
 
 namespace Engine::Scripting::API

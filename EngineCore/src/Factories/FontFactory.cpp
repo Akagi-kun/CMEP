@@ -1,7 +1,9 @@
 #include "Factories/FontFactory.hpp"
 
 #include "Assets/AssetManager.hpp"
+
 #include "PlatformIndependentUtils.hpp"
+#include <cstdint>
 
 // Prefixes for logging messages
 #define LOGPFX_CURRENT LOGPFX_CLASS_FONT_FACTORY
@@ -22,11 +24,11 @@ namespace Engine::Factories
 		font->UpdateOwnerEngine(this->owner_engine);
 		font->UpdateHeldLogger(this->logger);
 
-		std::unique_ptr<Rendering::FontData> fontData = std::make_unique<Rendering::FontData>();
+		std::unique_ptr<Rendering::FontData> font_data = std::make_unique<Rendering::FontData>();
 
-		std::ifstream fontFile(fontPath);
+		std::ifstream font_file(fontPath);
 
-		if (!fontFile.is_open())
+		if (!font_file.is_open())
 		{
 			this->logger->SimpleLog(
 				Logging::LogLevel::Error, LOGPFX_CURRENT "FontFile %s unexpectedly not open", fontPath.c_str()
@@ -36,38 +38,44 @@ namespace Engine::Factories
 
 		this->logger->SimpleLog(Logging::LogLevel::Debug2, LOGPFX_CURRENT "Loading file %s", fontPath.c_str());
 		// Evaluate it
-		this->EvalBmfont(fontData, fontFile);
+		this->EvalBmfont(font_data, font_file);
 
 		this->logger->SimpleLog(
 			Logging::LogLevel::Debug2, LOGPFX_CURRENT "File %s loaded successfully", fontPath.c_str()
 		);
 
-		fontFile.close();
+		font_file.close();
 
-		font->Init(std::move(fontData));
+		font->Init(std::move(font_data));
 
 		return font;
 	}
 
 	void FontFactory::EvalBmfont(std::unique_ptr<Rendering::FontData>& font, std::ifstream& fontFile)
 	{
-		int cur_offset = 0;
-		char cur_data[16] = {};
-		char* data = new char[256];
+		static constexpr uint_fast16_t entry_buffer_limit = 16;
+		static const uint_fast16_t buffer_limit = 255;
+
+		uint_fast16_t cur_offset = 0;
+		char cur_data[entry_buffer_limit] = {};
+		char* data = new char[buffer_limit + 1];
 
 		assert(data);
 
 		while (fontFile.eof() == 0)
 		{
-			memset(data, 0, 255);
+			memset(data, 0, buffer_limit);
 
 			// Get a line from file
-			fontFile.getline(data, 255);
+			fontFile.getline(data, buffer_limit);
 
 			// Remove trailing newline
 			data[strcspn(data, "\n")] = 0;
 
-			memset(cur_data, 0, 16);
+			// Consume one entry at a time
+			// entries separated by a space character
+			// entry size limited
+			memset(cur_data, 0, entry_buffer_limit);
 			(void)sscanf(data, "%s %n", cur_data, &cur_offset);
 
 			if (strnlen(cur_data, ARRAY_SIZEOF(cur_data)) == 0)
@@ -75,26 +83,32 @@ namespace Engine::Factories
 				break;
 			}
 
-			assert(0 < cur_offset && cur_offset < 255);
+			assert(0 < cur_offset && cur_offset < buffer_limit);
+
+			static constexpr char info_str[] = "info";
+			static constexpr char char_str[] = "char";
+			static constexpr char common_str[] = "common";
+			static constexpr char page_str[] = "page";
+			static constexpr char chars_str[] = "chars";
 
 			// Send EvalBmfontLine the correct type value
-			if (strncmp("info", cur_data, 4) == 0)
+			if (strncmp(info_str, cur_data, sizeof(info_str) - 1) == 0)
 			{
 				this->EvalBmfontLine(font, 0, &data[cur_offset]);
 			}
-			else if (strncmp("char", cur_data, 4) == 0)
+			else if (strncmp(char_str, cur_data, sizeof(char_str) - 1) == 0)
 			{
 				this->EvalBmfontLine(font, 1, &data[cur_offset]);
 			}
-			else if (strncmp("common", cur_data, 6) == 0)
+			else if (strncmp(common_str, cur_data, sizeof(common_str) - 1) == 0)
 			{
 				this->EvalBmfontLine(font, 2, &data[cur_offset]);
 			}
-			else if (strncmp("page", cur_data, 4) == 0)
+			else if (strncmp(page_str, cur_data, sizeof(page_str) - 1) == 0)
 			{
 				this->EvalBmfontLine(font, 3, &data[cur_offset]);
 			}
-			else if (strncmp("chars", cur_data, 5) == 0)
+			else if (strncmp(chars_str, cur_data, sizeof(chars_str) - 1) == 0)
 			{
 				this->EvalBmfontLine(font, 4, &data[cur_offset]);
 			}
@@ -109,10 +123,12 @@ namespace Engine::Factories
 
 	void FontFactory::EvalBmfontLine(std::unique_ptr<Rendering::FontData>& font, int type, char* data)
 	{
+		static constexpr uint_fast16_t buffer_len_limit = 63;
+
 		// Temporary storage arrays
-		char cur_data[48] = {};
-		char key[16] = {};
-		char value[32] = {};
+		char cur_data[buffer_len_limit + 1] = {};
+		char key[buffer_len_limit + 1] = {};
+		char value[buffer_len_limit + 1] = {};
 
 		// Read single key=value pairs until end of line
 		int cur_offset = 0;
@@ -154,16 +170,16 @@ namespace Engine::Factories
 
 						Rendering::FontChar c = {};
 						int id = 0;
-						id = std::stoi(pairs.find("id")->second.c_str(), nullptr, 10);
-						c.x = std::stoi(pairs.find("x")->second.c_str(), nullptr, 10);
-						c.y = std::stoi(pairs.find("y")->second.c_str(), nullptr, 10);
-						c.width = std::stoi(pairs.find("width")->second.c_str(), nullptr, 10);
-						c.height = std::stoi(pairs.find("height")->second.c_str(), nullptr, 10);
-						c.xoffset = std::stoi(pairs.find("xoffset")->second.c_str(), nullptr, 10);
-						c.yoffset = std::stoi(pairs.find("yoffset")->second.c_str(), nullptr, 10);
-						c.xadvance = std::stoi(pairs.find("xadvance")->second.c_str(), nullptr, 10);
-						c.page = std::stoi(pairs.find("page")->second.c_str(), nullptr, 10);
-						c.channel = std::stoi(pairs.find("chnl")->second.c_str(), nullptr, 10);
+						id = std::stoi(pairs.find("id")->second);
+						c.x = std::stoi(pairs.find("x")->second);
+						c.y = std::stoi(pairs.find("y")->second);
+						c.width = std::stoi(pairs.find("width")->second);
+						c.height = std::stoi(pairs.find("height")->second);
+						c.xoffset = std::stoi(pairs.find("xoffset")->second);
+						c.yoffset = std::stoi(pairs.find("yoffset")->second);
+						c.xadvance = std::stoi(pairs.find("xadvance")->second);
+						c.page = std::stoi(pairs.find("page")->second);
+						c.channel = std::stoi(pairs.find("chnl")->second);
 
 						// Place the character into unordered_map
 						font->chars.emplace(id, c);
@@ -250,9 +266,13 @@ namespace Engine::Factories
 					(void)sscanf(value, "%u", &font->char_count);
 					break;
 				}
+				default:
+				{
+					break;
+				}
 			}
 
-			memset(cur_data, 0, 48);
+			memset(cur_data, 0, buffer_len_limit);
 		}
 	}
 } // namespace Engine::Factories

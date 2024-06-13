@@ -4,9 +4,11 @@
 #include "lodepng.h"
 #pragma warning(pop)
 
-#include "Engine.hpp"
-#include "Factories/TextureFactory.hpp"
 #include "Rendering/Vulkan/VulkanImageFactory.hpp"
+
+#include "Factories/TextureFactory.hpp"
+
+#include "Engine.hpp"
 
 // Prefixes for logging messages
 #define LOGPFX_CURRENT LOGPFX_CLASS_TEXTURE_FACTORY

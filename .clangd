@@ -1,5 +1,5 @@
 CompileFlags:
-  Add: [-Wall, -Wno-c++98-compat, -std=c++17, --extra-warnings, -Wno-switch-enum, -Wswitch, -Wno-date-time, -Wno-exit-time-destructors]
+  Add: [-Wall, -Wno-c++98-compat, -std=c++17, -Wno-switch-enum, -Wswitch, -Wno-date-time, -Wno-exit-time-destructors, -Wno-unsafe-buffer-usage]
 If:
   PathMatch: [.*\**.hpp, .*\**.cpp]
   PathExclude: external/.*

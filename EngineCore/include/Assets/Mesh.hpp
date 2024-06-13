@@ -1,9 +1,10 @@
 #pragma once
 
 #include "Assets/Texture.hpp"
-#include "InternalEngineObject.hpp"
 #include "Rendering/tinyobjloader/tiny_obj_loader.h"
 
+#include "InternalEngineObject.hpp"
+#include <cstdint>
 #include <string>
 #include <vector>
 
@@ -20,7 +21,7 @@ namespace Engine::Rendering
 		std::vector<glm::vec3> mesh_tangents;
 		std::vector<glm::vec3> mesh_bitangents;
 
-		std::vector<unsigned int> matids;
+		std::vector<int_fast16_t> matids;
 		std::vector<tinyobj::material_t> materials;
 		std::vector<glm::vec3> mesh_ambient;
 		std::vector<glm::vec3> mesh_diffuse;

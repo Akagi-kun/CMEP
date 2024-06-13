@@ -1,16 +1,16 @@
 #include "Scripting/Mappings.hpp"
-#include "Scripting/API/LuaFactories.hpp"
 
+#include "Assets/AssetManager.hpp"
+#include "Assets/Texture.hpp"
 #include "Rendering/MeshRenderer.hpp"
 #include "Rendering/TextRenderer.hpp"
-#include "Rendering/Texture.hpp"
 
-#include "AssetManager.hpp"
-#include "SceneManager.hpp"
+#include "Scripting/API/LuaFactories.hpp"
 
 #include "Factories/ObjectFactory.hpp"
 
 #include "Engine.hpp"
+#include "SceneManager.hpp"
 
 // Prefixes for logging messages
 #define LOGPFX_CURRENT LOGPFX_LUA_MAPPED

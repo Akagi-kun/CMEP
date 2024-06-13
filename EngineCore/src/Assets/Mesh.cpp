@@ -1,8 +1,9 @@
-#include <glm/ext/vector_float2.hpp>
-#include <glm/ext/vector_float3.hpp>
+#include "Assets/Mesh.hpp"
 
 #include "Logging/Logging.hpp"
-#include "Rendering/Mesh.hpp"
+
+#include <glm/ext/vector_float2.hpp>
+#include <glm/ext/vector_float3.hpp>
 
 #define TINYOBJLOADER_IMPLEMENTATION
 #include "Rendering/tinyobjloader/tiny_obj_loader.h"
@@ -144,17 +145,19 @@ namespace Engine::Rendering
 		// Loop over shapes
 		for (size_t s = 0; s < shapes.size(); s++)
 		{
+			const auto& current_shape_mesh = shapes[s].mesh;
+
 			// Loop over faces(polygon)
 			size_t index_offset = 0;
-			for (size_t f = 0; f < shapes[s].mesh.num_face_vertices.size(); f++)
+			for (size_t f = 0; f < current_shape_mesh.num_face_vertices.size(); f++)
 			{
-				size_t fv = size_t(shapes[s].mesh.num_face_vertices[f]);
+				size_t fv = size_t(current_shape_mesh.num_face_vertices[f]);
 
 				// Loop over vertices in the face.
 				for (size_t v = 0; v < fv; v++)
 				{
 					// access to vertex
-					tinyobj::index_t idx = shapes[s].mesh.indices[index_offset + v];
+					tinyobj::index_t idx = current_shape_mesh.indices[index_offset + v];
 					tinyobj::real_t vx = attrib.vertices[3 * size_t(idx.vertex_index) + 0];
 					tinyobj::real_t vy = attrib.vertices[3 * size_t(idx.vertex_index) + 1];
 					tinyobj::real_t vz = attrib.vertices[3 * size_t(idx.vertex_index) + 2];
@@ -178,22 +181,25 @@ namespace Engine::Rendering
 					}
 
 					// per-vertex material id
-					this->matids.push_back(shapes[s].mesh.material_ids[f]);
+					const auto& material_id = current_shape_mesh.material_ids[f];
+					this->matids.push_back(material_id);
 
 					// per-vertex material data
 					if (materials.size() > 0)
 					{
-						const tinyobj::real_t* face_ambient = materials[shapes[s].mesh.material_ids[f]].ambient;
-						const tinyobj::real_t* face_diffuse = materials[shapes[s].mesh.material_ids[f]].diffuse;
-						const tinyobj::real_t* face_specular = materials[shapes[s].mesh.material_ids[f]].specular;
-						const tinyobj::real_t face_dissolve = materials[shapes[s].mesh.material_ids[f]].dissolve;
-						const tinyobj::real_t* face_emission = materials[shapes[s].mesh.material_ids[f]].emission;
+						const auto& current_material = materials[static_cast<size_t>(material_id)];
 
-						this->mesh_ambient.push_back(glm::vec3(face_ambient[0], face_ambient[1], face_ambient[2]));
-						this->mesh_diffuse.push_back(glm::vec3(face_diffuse[0], face_diffuse[1], face_diffuse[2]));
-						this->mesh_specular.push_back(glm::vec3(face_specular[0], face_specular[1], face_specular[2]));
+						const tinyobj::real_t* face_ambient = current_material.ambient;
+						const tinyobj::real_t* face_diffuse = current_material.diffuse;
+						const tinyobj::real_t* face_specular = current_material.specular;
+						const tinyobj::real_t face_dissolve = current_material.dissolve;
+						const tinyobj::real_t* face_emission = current_material.emission;
+
+						this->mesh_ambient.emplace_back(face_ambient[0], face_ambient[1], face_ambient[2]);
+						this->mesh_diffuse.emplace_back(face_diffuse[0], face_diffuse[1], face_diffuse[2]);
+						this->mesh_specular.emplace_back(face_specular[0], face_specular[1], face_specular[2]);
 						this->mesh_dissolve.push_back(face_dissolve);
-						this->mesh_emission.push_back(glm::vec3(face_emission[0], face_emission[1], face_emission[2]));
+						this->mesh_emission.emplace_back(face_emission[0], face_emission[1], face_emission[2]);
 					}
 				}
 				index_offset += fv;

@@ -1,7 +1,7 @@
 // #include <cassert>
 #include "Engine.hpp"
 
-#include "AssetManager.hpp"
+#include "Assets/AssetManager.hpp"
 #include "Object.hpp"
 #include "Rendering/AxisRenderer.hpp"
 #include "Scripting/LuaScript.hpp"

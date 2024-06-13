@@ -1,15 +1,13 @@
-#include <assert.h>
-#include <cstdio>
-#include <string>
-#include <cstring>
-#include <stdexcept>
+#include "Assets/Font.hpp"
 
-#include "Rendering/Texture.hpp"
+#include "Assets/AssetManager.hpp"
+#include "Assets/Texture.hpp"
+
 #include "Logging/Logging.hpp"
-#include "Rendering/Font.hpp"
-#include "AssetManager.hpp"
 
-#include "PlatformIndependentUtils.hpp"
+#include <assert.h>
+#include <stdexcept>
+#include <string>
 
 // Prefixes for logging messages
 #define LOGPFX_CURRENT LOGPFX_CLASS_FONT
@@ -22,7 +20,7 @@ namespace Engine::Rendering
 		this->asset_manager = managed_by;
 	}
 
-	Font::~Font() 
+	Font::~Font()
 	{
 		this->logger->SimpleLog(Logging::LogLevel::Debug3, LOGPFX_CURRENT "Destructor called");
 	}
@@ -61,4 +59,4 @@ namespace Engine::Rendering
 		}
 		return nullptr;
 	}
-}
+} // namespace Engine::Rendering
