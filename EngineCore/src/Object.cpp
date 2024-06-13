@@ -1,5 +1,9 @@
 #include "Object.hpp"
 
+#include "Rendering/IRenderer.hpp"
+
+#include "InternalEngineObject.hpp"
+
 namespace Engine
 {
 	Object::Object() noexcept = default;
@@ -7,6 +11,16 @@ namespace Engine
 	{
 		this->logger->SimpleLog(Logging::LogLevel::Debug3, "Object deleted");
 		delete this->renderer;
+	}
+
+	void Object::UpdateHeldLogger(std::shared_ptr<Logging::Logger> new_logger)
+	{
+		InternalEngineObject::UpdateHeldLogger(new_logger);
+
+		if (this->renderer != nullptr)
+		{
+			this->renderer->UpdateHeldLogger(new_logger);
+		}
 	}
 
 	void Object::ScreenSizeInform(unsigned int new_screenx, unsigned int newscreeny) noexcept
@@ -71,6 +85,20 @@ namespace Engine
 				this->parent_size
 			);
 		}
+	}
+
+	Rendering::IRenderer* Object::AssignRenderer(Rendering::IRenderer* with_renderer)
+	{
+		Rendering::IRenderer* old_renderer = this->renderer;
+
+		this->renderer = with_renderer;
+
+		return old_renderer;
+	}
+
+	Rendering::IRenderer* Object::GetRenderer() noexcept
+	{
+		return this->renderer;
 	}
 
 	int Object::Render(VkCommandBuffer commandBuffer, uint32_t currentFrame)

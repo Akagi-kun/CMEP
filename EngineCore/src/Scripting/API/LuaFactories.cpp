@@ -50,7 +50,7 @@ namespace Engine::Scripting::API
 			Rendering::IRenderer** ptr_renderer = (Rendering::IRenderer**)lua_newuserdata(
 				state, sizeof(Rendering::IRenderer*)
 			);
-			(*ptr_renderer) = object_ptr->renderer;
+			(*ptr_renderer) = object_ptr->GetRenderer();
 			lua_setfield(state, -2, "_pointer");
 			lua_setfield(state, -2, "renderer");
 		}

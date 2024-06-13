@@ -1,12 +1,14 @@
 #include "SceneLoader.hpp"
 
 #include "Assets/AssetManager.hpp"
-#include "Engine.hpp"
-#include "EventHandling.hpp"
 #include "Rendering/AxisRenderer.hpp"
+#include "Rendering/IRenderer.hpp"
 #include "Rendering/MeshRenderer.hpp"
 #include "Rendering/SpriteRenderer.hpp"
 #include "Rendering/TextRenderer.hpp"
+
+#include "Engine.hpp"
+#include "EventHandling.hpp"
 
 #include <fstream>
 
@@ -201,7 +203,7 @@ namespace Engine
 					{
 						case RendererType::SPRITE:
 						{
-							object->renderer = new Rendering::SpriteRenderer(this->GetOwnerEngine());
+							Rendering::IRenderer* with_renderer = new Rendering::SpriteRenderer(this->GetOwnerEngine());
 
 							for (auto& supply_texture : scene_entry["renderer_supply_textures"])
 							{
@@ -212,11 +214,12 @@ namespace Engine
 								Rendering::RendererSupplyData texture_supply(
 									Rendering::RendererSupplyDataType::TEXTURE, texture
 								);
-								object->renderer->SupplyData(texture_supply);
+								with_renderer->SupplyData(texture_supply);
 							}
 
-							object->renderer->UpdateMesh();
+							with_renderer->UpdateMesh();
 
+							assert(object->AssignRenderer(with_renderer) == nullptr);
 							break;
 						}
 						default:

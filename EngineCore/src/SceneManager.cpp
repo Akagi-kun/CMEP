@@ -1,6 +1,10 @@
 #include "SceneManager.hpp"
-#include "Engine.hpp"
+
+#include "Rendering/IRenderer.hpp"
+
 #include "Logging/Logging.hpp"
+
+#include "Engine.hpp"
 #include "glm/ext/matrix_transform.hpp"
 
 namespace Engine
@@ -27,7 +31,10 @@ namespace Engine
 	{
 		for (auto& [name, ptr] : *(this->scenes.at(this->current_scene)->GetAllObjects()))
 		{
-			ptr->renderer->UpdateMesh();
+			Rendering::IRenderer* object_renderer = ptr->GetRenderer();
+			assert(object_renderer != nullptr);
+
+			object_renderer->UpdateMesh();
 		}
 	}
 

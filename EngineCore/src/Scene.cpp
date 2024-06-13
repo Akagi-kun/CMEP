@@ -1,8 +1,9 @@
 #include "Scene.hpp"
 
-#include "Engine.hpp"
+#include "Rendering/IRenderer.hpp"
 #include "Rendering/SpriteRenderer.hpp"
 
+#include "Engine.hpp"
 
 // Prefixes for logging messages
 #define LOGPFX_CURRENT LOGPFX_CLASS_SCENE
@@ -36,11 +37,18 @@ namespace Engine
 
 	static bool InternalSortCmpFunction(std::pair<std::string, Object*>& a, std::pair<std::string, Object*>& b)
 	{
-		const bool is_a_ui = a.second->renderer->GetIsUI();
-		const bool is_b_ui = b.second->renderer->GetIsUI();
+		Rendering::IRenderer* a_renderer = a.second->GetRenderer();
+		Rendering::IRenderer* b_renderer = b.second->GetRenderer();
+
+		assert(a_renderer != nullptr);
+		assert(b_renderer != nullptr);
+
+		const bool is_a_ui = a_renderer->GetIsUI();
+		const bool is_b_ui = b_renderer->GetIsUI();
 
 		if (is_a_ui && is_b_ui)
 		{
+			// Introduce positive offset (TODO: is this necessary?)
 			static const float positive_offset = 10.f;
 			float a_z = a.second->Position().z + positive_offset;
 			float b_z = b.second->Position().z + positive_offset;
@@ -92,7 +100,8 @@ namespace Engine
 
 		if (templated_object != this->templates.end())
 		{
-			Object* object = nullptr;
+			// Object* object = nullptr;
+			Rendering::IRenderer* with_renderer = nullptr;
 
 			ObjectTemplate object_template = templated_object->second;
 
@@ -100,12 +109,10 @@ namespace Engine
 			{
 				case RendererType::SPRITE:
 				{
-					object = new Object();
-					object->renderer = new Rendering::SpriteRenderer(this->owner_engine);
-
-					// TODO: Overload object UpdateHeldLogger
-					object->UpdateHeldLogger(this->logger);
-					object->renderer->UpdateHeldLogger(this->logger);
+					// object = new Object();
+					with_renderer = new Rendering::SpriteRenderer(this->owner_engine);
+					// object->UpdateHeldLogger(this->logger);
+					with_renderer->UpdateHeldLogger(this->logger);
 
 					break;
 				}
@@ -116,11 +123,18 @@ namespace Engine
 				}
 			}
 
+			// Allocate Object since we already know
+			// that the renderer is valid
+			auto* object = new Object();
+
 			for (auto& supply : object_template.supply_list)
 			{
-				object->renderer->SupplyData(supply);
+				with_renderer->SupplyData(supply);
 			}
 
+			assert(object->AssignRenderer(with_renderer) == nullptr);
+
+			object->UpdateHeldLogger(this->logger);
 			this->AddObject(name, object);
 
 			return object;
@@ -137,7 +151,6 @@ namespace Engine
 			Rendering::GLFWwindowData data = this->owner_engine->GetRenderingEngine()->GetWindow();
 			ptr->ScreenSizeInform(data.window_x, data.window_y);
 			ptr->UpdateHeldLogger(this->logger);
-			ptr->renderer->UpdateHeldLogger(this->logger);
 			this->objects.emplace(name, ptr);
 		}
 		Scene::InternalSort(this->objects, this->objects_sorted);

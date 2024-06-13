@@ -26,22 +26,28 @@ namespace Engine
 
 		// std::function<void(Object*)> on_click = nullptr;
 
-	public:
 		Rendering::IRenderer* renderer = nullptr;
+
+	public:
 		// std::string renderer_type;
 
 		Object() noexcept;
 		~Object() noexcept;
 
-		void ScreenSizeInform(unsigned int new_screenx, unsigned int new_screeny) noexcept;
+		// Overrides InternalEngineObject::UpdateHeldLogger
+		void UpdateHeldLogger(std::shared_ptr<Logging::Logger> new_logger);
 
-		void Translate(const glm::vec3 new_pos) noexcept;
+		void ScreenSizeInform(unsigned int with_screenx, unsigned int with_screeny) noexcept;
 
-		void Scale(const glm::vec3 new_size) noexcept;
-
-		void Rotate(const glm::vec3 new_rotation) noexcept;
+		void Translate(const glm::vec3 with_pos) noexcept;
+		void Scale(const glm::vec3 with_size) noexcept;
+		void Rotate(const glm::vec3 with_rotation) noexcept;
 
 		void UpdateRenderer() noexcept;
+
+		[[nodiscard]]
+		Rendering::IRenderer* AssignRenderer(Rendering::IRenderer* with_renderer);
+		Rendering::IRenderer* GetRenderer() noexcept;
 
 		int Render(VkCommandBuffer commandBuffer, uint32_t currentFrame);
 
@@ -49,7 +55,7 @@ namespace Engine
 		glm::vec3 Size() const noexcept;
 		glm::vec3 Rotation() const noexcept;
 
-		void SetParentPositionRotationSize(glm::vec3 new_position, glm::vec3 new_rotation, glm::vec3 new_size);
+		void SetParentPositionRotationSize(glm::vec3 with_position, glm::vec3 with_rotation, glm::vec3 with_size);
 
 		void AddChild(Object* object);
 		void RemoveChildren();
