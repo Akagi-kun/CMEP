@@ -1,13 +1,11 @@
 #include <fstream>
 
 #pragma warning(push, 2)
-#include "lodepng/lodepng.h"
+#include "lodepng.h"
 #pragma warning(pop)
 
 #include "Engine.hpp"
-
 #include "Factories/TextureFactory.hpp"
-
 #include "Rendering/Vulkan/VulkanImageFactory.hpp"
 
 // Prefixes for logging messages
