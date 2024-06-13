@@ -1,16 +1,14 @@
 #pragma once
 
-#include <string>
-#include <unordered_map>
-
-#include "Rendering/Mesh.hpp"
-#include "Rendering/Texture.hpp"
-#include "Scripting/LuaScript.hpp"
-
+#include "Assets/Mesh.hpp"
+#include "Assets/Texture.hpp"
 #include "Factories/FontFactory.hpp"
 #include "Factories/TextureFactory.hpp"
-
 #include "InternalEngineObject.hpp"
+#include "Scripting/LuaScript.hpp"
+
+#include <string>
+#include <unordered_map>
 
 namespace Engine
 {

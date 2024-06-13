@@ -1,14 +1,15 @@
 #include "Rendering/MeshRenderer.hpp"
 
+#include "Assets/Texture.hpp"
 #include "Engine.hpp"
 #include "Logging/Logging.hpp"
-#include "Rendering/Texture.hpp"
 #include "SceneManager.hpp"
 #include "glm/trigonometric.hpp"
 
 #include <assert.h>
 #include <cstring>
 #include <glm/gtc/quaternion.hpp>
+
 
 namespace Engine::Rendering
 {

@@ -1,14 +1,13 @@
-#include <assert.h>
+#include "Factories/ObjectFactory.hpp"
 
-#include "Rendering/Font.hpp"
+#include "Assets/Font.hpp"
+#include "Assets/Texture.hpp"
 #include "Rendering/MeshRenderer.hpp"
 #include "Rendering/SpriteRenderer.hpp"
 #include "Rendering/TextRenderer.hpp"
-#include "Rendering/Texture.hpp"
-
-#include "Factories/ObjectFactory.hpp"
-
 #include "glm/vec3.hpp"
+
+#include <assert.h>
 
 namespace Engine::ObjectFactory
 {
@@ -31,7 +30,7 @@ namespace Engine::ObjectFactory
 			object->Scale(glm::vec3(sizex, sizey, 0));
 
 			object->renderer->scene_manager = scene_manager;
-			
+
 			Rendering::RendererSupplyData texture_supply(Rendering::RendererSupplyDataType::TEXTURE, sprite);
 			object->renderer->SupplyData(texture_supply);
 
@@ -63,7 +62,7 @@ namespace Engine::ObjectFactory
 			object->Translate(glm::vec3(x, y, z));
 			object->Scale(glm::vec3(size, size, 0));
 
-			//Rendering::RendererSupplyData font_supply(Rendering::RendererSupplyDataType::FONT, font);
+			// Rendering::RendererSupplyData font_supply(Rendering::RendererSupplyDataType::FONT, font);
 
 			object->renderer->scene_manager = scene_manager;
 

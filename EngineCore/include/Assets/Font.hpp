@@ -1,7 +1,6 @@
 #pragma once
 
 #include "InternalEngineObject.hpp"
-#include "PlatformSemantics.hpp"
 
 #include <unordered_map>
 
@@ -43,5 +42,5 @@ namespace Engine
 			std::shared_ptr<Texture> GetPageTexture(int page);
 			std::string* GetFontInfoParameter(std::string name);
 		};
-	}
-}
+	} // namespace Rendering
+} // namespace Engine

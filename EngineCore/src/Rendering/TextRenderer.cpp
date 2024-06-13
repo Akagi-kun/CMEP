@@ -1,17 +1,16 @@
+#include "Rendering/TextRenderer.hpp"
+
+#include "Assets/Font.hpp"
+#include "Assets/Texture.hpp"
+#include "Engine.hpp"
+#include "Logging/Logging.hpp"
+
 #include <array>
 #include <assert.h>
 #include <cstring>
-#include <vector>
-
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/quaternion.hpp>
-
-#include "Logging/Logging.hpp"
-#include "Rendering/Font.hpp"
-#include "Rendering/TextRenderer.hpp"
-#include "Rendering/Texture.hpp"
-
-#include "Engine.hpp"
+#include <vector>
 
 namespace Engine::Rendering
 {

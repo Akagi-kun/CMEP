@@ -1,6 +1,6 @@
 #include "Factories/FontFactory.hpp"
 
-#include "AssetManager.hpp"
+#include "Assets/AssetManager.hpp"
 #include "PlatformIndependentUtils.hpp"
 
 // Prefixes for logging messages

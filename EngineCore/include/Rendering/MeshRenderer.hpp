@@ -1,6 +1,6 @@
 #pragma once
+#include "Assets/Mesh.hpp"
 #include "IRenderer.hpp"
-#include "Mesh.hpp"
 
 #include <memory>
 

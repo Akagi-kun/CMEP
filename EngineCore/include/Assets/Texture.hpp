@@ -1,12 +1,12 @@
 #pragma once
 
+#include "InternalEngineObject.hpp"
+#include "Rendering/Vulkan/VulkanRenderingEngine.hpp"
+
 #include <memory>
 #include <string>
 #include <vector>
 
-#include "InternalEngineObject.hpp"
-#include "PlatformSemantics.hpp"
-#include "Rendering/Vulkan/VulkanRenderingEngine.hpp"
 
 namespace Engine::Rendering
 {

@@ -1,14 +1,13 @@
+#include "Rendering/SpriteRenderer.hpp"
+
+#include "Assets/Texture.hpp"
+#include "Engine.hpp"
+
 #include <assert.h>
 #include <cstring>
-
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/quaternion.hpp>
-
-#include "Rendering/SpriteRenderer.hpp"
-#include "Rendering/Texture.hpp"
-
-#include "Engine.hpp"
 
 namespace Engine::Rendering
 {

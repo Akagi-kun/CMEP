@@ -1,8 +1,8 @@
 #pragma once
 
+#include "Assets/Mesh.hpp"
 #include "Object.hpp"
 #include "PlatformSemantics.hpp"
-#include "Rendering/Mesh.hpp"
 #include "SceneManager.hpp"
 
 namespace Engine::Rendering
@@ -23,7 +23,7 @@ namespace Engine::ObjectFactory
 		double sizey,
 		std::shared_ptr<Rendering::Texture> sprite
 	);
-	
+
 	CMEP_EXPORT Object* CreateTextObject(
 		std::weak_ptr<SceneManager> scene_manager,
 		double x,

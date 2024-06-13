@@ -7,7 +7,11 @@ set(SRC_FILES
 	src/test_logging.cpp
 	src/test_engine.cpp
 	
-	../EngineCore/src/AssetManager.cpp
+	../EngineCore/src/Assets/AssetManager.cpp
+	../EngineCore/src/Assets/Font.cpp
+	../EngineCore/src/Assets/Mesh.cpp
+	../EngineCore/src/Assets/Texture.cpp
+
 	../EngineCore/src/Engine.cpp
 	../EngineCore/src/SceneManager.cpp
 
@@ -17,13 +21,10 @@ set(SRC_FILES
 	../EngineCore/src/Logging/ConsoleColors.cpp
 	../EngineCore/src/Logging/Logging.cpp
 
-	../EngineCore/src/Rendering/Font.cpp
 	../EngineCore/src/Rendering/AxisRenderer.cpp
-	../EngineCore/src/Rendering/Mesh.cpp
 	../EngineCore/src/Rendering/MeshRenderer.cpp
 	../EngineCore/src/Rendering/SpriteRenderer.cpp
 	../EngineCore/src/Rendering/TextRenderer.cpp
-	../EngineCore/src/Rendering/Texture.cpp
 	
 	../EngineCore/src/Rendering/Vulkan/VulkanRenderingEngine.cpp
 	

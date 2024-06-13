@@ -1,7 +1,7 @@
 #pragma once
 
+#include "Assets/Texture.hpp"
 #include "InternalEngineObject.hpp"
-#include "Rendering/Texture.hpp"
 #include "Rendering/tinyobjloader/tiny_obj_loader.h"
 
 #include <string>

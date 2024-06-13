@@ -1,10 +1,8 @@
 #pragma once
 
-#include "Rendering/Texture.hpp"
-
-#include "Rendering/Vulkan/VulkanStructDefs.hpp"
-
+#include "Assets/Texture.hpp"
 #include "InternalEngineObject.hpp"
+#include "Rendering/Vulkan/VulkanStructDefs.hpp"
 
 namespace Engine::Factories
 {
@@ -17,7 +15,7 @@ namespace Engine::Factories
 			std::vector<unsigned char> raw_data,
 			int color_format,
 			VkFilter filtering,
-		    VkSamplerAddressMode sampler_address_mode,
+			VkSamplerAddressMode sampler_address_mode,
 			unsigned int sizex,
 			unsigned int sizey
 		);
@@ -30,7 +28,7 @@ namespace Engine::Factories
 			Rendering::VulkanBuffer* staging_buffer,
 			Rendering::Texture_InitFiletype filetype,
 			VkFilter filtering = VK_FILTER_LINEAR,
-		    VkSamplerAddressMode sampler_address_mode = VK_SAMPLER_ADDRESS_MODE_REPEAT,
+			VkSamplerAddressMode sampler_address_mode = VK_SAMPLER_ADDRESS_MODE_REPEAT,
 			unsigned int sizex = 0,
 			unsigned int sizey = 0
 		);

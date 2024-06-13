@@ -2,7 +2,6 @@ cmake_minimum_required(VERSION 3.5)
 project(EngineCore CXX)
 
 set(SRC_FILES
-	src/AssetManager.cpp
 	src/dllmain.cpp
 	src/Engine.cpp
 	src/OpaqueEngine.cpp
@@ -18,13 +17,15 @@ set(SRC_FILES
 	src/Logging/ConsoleColors.cpp
 	src/Logging/Logging.cpp
 
-	src/Rendering/Font.cpp
+	src/Assets/AssetManager.cpp
+	src/Assets/Font.cpp
+	src/Assets/Mesh.cpp
+	src/Assets/Texture.cpp
+
 	src/Rendering/AxisRenderer.cpp
-	src/Rendering/Mesh.cpp
 	src/Rendering/MeshRenderer.cpp
 	src/Rendering/SpriteRenderer.cpp
 	src/Rendering/TextRenderer.cpp
-	src/Rendering/Texture.cpp
 	
 	src/Rendering/Vulkan/VulkanDeviceManager.cpp
 	src/Rendering/Vulkan/VulkanRenderingEngine.cpp

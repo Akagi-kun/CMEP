@@ -1,7 +1,7 @@
 #pragma once
 
+#include "Assets/Font.hpp"
 #include "InternalEngineObject.hpp"
-#include "Rendering/Font.hpp"
 
 namespace Engine::Factories
 {
