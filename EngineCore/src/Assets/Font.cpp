@@ -6,7 +6,6 @@
 #include "Logging/Logging.hpp"
 
 #include <assert.h>
-#include <stdexcept>
 #include <string>
 
 // Prefixes for logging messages

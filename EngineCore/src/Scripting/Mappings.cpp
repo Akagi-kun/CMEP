@@ -26,12 +26,11 @@ namespace Engine::Scripting::Mappings
 
 		int MetaLoggerSimpleLog(lua_State* state)
 		{
+			assert(lua_gettop(state) == 1);
+
 			const char* string = lua_tostring(state, 1);
 
-			lua_getglobal(state, "cmepmeta");
-			lua_getfield(state, -1, "logger");
-			lua_getfield(state, -1, "_smart_ptr");
-			std::weak_ptr<Logging::Logger> logger = *(std::weak_ptr<Logging::Logger>*)lua_touserdata(state, -1);
+			std::weak_ptr<Logging::Logger> logger = Scripting::API::LuaObjectFactories::MetaLoggerFactory(state);
 
 			if (auto locked_logger = logger.lock())
 			{
@@ -51,6 +50,8 @@ namespace Engine::Scripting::Mappings
 
 		int TextRendererUpdateText(lua_State* state)
 		{
+			assert(lua_gettop(state) == 2);
+
 			lua_getfield(state, 1, "_pointer");
 			Rendering::IRenderer* renderer = *(Rendering::IRenderer**)lua_touserdata(state, -1);
 
@@ -58,8 +59,6 @@ namespace Engine::Scripting::Mappings
 
 			Rendering::RendererSupplyData text_supply(Rendering::RendererSupplyDataType::TEXT, text);
 			renderer->SupplyData(text_supply);
-
-			//((::Engine::Rendering::TextRenderer*)renderer)->UpdateText(std::string(text));
 
 			return 0;
 		}
@@ -70,6 +69,8 @@ namespace Engine::Scripting::Mappings
 
 		int MeshRendererUpdateTexture(lua_State* state)
 		{
+			assert(lua_gettop(state) == 2);
+
 			lua_getfield(state, 1, "_pointer");
 			Rendering::IRenderer* renderer = *(Rendering::IRenderer**)lua_touserdata(state, -1);
 
@@ -91,6 +92,8 @@ namespace Engine::Scripting::Mappings
 
 		int ObjectFactoryCreateSpriteObject(lua_State* state)
 		{
+			assert(lua_gettop(state) == 8);
+
 			lua_getfield(state, 1, "_smart_ptr");
 			std::weak_ptr<SceneManager> scene_manager = *(std::weak_ptr<SceneManager>*)lua_touserdata(state, -1);
 
@@ -138,6 +141,8 @@ namespace Engine::Scripting::Mappings
 
 		int ObjectFactoryCreateTextObject(lua_State* state)
 		{
+			assert(lua_gettop(state) == 7);
+
 			lua_getfield(state, 1, "_smart_ptr");
 			std::weak_ptr<SceneManager> scene_manager = *(std::weak_ptr<SceneManager>*)lua_touserdata(state, -1);
 
@@ -182,6 +187,8 @@ namespace Engine::Scripting::Mappings
 
 		int ObjectFactoryCreateGeneric3DObject(lua_State* state)
 		{
+			assert(lua_gettop(state) == 11);
+
 			lua_getfield(state, 1, "_smart_ptr");
 			std::weak_ptr<SceneManager> scene_manager = *(std::weak_ptr<SceneManager>*)lua_touserdata(state, -1);
 
