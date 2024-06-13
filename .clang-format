@@ -47,4 +47,10 @@ IncludeCategories:
   - Regex:           '^"(Assets)/'
     Priority:        4
     CaseSensitive:   true
+  - Regex:           '^".*'
+    Priority:        12
+    CaseSensitive:   true
+  - Regex:           '^<.*'
+    Priority:        15
+    CaseSensitive:   true
 ...
