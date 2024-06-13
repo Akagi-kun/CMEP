@@ -1,12 +1,11 @@
 #pragma once
 
+#include "InternalEngineObject.hpp"
+#include "Logging/Logging.hpp"
 #include "Object.hpp"
 #include "Scene.hpp"
 #include "SceneLoader.hpp"
-
-#include "InternalEngineObject.hpp"
-
-#include "Logging/Logging.hpp"
+#include "nlohmann/json.hpp"
 
 #include <memory>
 #include <unordered_map>

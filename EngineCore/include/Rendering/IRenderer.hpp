@@ -1,12 +1,9 @@
 #pragma once
 
-#include "glm/vec3.hpp"
-
 #include "InternalEngineObject.hpp"
-#include "PlatformSemantics.hpp"
 #include "Rendering/Vulkan/VulkanRenderingEngine.hpp"
-
 #include "SupplyData.hpp"
+#include "glm/glm.hpp"
 
 namespace Engine
 {

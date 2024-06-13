@@ -1,6 +1,8 @@
 #include "Scene.hpp"
+
 #include "Engine.hpp"
 #include "Rendering/SpriteRenderer.hpp"
+
 
 // Prefixes for logging messages
 #define LOGPFX_CURRENT LOGPFX_CLASS_SCENE
@@ -133,7 +135,7 @@ namespace Engine
 		if (ptr != nullptr)
 		{
 			Rendering::GLFWwindowData data = this->owner_engine->GetRenderingEngine()->GetWindow();
-			ptr->ScreenSizeInform(data.windowX, data.windowY);
+			ptr->ScreenSizeInform(data.window_x, data.window_y);
 			ptr->UpdateHeldLogger(this->logger);
 			ptr->renderer->UpdateHeldLogger(this->logger);
 			this->objects.emplace(name, ptr);

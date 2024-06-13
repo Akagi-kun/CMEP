@@ -1,12 +1,11 @@
 #pragma once
 
-#include <vector>
-#include <string>
-
-#include "Rendering/tinyobjloader/tiny_obj_loader.h"
-#include "Rendering/Texture.hpp"
-#include "PlatformSemantics.hpp"
 #include "InternalEngineObject.hpp"
+#include "Rendering/Texture.hpp"
+#include "Rendering/tinyobjloader/tiny_obj_loader.h"
+
+#include <string>
+#include <vector>
 
 namespace Engine::Rendering
 {
@@ -20,7 +19,7 @@ namespace Engine::Rendering
 
 		std::vector<glm::vec3> mesh_tangents;
 		std::vector<glm::vec3> mesh_bitangents;
-		
+
 		std::vector<unsigned int> matids;
 		std::vector<tinyobj::material_t> materials;
 		std::vector<glm::vec3> mesh_ambient;
@@ -39,4 +38,4 @@ namespace Engine::Rendering
 
 		void CreateMeshFromObj(std::string path);
 	};
-}
+} // namespace Engine::Rendering

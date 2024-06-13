@@ -7,9 +7,9 @@
 #include <memory>
 
 #ifndef JSON_USE_IMPLICIT_CONVERSIONS
-#define JSON_USE_IMPLICIT_CONVERSIONS 0
+#	define JSON_USE_IMPLICIT_CONVERSIONS 0
 #endif
-#include "nlohmann-json/single_include/nlohmann/json.hpp"
+#include "nlohmann/json.hpp"
 
 namespace Engine
 {
@@ -26,7 +26,7 @@ namespace Engine
 	public:
 		std::string scene_prefix;
 
-		SceneLoader(std::shared_ptr<Logging::Logger> logger);
+		SceneLoader(std::shared_ptr<Logging::Logger> with_logger);
 		~SceneLoader();
 
 		std::shared_ptr<Scene> LoadScene(std::string name);

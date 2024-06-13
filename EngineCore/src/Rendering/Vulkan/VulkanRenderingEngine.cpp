@@ -368,9 +368,9 @@ namespace Engine::Rendering
 	{
 		GLFWwindowData data{};
 		data.window = this->window;
-		data.windowX = this->window_x;
-		data.windowY = this->window_y;
-		data.windowTitle = this->window_title;
+		data.window_x = this->window_x;
+		data.window_y = this->window_y;
+		data.window_title = this->window_title;
 
 		return data;
 	}

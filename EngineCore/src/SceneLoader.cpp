@@ -16,25 +16,12 @@
 
 namespace Engine
 {
-	namespace EventHandling
+	SceneLoader::SceneLoader(std::shared_ptr<Logging::Logger> with_logger)
 	{
-		const std::map<std::string, EventType> event_type_map = {
-			{"onInit", EventHandling::EventType::ON_INIT},
-			{"onMouseMoved", EventHandling::EventType::ON_MOUSEMOVED},
-			{"onKeyDown", EventHandling::EventType::ON_KEYDOWN},
-			{"onKeyUp", EventHandling::EventType::ON_KEYUP},
-			{"onUpdate", EventHandling::EventType::ON_UPDATE},
-		};
+		this->logger = with_logger;
 	}
 
-	SceneLoader::SceneLoader(std::shared_ptr<Logging::Logger> logger)
-	{
-		this->logger = logger;
-	}
-
-	SceneLoader::~SceneLoader()
-	{
-	}
+	SceneLoader::~SceneLoader() = default;
 
 	std::shared_ptr<Scene> SceneLoader::LoadScene(std::string scene_name)
 	{
@@ -51,6 +38,14 @@ namespace Engine
 
 	void SceneLoader::LoadSceneInternal(std::shared_ptr<Scene>& scene, std::string& scene_name)
 	{
+		static const std::map<std::string, EventHandling::EventType> event_type_map = {
+			{"onInit", EventHandling::EventType::ON_INIT},
+			{"onMouseMoved", EventHandling::EventType::ON_MOUSEMOVED},
+			{"onKeyDown", EventHandling::EventType::ON_KEYDOWN},
+			{"onKeyUp", EventHandling::EventType::ON_KEYUP},
+			{"onUpdate", EventHandling::EventType::ON_UPDATE},
+		};
+
 		std::string scene_path = this->scene_prefix + "/" + scene_name + "/";
 
 		std::ifstream file(scene_path + "scene.json");
@@ -93,11 +88,11 @@ namespace Engine
 				std::string event_handler_file = event_handler_entry["file"].get<std::string>();
 				std::string event_handler_function = event_handler_entry["function"].get<std::string>();
 
-				const auto& mappedType = EventHandling::event_type_map.find(event_handler_type);
+				const auto& mapped_type = event_type_map.find(event_handler_type);
 
-				if (mappedType != EventHandling::event_type_map.end())
+				if (mapped_type != event_type_map.end())
 				{
-					event_type = mappedType->second;
+					event_type = mapped_type->second;
 					this->logger->SimpleLog(
 						Logging::LogLevel::Debug3,
 						LOGPFX_CURRENT "Event handler for type: %s",
@@ -150,11 +145,11 @@ namespace Engine
 
 					if (pos_aspixel[0].get<bool>())
 					{
-						position.x /= static_cast<float>(window_config.windowX);
+						position.x /= static_cast<float>(window_config.window_x);
 					}
 					if (pos_aspixel[1].get<bool>())
 					{
-						position.y /= static_cast<float>(window_config.windowY);
+						position.y /= static_cast<float>(window_config.window_y);
 					}
 				}
 				else if (scene_entry["pos_sub_aspixel"].is_array())
@@ -163,13 +158,13 @@ namespace Engine
 
 					if (pos_sub_aspixel[0].get<bool>())
 					{
-						position.x = (static_cast<float>(window_config.windowX) - position.x) /
-									 static_cast<float>(window_config.windowX);
+						position.x = (static_cast<float>(window_config.window_x) - position.x) /
+									 static_cast<float>(window_config.window_x);
 					}
 					if (pos_sub_aspixel[1].get<bool>())
 					{
-						position.y = (static_cast<float>(window_config.windowY) - position.y) /
-									 static_cast<float>(window_config.windowY);
+						position.y = (static_cast<float>(window_config.window_y) - position.y) /
+									 static_cast<float>(window_config.window_y);
 					}
 				}
 
@@ -184,12 +179,12 @@ namespace Engine
 
 					if (scale_aspixel[0].get<bool>())
 					{
-						scale.x /= window_config.windowX;
+						scale.x /= static_cast<float>(window_config.window_x);
 					}
 
 					if (scale_aspixel[1].get<bool>())
 					{
-						scale.y /= window_config.windowY;
+						scale.y /= static_cast<float>(window_config.window_y);
 					}
 				}
 
@@ -279,11 +274,11 @@ namespace Engine
 			{
 				ObjectTemplate object = ObjectTemplate();
 
-				RendererType useRendererType = this->InterpretRendererType(template_entry["renderer"]);
+				RendererType use_renderer_type = this->InterpretRendererType(template_entry["renderer"]);
 
-				if (RendererType::MIN_ENUM < useRendererType && useRendererType < RendererType::MAX_ENUM)
+				if (RendererType::MIN_ENUM < use_renderer_type && use_renderer_type < RendererType::MAX_ENUM)
 				{
-					object.with_renderer = useRendererType;
+					object.with_renderer = use_renderer_type;
 				}
 				else
 				{

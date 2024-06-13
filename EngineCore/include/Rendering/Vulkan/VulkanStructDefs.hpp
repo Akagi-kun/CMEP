@@ -1,31 +1,32 @@
 #pragma once
 
+#include "ImportVulkan.hpp"
+#include "glm/vec2.hpp"
+#include "glm/vec3.hpp"
+
 #include <array>
 #include <optional>
+#include <string>
 #include <vector>
-
-#include "glm/glm.hpp"
-
-#include "ImportVulkan.hpp"
 
 namespace Engine::Rendering
 {
 	struct QueueFamilyIndices
 	{
-		std::optional<uint32_t> graphicsFamily;
-		std::optional<uint32_t> presentFamily;
+		std::optional<uint32_t> graphics_family;
+		std::optional<uint32_t> present_family;
 
-		bool isComplete()
+		bool IsComplete()
 		{
-			return graphicsFamily.has_value() && presentFamily.has_value();
+			return graphics_family.has_value() && present_family.has_value();
 		}
 	};
 
 	struct GLFWwindowData
 	{
 		GLFWwindow* window;
-		unsigned int windowX = 0, windowY = 0;
-		std::string windowTitle;
+		unsigned int window_x = 0, window_y = 0;
+		std::string window_title;
 	};
 
 	struct SwapChainSupportDetails

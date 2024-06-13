@@ -2,15 +2,10 @@
 
 #include "ImportVulkan.hpp"
 #include "InternalEngineObject.hpp"
-#include "Logging/Logging.hpp"
 #include "VulkanDeviceManager.hpp"
 #include "VulkanStructDefs.hpp"
-#include "glm/glm.hpp"
 
-#include <array>
-#include <cstring>
 #include <functional>
-#include <optional>
 #include <string>
 #include <vector>
 

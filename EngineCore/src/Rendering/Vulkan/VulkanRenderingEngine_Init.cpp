@@ -1,11 +1,9 @@
-#include <set>
-
+#include "Engine.hpp"
+#include "Logging/Logging.hpp"
 #include "Rendering/Vulkan/VulkanRenderingEngine.hpp"
 #include "Rendering/Vulkan/VulkanUtilities.hpp"
 
-#include "Engine.hpp"
-
-#include "Logging/Logging.hpp"
+#include <set>
 
 // Prefixes for logging messages
 #define LOGPFX_CURRENT LOGPFX_CLASS_VULKAN_RENDERING_ENGINE
@@ -32,14 +30,18 @@ namespace Engine::Rendering
 		if (swapChainSupport.capabilities.maxImageCount > 0 && imageCount > swapChainSupport.capabilities.maxImageCount)
 		{
 			imageCount = swapChainSupport.capabilities.maxImageCount;
-			this->logger->SimpleLog(Logging::LogLevel::Debug1, LOGPFX_CURRENT "Using maxImageCount capability, GPU support limited");
+			this->logger->SimpleLog(
+				Logging::LogLevel::Debug1, LOGPFX_CURRENT "Using maxImageCount capability, GPU support limited"
+			);
 		}
 
 		VkSwapchainCreateInfoKHR createInfo{};
 		createInfo.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
 		createInfo.surface = this->deviceManager->GetSurface();
 
-		this->logger->SimpleLog(Logging::LogLevel::Debug1, LOGPFX_CURRENT "Creating Vulkan swap chain with %u images", imageCount);
+		this->logger->SimpleLog(
+			Logging::LogLevel::Debug1, LOGPFX_CURRENT "Creating Vulkan swap chain with %u images", imageCount
+		);
 
 		createInfo.minImageCount = imageCount;
 		createInfo.imageFormat = VK_FORMAT_B8G8R8A8_UNORM;
@@ -50,9 +52,9 @@ namespace Engine::Rendering
 
 		QueueFamilyIndices queueIndices = this->deviceManager->GetQueueFamilies();
 
-		uint32_t queueFamilyIndices[] = {queueIndices.graphicsFamily.value(), queueIndices.presentFamily.value()};
+		uint32_t queueFamilyIndices[] = {queueIndices.graphics_family.value(), queueIndices.present_family.value()};
 
-		if (queueIndices.graphicsFamily != queueIndices.presentFamily)
+		if (queueIndices.graphics_family != queueIndices.present_family)
 		{
 			createInfo.imageSharingMode = VK_SHARING_MODE_CONCURRENT;
 			createInfo.queueFamilyIndexCount = 2;
@@ -139,23 +141,25 @@ namespace Engine::Rendering
 	{
 		this->vkSwapChainImageViews.resize(this->vkSwapChainImages.size());
 
-		if (const auto &vulkanImageFactory = this->owner_engine->GetVulkanImageFactory().lock())
+		if (const auto& vulkanImageFactory = this->owner_engine->GetVulkanImageFactory().lock())
 		{
 			for (size_t i = 0; i < this->vkSwapChainImages.size(); i++)
 			{
-				this->vkSwapChainImageViews[i] = vulkanImageFactory->createImageView(this->vkSwapChainImages[i], VK_FORMAT_B8G8R8A8_UNORM, VK_IMAGE_ASPECT_COLOR_BIT);
+				this->vkSwapChainImageViews[i] = vulkanImageFactory->createImageView(
+					this->vkSwapChainImages[i], VK_FORMAT_B8G8R8A8_UNORM, VK_IMAGE_ASPECT_COLOR_BIT
+				);
 			}
 		}
 	}
 
-	VkShaderModule VulkanRenderingEngine::createVulkanShaderModule(const std::vector<char> &code)
+	VkShaderModule VulkanRenderingEngine::createVulkanShaderModule(const std::vector<char>& code)
 	{
 		VkDevice logicalDevice = this->deviceManager->GetLogicalDevice();
 
 		VkShaderModuleCreateInfo createInfo{};
 		createInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
 		createInfo.codeSize = code.size();
-		createInfo.pCode = reinterpret_cast<const uint32_t *>(code.data());
+		createInfo.pCode = reinterpret_cast<const uint32_t*>(code.data());
 
 		VkShaderModule shaderModule;
 		if (vkCreateShaderModule(logicalDevice, &createInfo, nullptr, &shaderModule) != VK_SUCCESS)
@@ -177,7 +181,9 @@ namespace Engine::Rendering
 		pipeline_settings.descriptorLayoutSettings.types.push_back(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER);
 		pipeline_settings.descriptorLayoutSettings.stageFlags.push_back(VK_SHADER_STAGE_VERTEX_BIT);
 
-		this->graphicsPipelineDefault = this->createVulkanPipeline(pipeline_settings, "game/shaders/vulkan/default_vert.spv", "game/shaders/vulkan/default_frag.spv");
+		this->graphicsPipelineDefault = this->createVulkanPipeline(
+			pipeline_settings, "game/shaders/vulkan/default_vert.spv", "game/shaders/vulkan/default_frag.spv"
+		);
 	}
 
 	void VulkanRenderingEngine::createVulkanRenderPass()
@@ -243,9 +249,11 @@ namespace Engine::Rendering
 		VkSubpassDependency dependency{};
 		dependency.srcSubpass = VK_SUBPASS_EXTERNAL;
 		dependency.dstSubpass = 0;
-		dependency.srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
+		dependency.srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT |
+								  VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
 		dependency.srcAccessMask = 0;
-		dependency.dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
+		dependency.dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT |
+								  VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
 		dependency.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
 
 		renderPassInfo.dependencyCount = 1;
@@ -267,9 +275,8 @@ namespace Engine::Rendering
 		for (size_t i = 0; i < vkSwapChainImageViews.size(); i++)
 		{
 			std::array<VkImageView, 3> attachments = {
-				this->multisampledColorImage->imageView,
-				this->vkDepthBuffer->imageView,
-				this->vkSwapChainImageViews[i]};
+				this->multisampledColorImage->imageView, this->vkDepthBuffer->imageView, this->vkSwapChainImageViews[i]
+			};
 
 			VkFramebufferCreateInfo framebufferInfo{};
 			framebufferInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
@@ -282,7 +289,8 @@ namespace Engine::Rendering
 
 			VkDevice logicalDevice = this->deviceManager->GetLogicalDevice();
 
-			if (vkCreateFramebuffer(logicalDevice, &framebufferInfo, nullptr, &this->vkSwapChainFramebuffers[i]) != VK_SUCCESS)
+			if (vkCreateFramebuffer(logicalDevice, &framebufferInfo, nullptr, &this->vkSwapChainFramebuffers[i]) !=
+				VK_SUCCESS)
 			{
 				this->logger->SimpleLog(Logging::LogLevel::Error, LOGPFX_CURRENT "Vulkan failed creating framebuffers");
 				throw std::runtime_error("failed to create framebuffer!");
@@ -295,8 +303,8 @@ namespace Engine::Rendering
 		VkCommandPoolCreateInfo poolInfo{};
 		poolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
 		poolInfo.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
-		poolInfo.queueFamilyIndex = this->deviceManager->GetQueueFamilies().graphicsFamily.value();
-		
+		poolInfo.queueFamilyIndex = this->deviceManager->GetQueueFamilies().graphics_family.value();
+
 		VkDevice logicalDevice = this->deviceManager->GetLogicalDevice();
 
 		if (vkCreateCommandPool(logicalDevice, &poolInfo, nullptr, &(this->vkCommandPool)) != VK_SUCCESS)
@@ -315,7 +323,7 @@ namespace Engine::Rendering
 		allocInfo.commandPool = this->vkCommandPool;
 		allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
 		allocInfo.commandBufferCount = (uint32_t)vkCommandBuffers.size();
-		
+
 		VkDevice logicalDevice = this->deviceManager->GetLogicalDevice();
 
 		if (vkAllocateCommandBuffers(logicalDevice, &allocInfo, this->vkCommandBuffers.data()) != VK_SUCCESS)
@@ -342,8 +350,10 @@ namespace Engine::Rendering
 		{
 			VkDevice logicalDevice = this->deviceManager->GetLogicalDevice();
 
-			if (vkCreateSemaphore(logicalDevice, &semaphoreInfo, nullptr, &(this->imageAvailableSemaphores[i])) != VK_SUCCESS ||
-				vkCreateSemaphore(logicalDevice, &semaphoreInfo, nullptr, &(this->renderFinishedSemaphores[i])) != VK_SUCCESS ||
+			if (vkCreateSemaphore(logicalDevice, &semaphoreInfo, nullptr, &(this->imageAvailableSemaphores[i])) !=
+					VK_SUCCESS ||
+				vkCreateSemaphore(logicalDevice, &semaphoreInfo, nullptr, &(this->renderFinishedSemaphores[i])) !=
+					VK_SUCCESS ||
 				vkCreateFence(logicalDevice, &fenceInfo, nullptr, &(this->inFlightFences[i])) != VK_SUCCESS)
 			{
 
@@ -357,10 +367,20 @@ namespace Engine::Rendering
 	{
 		VkFormat depthFormat = this->findVulkanSupportedDepthFormat();
 
-		if (const auto &vulkanImageFactory = this->owner_engine->GetVulkanImageFactory().lock())
+		if (const auto& vulkanImageFactory = this->owner_engine->GetVulkanImageFactory().lock())
 		{
-			this->vkDepthBuffer = vulkanImageFactory->createImage(this->vkSwapChainExtent.width, this->vkSwapChainExtent.height, this->deviceManager->GetMSAASampleCount(), depthFormat, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
-			this->vkDepthBuffer->imageView = vulkanImageFactory->createImageView(this->vkDepthBuffer->image, depthFormat, VK_IMAGE_ASPECT_DEPTH_BIT);
+			this->vkDepthBuffer = vulkanImageFactory->createImage(
+				this->vkSwapChainExtent.width,
+				this->vkSwapChainExtent.height,
+				this->deviceManager->GetMSAASampleCount(),
+				depthFormat,
+				VK_IMAGE_TILING_OPTIMAL,
+				VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT,
+				VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT
+			);
+			this->vkDepthBuffer->imageView = vulkanImageFactory->createImageView(
+				this->vkDepthBuffer->image, depthFormat, VK_IMAGE_ASPECT_DEPTH_BIT
+			);
 		}
 	}
 
@@ -368,10 +388,22 @@ namespace Engine::Rendering
 	{
 		VkFormat colorFormat = this->vkSwapChainImageFormat;
 
-		if (const auto &vulkanImageFactory = this->owner_engine->GetVulkanImageFactory().lock())
+		if (const auto& vulkanImageFactory = this->owner_engine->GetVulkanImageFactory().lock())
 		{
-			this->multisampledColorImage = vulkanImageFactory->createImage(this->vkSwapChainExtent.width, this->vkSwapChainExtent.height, this->deviceManager->GetMSAASampleCount(), colorFormat, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
-			this->multisampledColorImage->imageView = vulkanImageFactory->createImageView(this->multisampledColorImage->image, this->multisampledColorImage->imageFormat, VK_IMAGE_ASPECT_COLOR_BIT);
+			this->multisampledColorImage = vulkanImageFactory->createImage(
+				this->vkSwapChainExtent.width,
+				this->vkSwapChainExtent.height,
+				this->deviceManager->GetMSAASampleCount(),
+				colorFormat,
+				VK_IMAGE_TILING_OPTIMAL,
+				VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT,
+				VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT
+			);
+			this->multisampledColorImage->imageView = vulkanImageFactory->createImageView(
+				this->multisampledColorImage->image,
+				this->multisampledColorImage->imageFormat,
+				VK_IMAGE_ASPECT_COLOR_BIT
+			);
 		}
 	}
 
@@ -387,4 +419,4 @@ namespace Engine::Rendering
 
 		this->logger->SimpleLog(Logging::LogLevel::Debug1, LOGPFX_CURRENT "VMA created");
 	}
-}
+} // namespace Engine::Rendering

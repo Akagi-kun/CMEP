@@ -1,12 +1,8 @@
 #pragma once
-
-#include <memory>
-
 #include "IRenderer.hpp"
 #include "Mesh.hpp"
-#include "PlatformSemantics.hpp"
-#include "glm/glm.hpp"
-#include "glm/gtc/matrix_transform.hpp"
+
+#include <memory>
 
 namespace Engine::Rendering
 {
@@ -38,7 +34,7 @@ namespace Engine::Rendering
 
 	public:
 		MeshRenderer(Engine* engine);
-		~MeshRenderer();
+		~MeshRenderer() override;
 
 		void Update(
 			glm::vec3 pos,

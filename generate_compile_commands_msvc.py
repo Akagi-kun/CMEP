@@ -60,7 +60,7 @@ def generate_compile_commands(vs_project_path, output_path, root_path, default_i
 			include_as_path = Path(include)
 
 			if "VulkanSDK" not in str(include_as_path):
-				processed_includes.append(str(include_as_path.relative_to(root_path).resolve()))
+				processed_includes.append(str(include_as_path.resolve().relative_to(root_path)))
 			else:
 				processed_includes.append(str(include_as_path))
 
@@ -83,7 +83,7 @@ def generate_compile_commands(vs_project_path, output_path, root_path, default_i
 			files_listing.append(processed_file + "\n")
 
 			command = {
-				'directory': str(Path(root_path).absolute()),
+				'directory': str(Path(root_path)),
 				#'command': f'cl /showIncludes /W{warning_level} /I{" /I".join(processed_includes)} /D{" /D".join(defines)} /c {file}',
 				'arguments': arguments + ["/c", file],
 				'file': processed_file

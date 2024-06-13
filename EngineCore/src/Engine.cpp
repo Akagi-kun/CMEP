@@ -6,7 +6,7 @@
 #include "Rendering/AxisRenderer.hpp"
 #include "Scripting/LuaScript.hpp"
 #include "Scripting/LuaScriptExecutor.hpp"
-#include "nlohmann-json/single_include/nlohmann/json.hpp"
+#include "nlohmann/json.hpp"
 
 #include <chrono>
 #include <exception>
@@ -117,7 +117,7 @@ namespace Engine
 	{
 		Rendering::GLFWwindowData windowdata = this->rendering_engine->GetWindow();
 
-		static double last_x = (windowdata.windowX / 2), last_y = (windowdata.windowY / 2);
+		static double last_x = (windowdata.window_x / 2), last_y = (windowdata.window_y / 2);
 
 		if (engine_is_window_in_focus && engine_is_window_in_content)
 		{

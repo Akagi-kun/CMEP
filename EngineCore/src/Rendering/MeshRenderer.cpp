@@ -1,13 +1,14 @@
-#include <assert.h>
-#include <cstring>
-
-#include "Logging/Logging.hpp"
 #include "Rendering/MeshRenderer.hpp"
-#include "Rendering/Texture.hpp"
-#include "SceneManager.hpp"
-#include <glm/gtc/quaternion.hpp>
 
 #include "Engine.hpp"
+#include "Logging/Logging.hpp"
+#include "Rendering/Texture.hpp"
+#include "SceneManager.hpp"
+#include "glm/trigonometric.hpp"
+
+#include <assert.h>
+#include <cstring>
+#include <glm/gtc/quaternion.hpp>
 
 namespace Engine::Rendering
 {
@@ -110,7 +111,7 @@ namespace Engine::Rendering
 
 		VulkanRenderingEngine* renderer = this->owner_engine->GetRenderingEngine();
 
-		glm::mat4 projection = glm::perspective(
+		glm::mat4 projection = glm::perspective<float>(
 			glm::radians(45.0f), static_cast<float>(this->screenx / this->screeny), 0.1f, 100.0f
 		);
 		projection[1][1] *= -1;
