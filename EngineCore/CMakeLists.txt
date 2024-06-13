@@ -84,7 +84,14 @@ elseif(APPLE)
 	target_link_directories(EngineCore PUBLIC ../external/lua-5.4.6/src)
 endif()
 
-target_include_directories(EngineCore PUBLIC include ../external/glfw/include ../external/nlohmann-json/single_include ../external/VulkanMemoryAllocator/include ../external/lua-prebuilt/include ../common_include)
+target_include_directories(EngineCore PUBLIC include
+											 ../external/glfw/include
+											 ../external/nlohmann-json/single_include
+											 ../external/VulkanMemoryAllocator/include
+											 ../external/lua-prebuilt/include
+											 ../external/lodepng
+											 ../common_include
+											 )
 if(DEFINED ENV{VULKAN_SDK})
 	if(WIN32)
 		target_link_directories(EngineCore PUBLIC $ENV{VULKAN_SDK}/Lib)

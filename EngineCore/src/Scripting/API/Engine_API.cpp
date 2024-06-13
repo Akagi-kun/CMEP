@@ -1,6 +1,6 @@
-#include "Engine.hpp"
-
 #include "Scripting/API/Engine_API.hpp"
+
+#include "Engine.hpp"
 #include "Scripting/API/LuaFactories.hpp"
 #include "Scripting/API/framework.hpp"
 #include "Scripting/lualib/lua.h"
@@ -13,10 +13,10 @@ namespace Engine::Scripting::API
 {
 	namespace Functions_Engine
 	{
-		int GetAssetManager(lua_State* state)
+		static int GetAssetManager(lua_State* state)
 		{
 			lua_getfield(state, 1, "_pointer");
-			Engine* engine = *(Engine**)lua_touserdata(state, -1);
+			Engine* engine = *static_cast<Engine**>(lua_touserdata(state, -1));
 
 			std::weak_ptr<AssetManager> asset_manager = engine->GetAssetManager();
 
@@ -41,10 +41,10 @@ namespace Engine::Scripting::API
 			return 1;
 		}
 
-		int GetSceneManager(lua_State* state)
+		static int GetSceneManager(lua_State* state)
 		{
 			lua_getfield(state, 1, "_pointer");
-			Engine* engine = *(Engine**)lua_touserdata(state, -1);
+			Engine* engine = *static_cast<Engine**>(lua_touserdata(state, -1));
 
 			std::weak_ptr<SceneManager> scene_manager = engine->GetSceneManager();
 
@@ -69,10 +69,10 @@ namespace Engine::Scripting::API
 			return 1;
 		}
 
-		int SetFramerateTarget(lua_State* state)
+		static int SetFramerateTarget(lua_State* state)
 		{
 			lua_getfield(state, 1, "_pointer");
-			Engine* engine = *(Engine**)lua_touserdata(state, -1);
+			Engine* engine = *static_cast<Engine**>(lua_touserdata(state, -1));
 
 			unsigned int framerate_target = static_cast<unsigned int>(lua_tointeger(state, 2));
 
@@ -81,10 +81,10 @@ namespace Engine::Scripting::API
 			return 0;
 		}
 
-		int Stop(lua_State* state)
+		static int Stop(lua_State* state)
 		{
 			lua_getfield(state, 1, "_pointer");
-			Engine* engine = *(Engine**)lua_touserdata(state, -1);
+			Engine* engine = *static_cast<Engine**>(lua_touserdata(state, -1));
 
 			engine->Stop();
 

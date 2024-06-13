@@ -1,9 +1,7 @@
 #pragma once
 
-#include "Rendering/Texture.hpp"
-#include "Rendering/Font.hpp"
-
 #include "InternalEngineObject.hpp"
+#include "Rendering/Font.hpp"
 
 namespace Engine::Factories
 {
@@ -14,9 +12,10 @@ namespace Engine::Factories
 
 		void EvalBmfont(std::unique_ptr<Rendering::FontData>& font, std::ifstream& fontFile);
 		void EvalBmfontLine(std::unique_ptr<Rendering::FontData>& font, int type, char* data);
+
 	public:
 		FontFactory(AssetManager* manager);
 
 		std::shared_ptr<Rendering::Font> InitBMFont(std::string fontPath);
 	};
-}
+} // namespace Engine::Factories
