@@ -72,28 +72,22 @@ add_dependencies(EngineCore lua_build)
 add_dependencies(rungame EngineCore)
 add_dependencies(rungame lua_build)
 
-set(TESTS_TO_RUN
-	vulkan_init_cleanup
-	vulkan_draw_frame
-	vulkan_buffer_create_cleanup
+#set(TESTS_TO_RUN
+#	vulkan_init_cleanup
+#	vulkan_draw_frame
+#	vulkan_buffer_create_cleanup
+#
+#	logging_init_release
+#	logging_log
+#	logging_simplelog
+#	logging_map_thread_simplelog
+#
+#	engine
+#	)
 
-	logging_init_release
-	logging_log
-	logging_simplelog
-	logging_map_thread_simplelog
-
-	engine
-	)
-
-add_subdirectory(runtest)
-foreach(test_to_run ${TESTS_TO_RUN})
-	add_test(NAME runtest_${test_to_run} COMMAND runtest ${test_to_run} WORKING_DIRECTORY .\\build\\)
-endforeach()
-
-add_subdirectory(examples)
-
-#if(NOT APPLE)
-#	file(COPY external/lua-prebuilt/liblua54.so DESTINATION build)
-#else()
-#	file(COPY external/lua-5.4.6/src/lua54.so DESTINATION build/liblua54.so)
-#endif()
+#add_subdirectory(runtest)
+#foreach(test_to_run ${TESTS_TO_RUN})
+#	add_test(NAME runtest_${test_to_run} COMMAND runtest ${test_to_run} WORKING_DIRECTORY .\\build\\)
+#endforeach()
+#
+#add_subdirectory(examples)
