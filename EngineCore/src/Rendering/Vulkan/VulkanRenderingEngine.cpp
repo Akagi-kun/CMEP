@@ -1,10 +1,19 @@
 #include <algorithm>
 #include <fstream>
-
+/*
+#define VMA_DEBUG_LOG_FORMAT(format, ...)                                                                              \
+	do                                                                                                                 \
+	{                                                                                                                  \
+		printf((format), __VA_ARGS__);                                                                                 \
+		printf("\n");                                                                                                  \
+	} while (false)
+ */
 #define VMA_IMPLEMENTATION
-#include "Engine.hpp"
-#include "Logging/Logging.hpp"
 #include "Rendering/Vulkan/VulkanRenderingEngine.hpp"
+
+#include "Logging/Logging.hpp"
+
+#include "Engine.hpp"
 
 // Prefixes for logging messages
 #define LOGPFX_CURRENT LOGPFX_CLASS_VULKAN_RENDERING_ENGINE
@@ -156,7 +165,9 @@ namespace Engine::Rendering
 	}
 
 	VkFormat VulkanRenderingEngine::findVulkanSupportedFormat(
-		const std::vector<VkFormat>& candidates, VkImageTiling tiling, VkFormatFeatureFlags features
+		const std::vector<VkFormat>& candidates,
+		VkImageTiling tiling,
+		VkFormatFeatureFlags features
 	)
 	{
 		for (VkFormat format : candidates)
@@ -537,7 +548,10 @@ namespace Engine::Rendering
 	}
 
 	VulkanPipeline* VulkanRenderingEngine::createVulkanPipelineFromPrealloc(
-		VulkanPipeline* pipeline, VulkanPipelineSettings& settings, std::string vert_path, std::string frag_path
+		VulkanPipeline* pipeline,
+		VulkanPipelineSettings& settings,
+		std::string vert_path,
+		std::string frag_path
 	)
 	{
 		VkDevice logical_device = this->deviceManager->GetLogicalDevice();
@@ -639,7 +653,9 @@ namespace Engine::Rendering
 	}
 
 	VulkanPipeline* VulkanRenderingEngine::createVulkanPipeline(
-		VulkanPipelineSettings& settings, std::string vert_path, std::string frag_path
+		VulkanPipelineSettings& settings,
+		std::string vert_path,
+		std::string frag_path
 	)
 	{
 		VulkanPipeline* new_pipeline = new VulkanPipeline();
@@ -762,6 +778,8 @@ namespace Engine::Rendering
 			throw std::runtime_error("failed to create buffer!");
 		}
 
+		vmaSetAllocationName(this->vmaAllocator, new_buffer->allocation, "VulkanBuffer");
+
 		return new_buffer;
 	}
 
@@ -819,7 +837,8 @@ namespace Engine::Rendering
 	// Descriptor sets
 
 	void VulkanRenderingEngine::createVulkanDescriptorSetLayout(
-		VulkanPipeline* pipeline, VulkanDescriptorLayoutSettings settings
+		VulkanPipeline* pipeline,
+		VulkanDescriptorLayoutSettings settings
 	)
 	{
 		std::vector<VkDescriptorSetLayoutBinding> bindings = {};
@@ -862,7 +881,8 @@ namespace Engine::Rendering
 	}
 
 	void VulkanRenderingEngine::createVulkanDescriptorPool(
-		VulkanPipeline* pipeline, VulkanDescriptorLayoutSettings settings
+		VulkanPipeline* pipeline,
+		VulkanDescriptorLayoutSettings settings
 	)
 	{
 		std::vector<VkDescriptorPoolSize> pool_sizes{};
@@ -895,7 +915,8 @@ namespace Engine::Rendering
 	}
 
 	void VulkanRenderingEngine::createVulkanDescriptorSets(
-		VulkanPipeline* pipeline, VulkanDescriptorLayoutSettings settings
+		VulkanPipeline* pipeline,
+		VulkanDescriptorLayoutSettings settings
 	)
 	{
 		std::vector<VkDescriptorSetLayout> layouts(MAX_FRAMES_IN_FLIGHT, pipeline->vk_descriptor_set_layout);
@@ -994,7 +1015,7 @@ namespace Engine::Rendering
 
 	void VulkanRenderingEngine::cleanupVulkanTextureImage(VulkanTextureImage* image)
 	{
-		// this->logger->SimpleLog(Logging::LogLevel::Debug3, LOGPFX_CURRENT "Cleaning up Vulkan texture image");
+		this->logger->SimpleLog(Logging::LogLevel::Debug3, LOGPFX_CURRENT "Cleaning up Vulkan texture image");
 
 		vkDestroySampler(this->deviceManager->GetLogicalDevice(), image->textureSampler, nullptr);
 

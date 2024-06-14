@@ -22,6 +22,8 @@ namespace Engine::Rendering
 	Font::~Font()
 	{
 		this->logger->SimpleLog(Logging::LogLevel::Debug3, LOGPFX_CURRENT "Destructor called");
+
+		this->data.reset();
 	}
 
 	void Font::Init(std::unique_ptr<FontData> init_data)

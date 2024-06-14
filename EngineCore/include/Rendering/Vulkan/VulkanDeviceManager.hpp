@@ -2,8 +2,8 @@
 
 #include "ImportVulkan.hpp"
 #include "InternalEngineObject.hpp"
-
 #include "VulkanStructDefs.hpp"
+
 
 namespace Engine::Rendering
 {
@@ -19,7 +19,7 @@ namespace Engine::Rendering
 		VkQueue vkPresentQueue = VK_NULL_HANDLE;
 
 		// GLFW window
-		GLFWwindow *window = nullptr;
+		GLFWwindow* window = nullptr;
 		unsigned int windowX = 0, windowY = 0;
 		std::string windowTitle{};
 
@@ -34,7 +34,7 @@ namespace Engine::Rendering
 		VkSurfaceKHR vkSurface = VK_NULL_HANDLE;
 
 		// Required extensions to be supported
-		const std::vector<const char *> deviceExtensions = {
+		const std::vector<const char*> deviceExtensions = {
 			VK_KHR_SWAPCHAIN_EXTENSION_NAME,
 			VK_EXT_DESCRIPTOR_INDEXING_EXTENSION_NAME,
 			VK_EXT_ROBUSTNESS_2_EXTENSION_NAME,
@@ -49,7 +49,7 @@ namespace Engine::Rendering
 #endif
 
 		// Required validation layers to be supported
-		const std::vector<const char *> vkValidationLayers = {
+		const std::vector<const char*> vkValidationLayers = {
 			"VK_LAYER_KHRONOS_validation",
 		};
 
@@ -70,19 +70,19 @@ namespace Engine::Rendering
 	public:
 		VulkanDeviceManager();
 
-		void init(GLFWwindow *new_window);
+		void init(GLFWwindow* new_window);
 
 		void cleanup();
 
-		const VkPhysicalDevice &GetPhysicalDevice() const noexcept;
-		const VkDevice &GetLogicalDevice() const noexcept;
-		const VkInstance &GetInstance() const noexcept;
-		const VkSurfaceKHR &GetSurface() const noexcept;
-		const VkSampleCountFlagBits &GetMSAASampleCount() const noexcept;
-		const QueueFamilyIndices &GetQueueFamilies() const noexcept;
-		const VkQueue &GetGraphicsQueue() const noexcept;
-		const VkQueue &GetPresentQueue() const noexcept;
+		const VkPhysicalDevice& GetPhysicalDevice() const noexcept;
+		const VkDevice& GetLogicalDevice() const noexcept;
+		const VkInstance& GetInstance() const noexcept;
+		const VkSurfaceKHR& GetSurface() const noexcept;
+		const VkSampleCountFlagBits& GetMSAASampleCount() const noexcept;
+		const QueueFamilyIndices& GetQueueFamilies() const noexcept;
+		const VkQueue& GetGraphicsQueue() const noexcept;
+		const VkQueue& GetPresentQueue() const noexcept;
 
 		SwapChainSupportDetails QuerySwapChainSupport();
 	};
-}
+} // namespace Engine::Rendering

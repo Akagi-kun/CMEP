@@ -294,8 +294,6 @@ namespace Engine
 		}
 
 		this->logger->SimpleLog(Logging::LogLevel::Debug2, LOGPFX_CURRENT "Closing engine");
-
-		// std::this_thread::sleep_for(std::chrono::milliseconds(1000));
 	}
 
 	int Engine::FireEvent(EventHandling::Event& event)
@@ -309,8 +307,8 @@ namespace Engine
 		//	sum += handler->second(event);
 		//}
 
-		auto lua_handler_range = this->scene_manager->GetSceneCurrent()->lua_event_handlers.equal_range(event.event_type
-		);
+		auto current_scene = this->scene_manager->GetSceneCurrent();
+		auto lua_handler_range = current_scene->lua_event_handlers.equal_range(event.event_type);
 		for (auto handler = lua_handler_range.first; handler != lua_handler_range.second; ++handler)
 		{
 			sum += this->script_executor->CallIntoScript(
@@ -333,11 +331,11 @@ namespace Engine
 	{
 		this->logger->SimpleLog(Logging::LogLevel::Info, LOGPFX_CURRENT "Destructor called");
 
-		this->asset_manager.reset();
+		this->scene_manager.reset(); // swapped
 
 		delete this->script_executor;
 
-		this->scene_manager.reset();
+		this->asset_manager.reset(); // swapped
 
 		this->rendering_engine->cleanup();
 

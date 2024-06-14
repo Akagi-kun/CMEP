@@ -4,6 +4,7 @@
 #include "Assets/Texture.hpp"
 #include "Rendering/MeshRenderer.hpp"
 #include "Rendering/TextRenderer.hpp"
+#include "Rendering/Transform.hpp"
 
 #include "Scripting/API/LuaFactories.hpp"
 
@@ -72,11 +73,11 @@ namespace Engine::Scripting::Mappings
 			assert(lua_gettop(state) == 2);
 
 			lua_getfield(state, 1, "_pointer");
-			Rendering::IRenderer* renderer = *(Rendering::IRenderer**)lua_touserdata(state, -1);
+			Rendering::IRenderer* renderer = *static_cast<Rendering::IRenderer**>(lua_touserdata(state, -1));
 
 			lua_getfield(state, 2, "_smart_ptr");
-			std::shared_ptr<Rendering::Texture> texture = *(std::shared_ptr<Rendering::Texture>*)lua_touserdata(
-				state, -1
+			std::shared_ptr<Rendering::Texture> texture = *static_cast<std::shared_ptr<Rendering::Texture>*>(
+				lua_touserdata(state, -1)
 			);
 
 			Rendering::RendererSupplyData texture_supply(Rendering::RendererSupplyDataType::TEXTURE, texture);
@@ -104,7 +105,7 @@ namespace Engine::Scripting::Mappings
 			double sizey = lua_tonumber(state, 6);
 
 			lua_getfield(state, 7, "_pointer");
-			AssetManager* ptr_am = *(AssetManager**)lua_touserdata(state, -1);
+			AssetManager* ptr_am = *static_cast<AssetManager**>(lua_touserdata(state, -1));
 			std::string sprite_name = lua_tostring(state, 8);
 			// Rendering::Texture* sprite = *(Rendering::Texture**)lua_touserdata(state, -1);
 
@@ -154,9 +155,13 @@ namespace Engine::Scripting::Mappings
 			std::string text = lua_tostring(state, 6);
 
 			lua_getfield(state, 7, "_smart_ptr");
-			std::shared_ptr<Rendering::Font> font = *(std::shared_ptr<Rendering::Font>*)lua_touserdata(state, -1);
+			std::weak_ptr<Rendering::Font> font = *(std::weak_ptr<Rendering::Font>*)lua_touserdata(state, -1);
 
-			Object* obj = ObjectFactory::CreateTextObject(scene_manager, x, y, z, size, text, font);
+			Object* obj = nullptr;
+			if (auto locked_font = font.lock())
+			{
+				obj = ObjectFactory::CreateTextObject(scene_manager, x, y, z, size, text, locked_font);
+			}
 
 			if (obj != nullptr)
 			{

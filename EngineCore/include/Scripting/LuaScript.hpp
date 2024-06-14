@@ -1,10 +1,8 @@
 #pragma once
 
-#include <string>
-
 #include "Scripting/lualib/lua.hpp"
-#include "Logging/Logging.hpp"
-#include "PlatformSemantics.hpp"
+
+#include <string>
 
 namespace Engine::Scripting
 {
@@ -24,6 +22,9 @@ namespace Engine::Scripting
 			lua_close(this->state);
 		}
 
-		lua_State* GetState() { return this->state; }
+		lua_State* GetState()
+		{
+			return this->state;
+		}
 	};
-}
+} // namespace Engine::Scripting

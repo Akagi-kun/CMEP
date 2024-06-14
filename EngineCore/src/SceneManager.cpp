@@ -18,27 +18,28 @@ namespace Engine
 		// Reset transform and rotation
 		this->camera_transform = glm::vec3(0.0, 0.0, 0.0);
 		this->camera_hv_rotation = glm::vec2(0.0, 0.0);
-
 		this->logger = with_logger;
 
-		this->scenes.emplace("_default", std::make_shared<Scene>());
-		this->scenes.at(this->current_scene)->UpdateHeldLogger(this->logger);
+		std::shared_ptr<Scene> default_scene = std::make_shared<Scene>();
+		default_scene->UpdateHeldLogger(this->logger);
+
+		this->scenes.emplace("_default", default_scene);
+		// this->scenes.at(this->current_scene)->UpdateHeldLogger(this->logger);
 
 		this->scene_loader = std::make_unique<SceneLoader>(with_logger);
 	}
 
 	SceneManager::~SceneManager()
 	{
-		this->logger->SimpleLog(Logging::LogLevel::Debug2, LOGPFX_CURRENT "Destructor called");
+		this->logger->SimpleLog(Logging::LogLevel::Info, LOGPFX_CURRENT "Destructor called");
+		/*
+				for (auto& scene : this->scenes)
+				{
+					scene.second.reset();
+				} */
+		this->scenes.clear();
 
 		this->scene_loader.reset();
-
-		for (auto& scene : this->scenes)
-		{
-			scene.second.reset();
-		}
-
-		this->scenes.clear();
 	}
 
 	void SceneManager::CameraUpdated()
@@ -72,12 +73,12 @@ namespace Engine
 	{
 		return this->scenes.at(this->current_scene);
 	}
-
-	const std::unordered_map<std::string, Object*>* SceneManager::GetAllObjects() noexcept
-	{
-		return this->scenes.at(this->current_scene)->GetAllObjects();
-	}
-
+	/*
+		const std::unordered_map<std::string, std::shared_ptr<Object>>* SceneManager::GetAllObjects() noexcept
+		{
+			return this->scenes.at(this->current_scene)->GetAllObjects();
+		}
+	*/
 	void SceneManager::AddObject(std::string name, Object* ptr)
 	{
 		this->scenes.at(this->current_scene)->UpdateOwnerEngine(this->owner_engine);
@@ -94,9 +95,9 @@ namespace Engine
 		return this->scenes.at(this->current_scene)->RemoveObject(name);
 	}
 
-	Object* SceneManager::AddTemplatedObject(std::string name, std::string template_name)
+	void SceneManager::AddTemplatedObject(std::string name, std::string template_name)
 	{
-		return this->scenes.at(this->current_scene)->AddTemplatedObject(name, template_name);
+		this->scenes.at(this->current_scene)->AddTemplatedObject(name, template_name);
 	}
 
 	glm::vec3 SceneManager::GetLightTransform()
@@ -144,8 +145,8 @@ namespace Engine
 
 	void SceneManager::SetCameraHVRotation(glm::vec2 hvrotation)
 	{
-		static const float rotation_y_limit = 1.7f;
-		static const float rotation_x_limit = 4.5f;
+		static constexpr float rotation_y_limit = 1.7f;
+		static constexpr float rotation_x_limit = 4.5f;
 
 		if (hvrotation.y < rotation_y_limit)
 		{

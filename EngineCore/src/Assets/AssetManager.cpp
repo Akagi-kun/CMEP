@@ -2,6 +2,7 @@
 
 #include "Assets/Font.hpp"
 #include "Assets/Mesh.hpp"
+
 #include "Logging/Logging.hpp"
 
 // Prefixes for logging messages
@@ -20,6 +21,8 @@ namespace Engine
 	{
 		this->logger->SimpleLog(Logging::LogLevel::Info, LOGPFX_CURRENT "Destructor called");
 
+		this->fonts.clear();
+
 		for (auto& texture : this->textures)
 		{
 			this->logger->SimpleLog(
@@ -28,6 +31,7 @@ namespace Engine
 				texture.first.c_str(),
 				texture.second.use_count()
 			);
+			texture.second.reset();
 		}
 
 		this->textures.clear();

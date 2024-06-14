@@ -23,7 +23,10 @@ namespace Engine
 		this->logger = with_logger;
 	}
 
-	SceneLoader::~SceneLoader() = default;
+	SceneLoader::~SceneLoader()
+	{
+		this->logger->SimpleLog(Logging::LogLevel::Debug2, LOGPFX_CURRENT "Destructor called");
+	}
 
 	std::shared_ptr<Scene> SceneLoader::LoadScene(std::string scene_name)
 	{
@@ -250,7 +253,7 @@ namespace Engine
 						default:
 						{
 							delete object; // TODO: Reorder this
-							object = nullptr;
+							// object.reset();
 							break;
 						}
 					}
@@ -336,6 +339,8 @@ namespace Engine
 				std::string name = template_entry["name"].get<std::string>();
 
 				scene->LoadTemplatedObject(name, object);
+
+				this->logger->SimpleLog(Logging::LogLevel::Debug1, LOGPFX_CURRENT "Loaded template '%s'", name.c_str());
 			}
 
 			this->logger->SimpleLog(Logging::LogLevel::Debug2, LOGPFX_CURRENT "Done stage: Templates");

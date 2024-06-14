@@ -2,13 +2,17 @@
 
 #include "Assets/Mesh.hpp"
 #include "Assets/Texture.hpp"
+
+#include "Scripting/LuaScript.hpp"
+
 #include "Factories/FontFactory.hpp"
 #include "Factories/TextureFactory.hpp"
+
 #include "InternalEngineObject.hpp"
-#include "Scripting/LuaScript.hpp"
 
 #include <string>
 #include <unordered_map>
+
 
 namespace Engine
 {
@@ -20,13 +24,13 @@ namespace Engine
 	class AssetManager final : public InternalEngineObject
 	{
 	private:
-		std::unordered_map<std::string, std::shared_ptr<Scripting::LuaScript>> luascripts{};
-		std::unordered_map<std::string, std::shared_ptr<Rendering::Texture>> textures{};
-		std::unordered_map<std::string, std::shared_ptr<Rendering::Font>> fonts{};
-		std::unordered_map<std::string, std::shared_ptr<Rendering::Mesh>> models{};
+		std::unordered_map<std::string, std::shared_ptr<Scripting::LuaScript>> luascripts;
+		std::unordered_map<std::string, std::shared_ptr<Rendering::Texture>> textures;
+		std::unordered_map<std::string, std::shared_ptr<Rendering::Font>> fonts;
+		std::unordered_map<std::string, std::shared_ptr<Rendering::Mesh>> models;
 
-		std::unique_ptr<Factories::FontFactory> font_factory{};
-		std::unique_ptr<Factories::TextureFactory> texture_factory{};
+		std::unique_ptr<Factories::FontFactory> font_factory;
+		std::unique_ptr<Factories::TextureFactory> texture_factory;
 
 	public:
 		// std::shared_ptr<Logging::Logger> logger{};

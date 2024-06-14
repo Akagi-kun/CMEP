@@ -98,6 +98,8 @@ namespace Engine::Factories
 		fclose(file);
 
 		std::shared_ptr<Rendering::Texture> texture = std::make_shared<Rendering::Texture>();
+		texture->UpdateOwnerEngine(this->owner_engine);
+		texture->UpdateHeldLogger(this->logger);
 
 		texture->Init(std::move(texture_data));
 

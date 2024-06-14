@@ -1,8 +1,8 @@
 #include "Scripting/API/AssetManager_API.hpp"
 
-#include "Scripting/API/framework.hpp"
-
 #include "Assets/AssetManager.hpp"
+
+#include "Scripting/API/framework.hpp"
 
 #include <memory>
 
@@ -26,8 +26,8 @@ namespace Engine::Scripting::API
 					// Generate object table
 					lua_newtable(state);
 
-					void* ptr = lua_newuserdata(state, sizeof(std::shared_ptr<Rendering::Font>));
-					new (ptr) std::shared_ptr<Rendering::Font>(font);
+					void* ptr = lua_newuserdata(state, sizeof(std::weak_ptr<Rendering::Font>));
+					new (ptr) std::weak_ptr<Rendering::Font>(font);
 
 					lua_setfield(state, -2, "_smart_ptr");
 

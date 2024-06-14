@@ -62,7 +62,7 @@ namespace Engine
 		void TriggerResort();
 
 		void AddObject(std::string name, Object* ptr);
-		Object* AddTemplatedObject(std::string name, std::string template_name);
+		void AddTemplatedObject(std::string name, std::string template_name);
 		Object* FindObject(std::string name);
 		size_t RemoveObject(std::string name);
 

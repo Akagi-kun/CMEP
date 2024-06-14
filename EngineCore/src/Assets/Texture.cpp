@@ -25,6 +25,8 @@ namespace Engine::Rendering
 
 		VulkanRenderingEngine* renderer = this->owner_engine->GetRenderingEngine();
 
+		vkDeviceWaitIdle(renderer->GetLogicalDevice());
+
 		renderer->cleanupVulkanTextureImage(this->data->texture_image);
 
 		this->data.release();

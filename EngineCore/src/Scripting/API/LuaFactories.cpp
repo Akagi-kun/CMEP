@@ -5,6 +5,8 @@
 #include "Scripting/API/Object_API.hpp"
 #include "Scripting/API/SceneManager_API.hpp"
 
+#include <memory>
+
 namespace Engine::Scripting::API::LuaObjectFactories
 {
 	void SceneManagerFactory(lua_State* state, std::weak_ptr<SceneManager> scene_manager_ptr)
@@ -39,14 +41,13 @@ namespace Engine::Scripting::API::LuaObjectFactories
 		}
 
 		// Add Object pointer
-		Object** ptr_obj = (Object**)lua_newuserdata(state, sizeof(Object*));
-		(*ptr_obj) = object_ptr;
+		auto** ptr_obj = static_cast<Object**>(lua_newuserdata(state, sizeof(Object*)));
+		(*ptr_obj) = (object_ptr);
 		lua_setfield(state, -2, "_pointer");
 
 		// Generate renderer table
 		lua_newtable(state);
-		Rendering::IRenderer** ptr_renderer = (Rendering::IRenderer**)lua_newuserdata(
-			state, sizeof(Rendering::IRenderer*)
+		auto** ptr_renderer = static_cast<Rendering::IRenderer**>(lua_newuserdata(state, sizeof(Rendering::IRenderer*))
 		);
 		(*ptr_renderer) = object_ptr->GetRenderer();
 		lua_setfield(state, -2, "_pointer");

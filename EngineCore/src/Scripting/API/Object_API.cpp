@@ -13,12 +13,10 @@ namespace Engine::Scripting::API
 		static int AddChild(lua_State* state)
 		{
 			lua_getfield(state, 1, "_pointer");
-
-			Object* ptr_obj = *(Object**)lua_touserdata(state, -1);
+			Object* ptr_obj = *static_cast<Object**>(lua_touserdata(state, -1));
 
 			lua_getfield(state, 2, "_pointer");
-
-			Object* ptr_child = *(Object**)lua_touserdata(state, -1);
+			Object* ptr_child = *static_cast<Object**>(lua_touserdata(state, -1));
 
 			ptr_obj->AddChild(ptr_child);
 
@@ -28,7 +26,7 @@ namespace Engine::Scripting::API
 		static int GetRotation(lua_State* state)
 		{
 			lua_getfield(state, 1, "_pointer");
-			Object* ptr_obj = *(Object**)lua_touserdata(state, -1);
+			Object* ptr_obj = *static_cast<Object**>(lua_touserdata(state, -1));
 
 			glm::vec3 rotation = ptr_obj->Rotation();
 
@@ -42,8 +40,7 @@ namespace Engine::Scripting::API
 		static int Rotate(lua_State* state)
 		{
 			lua_getfield(state, 1, "_pointer");
-
-			Object* ptr_obj = *(Object**)lua_touserdata(state, -1);
+			Object* ptr_obj = *static_cast<Object**>(lua_touserdata(state, -1));
 
 			auto rotation = glm::vec3(0);
 			rotation.x = static_cast<float>(lua_tonumber(state, 2));
@@ -58,7 +55,7 @@ namespace Engine::Scripting::API
 		static int GetSize(lua_State* state)
 		{
 			lua_getfield(state, 1, "_pointer");
-			Object* ptr_obj = *(Object**)lua_touserdata(state, -1);
+			Object* ptr_obj = *static_cast<Object**>(lua_touserdata(state, -1));
 
 			glm::vec3 size = ptr_obj->Size();
 			lua_pushnumber(state, static_cast<double>(size.x));
@@ -71,8 +68,7 @@ namespace Engine::Scripting::API
 		static int Scale(lua_State* state)
 		{
 			lua_getfield(state, 1, "_pointer");
-
-			Object* ptr_obj = *(Object**)lua_touserdata(state, -1);
+			Object* ptr_obj = *static_cast<Object**>(lua_touserdata(state, -1));
 
 			auto size = glm::vec3(0);
 			size.x = static_cast<float>(lua_tonumber(state, 2));
@@ -87,7 +83,7 @@ namespace Engine::Scripting::API
 		static int GetPosition(lua_State* state)
 		{
 			lua_getfield(state, 1, "_pointer");
-			Object* ptr_obj = *(Object**)lua_touserdata(state, -1);
+			Object* ptr_obj = *static_cast<Object**>(lua_touserdata(state, -1));
 
 			auto rotation = ptr_obj->Position();
 
@@ -101,8 +97,7 @@ namespace Engine::Scripting::API
 		static int Translate(lua_State* state)
 		{
 			lua_getfield(state, 1, "_pointer");
-
-			Object* ptr_obj = *(Object**)lua_touserdata(state, -1);
+			Object* ptr_obj = *static_cast<Object**>(lua_touserdata(state, -1));
 
 			auto position = glm::vec3(0);
 			position.x = static_cast<float>(lua_tonumber(state, 2));

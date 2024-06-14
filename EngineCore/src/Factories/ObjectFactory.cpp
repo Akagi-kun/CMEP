@@ -10,6 +10,7 @@
 #include "glm/vec3.hpp"
 
 #include <cassert>
+#include <memory>
 
 namespace Engine::ObjectFactory
 {
@@ -26,7 +27,8 @@ namespace Engine::ObjectFactory
 		assert(sprite != nullptr);
 		if (auto locked_scene_manager = scene_manager.lock())
 		{
-			Object* object = new Object();
+			auto* object = new Object();
+
 			// object->renderer = new Rendering::SpriteRenderer(locked_scene_manager->GetOwnerEngine());
 			Rendering::IRenderer* with_renderer = new Rendering::SpriteRenderer(locked_scene_manager->GetOwnerEngine());
 			with_renderer->scene_manager = scene_manager;

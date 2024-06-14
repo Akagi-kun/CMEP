@@ -7,6 +7,7 @@
 #include "Engine.hpp"
 
 #include <exception>
+#include <memory>
 
 // Prefixes for logging messages
 #define LOGPFX_CURRENT LOGPFX_CLASS_SCENE
@@ -19,14 +20,18 @@ namespace Engine
 	}
 	Scene::~Scene()
 	{
+		this->logger->SimpleLog(Logging::LogLevel::Info, LOGPFX_CURRENT "Destructor called");
+
 		this->templates.clear();
+		this->objects_sorted.clear();
 
 		for (auto& [name, ptr] : this->objects)
 		{
+			this->logger->SimpleLog(Logging::LogLevel::Debug1, "Deleting '%s' object", name.c_str());
 			delete ptr;
 		}
+
 		this->objects.clear();
-		this->objects_sorted.clear();
 	}
 
 	const std::unordered_map<std::string, Object*>* Scene::GetAllObjects() noexcept
@@ -107,7 +112,7 @@ namespace Engine
 		Scene::InternalSort(this->objects, this->objects_sorted);
 	}
 
-	Object* Scene::AddTemplatedObject(std::string name, std::string template_name)
+	void Scene::AddTemplatedObject(std::string name, std::string template_name)
 	{
 		auto templated_object = this->templates.find(template_name);
 
@@ -132,7 +137,7 @@ namespace Engine
 				default:
 				{
 					// Unknown renderer type, cannot add object
-					return nullptr;
+					throw std::exception("Unknown renderer type!");
 				}
 			}
 
@@ -150,11 +155,11 @@ namespace Engine
 
 			object->UpdateHeldLogger(this->logger);
 			this->AddObject(name, object);
-
-			return object;
 		}
-
-		return nullptr;
+		else
+		{
+			throw std::exception(std::string("Template with name '" + template_name + "' could not be found!").c_str());
+		}
 	}
 
 	void Scene::AddObject(std::string name, Object* ptr)

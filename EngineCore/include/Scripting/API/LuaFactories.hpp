@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Assets/AssetManager.hpp"
+
 #include "SceneManager.hpp"
 
 namespace Engine::Scripting::API::LuaObjectFactories

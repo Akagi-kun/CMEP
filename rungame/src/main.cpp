@@ -26,7 +26,7 @@ static void RunEngine()
 #if _DEBUG == 1 || defined(DEBUG)
 	my_logger->AddOutputHandle(Logging::LogLevel::Debug3, stdout, true);
 #else
-	my_logger->AddOutputHandle(Logging::LogLevel::Debug3, stdout, true);
+	my_logger->AddOutputHandle(Logging::LogLevel::Debug1, stdout, true);
 #endif
 
 	my_logger->SimpleLog(Logging::LogLevel::Info, "Logger initialized");
@@ -49,7 +49,6 @@ static void RunEngine()
 	{
 		engine->Init();
 		engine->Run();
-		engine.reset();
 	}
 	catch (std::exception& e)
 	{

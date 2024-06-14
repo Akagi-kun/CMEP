@@ -42,6 +42,8 @@ namespace Engine::Rendering
 		this->logger->SimpleLog(Logging::LogLevel::Debug3, "Cleaning up sprite renderer");
 		VulkanRenderingEngine* renderer = this->owner_engine->GetRenderingEngine();
 
+		this->texture.reset();
+
 		vkDeviceWaitIdle(renderer->GetLogicalDevice());
 
 		if (this->vbo != nullptr)

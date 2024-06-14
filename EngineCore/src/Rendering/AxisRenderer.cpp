@@ -1,5 +1,7 @@
 #include "Rendering/AxisRenderer.hpp"
 
+#include "Rendering/Vulkan/VulkanRenderingEngine.hpp"
+
 #include "Logging/Logging.hpp"
 
 #include "Engine.hpp"
@@ -31,8 +33,13 @@ namespace Engine::Rendering
 	AxisRenderer::~AxisRenderer()
 	{
 		this->logger->SimpleLog(Logging::LogLevel::Debug3, "Cleaning up axis renderer");
-		this->owner_engine->GetRenderingEngine()->cleanupVulkanBuffer(this->vbo);
-		this->owner_engine->GetRenderingEngine()->cleanupVulkanPipeline(this->pipeline);
+
+		Rendering::VulkanRenderingEngine* renderer = this->owner_engine->GetRenderingEngine();
+
+		vkDeviceWaitIdle(renderer->GetLogicalDevice());
+
+		renderer->cleanupVulkanBuffer(this->vbo);
+		renderer->cleanupVulkanPipeline(this->pipeline);
 	}
 	/*
 		void AxisRenderer::Update(

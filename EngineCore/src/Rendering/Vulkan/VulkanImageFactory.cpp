@@ -20,7 +20,8 @@ namespace Engine::Rendering::Factories
 		viewInfo.subresourceRange.layerCount = 1;
 
 		VkImageView imageView;
-		if (vkCreateImageView(this->vulkanRenderingEngine->GetLogicalDevice(), &viewInfo, nullptr, &imageView) != VK_SUCCESS)
+		if (vkCreateImageView(this->vulkanRenderingEngine->GetLogicalDevice(), &viewInfo, nullptr, &imageView) !=
+			VK_SUCCESS)
 		{
 			throw std::runtime_error("failed to create texture image view!");
 		}
@@ -28,9 +29,17 @@ namespace Engine::Rendering::Factories
 		return imageView;
 	}
 
-	VulkanImage *VulkanImageFactory::createImage(uint32_t width, uint32_t height, VkSampleCountFlagBits numSamples, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties)
+	VulkanImage* VulkanImageFactory::createImage(
+		uint32_t width,
+		uint32_t height,
+		VkSampleCountFlagBits numSamples,
+		VkFormat format,
+		VkImageTiling tiling,
+		VkImageUsageFlags usage,
+		VkMemoryPropertyFlags properties
+	)
 	{
-		VulkanImage *new_image = new VulkanImage();
+		VulkanImage* new_image = new VulkanImage();
 
 		new_image->imageFormat = format;
 
@@ -52,37 +61,67 @@ namespace Engine::Rendering::Factories
 
 		VmaAllocationCreateInfo vmaAllocInfo{};
 		vmaAllocInfo.usage = VMA_MEMORY_USAGE_AUTO;
-		vmaAllocInfo.flags = VMA_ALLOCATION_CREATE_DEDICATED_MEMORY_BIT; // vmaAllocFlags; //VMA_ALLOCATION_CREATE_HOST_ACCESS_SEQUENTIAL_WRITE_BIT | VMA_ALLOCATION_CREATE_MAPPED_BIT;
+		vmaAllocInfo.flags =
+			VMA_ALLOCATION_CREATE_DEDICATED_MEMORY_BIT; // vmaAllocFlags;
+														// //VMA_ALLOCATION_CREATE_HOST_ACCESS_SEQUENTIAL_WRITE_BIT
+														// | VMA_ALLOCATION_CREATE_MAPPED_BIT;
 		vmaAllocInfo.requiredFlags = properties;
 
 		// if (vkCreateImage(this->vkLogicalDevice, &imageInfo, nullptr, &(new_image->image)) != VK_SUCCESS)
-		if (vmaCreateImage(this->vmaAllocator, &imageInfo, &vmaAllocInfo, &(new_image->image), &(new_image->allocation), &(new_image->allocationInfo)) != VK_SUCCESS)
+		if (vmaCreateImage(
+				this->vmaAllocator,
+				&imageInfo,
+				&vmaAllocInfo,
+				&(new_image->image),
+				&(new_image->allocation),
+				&(new_image->allocationInfo)
+			) != VK_SUCCESS)
 		{
 			this->logger->SimpleLog(Logging::LogLevel::Exception, LOGPFX_CURRENT "Failed to create image");
 			throw std::runtime_error("failed to create image!");
 		}
 
+		vmaSetAllocationName(this->vmaAllocator, new_image->allocation, "VulkanImage");
+
 		return new_image;
 	}
 
-	VulkanTextureImage *VulkanImageFactory::createTextureImage(uint32_t width, uint32_t height, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties, VkFilter useFilter, VkSamplerAddressMode addressMode)
+	VulkanTextureImage* VulkanImageFactory::createTextureImage(
+		uint32_t width,
+		uint32_t height,
+		VkFormat format,
+		VkImageTiling tiling,
+		VkImageUsageFlags usage,
+		VkMemoryPropertyFlags properties,
+		VkFilter useFilter,
+		VkSamplerAddressMode addressMode
+	)
 	{
-		VulkanTextureImage *new_texture_image = new VulkanTextureImage();
+		VulkanTextureImage* new_texture_image = new VulkanTextureImage();
 
-		new_texture_image->image = this->createImage(width, height, VK_SAMPLE_COUNT_1_BIT, format, tiling, usage, properties);
+		new_texture_image->image = this->createImage(
+			width, height, VK_SAMPLE_COUNT_1_BIT, format, tiling, usage, properties
+		);
 		new_texture_image->useAddressMode = addressMode;
 		new_texture_image->useFilter = useFilter;
 
 		return new_texture_image;
 	}
 
-	void VulkanImageFactory::appendImageViewToTextureImage(VulkanTextureImage *teximage)
+	void VulkanImageFactory::appendImageViewToTextureImage(VulkanTextureImage* teximage)
 	{
-		teximage->image->imageView = this->createImageView(teximage->image->image, teximage->image->imageFormat, VK_IMAGE_ASPECT_COLOR_BIT);
+		teximage->image->imageView = this->createImageView(
+			teximage->image->image, teximage->image->imageFormat, VK_IMAGE_ASPECT_COLOR_BIT
+		);
 	}
 
 	// void appendVulkanSamplerToVulkanTextureImage(VulkanTextureImage* teximage);
-	void VulkanImageFactory::transitionImageLayout(VkImage image, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout)
+	void VulkanImageFactory::transitionImageLayout(
+		VkImage image,
+		VkFormat format,
+		VkImageLayout oldLayout,
+		VkImageLayout newLayout
+	)
 	{
 		VkCommandBuffer commandBuffer = this->vulkanRenderingEngine->beginVulkanSingleTimeCommandsCommandBuffer();
 
@@ -110,7 +149,8 @@ namespace Engine::Rendering::Factories
 			sourceStage = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
 			destinationStage = VK_PIPELINE_STAGE_TRANSFER_BIT;
 		}
-		else if (oldLayout == VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL && newLayout == VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL)
+		else if (oldLayout == VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL &&
+				 newLayout == VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL)
 		{
 			barrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
 			barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
@@ -124,14 +164,8 @@ namespace Engine::Rendering::Factories
 			throw std::invalid_argument("unsupported layout transition!");
 		}
 
-		vkCmdPipelineBarrier(
-			commandBuffer,
-			sourceStage, destinationStage,
-			0,
-			0, nullptr,
-			0, nullptr,
-			1, &barrier);
+		vkCmdPipelineBarrier(commandBuffer, sourceStage, destinationStage, 0, 0, nullptr, 0, nullptr, 1, &barrier);
 
 		this->vulkanRenderingEngine->endVulkanSingleTimeCommandsCommandBuffer(commandBuffer);
 	}
-}
+} // namespace Engine::Rendering::Factories

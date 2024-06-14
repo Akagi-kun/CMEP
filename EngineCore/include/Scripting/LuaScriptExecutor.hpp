@@ -1,15 +1,18 @@
 #pragma once
 
-#include "lualib/lua.hpp"
-
 #include "InternalEngineObject.hpp"
 #include "LuaScript.hpp"
+#include "lualib/lua.hpp"
 
 namespace Engine::Scripting
 {
 	enum class ExecuteType
 	{
-		EventHandler
+		MIN_ENUM = 0x00,
+
+		EventHandler = 2,
+
+		MAX_ENUM = 0xFF
 	};
 
 	class LuaScriptExecutor : public InternalEngineObject
@@ -20,8 +23,8 @@ namespace Engine::Scripting
 		void RegisterMeta(lua_State* state);
 
 	public:
-		LuaScriptExecutor() {};
-		~LuaScriptExecutor() {};
+		LuaScriptExecutor() = default;
+		~LuaScriptExecutor() = default;
 
 		int CallIntoScript(ExecuteType etype, std::shared_ptr<LuaScript> script, std::string function, void* data);
 

@@ -1,8 +1,8 @@
 #pragma once
 
 #include "Assets/Mesh.hpp"
+
 #include "Object.hpp"
-#include "PlatformSemantics.hpp"
 #include "SceneManager.hpp"
 
 namespace Engine::Rendering
@@ -14,7 +14,7 @@ namespace Engine::Rendering
 // TODO: Move to Factories namespace?
 namespace Engine::ObjectFactory
 {
-	CMEP_EXPORT Object* CreateSpriteObject(
+	Object* CreateSpriteObject(
 		std::weak_ptr<SceneManager> scene_manager,
 		double x,
 		double y,
@@ -24,7 +24,7 @@ namespace Engine::ObjectFactory
 		std::shared_ptr<Rendering::Texture> sprite
 	);
 
-	CMEP_EXPORT Object* CreateTextObject(
+	Object* CreateTextObject(
 		std::weak_ptr<SceneManager> scene_manager,
 		double x,
 		double y,
@@ -34,7 +34,7 @@ namespace Engine::ObjectFactory
 		std::shared_ptr<Rendering::Font> font
 	);
 
-	CMEP_EXPORT Object* CreateGeneric3DObject(
+	Object* CreateGeneric3DObject(
 		std::weak_ptr<SceneManager> scene_manager,
 		double x,
 		double y,

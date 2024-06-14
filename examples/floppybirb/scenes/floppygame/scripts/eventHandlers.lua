@@ -152,11 +152,13 @@ onUpdate = function(event)
 		if spawnPipeSinceLast > spawnPipeEvery then
 			-- Spawn new pipes
 
-			local object1 = scene_manager:AddTemplatedObject("sprite_pipe_down"..tostring(spawnPipeLastIdx + 1), "pipe_down");
+			scene_manager:AddTemplatedObject("sprite_pipe_down"..tostring(spawnPipeLastIdx + 1), "pipe_down");
+			local object1 = scene_manager:FindObject("sprite_pipe_down"..tostring(spawnPipeLastIdx + 1));
 			object1:Translate(1.0, pxToScreenY(offset), -0.15);
 			object1:Scale(pxToScreenX(pipe_xSize), pxToScreenY(pipe_ySize), 1.0);
 
-			local object2 = scene_manager:AddTemplatedObject("sprite_pipe_up"..tostring(spawnPipeLastIdx + 1), "pipe_up");
+			scene_manager:AddTemplatedObject("sprite_pipe_up"..tostring(spawnPipeLastIdx + 1), "pipe_up");
+			local object2 = scene_manager:FindObject("sprite_pipe_up"..tostring(spawnPipeLastIdx + 1));
 			object2:Translate(1.0, pxToScreenY(pipe_ySize + pipe_spacing + offset), -0.15);
 			object2:Scale(pxToScreenX(pipe_xSize), pxToScreenY(pipe_ySize), 1.0);
 

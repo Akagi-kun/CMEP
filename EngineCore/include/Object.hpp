@@ -15,7 +15,8 @@ namespace Engine
 		Rendering::Transform parent_transform;
 		Rendering::ScreenSize screen;
 
-		Object* parent = nullptr;
+		// std::weak_ptr<Object> parent;
+		Object* parent;
 
 		std::vector<Object*> children;
 
@@ -50,8 +51,8 @@ namespace Engine
 
 		void SetParentPositionRotationSize(Rendering::Transform with_parent_transform);
 
-		void AddChild(Object* object);
+		void AddChild(Object* with_child);
 		void RemoveChildren();
-		void SetParent(Object* object);
+		void SetParent(Object* with_parent);
 	};
 } // namespace Engine

@@ -13,8 +13,16 @@ namespace Engine
 	Object::Object() noexcept = default;
 	Object::~Object() noexcept
 	{
-		this->logger->SimpleLog(Logging::LogLevel::Debug3, LOGPFX_CURRENT "Object deleted");
+		this->logger->SimpleLog(Logging::LogLevel::Debug3, LOGPFX_CURRENT "Destructor called");
 		delete this->renderer;
+	}
+
+	void Object::UpdateRenderer() noexcept
+	{
+		if (this->renderer != nullptr)
+		{
+			this->renderer->UpdateTransform(this->transform, this->parent_transform, this->screen);
+		}
 	}
 
 	void Object::UpdateHeldLogger(std::shared_ptr<Logging::Logger> new_logger)
@@ -69,14 +77,6 @@ namespace Engine
 		{
 			child->SetParentPositionRotationSize(this->transform);
 			child->UpdateRenderer();
-		}
-	}
-
-	void Object::UpdateRenderer() noexcept
-	{
-		if (this->renderer != nullptr)
-		{
-			this->renderer->UpdateTransform(this->transform, this->parent_transform, this->screen);
 		}
 	}
 
