@@ -8,6 +8,7 @@
 
 #include <exception>
 #include <memory>
+#include <stdexcept>
 
 // Prefixes for logging messages
 #define LOGPFX_CURRENT LOGPFX_CLASS_SCENE
@@ -20,14 +21,14 @@ namespace Engine
 	}
 	Scene::~Scene()
 	{
-		this->logger->SimpleLog(Logging::LogLevel::Info, LOGPFX_CURRENT "Destructor called");
+		this->logger->SimpleLog(Logging::LogLevel::Debug1, LOGPFX_CURRENT "Destructor called");
 
 		this->templates.clear();
 		this->objects_sorted.clear();
 
 		for (auto& [name, ptr] : this->objects)
 		{
-			this->logger->SimpleLog(Logging::LogLevel::Debug1, "Deleting '%s' object", name.c_str());
+			this->logger->SimpleLog(Logging::LogLevel::Debug2, "Deleting '%s' object", name.c_str());
 			delete ptr;
 		}
 
@@ -48,7 +49,7 @@ namespace Engine
 	{
 		if (a.second == nullptr || b.second == nullptr)
 		{
-			throw std::exception("Could not sort scene, object is nullptr!");
+			throw std::runtime_error("Could not sort scene, object is nullptr!");
 		}
 		assert(a.second != nullptr);
 		assert(b.second != nullptr);
@@ -137,7 +138,7 @@ namespace Engine
 				default:
 				{
 					// Unknown renderer type, cannot add object
-					throw std::exception("Unknown renderer type!");
+					throw std::runtime_error("Unknown renderer type!");
 				}
 			}
 
@@ -158,7 +159,7 @@ namespace Engine
 		}
 		else
 		{
-			throw std::exception(std::string("Template with name '" + template_name + "' could not be found!").c_str());
+			throw std::runtime_error("Template with name '" + template_name + "' could not be found!");
 		}
 	}
 
