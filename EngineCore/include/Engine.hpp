@@ -1,14 +1,16 @@
 #pragma once
 
-#include <memory>
-
 #include "Rendering/Vulkan/VulkanImageFactory.hpp"
 #include "Rendering/Vulkan/VulkanRenderingEngine.hpp"
 
-#include "EventHandling.hpp"
 #include "Logging/Logging.hpp"
+
+#include "EventHandling.hpp"
 #include "PlatformSemantics.hpp"
 #include "SceneManager.hpp"
+
+#include <memory>
+#include <string>
 
 namespace Engine
 {
