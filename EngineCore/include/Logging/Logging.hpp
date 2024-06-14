@@ -35,7 +35,7 @@ namespace Logging
 	{
 	private:
 		std::vector<LoggerInternalMapping> outputs;
-		std::map<int16_t, std::string> threadid_name_map;
+		std::map<uint16_t, std::string> threadid_name_map;
 		std::mutex thread_mutex;
 
 	public:

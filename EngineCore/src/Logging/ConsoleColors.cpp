@@ -1,3 +1,5 @@
+#include "Logging/ConsoleColors.hpp"
+
 namespace Logging::Console
 {
 	const char* WHITE_FG = "\033[0;97m";		   // info

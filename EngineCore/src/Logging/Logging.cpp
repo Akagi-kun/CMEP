@@ -11,7 +11,7 @@
 #define LOGPFX_CURRENT LOGPFX_CLASS_LOGGER
 #include "Logging/LoggingPrefix.hpp"
 
-static const char* level_to_color_table[7] = {
+static const char* level_to_color_table[] = {
 	Logging::Console::GRAY_FG,
 	Logging::Console::GRAY_FG,
 	Logging::Console::GRAY_FG,
@@ -21,7 +21,12 @@ static const char* level_to_color_table[7] = {
 	Logging::Console::BLUE_FG
 };
 
-static const char* level_to_string_table[7] = {"DBG3", "DBG2", "DBG1", "INFO", "WARN", "ERROR", "EXCEPTION"};
+static const char* level_to_string_table[] = {"DBG3", "DBG2", "DBG1", "INFO", "WARN", "ERROR", "EXCEPTION"};
+
+static constexpr size_t level_count = std::min(
+	sizeof(level_to_color_table) / sizeof(char*),
+	sizeof(level_to_string_table) / sizeof(char*)
+);
 
 void Logging::Logger::AddOutputHandle(Logging::LogLevel min_level, FILE* handle, bool use_colors)
 {
@@ -92,32 +97,25 @@ void Logging::Logger::StartLog(Logging::LogLevel level)
 
 			auto find_result = this->threadid_name_map.find(thread_id);
 
+			fprintf(
+				output.handle,
+				"%s[%02i:%02i:%02i ",
+				output.use_colors ? level_to_color_table[static_cast<int>(level)] : "",
+				cur_time.tm_hour,
+				cur_time.tm_min,
+				cur_time.tm_sec
+			);
+
+			const char* const level_str = level_to_string_table[static_cast<int>(level)];
+
 			// TODO: Fix
 			if (find_result == this->threadid_name_map.end())
 			{
-				fprintf(
-					output.handle,
-					"%s[%02i:%02i:%02i %04hx %s] ",
-					output.use_colors ? level_to_color_table[static_cast<int>(level)] : "",
-					cur_time.tm_hour,
-					cur_time.tm_min,
-					cur_time.tm_sec,
-					thread_id,
-					level_to_string_table[static_cast<int>(level)]
-				);
+				fprintf(output.handle, "%04hx %s] ", thread_id, level_str);
 			}
 			else
 			{
-				fprintf(
-					output.handle,
-					"%s[%02i:%02i:%02i %s %s] ",
-					output.use_colors ? level_to_color_table[static_cast<int>(level)] : "",
-					cur_time.tm_hour,
-					cur_time.tm_min,
-					cur_time.tm_sec,
-					find_result->second.c_str(),
-					level_to_string_table[static_cast<int>(level)]
-				);
+				fprintf(output.handle, "%s %s] ", find_result->second.c_str(), level_str);
 			}
 		}
 	}
