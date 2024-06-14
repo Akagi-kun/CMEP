@@ -7,6 +7,7 @@
 #include "Rendering/Transform.hpp"
 
 #include "Scripting/API/LuaFactories.hpp"
+#include "Scripting/lualib/lua.h"
 
 #include "Factories/ObjectFactory.hpp"
 
@@ -82,7 +83,6 @@ namespace Engine::Scripting::Mappings
 
 			Rendering::RendererSupplyData texture_supply(Rendering::RendererSupplyDataType::TEXTURE, texture);
 			renderer->SupplyData(texture_supply);
-			//((::Engine::Rendering::MeshRenderer*)renderer)->UpdateTexture(texture);
 
 			return 0;
 		}
@@ -107,7 +107,6 @@ namespace Engine::Scripting::Mappings
 			lua_getfield(state, 7, "_pointer");
 			AssetManager* ptr_am = *static_cast<AssetManager**>(lua_touserdata(state, -1));
 			std::string sprite_name = lua_tostring(state, 8);
-			// Rendering::Texture* sprite = *(Rendering::Texture**)lua_touserdata(state, -1);
 
 			Object* obj = ObjectFactory::CreateSpriteObject(
 				scene_manager, x, y, z, sizex, sizey, ptr_am->GetTexture(sprite_name)
@@ -145,7 +144,9 @@ namespace Engine::Scripting::Mappings
 			assert(lua_gettop(state) == 7);
 
 			lua_getfield(state, 1, "_smart_ptr");
-			std::weak_ptr<SceneManager> scene_manager = *(std::weak_ptr<SceneManager>*)lua_touserdata(state, -1);
+			std::weak_ptr<SceneManager> scene_manager = *static_cast<std::weak_ptr<SceneManager>*>(
+				lua_touserdata(state, -1)
+			);
 
 			double x = lua_tonumber(state, 2);
 			double y = lua_tonumber(state, 3);
@@ -155,7 +156,9 @@ namespace Engine::Scripting::Mappings
 			std::string text = lua_tostring(state, 6);
 
 			lua_getfield(state, 7, "_smart_ptr");
-			std::weak_ptr<Rendering::Font> font = *(std::weak_ptr<Rendering::Font>*)lua_touserdata(state, -1);
+			std::weak_ptr<Rendering::Font> font = *static_cast<std::weak_ptr<Rendering::Font>*>(
+				lua_touserdata(state, -1)
+			);
 
 			Object* obj = nullptr;
 			if (auto locked_font = font.lock())

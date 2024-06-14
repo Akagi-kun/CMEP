@@ -19,24 +19,28 @@ static void InitConsoleWin32()
 }
 #endif
 
+#if _DEBUG == 1 || defined(DEBUG)
+#	define DEFAULT_LOG_LEVEL Logging::LogLevel::Debug3
+#else
+#	define DEFAULT_LOG_LEVEL Logging::LogLevel::Debug1
+#endif
+
 static void RunEngine()
 {
 	std::shared_ptr<Logging::Logger> my_logger = std::make_shared<Logging::Logger>();
 
-#if _DEBUG == 1 || defined(DEBUG)
-	my_logger->AddOutputHandle(Logging::LogLevel::Debug3, stdout, true);
-#else
-	my_logger->AddOutputHandle(Logging::LogLevel::Debug1, stdout, true);
-#endif
+	my_logger->AddOutputHandle(DEFAULT_LOG_LEVEL, stdout, true);
 
 	my_logger->SimpleLog(Logging::LogLevel::Info, "Logger initialized");
 
 	// Initialize engine
 	std::unique_ptr<Engine::OpaqueEngine> engine = std::make_unique<Engine::OpaqueEngine>(my_logger);
 
+	// Initialize engine, load config
 	try
 	{
 		engine->ConfigFile("game/config.json");
+		engine->Init();
 	}
 	catch (std::exception& e)
 	{
@@ -47,7 +51,6 @@ static void RunEngine()
 	// Start execution
 	try
 	{
-		engine->Init();
 		engine->Run();
 	}
 	catch (std::exception& e)
@@ -63,8 +66,8 @@ int main(int argc, char** argv)
 	(void)argc;
 	(void)argv;
 
-	// Enable colored output on Win32
 #if defined(_MSC_VER)
+	// Enable colored output on Win32
 	InitConsoleWin32();
 #endif
 
