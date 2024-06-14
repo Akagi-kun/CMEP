@@ -7,6 +7,10 @@
 #include "Engine.hpp"
 #include "glm/ext/matrix_transform.hpp"
 
+// Prefixes for logging messages
+#define LOGPFX_CURRENT LOGPFX_CLASS_SCENE_MANAGER
+#include "Logging/LoggingPrefix.hpp"
+
 namespace Engine
 {
 	SceneManager::SceneManager(std::shared_ptr<Logging::Logger> with_logger)
@@ -20,11 +24,21 @@ namespace Engine
 		this->scenes.emplace("_default", std::make_shared<Scene>());
 		this->scenes.at(this->current_scene)->UpdateHeldLogger(this->logger);
 
-		this->scene_loader = std::make_shared<SceneLoader>(with_logger);
+		this->scene_loader = std::make_unique<SceneLoader>(with_logger);
 	}
 
 	SceneManager::~SceneManager()
 	{
+		this->logger->SimpleLog(Logging::LogLevel::Debug2, LOGPFX_CURRENT "Destructor called");
+
+		this->scene_loader.reset();
+
+		for (auto& scene : this->scenes)
+		{
+			scene.second.reset();
+		}
+
+		this->scenes.clear();
 	}
 
 	void SceneManager::CameraUpdated()

@@ -1,14 +1,16 @@
 #include "Scripting/API/Object_API.hpp"
 
-#include "Object.hpp"
-
 #include "Scripting/API/framework.hpp"
+
+#include "Object.hpp"
 
 namespace Engine::Scripting::API
 {
 	namespace Functions_Object
 	{
-		int AddChild(lua_State* state)
+		using glm::vec3;
+
+		static int AddChild(lua_State* state)
 		{
 			lua_getfield(state, 1, "_pointer");
 
@@ -23,27 +25,27 @@ namespace Engine::Scripting::API
 			return 0;
 		}
 
-		int GetRotation(lua_State* state)
+		static int GetRotation(lua_State* state)
 		{
 			lua_getfield(state, 1, "_pointer");
 			Object* ptr_obj = *(Object**)lua_touserdata(state, -1);
 
 			glm::vec3 rotation = ptr_obj->Rotation();
 
-			lua_pushnumber(state, rotation.x);
-			lua_pushnumber(state, rotation.y);
-			lua_pushnumber(state, rotation.z);
+			lua_pushnumber(state, static_cast<double>(rotation.x));
+			lua_pushnumber(state, static_cast<double>(rotation.y));
+			lua_pushnumber(state, static_cast<double>(rotation.z));
 
 			return 3;
 		}
 
-		int Rotate(lua_State* state)
+		static int Rotate(lua_State* state)
 		{
 			lua_getfield(state, 1, "_pointer");
 
 			Object* ptr_obj = *(Object**)lua_touserdata(state, -1);
 
-			glm::vec3 rotation = glm::vec3(0);
+			auto rotation = glm::vec3(0);
 			rotation.x = static_cast<float>(lua_tonumber(state, 2));
 			rotation.y = static_cast<float>(lua_tonumber(state, 3));
 			rotation.z = static_cast<float>(lua_tonumber(state, 4));
@@ -53,27 +55,26 @@ namespace Engine::Scripting::API
 			return 0;
 		}
 
-		int GetSize(lua_State* state)
+		static int GetSize(lua_State* state)
 		{
 			lua_getfield(state, 1, "_pointer");
 			Object* ptr_obj = *(Object**)lua_touserdata(state, -1);
 
 			glm::vec3 size = ptr_obj->Size();
-
-			lua_pushnumber(state, size.x);
-			lua_pushnumber(state, size.y);
-			lua_pushnumber(state, size.z);
+			lua_pushnumber(state, static_cast<double>(size.x));
+			lua_pushnumber(state, static_cast<double>(size.y));
+			lua_pushnumber(state, static_cast<double>(size.z));
 
 			return 3;
 		}
 
-		int Scale(lua_State* state)
+		static int Scale(lua_State* state)
 		{
 			lua_getfield(state, 1, "_pointer");
 
 			Object* ptr_obj = *(Object**)lua_touserdata(state, -1);
 
-			glm::vec3 size = glm::vec3(0);
+			auto size = glm::vec3(0);
 			size.x = static_cast<float>(lua_tonumber(state, 2));
 			size.y = static_cast<float>(lua_tonumber(state, 3));
 			size.z = static_cast<float>(lua_tonumber(state, 4));
@@ -83,27 +84,27 @@ namespace Engine::Scripting::API
 			return 0;
 		}
 
-		int GetPosition(lua_State* state)
+		static int GetPosition(lua_State* state)
 		{
 			lua_getfield(state, 1, "_pointer");
 			Object* ptr_obj = *(Object**)lua_touserdata(state, -1);
 
-			glm::vec3 rotation = ptr_obj->Position();
+			auto rotation = ptr_obj->Position();
 
-			lua_pushnumber(state, rotation.x);
-			lua_pushnumber(state, rotation.y);
-			lua_pushnumber(state, rotation.z);
+			lua_pushnumber(state, static_cast<double>(rotation.x));
+			lua_pushnumber(state, static_cast<double>(rotation.y));
+			lua_pushnumber(state, static_cast<double>(rotation.z));
 
 			return 3;
 		}
 
-		int Translate(lua_State* state)
+		static int Translate(lua_State* state)
 		{
 			lua_getfield(state, 1, "_pointer");
 
 			Object* ptr_obj = *(Object**)lua_touserdata(state, -1);
 
-			glm::vec3 position = glm::vec3(0);
+			auto position = glm::vec3(0);
 			position.x = static_cast<float>(lua_tonumber(state, 2));
 			position.y = static_cast<float>(lua_tonumber(state, 3));
 			position.z = static_cast<float>(lua_tonumber(state, 4));

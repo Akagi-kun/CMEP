@@ -55,10 +55,10 @@ static inline uint16_t GetCurrentThreadID()
 
 void Logging::Logger::MapCurrentThreadToName(std::string name)
 {
-	uint16_t thread_id = GetCurrentThreadID();
-
 	// Protect member access
 	this->thread_mutex.lock();
+
+	uint16_t thread_id = GetCurrentThreadID();
 
 	this->threadid_name_map.emplace(thread_id, name);
 

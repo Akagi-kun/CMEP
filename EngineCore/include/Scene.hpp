@@ -1,15 +1,15 @@
 #pragma once
 
+#include "Rendering/SupplyData.hpp"
+
+#include "Scripting/LuaScript.hpp"
+
 #include "EventHandling.hpp"
 #include "InternalEngineObject.hpp"
 #include "Object.hpp"
-#include "Scripting/LuaScript.hpp"
 
 #include <map>
-
 #include <unordered_map>
-
-#include "Rendering/SupplyData.hpp"
 
 namespace Engine
 {
@@ -39,13 +39,14 @@ namespace Engine
 	protected:
 		// TODO: Convert all object vectors and maps to std::shared_ptr<Object>
 
-		std::vector<std::pair<std::string, Object*>> objects_sorted{};
+		std::vector<std::pair<std::string, Object*>> objects_sorted;
 
-		std::unordered_map<std::string, Object*> objects{};
-		std::unordered_map<std::string, ObjectTemplate> templates{};
+		std::unordered_map<std::string, Object*> objects;
+		std::unordered_map<std::string, ObjectTemplate> templates;
 
 		static void InternalSort(
-			std::unordered_map<std::string, Object*> from_map, std::vector<std::pair<std::string, Object*>>& objects
+			std::unordered_map<std::string, Object*>& from_map,
+			std::vector<std::pair<std::string, Object*>>& objects
 		);
 
 	public:
@@ -63,7 +64,7 @@ namespace Engine
 		void AddObject(std::string name, Object* ptr);
 		Object* AddTemplatedObject(std::string name, std::string template_name);
 		Object* FindObject(std::string name);
-		size_t RemoveObject(std::string name) noexcept;
+		size_t RemoveObject(std::string name);
 
 		void LoadTemplatedObject(std::string name, ObjectTemplate object);
 	};

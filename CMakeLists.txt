@@ -26,7 +26,7 @@ if(MSVC)
 
 	# Release only
 	add_compile_options($<$<CONFIG:Release>:/O2>)
-	
+
 else()
 	add_compile_options(-std=c++17)
 	add_link_options(-lpthread)

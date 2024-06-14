@@ -1,6 +1,6 @@
 #include "OpaqueEngine.hpp"
-#include "Engine.hpp"
 
+#include "Engine.hpp"
 
 namespace Engine
 {
@@ -11,7 +11,7 @@ namespace Engine
 
 	OpaqueEngine::~OpaqueEngine() noexcept
 	{
-		this->d_engine.release();
+		this->d_engine.reset();
 	}
 
 	void OpaqueEngine::Init()

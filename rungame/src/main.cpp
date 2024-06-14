@@ -1,8 +1,6 @@
 #include <cassert>
 #include <exception>
-#include <ostream>
 #include <string>
-#include <thread>
 
 #if defined(_MSC_VER)
 #	include <Windows.h>
@@ -26,9 +24,9 @@ static void RunEngine()
 	std::shared_ptr<Logging::Logger> my_logger = std::make_shared<Logging::Logger>();
 
 #if _DEBUG == 1 || defined(DEBUG)
-	my_logger->AddOutputHandle(Logging::LogLevel::Debug2, stdout, true);
+	my_logger->AddOutputHandle(Logging::LogLevel::Debug3, stdout, true);
 #else
-	myLogger->AddOutputHandle(Logging::LogLevel::Debug1, stdout, true);
+	my_logger->AddOutputHandle(Logging::LogLevel::Debug3, stdout, true);
 #endif
 
 	my_logger->SimpleLog(Logging::LogLevel::Info, "Logger initialized");
@@ -51,6 +49,7 @@ static void RunEngine()
 	{
 		engine->Init();
 		engine->Run();
+		engine.reset();
 	}
 	catch (std::exception& e)
 	{
@@ -61,6 +60,10 @@ static void RunEngine()
 
 int main(int argc, char** argv)
 {
+	// Command-line arguments unused
+	(void)argc;
+	(void)argv;
+
 	// Enable colored output on Win32
 #if defined(_MSC_VER)
 	InitConsoleWin32();

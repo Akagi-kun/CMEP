@@ -30,6 +30,7 @@ PenaltyBreakAssignment: 200
 PenaltyBreakComment: 2000000
 SortIncludes: CaseSensitive
 IndentPPDirectives: AfterHash
+AlignConsecutiveMacros: true
 InsertNewlineAtEOF: true
 IncludeBlocks: Regroup
 IncludeCategories:

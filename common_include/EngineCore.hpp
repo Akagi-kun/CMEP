@@ -9,19 +9,17 @@
 #define CMEP_ABI_IMPORT
 #include "PlatformSemantics.hpp"
 
-#pragma region forward decls
-
 namespace Logging
 {
 	enum class LogLevel
 	{
 		Debug3 = 0,
-		Debug2,
-		Debug1,
-		Info,
-		Warning,
-		Error,
-		Exception
+		Debug2 = 1,
+		Debug1 = 2,
+		Info = 3,
+		Warning = 4,
+		Error = 5,
+		Exception = 6
 	};
 
 	// TODO: Remove this from common_include
@@ -37,7 +35,7 @@ namespace Logging
 	{
 	private:
 		std::vector<LoggerInternalMapping> outputs;
-		std::map<int16_t, std::string> threadid_name_map;
+		std::map<uint16_t, std::string> threadid_name_map;
 		std::mutex thread_mutex;
 
 	public:

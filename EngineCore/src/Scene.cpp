@@ -1,9 +1,12 @@
 #include "Scene.hpp"
 
+// #include "Assets/AssetManager.hpp"
 #include "Rendering/IRenderer.hpp"
 #include "Rendering/SpriteRenderer.hpp"
 
 #include "Engine.hpp"
+
+#include <exception>
 
 // Prefixes for logging messages
 #define LOGPFX_CURRENT LOGPFX_CLASS_SCENE
@@ -16,13 +19,14 @@ namespace Engine
 	}
 	Scene::~Scene()
 	{
+		this->templates.clear();
+
 		for (auto& [name, ptr] : this->objects)
 		{
 			delete ptr;
 		}
 		this->objects.clear();
-
-		this->templates.clear();
+		this->objects_sorted.clear();
 	}
 
 	const std::unordered_map<std::string, Object*>* Scene::GetAllObjects() noexcept
@@ -37,6 +41,13 @@ namespace Engine
 
 	static bool InternalSortCmpFunction(std::pair<std::string, Object*>& a, std::pair<std::string, Object*>& b)
 	{
+		if (a.second == nullptr || b.second == nullptr)
+		{
+			throw std::exception("Could not sort scene, object is nullptr!");
+		}
+		assert(a.second != nullptr);
+		assert(b.second != nullptr);
+
 		Rendering::IRenderer* a_renderer = a.second->GetRenderer();
 		Rendering::IRenderer* b_renderer = b.second->GetRenderer();
 
@@ -69,14 +80,16 @@ namespace Engine
 	}
 
 	void Scene::InternalSort(
-		std::unordered_map<std::string, Object*> from_map, std::vector<std::pair<std::string, Object*>>& objects
+		std::unordered_map<std::string, Object*>& from_map,
+		std::vector<std::pair<std::string, Object*>>& objects
 	)
 	{
 		std::vector<std::pair<std::string, Object*>> a;
 
 		for (auto& it : from_map)
 		{
-			a.push_back(it);
+			assert(it.second != nullptr);
+			a.emplace_back(it);
 		}
 
 		std::sort(a.begin(), a.end(), InternalSortCmpFunction);
@@ -118,7 +131,7 @@ namespace Engine
 				}
 				default:
 				{
-					// Unknow renderer type, cannot add object
+					// Unknown renderer type, cannot add object
 					return nullptr;
 				}
 			}
@@ -132,7 +145,8 @@ namespace Engine
 				with_renderer->SupplyData(supply);
 			}
 
-			assert(object->AssignRenderer(with_renderer) == nullptr);
+			auto* old_renderer = object->AssignRenderer(with_renderer);
+			assert(old_renderer == nullptr);
 
 			object->UpdateHeldLogger(this->logger);
 			this->AddObject(name, object);
@@ -153,7 +167,18 @@ namespace Engine
 			ptr->UpdateHeldLogger(this->logger);
 			this->objects.emplace(name, ptr);
 		}
-		Scene::InternalSort(this->objects, this->objects_sorted);
+
+		try
+		{
+			Scene::InternalSort(this->objects, this->objects_sorted);
+		}
+		catch (std::exception& e)
+		{
+			this->logger->SimpleLog(
+				Logging::LogLevel::Info, LOGPFX_CURRENT "Exception sorting objects! e.what(): %s", e.what()
+			);
+			throw;
+		}
 	}
 
 	Object* Scene::FindObject(std::string name)
@@ -166,7 +191,7 @@ namespace Engine
 		return nullptr;
 	}
 
-	size_t Scene::RemoveObject(std::string name) noexcept
+	size_t Scene::RemoveObject(std::string name)
 	{
 		Object* object = this->FindObject(name);
 
@@ -179,7 +204,17 @@ namespace Engine
 		size_t return_val = this->objects.erase(name);
 
 		// TODO: Bad performance? a resort should be done after all removals
-		Scene::InternalSort(this->objects, this->objects_sorted);
+		try
+		{
+			Scene::InternalSort(this->objects, this->objects_sorted);
+		}
+		catch (std::exception& e)
+		{
+			this->logger->SimpleLog(
+				Logging::LogLevel::Info, LOGPFX_CURRENT "Exception sorting objects! e.what(): %s", e.what()
+			);
+			throw;
+		}
 
 		return return_val;
 	}

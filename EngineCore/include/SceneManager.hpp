@@ -1,7 +1,8 @@
 #pragma once
 
-#include "InternalEngineObject.hpp"
 #include "Logging/Logging.hpp"
+
+#include "InternalEngineObject.hpp"
 #include "Object.hpp"
 #include "Scene.hpp"
 #include "SceneLoader.hpp"
@@ -25,7 +26,7 @@ namespace Engine
 
 		void CameraUpdated();
 
-		std::shared_ptr<SceneLoader> scene_loader;
+		std::unique_ptr<SceneLoader> scene_loader;
 
 	public:
 		SceneManager(std::shared_ptr<Logging::Logger> logger);

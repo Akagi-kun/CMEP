@@ -241,7 +241,8 @@ namespace Engine
 		Rendering::IRenderer* with_renderer = new Rendering::AxisRenderer(this);
 		with_renderer->scene_manager = this->scene_manager;
 
-		assert(object->AssignRenderer(with_renderer) == nullptr);
+		auto* old_renderer = object->AssignRenderer(with_renderer);
+		assert(old_renderer == nullptr);
 		this->scene_manager->AddObject("_axis", object);
 
 		// Pre-make ON_UPDATE event so we don't have to create it over and over again in hot loop
@@ -291,6 +292,10 @@ namespace Engine
 			prev_clock = next_clock;
 			// counter++;
 		}
+
+		this->logger->SimpleLog(Logging::LogLevel::Debug2, LOGPFX_CURRENT "Closing engine");
+
+		// std::this_thread::sleep_for(std::chrono::milliseconds(1000));
 	}
 
 	int Engine::FireEvent(EventHandling::Event& event)

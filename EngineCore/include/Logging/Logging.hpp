@@ -14,12 +14,12 @@ namespace Logging
 	enum class LogLevel
 	{
 		Debug3 = 0,
-		Debug2,
-		Debug1,
-		Info,
-		Warning,
-		Error,
-		Exception
+		Debug2 = 1,
+		Debug1 = 2,
+		Info = 3,
+		Warning = 4,
+		Error = 5,
+		Exception = 6
 	};
 
 	struct LoggerInternalMapping
@@ -30,7 +30,6 @@ namespace Logging
 		bool use_colors;
 	};
 
-	// TODO: Check thread safety
 	class CMEP_EXPORT_CLASS Logger
 	{
 	private:

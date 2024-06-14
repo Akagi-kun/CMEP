@@ -7,7 +7,7 @@
 #include "InternalEngineObject.hpp"
 #include "SupplyData.hpp"
 #include "Transform.hpp"
-#include "glm/glm.hpp"
+// #include "glm/glm.hpp"
 
 #include <cstdint>
 

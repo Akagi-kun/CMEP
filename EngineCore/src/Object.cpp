@@ -4,12 +4,16 @@
 
 #include "InternalEngineObject.hpp"
 
+// Prefixes for logging messages
+#define LOGPFX_CURRENT LOGPFX_CLASS_OBJECT
+#include "Logging/LoggingPrefix.hpp"
+
 namespace Engine
 {
 	Object::Object() noexcept = default;
 	Object::~Object() noexcept
 	{
-		this->logger->SimpleLog(Logging::LogLevel::Debug3, "Object deleted");
+		this->logger->SimpleLog(Logging::LogLevel::Debug3, LOGPFX_CURRENT "Object deleted");
 		delete this->renderer;
 	}
 
@@ -23,49 +27,47 @@ namespace Engine
 		}
 	}
 
-	void Object::ScreenSizeInform(unsigned int new_screenx, unsigned int newscreeny) noexcept
+	void Object::ScreenSizeInform(unsigned int with_screenx, unsigned int with_screeny) noexcept
 	{
-		this->screenx = new_screenx;
-		this->screeny = newscreeny;
+		this->screen.x = with_screenx;
+		this->screen.y = with_screeny;
 
 		this->UpdateRenderer();
 	}
 
 	void Object::Translate(const glm::vec3 new_pos) noexcept
 	{
-		this->pos = new_pos;
-
+		this->transform.pos = new_pos;
 		this->UpdateRenderer();
 
 		for (auto& child : this->children)
 		{
-			child->SetParentPositionRotationSize(this->pos, this->rotation, this->size);
+			child->SetParentPositionRotationSize(this->transform);
 			child->UpdateRenderer();
 		}
 	}
 
 	void Object::Scale(const glm::vec3 new_size) noexcept
 	{
-		this->size = new_size;
-
+		this->transform.size = new_size;
 		this->UpdateRenderer();
 
 		for (auto& child : this->children)
 		{
-			child->SetParentPositionRotationSize(this->pos, this->rotation, this->size);
+			child->SetParentPositionRotationSize(this->transform);
 			child->UpdateRenderer();
 		}
 	}
 
 	void Object::Rotate(const glm::vec3 new_rotation) noexcept
 	{
-		this->rotation = new_rotation;
+		this->transform.rotation = new_rotation;
 
 		this->UpdateRenderer();
 
 		for (auto& child : this->children)
 		{
-			child->SetParentPositionRotationSize(this->pos, this->rotation, this->size);
+			child->SetParentPositionRotationSize(this->transform);
 			child->UpdateRenderer();
 		}
 	}
@@ -74,11 +76,7 @@ namespace Engine
 	{
 		if (this->renderer != nullptr)
 		{
-			this->renderer->UpdateTransform(
-				{this->pos, this->size, this->rotation},
-				{this->parent_pos, this->parent_size, this->parent_rotation},
-				{this->screenx, this->screeny}
-			);
+			this->renderer->UpdateTransform(this->transform, this->parent_transform, this->screen);
 		}
 	}
 
@@ -107,30 +105,28 @@ namespace Engine
 
 	glm::vec3 Object::Position() const noexcept
 	{
-		return this->pos;
+		return this->transform.pos;
 	}
 	glm::vec3 Object::Size() const noexcept
 	{
-		return this->size;
+		return this->transform.size;
 	}
 	glm::vec3 Object::Rotation() const noexcept
 	{
-		return this->rotation;
+		return this->transform.rotation;
 	}
 
-	void Object::SetParentPositionRotationSize(glm::vec3 new_position, glm::vec3 new_rotation, glm::vec3 new_size)
+	void Object::SetParentPositionRotationSize(Rendering::Transform with_parent_transform)
 	{
-		this->parent_pos = new_position;
-		this->parent_rotation = new_rotation;
-		this->parent_size = new_size;
+		this->parent_transform = with_parent_transform;
 	}
 
-	void Object::AddChild(Object* object)
+	void Object::AddChild(Object* with_child)
 	{
-		object->SetParent(this);
-		object->SetParentPositionRotationSize(this->pos, this->rotation, this->size);
-		object->UpdateRenderer();
-		this->children.push_back(object);
+		with_child->SetParent(this);
+		with_child->SetParentPositionRotationSize(this->transform);
+		with_child->UpdateRenderer();
+		this->children.push_back(with_child);
 	}
 
 	void Object::RemoveChildren()

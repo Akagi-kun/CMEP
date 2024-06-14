@@ -1,7 +1,8 @@
 #pragma once
 
-#include "InternalEngineObject.hpp"
 #include "Logging/Logging.hpp"
+
+#include "InternalEngineObject.hpp"
 #include "Scene.hpp"
 
 #include <memory>
@@ -18,6 +19,7 @@ namespace Engine
 	protected:
 		void LoadSceneAssets(nlohmann::json& data, std::string& scene_path);
 		void LoadSceneTemplates(nlohmann::json& data, std::shared_ptr<Scene>& scene);
+		void LoadSceneTree(nlohmann::json& data, std::shared_ptr<Scene>& scene);
 
 		void LoadSceneInternal(std::shared_ptr<Scene>& scene, std::string& scene_name);
 

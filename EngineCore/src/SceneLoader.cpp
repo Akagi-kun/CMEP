@@ -76,6 +76,8 @@ namespace Engine
 
 		this->LoadSceneAssets(data, scene_path);
 
+		this->logger->SimpleLog(Logging::LogLevel::Debug2, LOGPFX_CURRENT "Done stage: Assets");
+
 		// Get window config
 		const Rendering::GLFWwindowData window_config = this->owner_engine->GetRenderingEngine()->GetWindow();
 
@@ -129,12 +131,33 @@ namespace Engine
 				);
 			}
 
+			this->logger->SimpleLog(Logging::LogLevel::Debug2, LOGPFX_CURRENT "Done stage: Event Handlers");
+
+			// Load Templates
 			this->LoadSceneTemplates(data, scene);
 
+			// Load scene
+			this->LoadSceneTree(data, scene);
+		}
+	}
+
+	void SceneLoader::LoadSceneTree(nlohmann::json& data, std::shared_ptr<Scene>& scene)
+	{
+		// Get window config
+		const Rendering::GLFWwindowData window_config = this->owner_engine->GetRenderingEngine()->GetWindow();
+
+		std::weak_ptr<AssetManager> asset_manager = this->owner_engine->GetAssetManager();
+
+		if (auto locked_asset_manager = asset_manager.lock())
+		{
 			// Load scene
 			for (auto& scene_entry : data["scene"])
 			{
 				std::string object_name = scene_entry["name"].get<std::string>();
+
+				this->logger->SimpleLog(
+					Logging::LogLevel::Debug3, LOGPFX_CURRENT "Loading scene object '%s'", object_name.c_str()
+				);
 
 				auto& position_entry = scene_entry["position"];
 				glm::vec3 position = glm::vec3(
@@ -219,14 +242,25 @@ namespace Engine
 
 							with_renderer->UpdateMesh();
 
-							assert(object->AssignRenderer(with_renderer) == nullptr);
+							auto* old_renderer = object->AssignRenderer(with_renderer);
+							assert(old_renderer == nullptr);
+
 							break;
 						}
 						default:
 						{
 							delete object; // TODO: Reorder this
+							object = nullptr;
 							break;
 						}
+					}
+
+					if (object != nullptr)
+					{
+						object->Translate(position);
+						object->Scale(scale);
+
+						scene->AddObject(object_name, object);
 					}
 				}
 				else
@@ -237,12 +271,9 @@ namespace Engine
 					);
 					continue;
 				}
-
-				object->Translate(position);
-				object->Scale(scale);
-
-				scene->AddObject(object_name, object);
 			}
+
+			this->logger->SimpleLog(Logging::LogLevel::Debug2, LOGPFX_CURRENT "Done stage: Scene");
 		}
 	}
 
@@ -306,6 +337,8 @@ namespace Engine
 
 				scene->LoadTemplatedObject(name, object);
 			}
+
+			this->logger->SimpleLog(Logging::LogLevel::Debug2, LOGPFX_CURRENT "Done stage: Templates");
 		}
 	}
 

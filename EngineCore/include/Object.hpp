@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Rendering/IRenderer.hpp"
+#include "Rendering/Transform.hpp"
 
 #include "InternalEngineObject.hpp"
 // #include <functional>
@@ -10,27 +11,19 @@ namespace Engine
 	class Object final : public InternalEngineObject
 	{
 	private:
-		glm::vec3 pos = glm::vec3();
-		glm::vec3 size = glm::vec3();
-		glm::vec3 rotation = glm::vec3();
-
-		glm::vec3 parent_pos = glm::vec3();
-		glm::vec3 parent_size = glm::vec3();
-		glm::vec3 parent_rotation = glm::vec3();
+		Rendering::Transform transform;
+		Rendering::Transform parent_transform;
+		Rendering::ScreenSize screen;
 
 		Object* parent = nullptr;
 
 		std::vector<Object*> children;
-
-		unsigned int screenx = 0, screeny = 0;
 
 		// std::function<void(Object*)> on_click = nullptr;
 
 		Rendering::IRenderer* renderer = nullptr;
 
 	public:
-		// std::string renderer_type;
-
 		Object() noexcept;
 		~Object() noexcept;
 
@@ -55,7 +48,7 @@ namespace Engine
 		glm::vec3 Size() const noexcept;
 		glm::vec3 Rotation() const noexcept;
 
-		void SetParentPositionRotationSize(glm::vec3 with_position, glm::vec3 with_rotation, glm::vec3 with_size);
+		void SetParentPositionRotationSize(Rendering::Transform with_parent_transform);
 
 		void AddChild(Object* object);
 		void RemoveChildren();

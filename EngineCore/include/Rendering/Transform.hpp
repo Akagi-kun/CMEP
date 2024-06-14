@@ -13,6 +13,12 @@ namespace Engine::Rendering
 		glm::vec3 rotation = glm::vec3();
 	};
 
-	typedef glm::vec<2, uint16_t> ScreenSize;
+	struct ScreenSize
+	{
+		uint_fast16_t x;
+		uint_fast16_t y;
+	};
+
+	// typedef glm::vec<2, uint16_t> ScreenSize;
 
 } // namespace Engine::Rendering
