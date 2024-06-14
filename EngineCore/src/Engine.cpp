@@ -8,6 +8,7 @@
 #include "Scripting/LuaScript.hpp"
 #include "Scripting/LuaScriptExecutor.hpp"
 
+#include "GLFW/glfw3.h"
 #include "Object.hpp"
 #include "buildinfo.hpp"
 #include "nlohmann/json.hpp"
@@ -450,6 +451,11 @@ namespace Engine
 		}
 
 		this->EngineLoop();
+	}
+
+	void Engine::Stop()
+	{
+		glfwSetWindowShouldClose(this->rendering_engine->GetWindow().window, true);
 	}
 
 	void Engine::ConfigFile(std::string path)
