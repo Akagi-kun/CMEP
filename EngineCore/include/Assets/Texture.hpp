@@ -1,12 +1,12 @@
 #pragma once
 
-#include "InternalEngineObject.hpp"
 #include "Rendering/Vulkan/VulkanRenderingEngine.hpp"
+
+#include "InternalEngineObject.hpp"
 
 #include <memory>
 #include <string>
 #include <vector>
-
 
 namespace Engine::Rendering
 {
@@ -18,7 +18,7 @@ namespace Engine::Rendering
 	struct TextureData
 	{
 		std::vector<unsigned char> data;
-		unsigned int x = 0, y = 0;
+		uint_fast32_t x = 0, y = 0;
 		int color_fmt = 4;
 		VkFilter filtering;
 		VkSamplerAddressMode address_mode;
