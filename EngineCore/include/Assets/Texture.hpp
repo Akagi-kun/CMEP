@@ -46,9 +46,9 @@ namespace Engine::Rendering
 		   ysize); int InitFile(Texture_InitFiletype filetype, std::string path, unsigned int sizex = 0, unsigned int
 		   sizey = 0);
 		 */
-		void GetSize(unsigned int& x, unsigned int& y) const noexcept;
-		const std::vector<unsigned char> GetData() const;
-		VulkanTextureImage* GetTextureImage() const noexcept;
-		int GetColorFormat() const noexcept;
+		void GetSize(uint_fast32_t& x, uint_fast32_t& y) const noexcept;
+		[[nodiscard]] const std::vector<unsigned char> GetData() const;
+		[[nodiscard]] VulkanTextureImage* GetTextureImage() const noexcept;
+		[[nodiscard]] int GetColorFormat() const noexcept;
 	};
 } // namespace Engine::Rendering
