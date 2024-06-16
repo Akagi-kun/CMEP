@@ -56,6 +56,7 @@ This project depends on:
 - Lua programming language
 - GLFW library
 - lodepng
+- tinyobjloader
 - nlohmann-json
 - Vulkan SDK
 
