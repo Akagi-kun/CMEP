@@ -9,6 +9,7 @@
 
 #include <array>
 #include <cassert>
+#include <cstdlib>
 #include <cstring>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/quaternion.hpp>
@@ -20,7 +21,7 @@ namespace Engine::Rendering
 	{
 		VulkanRenderingEngine* renderer = this->owner_engine->GetRenderingEngine();
 
-		VulkanPipelineSettings pipeline_settings = renderer->getVulkanDefaultPipelineSettings();
+		VulkanPipelineSettings pipeline_settings = renderer->GetVulkanDefaultPipelineSettings();
 		pipeline_settings.inputAssembly.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
 
 		pipeline_settings.descriptorLayoutSettings.binding.push_back(0);
@@ -33,7 +34,7 @@ namespace Engine::Rendering
 		pipeline_settings.descriptorLayoutSettings.types.push_back(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
 		pipeline_settings.descriptorLayoutSettings.stageFlags.push_back(VK_SHADER_STAGE_FRAGMENT_BIT);
 
-		this->pipeline = renderer->createVulkanPipeline(
+		this->pipeline = renderer->CreateVulkanPipeline(
 			pipeline_settings, "game/shaders/vulkan/textrenderer_vert.spv", "game/shaders/vulkan/textrenderer_frag.spv"
 		);
 	}
@@ -47,9 +48,9 @@ namespace Engine::Rendering
 
 		if (this->vbo != nullptr)
 		{
-			renderer->cleanupVulkanBuffer(this->vbo);
+			renderer->CleanupVulkanBuffer(this->vbo);
 		}
-		renderer->cleanupVulkanPipeline(this->pipeline);
+		renderer->CleanupVulkanPipeline(this->pipeline);
 	}
 
 	void TextRenderer::SupplyData(RendererSupplyData data)
@@ -86,7 +87,7 @@ namespace Engine::Rendering
 		if (this->vbo != nullptr)
 		{
 			vkDeviceWaitIdle(renderer->GetLogicalDevice());
-			renderer->cleanupVulkanBuffer(this->vbo);
+			renderer->CleanupVulkanBuffer(this->vbo);
 			this->vbo = nullptr;
 		}
 
@@ -124,56 +125,64 @@ namespace Engine::Rendering
 				}
 
 				// Get texture
-				unsigned int texture_x = 0, texture_y = 0;
+				uint_fast32_t texture_width = 0, texture_height = 0;
 				std::shared_ptr<Texture> texture = this->font->GetPageTexture(ch->page);
 				assert(texture != nullptr);
-				texture->GetSize(texture_x, texture_y);
-				assert(texture_x > 0 && texture_y > 0);
+				texture->GetSize(texture_width, texture_height);
+				assert(texture_width > 0 && texture_height > 0);
+
+				const auto char_x = static_cast<float>(ch->x);
+				const auto char_width = static_cast<float>(ch->width);
+				const auto char_y = static_cast<float>(ch->y);
+				const auto char_height = static_cast<float>(ch->height);
 
 				// Obscure math I don't understand, achieved with trial and error and works so just leave it like this
-				// const float xs = ch->width / (float)this->_screenx * 2 * (float)(std::round(_size.x) / fontsize);
-				// const float ys = ch->height / (float)this->_screeny * 2 * (float)(std::round(_size.y) / fontsize);
-				// const float x = (float)this->_pos.x * 2 - 1.f + accu_x;
-				// const float y = (float)this->_pos.y * 2 - 1.f + accu_y;
-
-				const float xs = ch->width / (float)this->screen.x *
-								 (float)(std::round(this->transform.size.x) / fontsize);
-				const float ys = ch->height / (float)this->screen.y *
-								 (float)(std::round(this->transform.size.y) / fontsize);
+				const float xs = char_width / static_cast<float>(this->screen.x) *
+								 static_cast<float>(std::round(this->transform.size.x) / fontsize);
+				const float ys = char_height / static_cast<float>(this->screen.y) *
+								 static_cast<float>(std::round(this->transform.size.y) / fontsize);
 				const float x = accu_x;
 				const float y = accu_y;
 				const float z = 0.0f;
 
+				const float color_r = 1.0f;
+				const float color_g = 1.0f;
+				const float color_b = 1.0f;
+
 				std::array<RenderingVertex, 6> vertices = {};
 				vertices[0] = {
 					glm::vec3(x, ys + y, z),
-					glm::vec3(1.f, 1.f, 1.f),
-					glm::vec2((ch->x) / (float)texture_x, (ch->y + ch->height) / (float)texture_y)
+					glm::vec3(color_r, color_g, color_b),
+					glm::vec2((char_x) / (float)texture_width, (char_y + char_height) / (float)texture_height)
 				};
 				vertices[1] = {
 					glm::vec3(xs + x, ys + y, z),
-					glm::vec3(1.f, 1.f, 1.f),
-					glm::vec2((ch->x + ch->width) / (float)texture_x, (ch->y + ch->height) / (float)texture_y)
+					glm::vec3(color_r, color_g, color_b),
+					glm::vec2(
+						(char_x + char_width) / (float)texture_width, (char_y + char_height) / (float)texture_height
+					)
 				};
 				vertices[2] = {
 					glm::vec3(x, y, z),
-					glm::vec3(1.f, 1.f, 1.f),
-					glm::vec2((ch->x) / (float)texture_x, (ch->y) / (float)texture_y)
+					glm::vec3(color_r, color_g, color_b),
+					glm::vec2((char_x) / (float)texture_width, (char_y) / (float)texture_height)
 				};
 				vertices[3] = {
 					glm::vec3(xs + x, ys + y, z),
-					glm::vec3(1.f, 1.f, 1.f),
-					glm::vec2((ch->x + ch->width) / (float)texture_x, (ch->y + ch->height) / (float)texture_y)
+					glm::vec3(color_r, color_g, color_b),
+					glm::vec2(
+						(char_x + char_width) / (float)texture_width, (char_y + char_height) / (float)texture_height
+					)
 				};
 				vertices[4] = {
 					glm::vec3(xs + x, y, z),
-					glm::vec3(1.f, 1.f, 1.f),
-					glm::vec2((ch->x + ch->width) / (float)texture_x, (ch->y) / (float)texture_y)
+					glm::vec3(color_r, color_g, color_b),
+					glm::vec2((char_x + char_width) / (float)texture_width, (char_y) / (float)texture_height)
 				};
 				vertices[5] = {
 					glm::vec3(x, y, z),
-					glm::vec3(1.f, 1.f, 1.f),
-					glm::vec2((ch->x) / (float)texture_x, (ch->y) / (float)texture_y)
+					glm::vec3(color_r, color_g, color_b),
+					glm::vec2((char_x) / (float)texture_width, (char_y) / (float)texture_height)
 				};
 
 				accu_x += xs + (2.f / this->screen.x);
@@ -207,7 +216,7 @@ namespace Engine::Rendering
 
 		this->vbo_vert_count = generated_mesh.size();
 
-		this->vbo = renderer->createVulkanVertexBufferFromData(generated_mesh);
+		this->vbo = renderer->CreateVulkanVertexBufferFromData(generated_mesh);
 
 		for (size_t i = 0; i < renderer->GetMaxFramesInFlight(); i++)
 		{

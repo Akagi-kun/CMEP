@@ -4,85 +4,120 @@
 #include "InternalEngineObject.hpp"
 #include "VulkanStructDefs.hpp"
 
-
 namespace Engine::Rendering
 {
 	class VulkanDeviceManager final : public InternalEngineObject
 	{
 	private:
 		// Defaults
-		VkSampleCountFlagBits msaaSamples = VK_SAMPLE_COUNT_1_BIT;
+		VkSampleCountFlagBits msaa_samples = VK_SAMPLE_COUNT_1_BIT;
 
 		// Queues
-		QueueFamilyIndices graphicsQueueIndices{};
-		VkQueue vkGraphicsQueue = VK_NULL_HANDLE;
-		VkQueue vkPresentQueue = VK_NULL_HANDLE;
+		QueueFamilyIndices graphics_queue_indices{};
+		VkQueue vk_graphics_queue = VK_NULL_HANDLE;
+		VkQueue vk_present_queue = VK_NULL_HANDLE;
 
 		// GLFW window
 		GLFWwindow* window = nullptr;
-		unsigned int windowX = 0, windowY = 0;
-		std::string windowTitle{};
+		unsigned int window_x = 0, window_y = 0;
+		std::string window_title;
 
 		// Vulkan devices
-		VkPhysicalDevice vkPhysicalDevice = VK_NULL_HANDLE;
-		VkDevice vkLogicalDevice = VK_NULL_HANDLE;
+		VkPhysicalDevice vk_physical_device = VK_NULL_HANDLE;
+		VkDevice vk_logical_device = VK_NULL_HANDLE;
 
 		// Vulkan instance
-		VkInstance vkInstance = VK_NULL_HANDLE;
+		VkInstance vk_instance = VK_NULL_HANDLE;
 
 		// Surfaces
-		VkSurfaceKHR vkSurface = VK_NULL_HANDLE;
+		VkSurfaceKHR vk_surface = VK_NULL_HANDLE;
 
 		// Required extensions to be supported
-		const std::vector<const char*> deviceExtensions = {
+		const std::vector<const char*> device_extensions = {
 			VK_KHR_SWAPCHAIN_EXTENSION_NAME,
 			VK_EXT_DESCRIPTOR_INDEXING_EXTENSION_NAME,
 			VK_EXT_ROBUSTNESS_2_EXTENSION_NAME,
 		};
 
 		// Validation layers
-		VkDebugUtilsMessengerEXT vkDebugMessenger = VK_NULL_HANDLE;
+		VkDebugUtilsMessengerEXT vk_debug_messenger = VK_NULL_HANDLE;
 #ifndef _DEBUG
-		const bool enableVkValidationLayers = false;
+		const bool enable_vk_validation_layers = false;
 #else
-		const bool enableVkValidationLayers = true;
+		const bool enable_vk_validation_layers = true;
 #endif
 
 		// Required validation layers to be supported
-		const std::vector<const char*> vkValidationLayers = {
+		const std::vector<const char*> vk_validation_layers = {
 			"VK_LAYER_KHRONOS_validation",
 		};
 
 		// Internal device functions
-		VkSampleCountFlagBits getMaxUsableSampleCount();
-		int checkVulkanPhysicalDeviceScore(VkPhysicalDevice device);
-		bool checkVulkanDeviceExtensionSupport(VkPhysicalDevice device);
-		QueueFamilyIndices findVulkanQueueFamilies(VkPhysicalDevice device);
-		SwapChainSupportDetails queryVulkanSwapChainSupport(VkPhysicalDevice device);
+		VkSampleCountFlagBits GetMaxUsableSampleCount();
+		int CheckVulkanPhysicalDeviceScore(VkPhysicalDevice device);
+		bool CheckVulkanDeviceExtensionSupport(VkPhysicalDevice device);
+		QueueFamilyIndices FindVulkanQueueFamilies(VkPhysicalDevice device);
+		SwapChainSupportDetails QueryVulkanSwapChainSupport(VkPhysicalDevice device);
 
 		// Internal init functions
-		bool checkVulkanValidationLayers();
-		void initVulkanInstance();
-		void initVulkanDevice();
-		void createVulkanLogicalDevice();
-		void createVulkanSurface();
+		bool CheckVulkanValidationLayers();
+		void InitVulkanInstance();
+		void InitVulkanDevice();
+		void CreateVulkanLogicalDevice();
+		void CreateVulkanSurface();
 
 	public:
-		VulkanDeviceManager();
+		VulkanDeviceManager() = default;
 
-		void init(GLFWwindow* new_window);
+		void Init(GLFWwindow* new_window);
 
-		void cleanup();
+		void Cleanup();
 
-		const VkPhysicalDevice& GetPhysicalDevice() const noexcept;
-		const VkDevice& GetLogicalDevice() const noexcept;
-		const VkInstance& GetInstance() const noexcept;
-		const VkSurfaceKHR& GetSurface() const noexcept;
-		const VkSampleCountFlagBits& GetMSAASampleCount() const noexcept;
-		const QueueFamilyIndices& GetQueueFamilies() const noexcept;
-		const VkQueue& GetGraphicsQueue() const noexcept;
-		const VkQueue& GetPresentQueue() const noexcept;
+		[[nodiscard]] inline const VkPhysicalDevice& GetPhysicalDevice() const noexcept
+		{
+			return this->vk_physical_device;
+		}
 
-		SwapChainSupportDetails QuerySwapChainSupport();
+		[[nodiscard]] inline const VkDevice& GetLogicalDevice() const noexcept
+		{
+			return this->vk_logical_device;
+		}
+
+		[[nodiscard]] inline const VkInstance& GetInstance() const noexcept
+		{
+			return this->vk_instance;
+		}
+
+		[[nodiscard]] inline const QueueFamilyIndices& GetQueueFamilies() const noexcept
+		{
+			return this->graphics_queue_indices;
+		}
+
+		[[nodiscard]] inline const VkSurfaceKHR& GetSurface() const noexcept
+		{
+			return this->vk_surface;
+		}
+
+		[[nodiscard]] inline const VkSampleCountFlagBits& GetMSAASampleCount() const noexcept
+		{
+			return this->msaa_samples;
+		}
+
+		[[nodiscard]] inline const VkQueue& GetGraphicsQueue() const noexcept
+		{
+			return this->vk_graphics_queue;
+		}
+
+		[[nodiscard]] inline const VkQueue& GetPresentQueue() const noexcept
+		{
+			return this->vk_present_queue;
+		}
+
+		[[nodiscard]] inline const SwapChainSupportDetails QuerySwapChainSupport()
+		{
+			return this->QueryVulkanSwapChainSupport(this->vk_physical_device);
+		}
+
+		// SwapChainSupportDetails QuerySwapChainSupport();
 	};
 } // namespace Engine::Rendering

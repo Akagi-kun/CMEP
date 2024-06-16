@@ -56,7 +56,7 @@ namespace Engine::Rendering
 
 		VulkanRenderingEngine* renderer = this->owner_engine->GetRenderingEngine();
 
-		VulkanBuffer* premade_staging_buffer = renderer->createVulkanBuffer(
+		VulkanBuffer* premade_staging_buffer = renderer->CreateVulkanBuffer(
 			5120 * 5120 * 4,
 			VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
 			VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
@@ -128,7 +128,7 @@ namespace Engine::Rendering
 			// }
 		}
 
-		renderer->cleanupVulkanBuffer(premade_staging_buffer);
+		renderer->CleanupVulkanBuffer(premade_staging_buffer);
 
 		this->logger->SimpleLog(
 			Logging::LogLevel::Info,

@@ -55,7 +55,7 @@ static void RunEngine()
 	}
 	catch (std::exception& e)
 	{
-		my_logger->SimpleLog(Logging::LogLevel::Exception, "Exception caught in rungame! e.what(): %s", e.what());
+		my_logger->SimpleLog(Logging::LogLevel::Exception, "Exception running engine! e.what(): %s", e.what());
 		throw;
 	}
 }

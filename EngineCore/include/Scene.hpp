@@ -17,13 +17,13 @@ namespace Engine
 
 	enum class RendererType
 	{
-		MIN_ENUM = 0x0000,
+		MIN_ENUM = 0x00,
 
 		TEXT = 1,
 		SPRITE = 2,
 		MESH = 3,
 
-		MAX_ENUM = 0XFFFF
+		MAX_ENUM = 0XFF
 	};
 
 	typedef struct ObjectTemplate_struct
@@ -37,8 +37,6 @@ namespace Engine
 	{
 	private:
 	protected:
-		// TODO: Convert all object vectors and maps to std::shared_ptr<Object>
-
 		std::vector<std::pair<std::string, Object*>> objects_sorted;
 
 		std::unordered_map<std::string, Object*> objects;
@@ -56,7 +54,9 @@ namespace Engine
 		Scene();
 		~Scene();
 
+		[[nodiscard]]
 		const std::unordered_map<std::string, Object*>* GetAllObjects() noexcept;
+		[[nodiscard]]
 		const std::vector<std::pair<std::string, Object*>>* GetAllObjectsSorted() noexcept;
 
 		void TriggerResort();

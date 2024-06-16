@@ -16,7 +16,7 @@ namespace Engine::Rendering
 	{
 		VulkanRenderingEngine* renderer = this->owner_engine->GetRenderingEngine();
 
-		VulkanPipelineSettings pipeline_settings = renderer->getVulkanDefaultPipelineSettings();
+		VulkanPipelineSettings pipeline_settings = renderer->GetVulkanDefaultPipelineSettings();
 		pipeline_settings.inputAssembly.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
 		// pipeline_settings.rasterizer.cullMode = VK_CULL_MODE_BACK_BIT;
 
@@ -30,7 +30,7 @@ namespace Engine::Rendering
 		pipeline_settings.descriptorLayoutSettings.types.push_back(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
 		pipeline_settings.descriptorLayoutSettings.stageFlags.push_back(VK_SHADER_STAGE_FRAGMENT_BIT);
 
-		this->pipeline = renderer->createVulkanPipeline(
+		this->pipeline = renderer->CreateVulkanPipeline(
 			pipeline_settings,
 			"game/shaders/vulkan/spriterenderer_vert.spv",
 			"game/shaders/vulkan/spriterenderer_frag.spv"
@@ -48,9 +48,9 @@ namespace Engine::Rendering
 
 		if (this->vbo != nullptr)
 		{
-			renderer->cleanupVulkanBuffer(this->vbo);
+			renderer->CleanupVulkanBuffer(this->vbo);
 		}
-		renderer->cleanupVulkanPipeline(this->pipeline);
+		renderer->CleanupVulkanPipeline(this->pipeline);
 	}
 
 	void SpriteRenderer::SupplyData(RendererSupplyData data)
@@ -89,7 +89,7 @@ namespace Engine::Rendering
 			std::vector<RenderingVertex> generated_mesh{};
 			generated_mesh.insert(generated_mesh.end(), vertices.begin(), vertices.end());
 
-			this->vbo = renderer->createVulkanVertexBufferFromData(generated_mesh);
+			this->vbo = renderer->CreateVulkanVertexBufferFromData(generated_mesh);
 		}
 
 		glm::mat4 projection = glm::ortho(0.0f, 1.0f, 0.0f, 1.0f, -10.0f, 10.0f);

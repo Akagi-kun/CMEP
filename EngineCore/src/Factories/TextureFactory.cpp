@@ -135,7 +135,7 @@ namespace Engine::Factories
 		// If no valid buffer was passed then create one here
 		if (!staging_buffer)
 		{
-			used_staging_buffer = renderer->createVulkanBuffer(
+			used_staging_buffer = renderer->CreateVulkanBuffer(
 				static_cast<size_t>(memory_size),
 				VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
 				VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
@@ -181,7 +181,7 @@ namespace Engine::Factories
 				VK_IMAGE_LAYOUT_UNDEFINED,
 				VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL
 			);
-			renderer->copyVulcanBufferToImage(
+			renderer->CopyVulkanBufferToImage(
 				used_staging_buffer->buffer,
 				texture_data->texture_image->image->image,
 				static_cast<uint32_t>(xsize),
@@ -198,11 +198,11 @@ namespace Engine::Factories
 			vkUnmapMemory(renderer->GetLogicalDevice(), used_staging_buffer->allocationInfo.deviceMemory);
 			if (!staging_buffer)
 			{
-				renderer->cleanupVulkanBuffer(used_staging_buffer);
+				renderer->CleanupVulkanBuffer(used_staging_buffer);
 			}
 
 			vulkanImageFactory->appendImageViewToTextureImage(texture_data->texture_image);
-			renderer->appendVulkanSamplerToVulkanTextureImage(texture_data->texture_image);
+			renderer->AppendVulkanSamplerToVulkanTextureImage(texture_data->texture_image);
 		}
 		else
 		{

@@ -275,7 +275,7 @@ namespace Engine
 			}
 
 			// Render
-			this->rendering_engine->drawFrame();
+			this->rendering_engine->DrawFrame();
 
 			// Sync with glfw event loop
 			glfwPollEvents();
@@ -338,7 +338,7 @@ namespace Engine
 
 		this->asset_manager.reset(); // swapped
 
-		this->rendering_engine->cleanup();
+		this->rendering_engine->Cleanup();
 
 		delete this->rendering_engine;
 	}
@@ -403,7 +403,7 @@ namespace Engine
 		auto start = std::chrono::steady_clock::now();
 
 		// Initialize rendering engine
-		this->rendering_engine->init(
+		this->rendering_engine->Init(
 			this->config->window.size_x, this->config->window.size_y, this->config->window.title
 		);
 
@@ -412,7 +412,7 @@ namespace Engine
 		);
 
 		// Prepare rendering engine to run (framebuffers etc.)
-		this->rendering_engine->prepRun();
+		this->rendering_engine->PrepRun();
 		this->rendering_engine->SetRenderCallback(this->RenderCallback);
 
 		// return;

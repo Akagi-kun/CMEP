@@ -27,7 +27,7 @@ namespace Engine::Rendering
 
 		vkDeviceWaitIdle(renderer->GetLogicalDevice());
 
-		renderer->cleanupVulkanTextureImage(this->data->texture_image);
+		renderer->CleanupVulkanTextureImage(this->data->texture_image);
 
 		this->data.release();
 	}

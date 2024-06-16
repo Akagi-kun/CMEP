@@ -18,7 +18,7 @@ namespace Engine::Rendering
 	{
 		VulkanRenderingEngine* renderer = this->owner_engine->GetRenderingEngine();
 
-		VulkanPipelineSettings pipeline_settings = renderer->getVulkanDefaultPipelineSettings();
+		VulkanPipelineSettings pipeline_settings = renderer->GetVulkanDefaultPipelineSettings();
 		pipeline_settings.inputAssembly.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
 
 		pipeline_settings.descriptorLayoutSettings.binding.push_back(0);
@@ -31,7 +31,7 @@ namespace Engine::Rendering
 		pipeline_settings.descriptorLayoutSettings.types.push_back(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
 		pipeline_settings.descriptorLayoutSettings.stageFlags.push_back(VK_SHADER_STAGE_FRAGMENT_BIT);
 
-		this->pipeline = renderer->createVulkanPipeline(
+		this->pipeline = renderer->CreateVulkanPipeline(
 			pipeline_settings, "game/shaders/vulkan/meshrenderer_vert.spv", "game/shaders/vulkan/meshrenderer_frag.spv"
 		);
 
@@ -47,9 +47,9 @@ namespace Engine::Rendering
 
 		if (this->vbo != nullptr)
 		{
-			renderer->cleanupVulkanBuffer(this->vbo);
+			renderer->CleanupVulkanBuffer(this->vbo);
 		}
-		renderer->cleanupVulkanPipeline(this->pipeline);
+		renderer->CleanupVulkanPipeline(this->pipeline);
 	}
 
 	void MeshRenderer::SupplyData(RendererSupplyData data)
@@ -131,7 +131,7 @@ namespace Engine::Rendering
 			if (this->vbo != nullptr)
 			{
 				vkDeviceWaitIdle(renderer->GetLogicalDevice());
-				renderer->cleanupVulkanBuffer(this->vbo);
+				renderer->CleanupVulkanBuffer(this->vbo);
 				this->vbo = nullptr;
 			}
 
@@ -161,7 +161,7 @@ namespace Engine::Rendering
 				i++;
 			}
 
-			this->vbo = renderer->createVulkanVertexBufferFromData(generated_mesh);
+			this->vbo = renderer->CreateVulkanVertexBufferFromData(generated_mesh);
 
 			this->vbo_vert_count = generated_mesh.size();
 

@@ -17,7 +17,7 @@ namespace Engine::Rendering
 	{
 		VulkanRenderingEngine* renderer = this->owner_engine->GetRenderingEngine();
 
-		VulkanPipelineSettings pipeline_settings = renderer->getVulkanDefaultPipelineSettings();
+		VulkanPipelineSettings pipeline_settings = renderer->GetVulkanDefaultPipelineSettings();
 		pipeline_settings.inputAssembly.topology = VK_PRIMITIVE_TOPOLOGY_LINE_LIST;
 
 		pipeline_settings.descriptorLayoutSettings.binding.push_back(0);
@@ -25,7 +25,7 @@ namespace Engine::Rendering
 		pipeline_settings.descriptorLayoutSettings.types.push_back(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER);
 		pipeline_settings.descriptorLayoutSettings.stageFlags.push_back(VK_SHADER_STAGE_VERTEX_BIT);
 
-		this->pipeline = renderer->createVulkanPipeline(
+		this->pipeline = renderer->CreateVulkanPipeline(
 			pipeline_settings, "game/shaders/vulkan/axisrenderer_vert.spv", "game/shaders/vulkan/axisrenderer_frag.spv"
 		);
 	}
@@ -38,8 +38,8 @@ namespace Engine::Rendering
 
 		vkDeviceWaitIdle(renderer->GetLogicalDevice());
 
-		renderer->cleanupVulkanBuffer(this->vbo);
-		renderer->cleanupVulkanPipeline(this->pipeline);
+		renderer->CleanupVulkanBuffer(this->vbo);
+		renderer->CleanupVulkanPipeline(this->pipeline);
 	}
 	/*
 		void AxisRenderer::Update(
@@ -99,7 +99,7 @@ namespace Engine::Rendering
 
 		if (this->vbo == nullptr)
 		{
-			this->vbo = renderer->createVulkanVertexBufferFromData(vertices);
+			this->vbo = renderer->CreateVulkanVertexBufferFromData(vertices);
 		}
 
 		for (size_t i = 0; i < renderer->GetMaxFramesInFlight(); i++)

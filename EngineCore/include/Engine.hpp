@@ -9,6 +9,7 @@
 #include "PlatformSemantics.hpp"
 #include "SceneManager.hpp"
 
+#include <cstdint>
 #include <memory>
 #include <string>
 
@@ -61,21 +62,21 @@ namespace Engine
 	class Engine final
 	{
 	private:
-		std::string config_path = "";
+		std::string config_path;
 
 		// Window
-		unsigned int framerate_target = 30;
+		uint_fast16_t framerate_target = 30;
 
 		double last_delta_time = 0.0;
 
-		std::unique_ptr<EngineConfig> config{};
+		std::unique_ptr<EngineConfig> config;
 
 		// Engine parts
-		std::shared_ptr<Logging::Logger> logger{};
-		std::shared_ptr<AssetManager> asset_manager{};
+		std::shared_ptr<Logging::Logger> logger;
+		std::shared_ptr<AssetManager> asset_manager;
 		Scripting::LuaScriptExecutor* script_executor = nullptr;
 		Rendering::VulkanRenderingEngine* rendering_engine = nullptr;
-		std::shared_ptr<Rendering::Factories::VulkanImageFactory> vulkan_image_factory{};
+		std::shared_ptr<Rendering::Factories::VulkanImageFactory> vulkan_image_factory;
 
 		// Event handler storage
 		// std::multimap<EventHandling::EventType, std::function<int(EventHandling::Event&)>> event_handlers;
@@ -97,7 +98,7 @@ namespace Engine
 		void HandleConfig();
 
 	public:
-		std::shared_ptr<SceneManager> scene_manager{};
+		std::shared_ptr<SceneManager> scene_manager;
 
 		CMEP_EXPORT Engine(std::shared_ptr<Logging::Logger> logger) noexcept;
 		CMEP_EXPORT ~Engine() noexcept;

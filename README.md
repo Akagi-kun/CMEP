@@ -1,8 +1,8 @@
 # CMEP
-[![Windows](https://github.com/Snezhnaya-chan/CMEP/actions/workflows/build-windows.yml/badge.svg)](https://github.com/Snezhnaya-chan/CMEP/actions/workflows/build-windows.yml) [![Linux](https://github.com/Snezhnaya-chan/CMEP/actions/workflows/build-linux.yml/badge.svg)](https://github.com/Snezhnaya-chan/CMEP/actions/workflows/build-linux.yml) [![MacOS](https://github.com/Snezhnaya-chan/CMEP/actions/workflows/build-macosx.yml/badge.svg)](https://github.com/Snezhnaya-chan/CMEP/actions/workflows/build-macosx.yml) <a href="https://scan.coverity.com/projects/snezhnaya-chan-cmep"><img alt="Coverity Scan Build Status" src="https://scan.coverity.com/projects/29326/badge.svg"/></a> [![Coverage Status](https://coveralls.io/repos/github/Snezhnaya-chan/CMEP/badge.svg?branch=master)](https://coveralls.io/github/Snezhnaya-chan/CMEP?branch=master)
+[![Windows](https://github.com/Snezhnaya-chan/CMEP/actions/workflows/build-windows.yml/badge.svg)](https://github.com/Snezhnaya-chan/CMEP/actions/workflows/build-windows.yml) [![Linux](https://github.com/Snezhnaya-chan/CMEP/actions/workflows/build-linux.yml/badge.svg)](https://github.com/Snezhnaya-chan/CMEP/actions/workflows/build-linux.yml) [![MacOS](https://github.com/Snezhnaya-chan/CMEP/actions/workflows/build-macosx.yml/badge.svg)](https://github.com/Snezhnaya-chan/CMEP/actions/workflows/build-macosx.yml) <a href="https://scan.coverity.com/projects/snezhnaya-chan-cmep"><img alt="Coverity Scan Build Status" src="https://scan.coverity.com/projects/29326/badge.svg"/></a>
 
 This is the repository of the CMEP project. A simple scriptable game engine written in C++, using the Vulkan API for rendering.
-This project is currently in alpha and although games (as shown in the `./examples/` subfolder) can be made with it, is very simple and lacks in functionality.
+This project is currently in alpha and although simple games (as shown in the `./examples/` subdirectory) can be made with it, is very simple and lacks in functionality.
 
 ---
 ### Usage
@@ -34,7 +34,7 @@ Optionally you can also build manually by directly invoking cmake (not recommend
 cmake .
 cmake --build . --target rungame --config <CONFIG>
 ```
-> (Note that although the configuration can be omitted here, it is not recommended as the default depends on build system used)
+> Note: that although the configuration can be omitted here, it is not recommended as the default depends on build system used
 
 #### Build an example
 
@@ -43,8 +43,8 @@ To build any of the examples, use cmake:
 cmake .
 cmake --build . --target <examplename>
 ```
-where `<examplename>` is a name of a subdirectory under `./examples/` (e.g. `floppybirb`)
-> (Note that examples currently do not use the `--config` syntax and therefore it isn't necessary to provide it)
+> Where `<examplename>` is a name of a subdirectory under `./examples/` (e.g. `floppybirb`)
+> Note: examples currently do not use the `--config` syntax and therefore it isn't necessary to provide it
 
 #### Running
 To start the engine use the `rungame` executable. This is located under the `./build/` subdirectory if the build is successful. A `./build/game/` directory with valid content is necessary for startup, this can be created by building an exmaple.
@@ -59,10 +59,10 @@ This project depends on:
 - nlohmann-json
 - Vulkan SDK
 
-all except the Vulkan SDK are prepackaged or built automatically once the build script is run.
+All except the Vulkan SDK are prepackaged or built automatically once the build script is run.
 These projects are external to this one and are not affiliated with this project in any way, when using this project take care to follow licenses of the dependencies.
 
 ---
 
 ### License
-This project is licensed under the MIT license (see the `LICENSE` file for more information). For dependency licenses, see the `./external/` directory 
+This project is licensed under the MIT license (see the `LICENSE` file for more information). For licenses of the dependencies, see the `./external/` directory 
