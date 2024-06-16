@@ -42,7 +42,7 @@ namespace Engine::Rendering
 	{
 		this->data = std::move(init_data);
 	}
-	void Texture::GetSize(unsigned int& x, unsigned int& y) const noexcept
+	void Texture::GetSize(uint_fast32_t& x, uint_fast32_t& y) const noexcept
 	{
 		x = this->data->x;
 		y = this->data->y;
