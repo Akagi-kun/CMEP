@@ -7,20 +7,33 @@ if(NOT MSVC)
 	if(NOT APPLE)
 		message("-- Will compile luajit for unix (non-osx)")
 		#add_custom_target(lua_build COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/external/build_lua.sh linux)
-		add_custom_target(lua_build DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/../build/lua51.so ${CMAKE_CURRENT_BINARY_DIR}/../build/lua51.a)	
+		add_custom_target(lua_build DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/../build/libluajit.so ${CMAKE_CURRENT_BINARY_DIR}/../build/libluajit.a)	
 
 		# Build luajit
-		add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/luajit/src/lua51.so ${CMAKE_CURRENT_BINARY_DIR}/luajit/src/lua51.a
+		add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/luajit/src/libluajit.so ${CMAKE_CURRENT_BINARY_DIR}/luajit/src/libluajit.a
 						   COMMAND make
 						   WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/luajit/src)
 	
 		# Copy luajit to build dir
-		add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/../build/lua51.so ${CMAKE_CURRENT_BINARY_DIR}/../build/lua51.a
-						   DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/luajit/src/lua51.so ${CMAKE_CURRENT_BINARY_DIR}/luajit/src/lua51.a
+		add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/../build/libluajit.so ${CMAKE_CURRENT_BINARY_DIR}/../build/libluajit.a
+						   DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/luajit/src/libluajit.so ${CMAKE_CURRENT_BINARY_DIR}/luajit/src/libluajit.a
 						   COMMAND ${CMAKE_COMMAND} -E
-						   copy ${CMAKE_CURRENT_BINARY_DIR}/luajit/src/lua51.so ${CMAKE_CURRENT_BINARY_DIR}/luajit/src/lua51.a ${CMAKE_CURRENT_BINARY_DIR}/../build)
+						   copy ${CMAKE_CURRENT_BINARY_DIR}/luajit/src/libluajit.so ${CMAKE_CURRENT_BINARY_DIR}/luajit/src/libluajit.a ${CMAKE_CURRENT_BINARY_DIR}/../build)
 	
 	else()
+		add_custom_target(lua_build DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/../build/lua51.dylib ${CMAKE_CURRENT_BINARY_DIR}/../build/lua51.a)	
+
+		# Build luajit
+		add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/luajit/src/lua51.dylib ${CMAKE_CURRENT_BINARY_DIR}/luajit/src/lua51.a
+						   COMMAND make
+						   WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/luajit/src)
+
+		# Copy luajit to build dir
+		add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/../build/lua51.dylib ${CMAKE_CURRENT_BINARY_DIR}/../build/lua51.a
+						   DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/luajit/src/lua51.dylib ${CMAKE_CURRENT_BINARY_DIR}/luajit/src/lua51.a
+						   COMMAND ${CMAKE_COMMAND} -E
+						   copy ${CMAKE_CURRENT_BINARY_DIR}/luajit/src/lua51.dylib ${CMAKE_CURRENT_BINARY_DIR}/luajit/src/lua51.a ${CMAKE_CURRENT_BINARY_DIR}/../build)
+
 		message("-- Will build lua for MacOS")
 		add_custom_target(lua_build COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/external/build_lua.sh macosx)
 	endif()
