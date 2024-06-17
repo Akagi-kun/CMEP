@@ -9,7 +9,7 @@
 #include "Rendering/TextRenderer.hpp"
 
 #include "IModule.hpp"
-#include "glm/vec3.hpp"
+// #include "glm/vec3.hpp"
 
 #include <cassert>
 #include <memory>
@@ -41,6 +41,7 @@ namespace Engine::ObjectFactory
 			// object->renderer->scene_manager = scene_manager;
 
 			ModuleMessage texture_supply_message = {
+				ModuleMessageTarget::RENDERER,
 				ModuleMessageType::RENDERER_SUPPLY,
 				Rendering::RendererSupplyData{Rendering::RendererSupplyDataType::TEXTURE, sprite}
 			};
@@ -86,6 +87,7 @@ namespace Engine::ObjectFactory
 			// Rendering::RendererSupplyData font_supply(Rendering::RendererSupplyDataType::FONT, font);
 
 			ModuleMessage font_supply_message = {
+				ModuleMessageTarget::RENDERER,
 				ModuleMessageType::RENDERER_SUPPLY,
 				Rendering::RendererSupplyData{Rendering::RendererSupplyDataType::FONT, font}
 			};
@@ -94,6 +96,7 @@ namespace Engine::ObjectFactory
 			// with_renderer->SupplyData(font_supply);
 
 			ModuleMessage text_supply_message = {
+				ModuleMessageTarget::RENDERER,
 				ModuleMessageType::RENDERER_SUPPLY,
 				Rendering::RendererSupplyData{Rendering::RendererSupplyDataType::TEXT, text}
 			};
@@ -137,6 +140,7 @@ namespace Engine::ObjectFactory
 			with_renderer->scene_manager		= scene_manager;
 
 			ModuleMessage mesh_supply_message = {
+				ModuleMessageTarget::RENDERER,
 				ModuleMessageType::RENDERER_SUPPLY,
 				Rendering::RendererSupplyData{Rendering::RendererSupplyDataType::MESH, mesh}
 			};

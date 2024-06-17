@@ -1,13 +1,12 @@
 #include "Scene.hpp"
 
-// #include "Assets/AssetManager.hpp"
 #include "Rendering/IRenderer.hpp"
 #include "Rendering/SpriteRenderer.hpp"
 
 #include "Engine.hpp"
 #include "IModule.hpp"
 
-#include <exception>
+// #include <exception>
 #include <memory>
 #include <stdexcept>
 
@@ -17,9 +16,6 @@
 
 namespace Engine
 {
-	Scene::Scene()
-	{
-	}
 	Scene::~Scene()
 	{
 		this->logger->SimpleLog(Logging::LogLevel::Debug1, LOGPFX_CURRENT "Destructor called");
@@ -29,7 +25,7 @@ namespace Engine
 
 		for (auto& [name, ptr] : this->objects)
 		{
-			this->logger->SimpleLog(Logging::LogLevel::Debug2, LOGPFX_CURRENT "Deleting '%s' object", name.c_str());
+			this->logger->SimpleLog(Logging::LogLevel::Debug2, LOGPFX_CURRENT "Deleting object '%s'", name.c_str());
 			delete ptr;
 		}
 
@@ -43,18 +39,27 @@ namespace Engine
 
 	const std::vector<std::pair<std::string, Object*>>* Scene::GetAllObjectsSorted() noexcept
 	{
+		if (this->was_scene_modified)
+		{
+			Scene::InternalSort(this->objects, this->objects_sorted);
+			this->was_scene_modified = false;
+		}
+
 		return &(this->objects_sorted);
 	}
 
-	static bool InternalSortCmpFunction(std::pair<std::string, Object*>& a, std::pair<std::string, Object*>& b)
+	static bool InternalSortCmpFunction(
+		std::pair<std::string, Object*>& pair_a,
+		std::pair<std::string, Object*>& pair_b
+	)
 	{
-		if (a.second == nullptr || b.second == nullptr)
+		if (pair_a.second == nullptr || pair_b.second == nullptr)
 		{
 			throw std::runtime_error("Could not sort scene, object is nullptr!");
 		}
 
-		Rendering::IRenderer* a_renderer = a.second->GetRenderer();
-		Rendering::IRenderer* b_renderer = b.second->GetRenderer();
+		Rendering::IRenderer* a_renderer = pair_a.second->GetRenderer();
+		Rendering::IRenderer* b_renderer = pair_b.second->GetRenderer();
 
 		assert(a_renderer != nullptr);
 		assert(b_renderer != nullptr);
@@ -67,13 +72,13 @@ namespace Engine
 		if (is_a_ui && is_b_ui)
 		{
 			// Introduce positive offset (TODO: is this necessary?)
-			const float a_z = a.second->Position().z + positive_offset;
-			const float b_z = b.second->Position().z + positive_offset;
+			const float a_z = pair_a.second->Position().z + positive_offset;
+			const float b_z = pair_b.second->Position().z + positive_offset;
 
 			return a_z < b_z;
 		}
 
-		return std::less<std::pair<std::string, Object*>>{}(a, b);
+		return std::less<std::pair<std::string, Object*>>{}(pair_a, pair_b);
 	}
 
 	void Scene::InternalSort(
@@ -97,11 +102,6 @@ namespace Engine
 		{
 			objects.push_back(iter);
 		}
-	}
-
-	void Scene::TriggerResort()
-	{
-		Scene::InternalSort(this->objects, this->objects_sorted);
 	}
 
 	void Scene::AddTemplatedObject(std::string name, std::string template_name)
@@ -139,7 +139,8 @@ namespace Engine
 
 			for (auto& supply : object_template.supply_list)
 			{
-				ModuleMessage supply_message = {ModuleMessageType::RENDERER_SUPPLY, supply};
+				ModuleMessage supply_message =
+					{ModuleMessageTarget::RENDERER, ModuleMessageType::RENDERER_SUPPLY, supply};
 				with_renderer->Communicate(supply_message);
 				// with_renderer->SupplyData(supply);
 			}
@@ -158,7 +159,7 @@ namespace Engine
 
 	void Scene::AddObject(std::string name, Object* ptr)
 	{
-		this->logger->SimpleLog(Logging::LogLevel::Info, LOGPFX_CURRENT "Adding object \"%s\"", name.c_str());
+		// this->logger->SimpleLog(Logging::LogLevel::Debug2, LOGPFX_CURRENT "Adding object \"%s\"", name.c_str());
 		if (ptr != nullptr)
 		{
 			Rendering::GLFWwindowData data = this->owner_engine->GetRenderingEngine()->GetWindow();
@@ -166,20 +167,12 @@ namespace Engine
 			ptr->UpdateHeldLogger(this->logger);
 			this->objects.emplace(name, ptr);
 		}
+		else
+		{
+			throw std::runtime_error("Cannot add object'" + name + "', it is nullptr!");
+		}
 
-		try
-		{
-			Scene::InternalSort(this->objects, this->objects_sorted);
-		}
-		catch (std::exception& e)
-		{
-			this->logger->SimpleLog(
-				Logging::LogLevel::Info,
-				LOGPFX_CURRENT "Exception sorting objects! e.what(): %s",
-				e.what()
-			);
-			throw;
-		}
+		this->was_scene_modified = true;
 	}
 
 	Object* Scene::FindObject(std::string name)
@@ -192,34 +185,22 @@ namespace Engine
 		return nullptr;
 	}
 
-	size_t Scene::RemoveObject(std::string name)
+	void Scene::RemoveObject(std::string name)
 	{
 		Object* object = this->FindObject(name);
 
 		if (object != nullptr)
 		{
-			this->logger->SimpleLog(Logging::LogLevel::Info, LOGPFX_CURRENT "Removing object '%s'", name.c_str());
+			// this->logger->SimpleLog(Logging::LogLevel::Debug2, LOGPFX_CURRENT "Removing object '%s'", name.c_str());
+			this->objects.erase(name);
 			delete object;
 		}
-
-		size_t return_val = this->objects.erase(name);
-
-		// TODO: Bad performance? a resort should be done after all removals
-		try
+		else
 		{
-			Scene::InternalSort(this->objects, this->objects_sorted);
-		}
-		catch (std::exception& e)
-		{
-			this->logger->SimpleLog(
-				Logging::LogLevel::Info,
-				LOGPFX_CURRENT "Exception sorting objects! e.what(): %s",
-				e.what()
-			);
-			throw;
+			throw std::runtime_error("Cannot add object'" + name + "', object is nullptr!");
 		}
 
-		return return_val;
+		this->was_scene_modified = true;
 	}
 
 	void Scene::LoadTemplatedObject(std::string name, ObjectTemplate object)

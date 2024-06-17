@@ -6,7 +6,6 @@
 #include "Logging/Logging.hpp"
 
 #include "EventHandling.hpp"
-#include "PlatformSemantics.hpp"
 #include "SceneManager.hpp"
 
 #include <cstdint>
@@ -40,7 +39,7 @@ namespace Engine
 		{
 			unsigned int size_x = 0;
 			unsigned int size_y = 0;
-			std::string title = "I am a title!";
+			std::string title	= "I am a title!";
 		} window;
 
 		struct
@@ -74,7 +73,7 @@ namespace Engine
 		// Engine parts
 		std::shared_ptr<Logging::Logger> logger;
 		std::shared_ptr<AssetManager> asset_manager;
-		Scripting::LuaScriptExecutor* script_executor = nullptr;
+		Scripting::LuaScriptExecutor* script_executor	   = nullptr;
 		Rendering::VulkanRenderingEngine* rendering_engine = nullptr;
 		std::shared_ptr<Rendering::Factories::VulkanImageFactory> vulkan_image_factory;
 
@@ -91,7 +90,7 @@ namespace Engine
 		static void CursorEnterLeaveCallback(GLFWwindow* window, int entered);
 		static void OnKeyEventCallback(GLFWwindow* window, int key, int scancode, int action, int mods);
 
-		void HandleInput(const double deltaTime) noexcept;
+		void HandleInput(double deltaTime) noexcept;
 
 		void EngineLoop();
 
@@ -100,23 +99,23 @@ namespace Engine
 	public:
 		std::shared_ptr<SceneManager> scene_manager;
 
-		CMEP_EXPORT Engine(std::shared_ptr<Logging::Logger> logger) noexcept;
-		CMEP_EXPORT ~Engine() noexcept;
+		Engine(std::shared_ptr<Logging::Logger> logger) noexcept;
+		~Engine() noexcept;
 
-		CMEP_EXPORT void SetFramerateTarget(unsigned framerate) noexcept;
+		void SetFramerateTarget(unsigned framerate) noexcept;
 
-		CMEP_EXPORT void Init();
-		CMEP_EXPORT void Run();
+		void Init();
+		void Run();
 
-		CMEP_EXPORT void ConfigFile(std::string path);
+		void ConfigFile(std::string path);
 		// CMEP_EXPORT void RegisterEventHandler(EventHandling::EventType event_type,
 		// std::function<int(EventHandling::Event&)> function);
 
-		CMEP_EXPORT void Stop();
+		void Stop();
 
-		CMEP_EXPORT int FireEvent(EventHandling::Event& event);
+		int FireEvent(EventHandling::Event& event);
 
-		CMEP_EXPORT double GetLastDeltaTime();
+		[[nodiscard]] double GetLastDeltaTime() const;
 
 		inline std::weak_ptr<AssetManager> GetAssetManager() noexcept
 		{
@@ -126,7 +125,7 @@ namespace Engine
 		{
 			return this->rendering_engine;
 		}
-		inline std::weak_ptr<SceneManager> GetSceneManager() noexcept
+		inline std::weak_ptr<SceneManager> GetSceneManager() const noexcept
 		{
 			return std::weak_ptr<SceneManager>(this->scene_manager);
 		}

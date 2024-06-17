@@ -6,7 +6,6 @@
 #include "Object.hpp"
 #include "Scene.hpp"
 #include "SceneLoader.hpp"
-#include "nlohmann/json.hpp"
 
 #include <memory>
 #include <unordered_map>
@@ -24,7 +23,7 @@ namespace Engine
 
 		glm::vec3 light_position{};
 
-		void CameraUpdated();
+		void OnCameraUpdated();
 
 		std::unique_ptr<SceneLoader> scene_loader;
 
@@ -37,12 +36,10 @@ namespace Engine
 		void SetScene(std::string scene_name);
 		std::shared_ptr<Scene> GetSceneCurrent();
 
-		// const std::unordered_map<std::string, Object*>* GetAllObjects() noexcept;
-
 		// TODO: Remove Scene functions from here
 		void AddObject(std::string name, Object* ptr);
 		Object* FindObject(std::string name);
-		size_t RemoveObject(std::string name) noexcept;
+		void RemoveObject(std::string name) noexcept;
 		void AddTemplatedObject(std::string name, std::string template_name);
 
 		glm::vec3 GetLightTransform();

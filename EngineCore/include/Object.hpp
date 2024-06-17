@@ -15,7 +15,6 @@ namespace Engine
 		Rendering::Transform parent_transform;
 		Rendering::ScreenSize screen;
 
-		// std::weak_ptr<Object> parent;
 		Object* parent;
 
 		std::vector<Object*> children;
@@ -33,9 +32,9 @@ namespace Engine
 
 		void ScreenSizeInform(unsigned int with_screenx, unsigned int with_screeny) noexcept;
 
-		void Translate(const glm::vec3 with_pos) noexcept;
-		void Scale(const glm::vec3 with_size) noexcept;
-		void Rotate(const glm::vec3 with_rotation) noexcept;
+		void Translate(glm::vec3 with_pos) noexcept;
+		void Scale(glm::vec3 with_size) noexcept;
+		void Rotate(glm::vec3 with_rotation) noexcept;
 
 		void UpdateRenderer() noexcept;
 
@@ -45,9 +44,9 @@ namespace Engine
 
 		int Render(VkCommandBuffer commandBuffer, uint32_t currentFrame);
 
-		glm::vec3 Position() const noexcept;
-		glm::vec3 Size() const noexcept;
-		glm::vec3 Rotation() const noexcept;
+		[[nodiscard]] glm::vec3 Position() const noexcept;
+		[[nodiscard]] glm::vec3 Size() const noexcept;
+		[[nodiscard]] glm::vec3 Rotation() const noexcept;
 
 		void SetParentPositionRotationSize(Rendering::Transform with_parent_transform);
 

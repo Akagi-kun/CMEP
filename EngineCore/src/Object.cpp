@@ -23,6 +23,7 @@ namespace Engine
 		if (this->renderer != nullptr)
 		{
 			ModuleMessage message = {
+				ModuleMessageTarget::RENDERER,
 				ModuleMessageType::RENDERER_TRANSFORMS,
 				Rendering::RendererTransformUpdate{this->transform, this->parent_transform, this->screen}
 			};
@@ -48,9 +49,9 @@ namespace Engine
 		this->UpdateRenderer();
 	}
 
-	void Object::Translate(const glm::vec3 new_pos) noexcept
+	void Object::Translate(const glm::vec3 with_pos) noexcept
 	{
-		this->transform.pos = new_pos;
+		this->transform.pos = with_pos;
 		this->UpdateRenderer();
 
 		for (auto& child : this->children)
@@ -60,9 +61,9 @@ namespace Engine
 		}
 	}
 
-	void Object::Scale(const glm::vec3 new_size) noexcept
+	void Object::Scale(const glm::vec3 with_size) noexcept
 	{
-		this->transform.size = new_size;
+		this->transform.size = with_size;
 		this->UpdateRenderer();
 
 		for (auto& child : this->children)
@@ -72,9 +73,9 @@ namespace Engine
 		}
 	}
 
-	void Object::Rotate(const glm::vec3 new_rotation) noexcept
+	void Object::Rotate(const glm::vec3 with_rotation) noexcept
 	{
-		this->transform.rotation = new_rotation;
+		this->transform.rotation = with_rotation;
 
 		this->UpdateRenderer();
 
@@ -139,8 +140,8 @@ namespace Engine
 		this->children.clear();
 	}
 
-	void Object::SetParent(Object* object)
+	void Object::SetParent(Object* with_parent)
 	{
-		this->parent = object;
+		this->parent = with_parent;
 	}
 } // namespace Engine

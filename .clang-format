@@ -17,6 +17,7 @@ AlignConsecutiveMacros: true
 PointerAlignment: Left
 AlignConsecutiveAssignments:
   Enabled: true
+  AcrossComments: true
 # Breaks
 BraceWrapping:
   AfterEnum: true

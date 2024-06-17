@@ -4,7 +4,7 @@
 #include "Assets/Texture.hpp"
 #include "Rendering/MeshRenderer.hpp"
 #include "Rendering/TextRenderer.hpp"
-#include "Rendering/Transform.hpp"
+// #include "Rendering/Transform.hpp"
 
 #include "Scripting/API/LuaFactories.hpp"
 #include "Scripting/lualib/lua.h"
@@ -56,11 +56,12 @@ namespace Engine::Scripting::Mappings
 			assert(lua_gettop(state) == 2);
 
 			lua_getfield(state, 1, "_pointer");
-			Rendering::IRenderer* renderer = *(Rendering::IRenderer**)lua_touserdata(state, -1);
+			Rendering::IRenderer* renderer = *static_cast<Rendering::IRenderer**>(lua_touserdata(state, -1));
 
 			const char* text = lua_tostring(state, 2);
 
 			ModuleMessage text_supply_message = {
+				ModuleMessageTarget::RENDERER,
 				ModuleMessageType::RENDERER_SUPPLY,
 				Rendering::RendererSupplyData{Rendering::RendererSupplyDataType::TEXT, text}
 			};
@@ -87,6 +88,7 @@ namespace Engine::Scripting::Mappings
 			);
 
 			ModuleMessage texture_supply_message = {
+				ModuleMessageTarget::RENDERER,
 				ModuleMessageType::RENDERER_SUPPLY,
 				Rendering::RendererSupplyData{Rendering::RendererSupplyDataType::TEXTURE, texture}
 			};
@@ -105,13 +107,15 @@ namespace Engine::Scripting::Mappings
 			assert(lua_gettop(state) == 8);
 
 			lua_getfield(state, 1, "_smart_ptr");
-			std::weak_ptr<SceneManager> scene_manager = *(std::weak_ptr<SceneManager>*)lua_touserdata(state, -1);
+			std::weak_ptr<SceneManager> scene_manager = *static_cast<std::weak_ptr<SceneManager>*>(
+				lua_touserdata(state, -1)
+			);
 
-			double x	 = lua_tonumber(state, 2);
-			double y	 = lua_tonumber(state, 3);
-			double z	 = lua_tonumber(state, 4);
-			double sizex = lua_tonumber(state, 5);
-			double sizey = lua_tonumber(state, 6);
+			double position_x = lua_tonumber(state, 2);
+			double position_y = lua_tonumber(state, 3);
+			double position_z = lua_tonumber(state, 4);
+			double size_x	  = lua_tonumber(state, 5);
+			double size_y	  = lua_tonumber(state, 6);
 
 			lua_getfield(state, 7, "_pointer");
 			AssetManager* ptr_am	= *static_cast<AssetManager**>(lua_touserdata(state, -1));
@@ -119,11 +123,11 @@ namespace Engine::Scripting::Mappings
 
 			Object* obj = ObjectFactory::CreateSpriteObject(
 				scene_manager,
-				x,
-				y,
-				z,
-				sizex,
-				sizey,
+				position_x,
+				position_y,
+				position_z,
+				size_x,
+				size_y,
 				ptr_am->GetTexture(sprite_name)
 			);
 
@@ -141,10 +145,10 @@ namespace Engine::Scripting::Mappings
 						Logging::LogLevel::Warning,
 						"Lua: Object creation failed, ObjectFactory::CreateSpriteObject returned nullptr! Params: %f "
 						"%f %f %f",
-						x,
-						y,
-						sizex,
-						sizey
+						position_x,
+						position_y,
+						size_x,
+						size_y
 					);
 				}
 
@@ -163,10 +167,10 @@ namespace Engine::Scripting::Mappings
 				lua_touserdata(state, -1)
 			);
 
-			double x = lua_tonumber(state, 2);
-			double y = lua_tonumber(state, 3);
-			double z = lua_tonumber(state, 4);
-			int size = static_cast<int>(lua_tointeger(state, 5));
+			double position_x = lua_tonumber(state, 2);
+			double position_y = lua_tonumber(state, 3);
+			double position_z = lua_tonumber(state, 4);
+			int size		  = static_cast<int>(lua_tointeger(state, 5));
 
 			std::string text = lua_tostring(state, 6);
 
@@ -178,7 +182,15 @@ namespace Engine::Scripting::Mappings
 			Object* obj = nullptr;
 			if (auto locked_font = font.lock())
 			{
-				obj = ObjectFactory::CreateTextObject(scene_manager, x, y, z, size, text, locked_font);
+				obj = ObjectFactory::CreateTextObject(
+					scene_manager,
+					position_x,
+					position_y,
+					position_z,
+					size,
+					text,
+					locked_font
+				);
 			}
 
 			if (obj != nullptr)
@@ -195,8 +207,8 @@ namespace Engine::Scripting::Mappings
 						Logging::LogLevel::Warning,
 						"Lua: Object creation failed, ObjectFactory::CreateTextObject returned nullptr! Params: %f %f "
 						"%u '%s'",
-						x,
-						y,
+						position_x,
+						position_y,
 						size,
 						text.c_str()
 					);
@@ -213,23 +225,36 @@ namespace Engine::Scripting::Mappings
 			assert(lua_gettop(state) == 11);
 
 			lua_getfield(state, 1, "_smart_ptr");
-			std::weak_ptr<SceneManager> scene_manager = *(std::weak_ptr<SceneManager>*)lua_touserdata(state, -1);
+			std::weak_ptr<SceneManager> scene_manager = *static_cast<std::weak_ptr<SceneManager>*>(
+				lua_touserdata(state, -1)
+			);
 
-			double x	 = lua_tonumber(state, 2);
-			double y	 = lua_tonumber(state, 3);
-			double z	 = lua_tonumber(state, 4);
-			double xsize = lua_tonumber(state, 5);
-			double ysize = lua_tonumber(state, 6);
-			double zsize = lua_tonumber(state, 7);
-			double xrot	 = lua_tonumber(state, 8);
-			double yrot	 = lua_tonumber(state, 9);
-			double zrot	 = lua_tonumber(state, 10);
+			double position_x = lua_tonumber(state, 2);
+			double position_y = lua_tonumber(state, 3);
+			double position_z = lua_tonumber(state, 4);
+			double size_x	  = lua_tonumber(state, 5);
+			double size_y	  = lua_tonumber(state, 6);
+			double size_z	  = lua_tonumber(state, 7);
+			double rotation_x = lua_tonumber(state, 8);
+			double rotation_y = lua_tonumber(state, 9);
+			double rotation_z = lua_tonumber(state, 10);
 
 			std::shared_ptr<Rendering::Mesh> mesh = std::make_shared<Rendering::Mesh>();
 			mesh->CreateMeshFromObj(std::string(lua_tostring(state, 11)));
 
-			Object* obj = ObjectFactory::
-				CreateGeneric3DObject(scene_manager, x, y, z, xsize, ysize, zsize, xrot, yrot, zrot, mesh);
+			Object* obj = ObjectFactory::CreateGeneric3DObject(
+				scene_manager,
+				position_x,
+				position_y,
+				position_z,
+				size_x,
+				size_y,
+				size_z,
+				rotation_x,
+				rotation_y,
+				rotation_z,
+				mesh
+			);
 
 			if (obj != nullptr)
 			{

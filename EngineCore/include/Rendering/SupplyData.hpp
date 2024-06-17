@@ -2,7 +2,6 @@
 
 #include "Rendering/Transform.hpp"
 
-#include <cstdint>
 #include <memory>
 #include <string>
 
@@ -39,7 +38,8 @@ namespace Engine::Rendering
 		std::shared_ptr<void> payload_ptr = nullptr;
 		std::string payload_string;
 
-		RendererSupplyData_struct() = default;
+		// RendererSupplyData_struct() = default;
+		//~RendererSupplyData_struct() = default;
 
 		RendererSupplyData_struct(RendererSupplyDataType with_type, std::shared_ptr<void> data)
 		{
@@ -53,8 +53,5 @@ namespace Engine::Rendering
 			this->payload_string = data;
 		}
 
-		~RendererSupplyData_struct()
-		{
-		}
 	} RendererSupplyData;
 } // namespace Engine::Rendering

@@ -18,8 +18,18 @@ namespace Engine
 		MAX_ENUM = 0xFF
 	};
 
+	enum class ModuleMessageTarget
+	{
+		MIN_ENUM = 0x00,
+
+		RENDERER = 5,
+
+		MAX_ENUM = 0xFF
+	};
+
 	struct ModuleMessage
 	{
+		ModuleMessageTarget target;
 		ModuleMessageType type;
 		std::variant<Rendering::RendererSupplyData, Rendering::RendererTransformUpdate> payload;
 	};

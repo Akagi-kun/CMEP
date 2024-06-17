@@ -26,21 +26,21 @@
 namespace Engine
 {
 	// TODO: Does this have to be global?
-	bool engine_is_window_in_focus = false;
+	bool engine_is_window_in_focus	 = false;
 	bool engine_is_window_in_content = false;
-	double engine_mouse_x_pos = 0.0;
-	double engine_mouse_y_pos = 0.0;
+	double engine_mouse_x_pos		 = 0.0;
+	double engine_mouse_y_pos		 = 0.0;
 
 	// Utility sleep function
 	void Engine::SpinSleep(double seconds)
 	{
 		static const double nano_to_sec = 1e9;
-		static const double spin_init = 5e-3;
+		static const double spin_init	= 5e-3;
 
 		static double estimate = spin_init;
-		static double mean = spin_init;
-		static double m2 = 0;
-		static int64_t count = 1;
+		static double mean	   = spin_init;
+		static double m2	   = 0;
+		static int64_t count   = 1;
 
 		while (seconds > estimate)
 		{
@@ -56,7 +56,7 @@ namespace Engine
 			mean += delta / static_cast<double>(count);
 			m2 += delta * (observed - mean);
 			const double stddev = sqrt(m2 / static_cast<double>(count - 1));
-			estimate = mean + stddev;
+			estimate			= mean + stddev;
 		}
 
 		// spin lock
@@ -78,10 +78,10 @@ namespace Engine
 			if ((engine_mouse_x_pos - last_x) != 0.0 || (engine_mouse_y_pos - last_y) != 0.0)
 			{
 				EventHandling::Event event = EventHandling::Event(EventHandling::EventType::ON_MOUSEMOVED);
-				event.mouse.x = engine_mouse_x_pos - last_x;
-				event.mouse.y = engine_mouse_y_pos - last_y;
-				event.delta_time = deltaTime;
-				event.raised_from = this;
+				event.mouse.x			   = engine_mouse_x_pos - last_x;
+				event.mouse.y			   = engine_mouse_y_pos - last_y;
+				event.delta_time		   = deltaTime;
+				event.raised_from		   = this;
 				this->FireEvent(event);
 
 				last_x = engine_mouse_x_pos;
@@ -112,7 +112,7 @@ namespace Engine
 			exit(1);
 		}
 
-		this->config->window.title = data["window"]["title"].get<std::string>();
+		this->config->window.title	= data["window"]["title"].get<std::string>();
 		this->config->window.size_x = data["window"]["sizeX"].get<uint16_t>();
 		this->config->window.size_y = data["window"]["sizeY"].get<uint16_t>();
 
@@ -181,18 +181,18 @@ namespace Engine
 		{
 			auto* renderer = static_cast<Rendering::VulkanRenderingEngine*>(glfwGetWindowUserPointer(window));
 			EventHandling::Event event = EventHandling::Event(EventHandling::EventType::ON_KEYDOWN);
-			event.keycode = static_cast<uint16_t>(key);
-			event.delta_time = renderer->GetOwnerEngine()->GetLastDeltaTime();
-			event.raised_from = renderer->GetOwnerEngine();
+			event.keycode			   = static_cast<uint16_t>(key);
+			event.delta_time		   = renderer->GetOwnerEngine()->GetLastDeltaTime();
+			event.raised_from		   = renderer->GetOwnerEngine();
 			renderer->GetOwnerEngine()->FireEvent(event);
 		}
 		else if (action == GLFW_RELEASE)
 		{
 			auto* renderer = static_cast<Rendering::VulkanRenderingEngine*>(glfwGetWindowUserPointer(window));
 			EventHandling::Event event = EventHandling::Event(EventHandling::EventType::ON_KEYUP);
-			event.keycode = static_cast<uint16_t>(key);
-			event.delta_time = renderer->GetOwnerEngine()->GetLastDeltaTime();
-			event.raised_from = renderer->GetOwnerEngine();
+			event.keycode			   = static_cast<uint16_t>(key);
+			event.delta_time		   = renderer->GetOwnerEngine()->GetLastDeltaTime();
+			event.raised_from		   = renderer->GetOwnerEngine();
 			renderer->GetOwnerEngine()->FireEvent(event);
 		}
 	}
@@ -234,7 +234,7 @@ namespace Engine
 		object->ScreenSizeInform(this->config->window.size_x, this->config->window.size_y);
 
 		Rendering::IRenderer* with_renderer = new Rendering::AxisRenderer(this);
-		with_renderer->scene_manager = this->scene_manager;
+		with_renderer->scene_manager		= this->scene_manager;
 
 		auto* old_renderer = object->AssignRenderer(with_renderer);
 		assert(old_renderer == nullptr);
@@ -242,7 +242,7 @@ namespace Engine
 
 		// Pre-make ON_UPDATE event so we don't have to create it over and over again in hot loop
 		EventHandling::Event premade_on_update_event = EventHandling::Event(EventHandling::EventType::ON_UPDATE);
-		premade_on_update_event.raised_from = this;
+		premade_on_update_event.raised_from			 = this;
 
 		glfwShowWindow(this->rendering_engine->GetWindow().window);
 
@@ -251,7 +251,7 @@ namespace Engine
 		// hot loop
 		while (glfwWindowShouldClose(this->rendering_engine->GetWindow().window) == 0)
 		{
-			const auto next_clock = std::chrono::steady_clock::now();
+			const auto next_clock	= std::chrono::steady_clock::now();
 			const double delta_time = static_cast<double>((next_clock - prev_clock).count()) / 1.e9;
 			// if (counter == this->framerateTarget)
 			//{
@@ -259,7 +259,7 @@ namespace Engine
 			//	// printf("current frame time: %.2lf ms (%.1lf fps)\n", deltaTime * 1e3, (1 / (deltaTime)));
 			//	counter = 0;
 			// }
-			this->last_delta_time = delta_time;
+			this->last_delta_time	= delta_time;
 
 			// Update deltaTime of premade ON_UPDATE event and fire it
 			premade_on_update_event.delta_time = delta_time;
@@ -274,9 +274,9 @@ namespace Engine
 			// Sync with glfw event loop
 			glfwPollEvents();
 
-			const auto frame_clock = std::chrono::steady_clock::now();
+			const auto frame_clock				= std::chrono::steady_clock::now();
 			const double framerate2second_ratio = 1.0 / this->framerate_target;
-			const double sleep_secs = framerate2second_ratio -
+			const double sleep_secs				= framerate2second_ratio -
 									  static_cast<double>((frame_clock - next_clock).count()) / 1.e9;
 			// spin sleep if sleep necessary and VSYNC disabled
 			if (sleep_secs > 0 && this->framerate_target != 0)
@@ -302,18 +302,21 @@ namespace Engine
 		//	sum += handler->second(event);
 		//}
 
-		auto current_scene = this->scene_manager->GetSceneCurrent();
+		auto current_scene	   = this->scene_manager->GetSceneCurrent();
 		auto lua_handler_range = current_scene->lua_event_handlers.equal_range(event.event_type);
 		for (auto handler = lua_handler_range.first; handler != lua_handler_range.second; ++handler)
 		{
 			sum += this->script_executor->CallIntoScript(
-				Scripting::ExecuteType::EventHandler, handler->second.first, handler->second.second, &event
+				Scripting::ExecuteType::EventHandler,
+				handler->second.first,
+				handler->second.second,
+				&event
 			);
 		}
 		return sum;
 	}
 
-	double Engine::GetLastDeltaTime()
+	double Engine::GetLastDeltaTime() const
 	{
 		return this->last_delta_time;
 	}
@@ -362,7 +365,9 @@ namespace Engine
 		catch (std::exception e)
 		{
 			this->logger->SimpleLog(
-				Logging::LogLevel::Exception, LOGPFX_CURRENT "Exception parsing config! e.what(): %s", e.what()
+				Logging::LogLevel::Exception,
+				LOGPFX_CURRENT "Exception parsing config! e.what(): %s",
+				e.what()
 			);
 			throw;
 		}
@@ -397,12 +402,12 @@ namespace Engine
 		auto start = std::chrono::steady_clock::now();
 
 		// Initialize rendering engine
-		this->rendering_engine->Init(
-			this->config->window.size_x, this->config->window.size_y, this->config->window.title
-		);
+		this->rendering_engine
+			->Init(this->config->window.size_x, this->config->window.size_y, this->config->window.title);
 
 		this->vulkan_image_factory = std::make_shared<Rendering::Factories::VulkanImageFactory>(
-			this->rendering_engine->GetVMAAllocator(), this->rendering_engine
+			this->rendering_engine->GetVMAAllocator(),
+			this->rendering_engine
 		);
 
 		// Prepare rendering engine to run (framebuffers etc.)
@@ -424,8 +429,8 @@ namespace Engine
 
 		// Fire ON_INIT event
 		EventHandling::Event on_init_event = EventHandling::Event(EventHandling::EventType::ON_INIT);
-		on_init_event.raised_from = this;
-		int on_init_event_ret = this->FireEvent(on_init_event);
+		on_init_event.raised_from		   = this;
+		int on_init_event_ret			   = this->FireEvent(on_init_event);
 
 		// Measure and log ON_INIT time
 		static const double nano_to_ms = 1e6;

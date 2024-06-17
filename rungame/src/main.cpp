@@ -14,7 +14,7 @@
 static void InitConsoleWin32()
 {
 	HANDLE my_console = GetStdHandle(STD_OUTPUT_HANDLE);
-	DWORD dw_mode = 0;
+	DWORD dw_mode	  = 0;
 	GetConsoleMode(my_console, &dw_mode);
 	dw_mode |= ENABLE_VIRTUAL_TERMINAL_PROCESSING;
 	SetConsoleMode(my_console, dw_mode);
@@ -40,7 +40,7 @@ static void RunEngine(bool verbose)
 	FILE* logfile = fopen("latest.log", "w");
 
 	my_logger->AddOutputHandle(loglevel, stdout, true);
-	my_logger->AddOutputHandle(loglevel, logfile, false);
+	my_logger->AddOutputHandle(Logging::LogLevel::Debug3, logfile, false);
 
 	my_logger->SimpleLog(Logging::LogLevel::Info, "Logger initialized");
 

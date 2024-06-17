@@ -16,9 +16,9 @@ namespace Engine
 	SceneManager::SceneManager(std::shared_ptr<Logging::Logger> with_logger)
 	{
 		// Reset transform and rotation
-		this->camera_transform = glm::vec3(0.0, 0.0, 0.0);
+		this->camera_transform	 = glm::vec3(0.0, 0.0, 0.0);
 		this->camera_hv_rotation = glm::vec2(0.0, 0.0);
-		this->logger = with_logger;
+		this->logger			 = with_logger;
 
 		std::shared_ptr<Scene> default_scene = std::make_shared<Scene>();
 		default_scene->UpdateHeldLogger(this->logger);
@@ -42,9 +42,9 @@ namespace Engine
 		this->scene_loader.reset();
 	}
 
-	void SceneManager::CameraUpdated()
+	void SceneManager::OnCameraUpdated()
 	{
-		for (auto& [name, ptr] : *(this->scenes.at(this->current_scene)->GetAllObjects()))
+		for (const auto& [name, ptr] : *(this->scenes.at(this->current_scene)->GetAllObjects()))
 		{
 			Rendering::IRenderer* object_renderer = ptr->GetRenderer();
 			assert(object_renderer != nullptr);
@@ -73,12 +73,7 @@ namespace Engine
 	{
 		return this->scenes.at(this->current_scene);
 	}
-	/*
-		const std::unordered_map<std::string, std::shared_ptr<Object>>* SceneManager::GetAllObjects() noexcept
-		{
-			return this->scenes.at(this->current_scene)->GetAllObjects();
-		}
-	*/
+
 	void SceneManager::AddObject(std::string name, Object* ptr)
 	{
 		this->scenes.at(this->current_scene)->UpdateOwnerEngine(this->owner_engine);
@@ -90,9 +85,9 @@ namespace Engine
 		return this->scenes.at(this->current_scene)->FindObject(name);
 	}
 
-	size_t SceneManager::RemoveObject(std::string name) noexcept
+	void SceneManager::RemoveObject(std::string name) noexcept
 	{
-		return this->scenes.at(this->current_scene)->RemoveObject(name);
+		this->scenes.at(this->current_scene)->RemoveObject(name);
 	}
 
 	void SceneManager::AddTemplatedObject(std::string name, std::string template_name)
@@ -128,11 +123,14 @@ namespace Engine
 			sin(this->camera_hv_rotation.x) * cos(this->camera_hv_rotation.y)
 		);
 
-		glm::vec3 front = glm::normalize(direction);
-		glm::vec3 right = glm::normalize(glm::cross(direction, glm::vec3(0, 1, 0)));
-		glm::vec3 up = glm::normalize(glm::cross(right, front));
+		// Points forward
+		glm::vec3 dir_forward = glm::normalize(direction);
+		// Points to the right
+		glm::vec3 dir_right	  = glm::normalize(glm::cross(direction, glm::vec3(0, 1, 0)));
+		// Points up
+		glm::vec3 dir_up	  = glm::normalize(glm::cross(dir_right, dir_forward));
 
-		glm::mat4 view_matrix = glm::lookAt(this->camera_transform, this->camera_transform + front, up);
+		glm::mat4 view_matrix = glm::lookAt(this->camera_transform, this->camera_transform + dir_forward, dir_up);
 
 		return view_matrix;
 	}
@@ -140,24 +138,27 @@ namespace Engine
 	void SceneManager::SetCameraTransform(glm::vec3 transform)
 	{
 		this->camera_transform = transform;
-		this->CameraUpdated();
+		this->OnCameraUpdated();
 	}
 
 	void SceneManager::SetCameraHVRotation(glm::vec2 hvrotation)
 	{
+		// TODO: check limit correctness
 		static constexpr float rotation_y_limit = 1.7f;
 		static constexpr float rotation_x_limit = 4.5f;
 
+		// Limit rotation on Y
 		if (hvrotation.y < rotation_y_limit)
 		{
 			hvrotation.y = rotation_y_limit;
 		}
-		else if (hvrotation.y > rotation_x_limit)
+		// Limit rotation on X
+		if (hvrotation.x > rotation_x_limit)
 		{
-			hvrotation.y = rotation_x_limit;
+			hvrotation.x = rotation_x_limit;
 		}
 
 		this->camera_hv_rotation = hvrotation;
-		this->CameraUpdated();
+		this->OnCameraUpdated();
 	}
 } // namespace Engine
