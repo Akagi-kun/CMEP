@@ -13,17 +13,14 @@ set(SRC_FILES
 if(WIN32)
 	set(STATIC_LIBRARIES
 		glfw3
-		lua51
 		)
 elseif(APPLE)
 	set(STATIC_LIBRARIES
 		glfw
-		lua
 		)
 else()
 	set(STATIC_LIBRARIES
 		glfw
-		lua54
 		)
 endif()
 
