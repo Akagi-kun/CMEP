@@ -27,16 +27,16 @@ else()
 	#message("-- Will copy lua from prebuilt (Windows); Workdir is: " ${CMAKE_CURRENT_SOURCE_DIR})
 	message("-- Will compile luajit (Windows); Workdir is: " ${CMAKE_CURRENT_SOURCE_DIR})
 
-	add_custom_target(lua_build DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/../build/lua51.dll)
+	add_custom_target(lua_build DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/../build/lua51.dll ${CMAKE_CURRENT_BINARY_DIR}/../build/lua51.lib)
 
-	add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/luajit/src/lua51.dll
+	add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/luajit/src/lua51.dll ${CMAKE_CURRENT_BINARY_DIR}/luajit/src/lua51.lib
 					   COMMAND msvcbuild.bat
 					   WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/luajit/src)
 
-	add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/../build/lua51.dll
-					   DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/luajit/src/lua51.dll
+	add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/../build/lua51.dll ${CMAKE_CURRENT_BINARY_DIR}/../build/lua51.lib
+					   DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/luajit/src/lua51.dll ${CMAKE_CURRENT_BINARY_DIR}/luajit/src/lua51.lib
 					   COMMAND ${CMAKE_COMMAND} -E
-					   copy ${CMAKE_CURRENT_BINARY_DIR}/luajit/src/lua51.dll build/lua51.dll
+					   copy ${CMAKE_CURRENT_BINARY_DIR}/luajit/src/lua51.dll ${CMAKE_CURRENT_BINARY_DIR}/luajit/src/lua51.lib build
 					   WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/..)
 
 	#add_custom_command(TARGET lua_build
