@@ -10,8 +10,6 @@ set(LIBRARY_OUTPUT_PATH ${builddir} CACHE PATH "Build directory" FORCE)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_DEBUG ${builddir} CACHE PATH "Build directory" FORCE)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE ${builddir} CACHE PATH "Build directory" FORCE)
 
-set(CMEP_MACOS_PREFERRED_TARGET 10.16)
-
 add_subdirectory(external/glfw)
 
 include_directories(external/glm)
