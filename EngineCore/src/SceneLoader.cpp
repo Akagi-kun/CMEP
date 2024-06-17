@@ -9,6 +9,7 @@
 
 #include "Engine.hpp"
 #include "EventHandling.hpp"
+#include "IModule.hpp"
 
 #include <fstream>
 #include <stdexcept>
@@ -66,9 +67,8 @@ namespace Engine
 
 		file.close();
 
-		this->logger->SimpleLog(
-			Logging::LogLevel::Debug1, LOGPFX_CURRENT "Loading scene prefix is: %s", scene_path.c_str()
-		);
+		this->logger
+			->SimpleLog(Logging::LogLevel::Debug1, LOGPFX_CURRENT "Loading scene prefix is: %s", scene_path.c_str());
 
 		// Load Assets
 		this->LoadSceneAssets(data, scene_path);
@@ -94,7 +94,7 @@ namespace Engine
 			{"mesh", RendererType::MESH},
 		};
 
-		std::string renderer_type = from.get<std::string>();
+		std::string renderer_type		= from.get<std::string>();
 		const auto& found_renderer_type = renderer_type_map.find(renderer_type);
 
 		if (found_renderer_type != renderer_type_map.end())
@@ -123,8 +123,8 @@ namespace Engine
 			{
 				EventHandling::EventType event_type = EventHandling::EventType::EVENT_UNDEFINED;
 
-				std::string event_handler_type = event_handler_entry["type"].get<std::string>();
-				std::string event_handler_file = event_handler_entry["file"].get<std::string>();
+				std::string event_handler_type	   = event_handler_entry["type"].get<std::string>();
+				std::string event_handler_file	   = event_handler_entry["file"].get<std::string>();
 				std::string event_handler_function = event_handler_entry["function"].get<std::string>();
 
 				const auto& mapped_type = event_type_map.find(event_handler_type);
@@ -141,7 +141,9 @@ namespace Engine
 				else
 				{
 					this->logger->SimpleLog(
-						Logging::LogLevel::Warning, LOGPFX_CURRENT "Unknown event type '%s'", event_handler_type.c_str()
+						Logging::LogLevel::Warning,
+						LOGPFX_CURRENT "Unknown event type '%s'",
+						event_handler_type.c_str()
 					);
 					continue;
 				}
@@ -158,7 +160,8 @@ namespace Engine
 				}
 
 				scene->lua_event_handlers.emplace(
-					event_type, std::make_pair(event_handler, event_handler_entry["function"])
+					event_type,
+					std::make_pair(event_handler, event_handler_entry["function"])
 				);
 			}
 
@@ -181,13 +184,17 @@ namespace Engine
 				std::string object_name = scene_entry["name"].get<std::string>();
 
 				this->logger->SimpleLog(
-					Logging::LogLevel::Debug3, LOGPFX_CURRENT "Loading scene object '%s'", object_name.c_str()
+					Logging::LogLevel::Debug3,
+					LOGPFX_CURRENT "Loading scene object '%s'",
+					object_name.c_str()
 				);
 
 				auto& position_entry = scene_entry["position"];
-				glm::vec3 position = glm::vec3(
-					position_entry[0].get<float>(), position_entry[1].get<float>(), position_entry[2].get<float>()
-				);
+				glm::vec3 position	 = glm::vec3(
+					  position_entry[0].get<float>(),
+					  position_entry[1].get<float>(),
+					  position_entry[2].get<float>()
+				  );
 
 				if (scene_entry["pos_aspixel"].is_array())
 				{
@@ -219,9 +226,11 @@ namespace Engine
 				}
 
 				auto& scale_entry = scene_entry["scale"];
-				glm::vec3 scale = glm::vec3(
-					scale_entry[0].get<float>(), scale_entry[1].get<float>(), scale_entry[2].get<float>()
-				);
+				glm::vec3 scale	  = glm::vec3(
+					  scale_entry[0].get<float>(),
+					  scale_entry[1].get<float>(),
+					  scale_entry[2].get<float>()
+				  );
 
 				if (scene_entry["scale_aspixel"].is_array())
 				{
@@ -259,10 +268,13 @@ namespace Engine
 									supply_texture.get<std::string>()
 								);
 
-								Rendering::RendererSupplyData texture_supply(
-									Rendering::RendererSupplyDataType::TEXTURE, texture
-								);
-								with_renderer->SupplyData(texture_supply);
+								ModuleMessage texture_supply_message = {
+									ModuleMessageType::RENDERER_SUPPLY,
+									Rendering::RendererSupplyData{Rendering::RendererSupplyDataType::TEXTURE, texture}
+								};
+
+								// with_renderer->SupplyData(texture_supply);
+								with_renderer->Communicate(texture_supply_message);
 							}
 
 							with_renderer->UpdateMesh();
@@ -370,8 +382,8 @@ namespace Engine
 				// Enclose in try/catch
 				try
 				{
-					std::string asset_type = asset_entry["type"].get<std::string>();
-					std::string asset_name = asset_entry["name"].get<std::string>();
+					std::string asset_type	   = asset_entry["type"].get<std::string>();
+					std::string asset_name	   = asset_entry["name"].get<std::string>();
 					std::string asset_location = asset_entry["location"].get<std::string>();
 
 					if (asset_type == "texture")
@@ -448,11 +460,13 @@ namespace Engine
 						// this is suboptimal design and might TODO: change in the future?
 						for (auto& page_entry : asset_entry["textures"])
 						{
-							std::string page_name = page_entry["name"].get<std::string>();
+							std::string page_name	  = page_entry["name"].get<std::string>();
 							std::string page_location = page_entry["location"].get<std::string>();
 
 							locked_asset_manager->AddTexture(
-								page_name, scene_path + page_location, Rendering::Texture_InitFiletype::FILE_PNG
+								page_name,
+								scene_path + page_location,
+								Rendering::Texture_InitFiletype::FILE_PNG
 							);
 						}
 

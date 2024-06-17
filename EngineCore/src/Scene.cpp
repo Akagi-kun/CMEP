@@ -5,6 +5,7 @@
 #include "Rendering/SpriteRenderer.hpp"
 
 #include "Engine.hpp"
+#include "IModule.hpp"
 
 #include <exception>
 #include <memory>
@@ -28,7 +29,7 @@ namespace Engine
 
 		for (auto& [name, ptr] : this->objects)
 		{
-			this->logger->SimpleLog(Logging::LogLevel::Debug2, "Deleting '%s' object", name.c_str());
+			this->logger->SimpleLog(Logging::LogLevel::Debug2, LOGPFX_CURRENT "Deleting '%s' object", name.c_str());
 			delete ptr;
 		}
 
@@ -51,8 +52,6 @@ namespace Engine
 		{
 			throw std::runtime_error("Could not sort scene, object is nullptr!");
 		}
-		assert(a.second != nullptr);
-		assert(b.second != nullptr);
 
 		Rendering::IRenderer* a_renderer = a.second->GetRenderer();
 		Rendering::IRenderer* b_renderer = b.second->GetRenderer();
@@ -60,29 +59,21 @@ namespace Engine
 		assert(a_renderer != nullptr);
 		assert(b_renderer != nullptr);
 
+		static constexpr float positive_offset = 10.f;
+
 		const bool is_a_ui = a_renderer->GetIsUI();
 		const bool is_b_ui = b_renderer->GetIsUI();
 
 		if (is_a_ui && is_b_ui)
 		{
 			// Introduce positive offset (TODO: is this necessary?)
-			static const float positive_offset = 10.f;
-			float a_z = a.second->Position().z + positive_offset;
-			float b_z = b.second->Position().z + positive_offset;
+			const float a_z = a.second->Position().z + positive_offset;
+			const float b_z = b.second->Position().z + positive_offset;
 
-			if (a_z < b_z)
-			{
-				return true;
-			}
-			else
-			{
-				return false;
-			}
+			return a_z < b_z;
 		}
-		else
-		{
-			return std::less<std::pair<std::string, Object*>>{}(a, b);
-		}
+
+		return std::less<std::pair<std::string, Object*>>{}(a, b);
 	}
 
 	void Scene::InternalSort(
@@ -90,21 +81,21 @@ namespace Engine
 		std::vector<std::pair<std::string, Object*>>& objects
 	)
 	{
-		std::vector<std::pair<std::string, Object*>> a;
+		std::vector<std::pair<std::string, Object*>> copy_vector;
 
-		for (auto& it : from_map)
+		for (auto& iter : from_map)
 		{
-			assert(it.second != nullptr);
-			a.emplace_back(it);
+			assert(iter.second != nullptr);
+			copy_vector.emplace_back(iter);
 		}
 
-		std::sort(a.begin(), a.end(), InternalSortCmpFunction);
+		std::sort(copy_vector.begin(), copy_vector.end(), InternalSortCmpFunction);
 
 		objects.clear();
 
-		for (auto& it : a)
+		for (auto& iter : copy_vector)
 		{
-			objects.push_back(it);
+			objects.push_back(iter);
 		}
 	}
 
@@ -148,7 +139,9 @@ namespace Engine
 
 			for (auto& supply : object_template.supply_list)
 			{
-				with_renderer->SupplyData(supply);
+				ModuleMessage supply_message = {ModuleMessageType::RENDERER_SUPPLY, supply};
+				with_renderer->Communicate(supply_message);
+				// with_renderer->SupplyData(supply);
 			}
 
 			auto* old_renderer = object->AssignRenderer(with_renderer);
@@ -181,7 +174,9 @@ namespace Engine
 		catch (std::exception& e)
 		{
 			this->logger->SimpleLog(
-				Logging::LogLevel::Info, LOGPFX_CURRENT "Exception sorting objects! e.what(): %s", e.what()
+				Logging::LogLevel::Info,
+				LOGPFX_CURRENT "Exception sorting objects! e.what(): %s",
+				e.what()
 			);
 			throw;
 		}
@@ -201,7 +196,7 @@ namespace Engine
 	{
 		Object* object = this->FindObject(name);
 
-		if (object)
+		if (object != nullptr)
 		{
 			this->logger->SimpleLog(Logging::LogLevel::Info, LOGPFX_CURRENT "Removing object '%s'", name.c_str());
 			delete object;
@@ -217,7 +212,9 @@ namespace Engine
 		catch (std::exception& e)
 		{
 			this->logger->SimpleLog(
-				Logging::LogLevel::Info, LOGPFX_CURRENT "Exception sorting objects! e.what(): %s", e.what()
+				Logging::LogLevel::Info,
+				LOGPFX_CURRENT "Exception sorting objects! e.what(): %s",
+				e.what()
 			);
 			throw;
 		}

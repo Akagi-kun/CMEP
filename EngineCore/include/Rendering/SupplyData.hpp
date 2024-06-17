@@ -17,20 +17,20 @@ namespace Engine::Rendering
 		MIN_ENUM = 0x00,
 
 		TEXTURE = 1,
-		MESH = 2,
-		FONT = 3,
+		MESH	= 2,
+		FONT	= 3,
 
 		TEXT = 32,
 
 		MAX_ENUM = 0xFF
 	};
 
-	struct RendererTransformUpdate
+	typedef struct RendererTransformUpdate_struct
 	{
 		Transform current;
 		Transform parent;
-		uint_fast16_t screen_x, screen_y;
-	};
+		ScreenSize screen;
+	} RendererTransformUpdate;
 
 	typedef struct RendererSupplyData_struct
 	{
@@ -43,13 +43,13 @@ namespace Engine::Rendering
 
 		RendererSupplyData_struct(RendererSupplyDataType with_type, std::shared_ptr<void> data)
 		{
-			this->type = with_type;
+			this->type		  = with_type;
 			this->payload_ptr = data;
 		}
 
 		RendererSupplyData_struct(RendererSupplyDataType with_type, std::string data)
 		{
-			this->type = with_type;
+			this->type			 = with_type;
 			this->payload_string = data;
 		}
 

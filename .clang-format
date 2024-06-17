@@ -1,15 +1,23 @@
 ---
 #Language: Cpp
-PointerAlignment: Left
-#BreakBeforeBraces: Allman
+# Basics
 BasedOnStyle: Microsoft
 IndentWidth: 4
 TabWidth: 4
 UseTab: Always
+# Compact arguments
 BinPackArguments: false
+AllowAllArgumentsOnNextLine: false
+# Compact parameters
 BinPackParameters: false
 AllowAllParametersOfDeclarationOnNextLine: false
+# Alignment
 AlignAfterOpenBracket: BlockIndent
+AlignConsecutiveMacros: true
+PointerAlignment: Left
+AlignConsecutiveAssignments:
+  Enabled: true
+# Breaks
 BraceWrapping:
   AfterEnum: true
   AfterStruct: true
@@ -19,21 +27,21 @@ BraceWrapping:
   AfterCaseLabel: true
   AfterControlStatement: Always
 BreakBeforeBraces: Custom
-AllowShortIfStatementsOnASingleLine: false
-IndentCaseLabels: true
-AlignConsecutiveAssignments:
-  Enabled: true
-#ColumnLimit: 0
-AccessModifierOffset: -4
-NamespaceIndentation: All
-FixNamespaceComments: true
-BitFieldColonSpacing: Both
 PenaltyBreakAssignment: 200
 PenaltyBreakComment: 2000000
-SortIncludes: CaseSensitive
+# Indent
+IndentCaseLabels: true
+NamespaceIndentation: All
 IndentPPDirectives: AfterHash
-AlignConsecutiveMacros: true
+AccessModifierOffset: -4
+# Compact if statements
+AllowShortIfStatementsOnASingleLine: false
+# Fixes
+FixNamespaceComments: true
+BitFieldColonSpacing: Both
 InsertNewlineAtEOF: true
+# Includes
+SortIncludes: CaseSensitive
 IncludeBlocks: Regroup
 IncludeCategories:
   - Regex:           '^"(Scripting)/'

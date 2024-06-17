@@ -2,6 +2,7 @@
 
 #include "Rendering/IRenderer.hpp"
 
+#include "IModule.hpp"
 #include "InternalEngineObject.hpp"
 
 // Prefixes for logging messages
@@ -21,7 +22,11 @@ namespace Engine
 	{
 		if (this->renderer != nullptr)
 		{
-			this->renderer->UpdateTransform(this->transform, this->parent_transform, this->screen);
+			ModuleMessage message = {
+				ModuleMessageType::RENDERER_TRANSFORMS,
+				Rendering::RendererTransformUpdate{this->transform, this->parent_transform, this->screen}
+			};
+			this->renderer->Communicate(message);
 		}
 	}
 

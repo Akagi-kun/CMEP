@@ -28,13 +28,13 @@ namespace Engine::Rendering
 		SpriteRenderer(Engine* engine);
 		~SpriteRenderer() override;
 
-		void SupplyData(RendererSupplyData data) override;
+		void SupplyData(const RendererSupplyData& data) override;
 
 		void UpdateMesh() override;
 
 		void Render(VkCommandBuffer commandBuffer, uint32_t currentFrame) override;
 
-		bool GetIsUI() const override
+		[[nodiscard]] bool GetIsUI() const override
 		{
 			return true;
 		}

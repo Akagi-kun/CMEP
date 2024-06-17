@@ -20,7 +20,7 @@ namespace Engine::Rendering
 		size_t vbo_vert_count = 0;
 
 		VulkanPipeline* pipeline = nullptr;
-		VulkanBuffer* vbo = nullptr;
+		VulkanBuffer* vbo		 = nullptr;
 
 		glm::mat4 mat_m{};
 		glm::mat4 mat_v{};
@@ -37,12 +37,12 @@ namespace Engine::Rendering
 		MeshRenderer(Engine* engine);
 		~MeshRenderer() override;
 
-		void SupplyData(RendererSupplyData data) override;
+		void SupplyData(const RendererSupplyData& data) override;
 		void UpdateMesh() override;
 
 		void Render(VkCommandBuffer commandBuffer, uint32_t currentFrame) override;
 
-		bool GetIsUI() const override
+		[[nodiscard]] bool GetIsUI() const override
 		{
 			return false;
 		}

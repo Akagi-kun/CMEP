@@ -12,6 +12,7 @@
 #include "Factories/ObjectFactory.hpp"
 
 #include "Engine.hpp"
+#include "IModule.hpp"
 #include "SceneManager.hpp"
 
 // Prefixes for logging messages
@@ -59,8 +60,12 @@ namespace Engine::Scripting::Mappings
 
 			const char* text = lua_tostring(state, 2);
 
-			Rendering::RendererSupplyData text_supply(Rendering::RendererSupplyDataType::TEXT, text);
-			renderer->SupplyData(text_supply);
+			ModuleMessage text_supply_message = {
+				ModuleMessageType::RENDERER_SUPPLY,
+				Rendering::RendererSupplyData{Rendering::RendererSupplyDataType::TEXT, text}
+			};
+			renderer->Communicate(text_supply_message);
+			// renderer->SupplyData(text_supply);
 
 			return 0;
 		}
@@ -81,8 +86,12 @@ namespace Engine::Scripting::Mappings
 				lua_touserdata(state, -1)
 			);
 
-			Rendering::RendererSupplyData texture_supply(Rendering::RendererSupplyDataType::TEXTURE, texture);
-			renderer->SupplyData(texture_supply);
+			ModuleMessage texture_supply_message = {
+				ModuleMessageType::RENDERER_SUPPLY,
+				Rendering::RendererSupplyData{Rendering::RendererSupplyDataType::TEXTURE, texture}
+			};
+			renderer->Communicate(texture_supply_message);
+			// renderer->SupplyData(texture_supply);
 
 			return 0;
 		}
@@ -98,18 +107,24 @@ namespace Engine::Scripting::Mappings
 			lua_getfield(state, 1, "_smart_ptr");
 			std::weak_ptr<SceneManager> scene_manager = *(std::weak_ptr<SceneManager>*)lua_touserdata(state, -1);
 
-			double x = lua_tonumber(state, 2);
-			double y = lua_tonumber(state, 3);
-			double z = lua_tonumber(state, 4);
+			double x	 = lua_tonumber(state, 2);
+			double y	 = lua_tonumber(state, 3);
+			double z	 = lua_tonumber(state, 4);
 			double sizex = lua_tonumber(state, 5);
 			double sizey = lua_tonumber(state, 6);
 
 			lua_getfield(state, 7, "_pointer");
-			AssetManager* ptr_am = *static_cast<AssetManager**>(lua_touserdata(state, -1));
+			AssetManager* ptr_am	= *static_cast<AssetManager**>(lua_touserdata(state, -1));
 			std::string sprite_name = lua_tostring(state, 8);
 
 			Object* obj = ObjectFactory::CreateSpriteObject(
-				scene_manager, x, y, z, sizex, sizey, ptr_am->GetTexture(sprite_name)
+				scene_manager,
+				x,
+				y,
+				z,
+				sizex,
+				sizey,
+				ptr_am->GetTexture(sprite_name)
 			);
 
 			if (obj != nullptr)
@@ -200,22 +215,21 @@ namespace Engine::Scripting::Mappings
 			lua_getfield(state, 1, "_smart_ptr");
 			std::weak_ptr<SceneManager> scene_manager = *(std::weak_ptr<SceneManager>*)lua_touserdata(state, -1);
 
-			double x = lua_tonumber(state, 2);
-			double y = lua_tonumber(state, 3);
-			double z = lua_tonumber(state, 4);
+			double x	 = lua_tonumber(state, 2);
+			double y	 = lua_tonumber(state, 3);
+			double z	 = lua_tonumber(state, 4);
 			double xsize = lua_tonumber(state, 5);
 			double ysize = lua_tonumber(state, 6);
 			double zsize = lua_tonumber(state, 7);
-			double xrot = lua_tonumber(state, 8);
-			double yrot = lua_tonumber(state, 9);
-			double zrot = lua_tonumber(state, 10);
+			double xrot	 = lua_tonumber(state, 8);
+			double yrot	 = lua_tonumber(state, 9);
+			double zrot	 = lua_tonumber(state, 10);
 
 			std::shared_ptr<Rendering::Mesh> mesh = std::make_shared<Rendering::Mesh>();
 			mesh->CreateMeshFromObj(std::string(lua_tostring(state, 11)));
 
-			Object* obj = ObjectFactory::CreateGeneric3DObject(
-				scene_manager, x, y, z, xsize, ysize, zsize, xrot, yrot, zrot, mesh
-			);
+			Object* obj = ObjectFactory::
+				CreateGeneric3DObject(scene_manager, x, y, z, xsize, ysize, zsize, xrot, yrot, zrot, mesh);
 
 			if (obj != nullptr)
 			{

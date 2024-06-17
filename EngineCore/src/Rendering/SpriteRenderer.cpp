@@ -53,13 +53,13 @@ namespace Engine::Rendering
 		renderer->CleanupVulkanPipeline(this->pipeline);
 	}
 
-	void SpriteRenderer::SupplyData(RendererSupplyData data)
+	void SpriteRenderer::SupplyData(const RendererSupplyData& data)
 	{
 		switch (data.type)
 		{
 			case RendererSupplyDataType::TEXTURE:
 			{
-				this->texture = std::static_pointer_cast<Texture>(data.payload_ptr);
+				this->texture		   = std::static_pointer_cast<Texture>(data.payload_ptr);
 				this->has_updated_mesh = false;
 				return;
 			}
@@ -100,18 +100,18 @@ namespace Engine::Rendering
 			this->parent_transform.size = glm::vec3(1, 1, 1);
 		}
 
-		glm::quat model_rotation = glm::quat(glm::radians(this->transform.rotation));
+		glm::quat model_rotation  = glm::quat(glm::radians(this->transform.rotation));
 		glm::quat parent_rotation = glm::quat(glm::radians(this->parent_transform.rotation));
-		glm::mat4 model = glm::scale(
-			glm::translate(
-				glm::scale(
-					glm::translate(glm::mat4(1.0f), this->parent_transform.pos) * glm::mat4_cast(parent_rotation),
-					this->parent_transform.size
-				),
-				this->transform.pos
-			) * glm::mat4_cast(model_rotation),
-			this->transform.size
-		);
+		glm::mat4 model			  = glm::scale(
+			  glm::translate(
+				  glm::scale(
+					  glm::translate(glm::mat4(1.0f), this->parent_transform.pos) * glm::mat4_cast(parent_rotation),
+					  this->parent_transform.size
+				  ),
+				  this->transform.pos
+			  ) * glm::mat4_cast(model_rotation),
+			  this->transform.size
+		  );
 
 		this->mat_mvp = projection * model;
 
@@ -121,30 +121,30 @@ namespace Engine::Rendering
 			VkDescriptorBufferInfo buffer_info{};
 			buffer_info.buffer = pipeline->uniform_buffers[i]->buffer;
 			buffer_info.offset = 0;
-			buffer_info.range = sizeof(glm::mat4);
+			buffer_info.range  = sizeof(glm::mat4);
 
 			VkDescriptorImageInfo image_info{};
 			image_info.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-			image_info.imageView = texture_image->image->imageView;
-			image_info.sampler = texture_image->textureSampler;
+			image_info.imageView   = texture_image->image->imageView;
+			image_info.sampler	   = texture_image->textureSampler;
 
 			std::array<VkWriteDescriptorSet, 2> descriptor_writes{};
 
-			descriptor_writes[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-			descriptor_writes[0].dstSet = pipeline->vk_descriptor_sets[i];
-			descriptor_writes[0].dstBinding = 0;
+			descriptor_writes[0].sType			 = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+			descriptor_writes[0].dstSet			 = pipeline->vk_descriptor_sets[i];
+			descriptor_writes[0].dstBinding		 = 0;
 			descriptor_writes[0].dstArrayElement = 0;
-			descriptor_writes[0].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+			descriptor_writes[0].descriptorType	 = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
 			descriptor_writes[0].descriptorCount = 1;
-			descriptor_writes[0].pBufferInfo = &buffer_info;
+			descriptor_writes[0].pBufferInfo	 = &buffer_info;
 
-			descriptor_writes[1].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-			descriptor_writes[1].dstSet = pipeline->vk_descriptor_sets[i];
-			descriptor_writes[1].dstBinding = 1;
+			descriptor_writes[1].sType			 = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+			descriptor_writes[1].dstSet			 = pipeline->vk_descriptor_sets[i];
+			descriptor_writes[1].dstBinding		 = 1;
 			descriptor_writes[1].dstArrayElement = 0;
-			descriptor_writes[1].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+			descriptor_writes[1].descriptorType	 = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
 			descriptor_writes[1].descriptorCount = 1;
-			descriptor_writes[1].pImageInfo = &image_info;
+			descriptor_writes[1].pImageInfo		 = &image_info;
 
 			vkUpdateDescriptorSets(
 				renderer->GetLogicalDevice(),
@@ -175,7 +175,8 @@ namespace Engine::Rendering
 
 		memcpy(this->pipeline->uniform_buffers[currentFrame]->mappedData, &this->mat_mvp, sizeof(glm::mat4));
 		vkUnmapMemory(
-			renderer->GetLogicalDevice(), pipeline->uniform_buffers[currentFrame]->allocationInfo.deviceMemory
+			renderer->GetLogicalDevice(),
+			pipeline->uniform_buffers[currentFrame]->allocationInfo.deviceMemory
 		);
 
 		vkCmdBindDescriptorSets(
@@ -191,7 +192,7 @@ namespace Engine::Rendering
 
 		vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, this->pipeline->pipeline);
 		VkBuffer vertex_buffers[] = {this->vbo->buffer};
-		VkDeviceSize offsets[] = {0};
+		VkDeviceSize offsets[]	  = {0};
 		vkCmdBindVertexBuffers(commandBuffer, 0, 1, vertex_buffers, offsets);
 
 		vkCmdDraw(commandBuffer, 6, 1, 0, 0);

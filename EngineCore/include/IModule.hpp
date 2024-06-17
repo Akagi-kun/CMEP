@@ -12,8 +12,8 @@ namespace Engine
 	{
 		MIN_ENUM = 0x00,
 
-		RENDERER_DATA = 1,
-		RENDERER_UPDATE = 2,
+		RENDERER_SUPPLY		= 1,
+		RENDERER_TRANSFORMS = 2,
 
 		MAX_ENUM = 0xFF
 	};
@@ -21,7 +21,7 @@ namespace Engine
 	struct ModuleMessage
 	{
 		ModuleMessageType type;
-		std::variant<Rendering::RendererSupplyData> payload;
+		std::variant<Rendering::RendererSupplyData, Rendering::RendererTransformUpdate> payload;
 	};
 
 	class IModule : public InternalEngineObject

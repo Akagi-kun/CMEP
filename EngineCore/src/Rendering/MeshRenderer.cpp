@@ -32,7 +32,9 @@ namespace Engine::Rendering
 		pipeline_settings.descriptorLayoutSettings.stageFlags.push_back(VK_SHADER_STAGE_FRAGMENT_BIT);
 
 		this->pipeline = renderer->CreateVulkanPipeline(
-			pipeline_settings, "game/shaders/vulkan/meshrenderer_vert.spv", "game/shaders/vulkan/meshrenderer_frag.spv"
+			pipeline_settings,
+			"game/shaders/vulkan/meshrenderer_vert.spv",
+			"game/shaders/vulkan/meshrenderer_frag.spv"
 		);
 
 		this->mat_mvp = glm::mat4();
@@ -52,21 +54,21 @@ namespace Engine::Rendering
 		renderer->CleanupVulkanPipeline(this->pipeline);
 	}
 
-	void MeshRenderer::SupplyData(RendererSupplyData data)
+	void MeshRenderer::SupplyData(const RendererSupplyData& data)
 	{
 		switch (data.type)
 		{
 			case RendererSupplyDataType::TEXTURE:
 			{
-				this->texture = std::static_pointer_cast<Texture>(data.payload_ptr);
-				this->has_updated_mesh = false;
+				this->texture			   = std::static_pointer_cast<Texture>(data.payload_ptr);
+				this->has_updated_mesh	   = false;
 				this->has_updated_meshdata = false;
 				return;
 			}
 			case RendererSupplyDataType::MESH:
 			{
-				this->mesh = std::static_pointer_cast<Mesh>(data.payload_ptr);
-				this->has_updated_mesh = false;
+				this->mesh				   = std::static_pointer_cast<Mesh>(data.payload_ptr);
+				this->has_updated_mesh	   = false;
 				this->has_updated_meshdata = false;
 				return;
 			}
@@ -89,7 +91,10 @@ namespace Engine::Rendering
 		VulkanRenderingEngine* renderer = this->owner_engine->GetRenderingEngine();
 
 		glm::mat4 projection = glm::perspective<float>(
-			glm::radians(45.0f), static_cast<float>(this->screen.x / this->screen.y), 0.1f, 100.0f
+			glm::radians(45.0f),
+			static_cast<float>(this->screen.x / this->screen.y),
+			0.1f,
+			100.0f
 		);
 		projection[1][1] *= -1;
 
@@ -105,24 +110,24 @@ namespace Engine::Rendering
 			this->parent_transform.size = glm::vec3(1, 1, 1);
 		}
 
-		glm::quat model_rotation = glm::quat(glm::radians(this->transform.rotation));
+		glm::quat model_rotation  = glm::quat(glm::radians(this->transform.rotation));
 		glm::quat parent_rotation = glm::quat(glm::radians(this->parent_transform.rotation));
-		glm::mat4 model = glm::scale(
-			glm::translate(
-				glm::scale(
-					glm::translate(glm::mat4(1.0f), this->parent_transform.pos) * glm::mat4_cast(parent_rotation),
-					this->parent_transform.size
-				),
-				this->transform.pos
-			) * glm::mat4_cast(model_rotation),
-			this->transform.size
-		);
+		glm::mat4 model			  = glm::scale(
+			  glm::translate(
+				  glm::scale(
+					  glm::translate(glm::mat4(1.0f), this->parent_transform.pos) * glm::mat4_cast(parent_rotation),
+					  this->parent_transform.size
+				  ),
+				  this->transform.pos
+			  ) * glm::mat4_cast(model_rotation),
+			  this->transform.size
+		  );
 
-		this->mat_m = model;
-		this->mat_v = view;
-		this->mat_mv = view * model;
+		this->mat_m		 = model;
+		this->mat_v		 = view;
+		this->mat_mv	 = view * model;
 		this->mat_mv_3x3 = glm::mat3(view * model);
-		this->mat_mvp = projection * view * model;
+		this->mat_mvp	 = projection * view * model;
 
 		if (!this->has_updated_meshdata)
 		{
@@ -142,7 +147,7 @@ namespace Engine::Rendering
 			uint32_t i = 0;
 			for (glm::vec3 pos : this->mesh->mesh_vertices)
 			{
-				generated_mesh[i].pos = pos;
+				generated_mesh[i].pos	= pos;
 				generated_mesh[i].color = glm::vec3(0);
 				i++;
 			}
@@ -185,8 +190,8 @@ namespace Engine::Rendering
 						{
 							VkDescriptorImageInfo diffuse_image_buffer_info{};
 							diffuse_image_buffer_info.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-							diffuse_image_buffer_info.imageView = current_diffuse_texture_image->image->imageView;
-							diffuse_image_buffer_info.sampler = current_diffuse_texture_image->textureSampler;
+							diffuse_image_buffer_info.imageView	  = current_diffuse_texture_image->image->imageView;
+							diffuse_image_buffer_info.sampler	  = current_diffuse_texture_image->textureSampler;
 							diffuse_image_buffer_infos[diffuse_texture_index] = diffuse_image_buffer_info;
 						}
 					}
@@ -198,33 +203,35 @@ namespace Engine::Rendering
 				VkDescriptorBufferInfo uniform_buffer_info{};
 				uniform_buffer_info.buffer = pipeline->uniform_buffers[i]->buffer;
 				uniform_buffer_info.offset = 0;
-				uniform_buffer_info.range = sizeof(glm::mat4);
+				uniform_buffer_info.range  = sizeof(glm::mat4);
 
 				std::vector<VkWriteDescriptorSet> descriptor_writes{};
 				descriptor_writes.resize(1);
 
-				descriptor_writes[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-				descriptor_writes[0].dstSet = pipeline->vk_descriptor_sets[i];
-				descriptor_writes[0].dstBinding = 0;
+				descriptor_writes[0].sType			 = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+				descriptor_writes[0].dstSet			 = pipeline->vk_descriptor_sets[i];
+				descriptor_writes[0].dstBinding		 = 0;
 				descriptor_writes[0].dstArrayElement = 0;
-				descriptor_writes[0].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+				descriptor_writes[0].descriptorType	 = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
 				descriptor_writes[0].descriptorCount = 1;
-				descriptor_writes[0].pBufferInfo = &uniform_buffer_info;
+				descriptor_writes[0].pBufferInfo	 = &uniform_buffer_info;
 
 				if (diffuse_image_buffer_infos.size() > 0)
 				{
 					this->logger->SimpleLog(
-						Logging::LogLevel::Debug3, "Updating set 0x%x binding 1", pipeline->vk_descriptor_sets[i]
+						Logging::LogLevel::Debug3,
+						"Updating set 0x%x binding 1",
+						pipeline->vk_descriptor_sets[i]
 					);
 
 					descriptor_writes.resize(2);
-					descriptor_writes[1].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-					descriptor_writes[1].dstSet = pipeline->vk_descriptor_sets[i];
-					descriptor_writes[1].dstBinding = 1;
+					descriptor_writes[1].sType			 = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+					descriptor_writes[1].dstSet			 = pipeline->vk_descriptor_sets[i];
+					descriptor_writes[1].dstBinding		 = 1;
 					descriptor_writes[1].dstArrayElement = 0;
-					descriptor_writes[1].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+					descriptor_writes[1].descriptorType	 = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
 					descriptor_writes[1].descriptorCount = static_cast<uint32_t>(diffuse_image_buffer_infos.size());
-					descriptor_writes[1].pImageInfo = diffuse_image_buffer_infos.data();
+					descriptor_writes[1].pImageInfo		 = diffuse_image_buffer_infos.data();
 				}
 				this->logger->SimpleLog(
 					Logging::LogLevel::Debug3,
@@ -407,7 +414,8 @@ namespace Engine::Rendering
 
 		memcpy(this->pipeline->uniform_buffers[currentFrame]->mappedData, &this->mat_mvp, sizeof(glm::mat4));
 		vkUnmapMemory(
-			renderer->GetLogicalDevice(), pipeline->uniform_buffers[currentFrame]->allocationInfo.deviceMemory
+			renderer->GetLogicalDevice(),
+			pipeline->uniform_buffers[currentFrame]->allocationInfo.deviceMemory
 		);
 
 		vkCmdBindDescriptorSets(
@@ -423,7 +431,7 @@ namespace Engine::Rendering
 
 		vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, this->pipeline->pipeline);
 		VkBuffer vertex_buffers[] = {this->vbo->buffer};
-		VkDeviceSize offsets[] = {0};
+		VkDeviceSize offsets[]	  = {0};
 		vkCmdBindVertexBuffers(commandBuffer, 0, 1, vertex_buffers, offsets);
 
 		vkCmdDraw(commandBuffer, static_cast<uint32_t>(this->vbo_vert_count), 1, 0, 0);
