@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.5)
+cmake_minimum_required(VERSION 3.10)
 project(CMEP)
 
 message("-- Binary dir is: " ${CMAKE_CURRENT_BINARY_DIR})
@@ -11,7 +11,7 @@ if(NOT MSVC)
 
 		# Build luajit
 		add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/luajit/src/libluajit.so ${CMAKE_CURRENT_BINARY_DIR}/luajit/src/libluajit.a
-						   COMMAND make
+						   COMMAND MACOSX_DEPLOYMENT_TARGET=${CMEP_MACOS_PREFERRED_TARGET} make
 						   WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/luajit/src)
 	
 		# Copy luajit to build dir
