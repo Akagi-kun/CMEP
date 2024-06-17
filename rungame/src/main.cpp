@@ -1,7 +1,7 @@
 #include <cassert>
 #include <cstdio>
+#include <cstring>
 #include <exception>
-#include <fstream>
 #include <string>
 
 #if defined(_MSC_VER)

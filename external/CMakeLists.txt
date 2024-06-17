@@ -35,7 +35,7 @@ if(NOT MSVC)
 						   copy ${CMAKE_CURRENT_BINARY_DIR}/luajit/src/lua51.dylib ${CMAKE_CURRENT_BINARY_DIR}/luajit/src/lua51.a ${CMAKE_CURRENT_BINARY_DIR}/../build)
 
 		message("-- Will build lua for MacOS")
-		add_custom_target(lua_build COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/external/build_lua.sh macosx)
+		#add_custom_target(lua_build COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/external/build_lua.sh macosx)
 	endif()
 else()
 	message("-- Will compile luajit (Windows); Workdir is: " ${CMAKE_CURRENT_SOURCE_DIR})
