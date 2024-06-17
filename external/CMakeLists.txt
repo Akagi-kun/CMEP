@@ -23,18 +23,18 @@ if(NOT MSVC)
 	else()
 		message("-- Will build luajit for MacOS (10.14 deploy target)")
 
-		add_custom_target(lua_build DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/../build/lua51.dylib ${CMAKE_CURRENT_BINARY_DIR}/../build/lua51.a)	
+		add_custom_target(lua_build DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/../build/libluajit.so ${CMAKE_CURRENT_BINARY_DIR}/../build/libluajit.a)	
 
 		# Build luajit
-		add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/luajit/src/lua51.dylib ${CMAKE_CURRENT_BINARY_DIR}/luajit/src/lua51.a
+		add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/luajit/src/libluajit.so ${CMAKE_CURRENT_BINARY_DIR}/luajit/src/libluajit.a
 						   COMMAND MACOSX_DEPLOYMENT_TARGET=10.14 make
 						   WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/luajit/src)
 
 		# Copy luajit to build dir
-		add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/../build/lua51.dylib ${CMAKE_CURRENT_BINARY_DIR}/../build/lua51.a
-						   DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/luajit/src/lua51.dylib ${CMAKE_CURRENT_BINARY_DIR}/luajit/src/lua51.a
+		add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/../build/libluajit.so ${CMAKE_CURRENT_BINARY_DIR}/../build/libluajit.a
+						   DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/luajit/src/libluajit.so ${CMAKE_CURRENT_BINARY_DIR}/luajit/src/libluajit.a
 						   COMMAND ${CMAKE_COMMAND} -E
-						   copy ${CMAKE_CURRENT_BINARY_DIR}/luajit/src/lua51.dylib ${CMAKE_CURRENT_BINARY_DIR}/luajit/src/lua51.a ${CMAKE_CURRENT_BINARY_DIR}/../build)
+						   copy ${CMAKE_CURRENT_BINARY_DIR}/luajit/src/libluajit.so ${CMAKE_CURRENT_BINARY_DIR}/luajit/src/libluajit.a ${CMAKE_CURRENT_BINARY_DIR}/../build)
 	endif()
 else()
 	message("-- Will compile luajit (Windows); Workdir is: " ${CMAKE_CURRENT_SOURCE_DIR})

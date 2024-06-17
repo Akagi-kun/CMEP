@@ -55,7 +55,7 @@ elseif(APPLE)
 	set(STATIC_LIBRARIES
 		vulkan
 		glfw
-		lua
+		luajit
 		)
 else()
 	set(STATIC_LIBRARIES
