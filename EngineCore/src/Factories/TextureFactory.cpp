@@ -1,4 +1,4 @@
-#include <fstream>
+// #include <fstream>
 
 #pragma warning(push, 2)
 #include "lodepng.h"
@@ -46,9 +46,9 @@ namespace Engine::Factories
 		);
 
 		// Get size
-		fseek(file, 0, SEEK_END);
-		size_t filesize = ftell(file);
-		rewind(file);
+		// fseek(file, 0, SEEK_END);
+		// size_t filesize = ftell(file);
+		// rewind(file);
 
 		std::vector<unsigned char> data;
 
@@ -58,25 +58,28 @@ namespace Engine::Factories
 		{
 			case Rendering::Texture_InitFiletype::FILE_PNG:
 			{
-				unsigned int xs, ys;
-				unsigned error = lodepng::decode(data, xs, ys, path.c_str());
+				unsigned int size_x;
+				unsigned int size_y;
+				unsigned error = lodepng::decode(data, size_x, size_y, path);
+
+				assert(error == 0);
 
 				this->logger->SimpleLog(
 					Logging::LogLevel::Debug1,
 					LOGPFX_CURRENT "Decoded png file %s; width %u; height %u; filter %u",
 					path.c_str(),
-					xs,
-					ys,
+					size_x,
+					size_y,
 					filtering
 				);
 
 				fclose(file);
 
-				assert(0 < xs && xs < 0x2fff);
-				assert(0 < ys && ys < 0x2fff);
+				assert(0 < size_x && size_x < 0x2fff);
+				assert(0 < size_y && size_y < 0x2fff);
 
 				this->InitRaw(
-					texture_data, staging_buffer, std::move(data), 4, filtering, sampler_address_mode, xs, ys
+					texture_data, staging_buffer, std::move(data), 4, filtering, sampler_address_mode, size_x, size_y
 				);
 				break;
 			}
@@ -119,12 +122,12 @@ namespace Engine::Factories
 	{
 		int channel_count = 4;
 
-		texture_data->data = raw_data;
-		texture_data->color_fmt = color_format;
-		texture_data->filtering = filtering;
+		texture_data->data		   = raw_data;
+		texture_data->color_fmt	   = color_format;
+		texture_data->filtering	   = filtering;
 		texture_data->address_mode = sampler_address_mode;
-		texture_data->x = xsize;
-		texture_data->y = ysize;
+		texture_data->x			   = xsize;
+		texture_data->y			   = ysize;
 
 		VkDeviceSize memory_size = static_cast<VkDeviceSize>(xsize) * static_cast<VkDeviceSize>(ysize) * channel_count;
 
@@ -133,7 +136,7 @@ namespace Engine::Factories
 		Rendering::VulkanBuffer* used_staging_buffer;
 
 		// If no valid buffer was passed then create one here
-		if (!staging_buffer)
+		if (staging_buffer == nullptr)
 		{
 			used_staging_buffer = renderer->CreateVulkanBuffer(
 				static_cast<size_t>(memory_size),
@@ -160,9 +163,9 @@ namespace Engine::Factories
 
 		memcpy(used_staging_buffer->mappedData, raw_data.data(), static_cast<size_t>(memory_size));
 
-		if (const auto& vulkanImageFactory = this->owner_engine->GetVulkanImageFactory().lock())
+		if (const auto& vulkan_image_factory = this->owner_engine->GetVulkanImageFactory().lock())
 		{
-			texture_data->texture_image = vulkanImageFactory->createTextureImage(
+			texture_data->texture_image = vulkan_image_factory->CreateTextureImage(
 				xsize,
 				ysize,
 				VK_FORMAT_R8G8B8A8_UNORM,
@@ -175,7 +178,7 @@ namespace Engine::Factories
 
 			// Transfer image layout to one usable by the shader
 			// TODO: Create utility function for image transfers
-			vulkanImageFactory->transitionImageLayout(
+			vulkan_image_factory->TransitionImageLayout(
 				texture_data->texture_image->image->image,
 				VK_FORMAT_R8G8B8A8_UNORM,
 				VK_IMAGE_LAYOUT_UNDEFINED,
@@ -187,7 +190,7 @@ namespace Engine::Factories
 				static_cast<uint32_t>(xsize),
 				static_cast<uint32_t>(ysize)
 			);
-			vulkanImageFactory->transitionImageLayout(
+			vulkan_image_factory->TransitionImageLayout(
 				texture_data->texture_image->image->image,
 				VK_FORMAT_R8G8B8A8_SRGB,
 				VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
@@ -196,12 +199,12 @@ namespace Engine::Factories
 
 			// Unmap staging memory and cleanup buffer if we created it here
 			vkUnmapMemory(renderer->GetLogicalDevice(), used_staging_buffer->allocationInfo.deviceMemory);
-			if (!staging_buffer)
+			if (staging_buffer == nullptr)
 			{
 				renderer->CleanupVulkanBuffer(used_staging_buffer);
 			}
 
-			vulkanImageFactory->appendImageViewToTextureImage(texture_data->texture_image);
+			vulkan_image_factory->AppendImageViewToTextureImage(texture_data->texture_image);
 			renderer->AppendVulkanSamplerToVulkanTextureImage(texture_data->texture_image);
 		}
 		else

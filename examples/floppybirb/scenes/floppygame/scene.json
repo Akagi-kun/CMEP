@@ -102,20 +102,19 @@
             "type": "texture",
             "name": "birb",
             "location": "textures/new_birb.png",
-            "filtering": "nearest",
             "sampling_mode": "clamp"
         },
         {
             "type": "texture",
             "name": "pipe_up",
-            "filtering": "nearest",
-            "location": "textures/new_pipe_up.png"
+            "location": "textures/new_pipe_up.png",
+            "filtering": "linear"
         },
         {
             "type": "texture",
             "name": "pipe_down",
-            "filtering": "nearest",
-            "location": "textures/new_pipe_down.png"
+            "location": "textures/new_pipe_down.png",
+            "filtering": "linear"
         },
         {
             "type": "texture",

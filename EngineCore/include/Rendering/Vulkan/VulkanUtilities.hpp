@@ -6,36 +6,38 @@
 
 namespace Engine::Rendering::VulkanUtils
 {
-	inline VkSurfaceFormatKHR chooseVulkanSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableFormats)
+	inline VkSurfaceFormatKHR ChooseVulkanSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableFormats)
 	{
-		for (const auto& availableFormat : availableFormats)
+		for (const auto& available_format : availableFormats)
 		{
-			if (availableFormat.format == VK_FORMAT_B8G8R8A8_SRGB && availableFormat.colorSpace == VK_COLOR_SPACE_SRGB_NONLINEAR_KHR)
+			if (available_format.format == VK_FORMAT_B8G8R8A8_SRGB &&
+				available_format.colorSpace == VK_COLOR_SPACE_SRGB_NONLINEAR_KHR)
 			{
-				return availableFormat;
+				return available_format;
 			}
 		}
 
-		// Return unpreferred suface format
+		// Return first format found
 		return availableFormats[0];
 	}
 
-	inline VkPresentModeKHR chooseVulkanSwapPresentMode(const std::vector<VkPresentModeKHR>& availablePresentModes)
+	inline VkPresentModeKHR ChooseVulkanSwapPresentMode(const std::vector<VkPresentModeKHR>& availablePresentModes)
 	{
-		for (const auto& availablePresentMode : availablePresentModes)
+		for (const auto& available_present_mode : availablePresentModes)
 		{
-			if (availablePresentMode == VK_PRESENT_MODE_MAILBOX_KHR)
+			if (available_present_mode == VK_PRESENT_MODE_MAILBOX_KHR)
 			{
-				return availablePresentMode;
+				return available_present_mode;
 			}
 		}
 
 		// Return unpreferred present mode
+		// FIFO is guaranteed to be available by the spec
 		return VK_PRESENT_MODE_FIFO_KHR;
 	}
 
-	inline bool doesVulkanFormatHaveStencilComponent(VkFormat format) noexcept
+	inline bool DoesVulkanFormatHaveStencilComponent(VkFormat format) noexcept
 	{
 		return format == VK_FORMAT_D32_SFLOAT_S8_UINT || format == VK_FORMAT_D24_UNORM_S8_UINT;
 	}
-}
+} // namespace Engine::Rendering::VulkanUtils

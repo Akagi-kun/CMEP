@@ -34,7 +34,7 @@ namespace Engine
 	// Utility sleep function
 	void Engine::SpinSleep(double seconds)
 	{
-		static const double nano_to_sec = 1.e9;
+		static const double nano_to_sec = 1e9;
 		static const double spin_init = 5e-3;
 
 		static double estimate = spin_init;
@@ -70,7 +70,8 @@ namespace Engine
 	{
 		Rendering::GLFWwindowData windowdata = this->rendering_engine->GetWindow();
 
-		static double last_x = (windowdata.window_x / 2), last_y = (windowdata.window_y / 2);
+		static double last_x = (windowdata.window_x / 2);
+		static double last_y = (windowdata.window_y / 2);
 
 		if (engine_is_window_in_focus && engine_is_window_in_content)
 		{
@@ -132,14 +133,7 @@ namespace Engine
 		// Unused
 		(void)(window);
 
-		if (focused)
-		{
-			engine_is_window_in_focus = true;
-		}
-		else
-		{
-			engine_is_window_in_focus = false;
-		}
+		engine_is_window_in_focus = focused != 0;
 	}
 
 	void Engine::CursorPositionCallback(GLFWwindow* window, double xpos, double ypos)
@@ -207,9 +201,9 @@ namespace Engine
 	{
 		// engine->scene_manager->GetSceneCurrent()->TriggerResort();
 
-		auto objects = engine->scene_manager->GetSceneCurrent()->GetAllObjectsSorted();
+		const auto* objects = engine->scene_manager->GetSceneCurrent()->GetAllObjectsSorted();
 
-		for (auto& [name, ptr] : *objects)
+		for (const auto& [name, ptr] : *objects)
 		{
 			try
 			{
@@ -255,7 +249,7 @@ namespace Engine
 		// uint16_t counter = 0;
 		auto prev_clock = std::chrono::steady_clock::now();
 		// hot loop
-		while (!glfwWindowShouldClose(this->rendering_engine->GetWindow().window))
+		while (glfwWindowShouldClose(this->rendering_engine->GetWindow().window) == 0)
 		{
 			const auto next_clock = std::chrono::steady_clock::now();
 			const double delta_time = static_cast<double>((next_clock - prev_clock).count()) / 1.e9;
@@ -413,7 +407,7 @@ namespace Engine
 
 		// Prepare rendering engine to run (framebuffers etc.)
 		this->rendering_engine->PrepRun();
-		this->rendering_engine->SetRenderCallback(this->RenderCallback);
+		this->rendering_engine->SetRenderCallback(Engine::Engine::RenderCallback);
 
 		// return;
 
@@ -434,7 +428,7 @@ namespace Engine
 		int on_init_event_ret = this->FireEvent(on_init_event);
 
 		// Measure and log ON_INIT time
-		static const double nano_to_ms = 1.e6;
+		static const double nano_to_ms = 1e6;
 		double total = static_cast<double>((std::chrono::steady_clock::now() - start).count()) / nano_to_ms;
 		this->logger->SimpleLog(
 			Logging::LogLevel::Debug1,
@@ -455,7 +449,8 @@ namespace Engine
 
 	void Engine::Stop()
 	{
-		glfwSetWindowShouldClose(this->rendering_engine->GetWindow().window, true);
+		// 1 denotes true here
+		glfwSetWindowShouldClose(this->rendering_engine->GetWindow().window, 1);
 	}
 
 	void Engine::ConfigFile(std::string path)
@@ -469,5 +464,5 @@ namespace Engine
 		{
 			this->event_handlers.emplace(event_type, function);
 		}
-		 */
+	*/
 } // namespace Engine

@@ -1,4 +1,11 @@
-Checks: '-*,clang-analyzer-*,readability-identifier-naming,readability-redundant-*,readability-magic-numbers,modernize-use-*,-modernize-use-using,-modernize-use-trailing-return-type'
+Checks: ['-*',
+  '-clang-analyzer-nullability',
+  'readability-*',
+  '-readability-uppercase-literal-suffix',
+  '-readability-function-cognitive-complexity',
+  'modernize-use-*',
+  '-modernize-use-using',
+  '-modernize-use-trailing-return-type']
 CheckOptions:
   - key: readability-identifier-naming.VariableCase
     value: 'lower_case'

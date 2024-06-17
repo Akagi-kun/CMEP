@@ -1,5 +1,7 @@
 #include <cassert>
+#include <cstdio>
 #include <exception>
+#include <fstream>
 #include <string>
 
 #if defined(_MSC_VER)
@@ -20,16 +22,25 @@ static void InitConsoleWin32()
 #endif
 
 #if _DEBUG == 1 || defined(DEBUG)
-#	define DEFAULT_LOG_LEVEL Logging::LogLevel::Debug3
+#	define DEFAULT_LOG_LEVEL Logging::LogLevel::Debug2
 #else
 #	define DEFAULT_LOG_LEVEL Logging::LogLevel::Debug1
 #endif
 
-static void RunEngine()
+static void RunEngine(bool verbose)
 {
 	std::shared_ptr<Logging::Logger> my_logger = std::make_shared<Logging::Logger>();
 
-	my_logger->AddOutputHandle(DEFAULT_LOG_LEVEL, stdout, true);
+	Logging::LogLevel loglevel = DEFAULT_LOG_LEVEL;
+	if (verbose)
+	{
+		loglevel = Logging::LogLevel::Debug3;
+	}
+
+	FILE* logfile = fopen("latest.log", "w");
+
+	my_logger->AddOutputHandle(loglevel, stdout, true);
+	my_logger->AddOutputHandle(loglevel, logfile, false);
 
 	my_logger->SimpleLog(Logging::LogLevel::Info, "Logger initialized");
 
@@ -58,20 +69,28 @@ static void RunEngine()
 		my_logger->SimpleLog(Logging::LogLevel::Exception, "Exception running engine! e.what(): %s", e.what());
 		throw;
 	}
+
+	fclose(logfile);
 }
 
 int main(int argc, char** argv)
 {
-	// Command-line arguments unused
-	(void)argc;
-	(void)argv;
+	bool verbose = false;
+
+	if (argc > 1)
+	{
+		if (strcmp(argv[1], "-v") == 0)
+		{
+			verbose = true;
+		}
+	}
 
 #if defined(_MSC_VER)
 	// Enable colored output on Win32
 	InitConsoleWin32();
 #endif
 
-	RunEngine();
+	RunEngine(verbose);
 
 	return 0;
 }

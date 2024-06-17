@@ -28,7 +28,7 @@ namespace Engine::Rendering
 	class VulkanRenderingEngine : public InternalEngineObject
 	{
 	private:
-		static constexpr uint_fast16_t max_frames_in_flight = 2;
+		uint_fast16_t max_frames_in_flight = 0;
 
 		GLFWwindow* window = nullptr;
 		ScreenSize window_size;
@@ -37,7 +37,7 @@ namespace Engine::Rendering
 
 		static std::vector<char> ReadShaderFile(std::string path);
 
-		uint32_t current_frame = 0;
+		uint32_t current_frame	 = 0;
 		bool framebuffer_resized = false;
 
 		// Swap chains
@@ -64,7 +64,7 @@ namespace Engine::Rendering
 
 		// Pipeline
 		VulkanPipeline* graphics_pipeline_default = nullptr;
-		VkRenderPass vk_render_pass = VK_NULL_HANDLE;
+		VkRenderPass vk_render_pass				  = VK_NULL_HANDLE;
 
 		// Depth buffers
 		VulkanImage* vk_depth_buffer = nullptr;

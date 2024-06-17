@@ -4,11 +4,12 @@
 local deltaTimeAvg = 0.0;
 local deltaTimeCount = 0;
 
-local spawnPipeEvery = 5.0;
+local spawnPipeEvery = 4.5;
 local spawnPipeSinceLast = spawnPipeEvery - 0.1;
 local spawnPipeLastIdx = 0;
 local spawnPipeFirstIdx = 1;
 local spawnPipeCount = 0;
+local pipeMoveSpeed = 0.12;
 
 -- Pipes original size is 110x338
 local pipe_xSize <const> = 110;
@@ -22,7 +23,6 @@ local birb_ySize <const> = 44;
 local gameIsGameOver = false;
 local gameLastScoredPipeIdx = 0;
 local gameScore = 0;
-local pipeMoveSpeed = 0.1;
 
 local birbSetVelocityTo <const> = 0.36;
 local birbFallSpeed <const> = 0.68;
@@ -72,8 +72,8 @@ end
 -- this event is called when the mouse moved
 --
 -- while specifying event handlers is optional
--- (events for which no event handler is specified are discarded)
 -- it is left here for illustration purposes
+-- (events for which no event handler is specified are discarded)
 -- 
 onMouseMoved = function(event)
 	return 0;
@@ -243,18 +243,29 @@ onUpdate = function(event)
 		local g1_x, g1_y, g1_z = ground1:GetPosition();
 		local g2_x, g2_y, g2_z = ground2:GetPosition();
 
-		if	(g1_x > pxToScreenX(-60) + 0.001) or
-			(g2_x > pxToScreenX(-60) + 0.001)
-		then
-			g1_x = g1_x - (pipeMoveSpeed * 1.05) * event.deltaTime;
-			g2_x = g2_x - (pipeMoveSpeed * 1.05) * event.deltaTime;
-		else
-			g1_x = 0.0
-			g2_x = 0.0
-		end
+		g1_x = g1_x - (pipeMoveSpeed * 1.05) * event.deltaTime;
+		g2_x = g2_x - (pipeMoveSpeed * 1.05) * event.deltaTime;
 
-		ground1:Translate(g1_x, g1_y, g1_z);
-		ground2:Translate(g2_x, g2_y, g2_z);
+		if	(g1_x > pxToScreenX(-120)) or
+			(g2_x > pxToScreenX(-120))
+		then
+			ground1:Translate(g1_x, g1_y, g1_z);
+			ground2:Translate(g2_x, g2_y, g2_z);
+		else
+			ground1:Translate(0.0, g1_y, g1_z);
+			ground2:Translate(0.0, g2_y, g2_z);
+		end
+			--cmepmeta.logger.SimpleLog(string.format("Valid pos %f", g1_x))
+			--g1_x = g1_x - (pipeMoveSpeed * 1.05) * event.deltaTime;
+			--g2_x = g2_x - (pipeMoveSpeed * 1.05) * event.deltaTime;
+		--else
+		--	cmepmeta.logger.SimpleLog(string.format("Reset on %f", g1_x))
+		--	g1_x = 0.0
+		--	g2_x = 0.0
+		--end
+
+		--ground1:Translate(g1_x, g1_y, g1_z);
+		--ground2:Translate(g2_x, g2_y, g2_z);
 
 		birbVelocity = birbVelocity - birbFallSpeed * event.deltaTime;
 		spawnPipeSinceLast = spawnPipeSinceLast + event.deltaTime;

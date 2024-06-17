@@ -11,6 +11,7 @@
 #include "EventHandling.hpp"
 
 #include <fstream>
+#include <stdexcept>
 
 // Prefixes for logging messages
 #define LOGPFX_CURRENT LOGPFX_CLASS_SCENE_LOADER
@@ -43,14 +44,6 @@ namespace Engine
 
 	void SceneLoader::LoadSceneInternal(std::shared_ptr<Scene>& scene, std::string& scene_name)
 	{
-		static const std::map<std::string, EventHandling::EventType> event_type_map = {
-			{"onInit", EventHandling::EventType::ON_INIT},
-			{"onMouseMoved", EventHandling::EventType::ON_MOUSEMOVED},
-			{"onKeyDown", EventHandling::EventType::ON_KEYDOWN},
-			{"onKeyUp", EventHandling::EventType::ON_KEYUP},
-			{"onUpdate", EventHandling::EventType::ON_UPDATE},
-		};
-
 		std::string scene_path = this->scene_prefix + "/" + scene_name + "/";
 
 		std::ifstream file(scene_path + "scene.json");
@@ -71,19 +64,58 @@ namespace Engine
 			throw;
 		}
 
+		file.close();
+
 		this->logger->SimpleLog(
 			Logging::LogLevel::Debug1, LOGPFX_CURRENT "Loading scene prefix is: %s", scene_path.c_str()
 		);
 
-		std::weak_ptr<AssetManager> asset_manager = this->owner_engine->GetAssetManager();
-
+		// Load Assets
 		this->LoadSceneAssets(data, scene_path);
-
-		this->logger->SimpleLog(Logging::LogLevel::Debug2, LOGPFX_CURRENT "Done stage: Assets");
 
 		// Get window config
 		const Rendering::GLFWwindowData window_config = this->owner_engine->GetRenderingEngine()->GetWindow();
 
+		// Load Event Handlers
+		this->LoadSceneEventHandlers(data, scene);
+
+		// Load Templates
+		this->LoadSceneTemplates(data, scene);
+
+		// Load Scene
+		this->LoadSceneTree(data, scene);
+	}
+
+	RendererType SceneLoader::InterpretRendererType(nlohmann::json& from)
+	{
+		static const std::map<std::string, RendererType> renderer_type_map = {
+			{"text", RendererType::TEXT},
+			{"sprite", RendererType::SPRITE},
+			{"mesh", RendererType::MESH},
+		};
+
+		std::string renderer_type = from.get<std::string>();
+		const auto& found_renderer_type = renderer_type_map.find(renderer_type);
+
+		if (found_renderer_type != renderer_type_map.end())
+		{
+			return found_renderer_type->second;
+		}
+
+		return RendererType::MAX_ENUM;
+	}
+
+	void SceneLoader::LoadSceneEventHandlers(nlohmann::json& data, std::shared_ptr<Scene>& scene)
+	{
+		static const std::map<std::string, EventHandling::EventType> event_type_map = {
+			{"onInit", EventHandling::EventType::ON_INIT},
+			{"onMouseMoved", EventHandling::EventType::ON_MOUSEMOVED},
+			{"onKeyDown", EventHandling::EventType::ON_KEYDOWN},
+			{"onKeyUp", EventHandling::EventType::ON_KEYUP},
+			{"onUpdate", EventHandling::EventType::ON_UPDATE},
+		};
+
+		std::weak_ptr<AssetManager> asset_manager = this->owner_engine->GetAssetManager();
 		if (auto locked_asset_manager = asset_manager.lock())
 		{
 			// Load scene event handlers
@@ -114,19 +146,15 @@ namespace Engine
 					continue;
 				}
 
-				// assert(event_type != EventHandling::EventType::EVENT_UNDEFINED);
-
 				std::shared_ptr<Scripting::LuaScript> event_handler = locked_asset_manager->GetLuaScript(
 					event_handler_file
 				);
 
 				if (event_handler == nullptr)
 				{
-					// TODO: Don't add assets with name = location!
-					locked_asset_manager->AddLuaScript(
-						scene_path + event_handler_file, scene_path + event_handler_file
+					throw std::runtime_error(
+						"'script' type asset '" + event_handler_file + "' required to serve defined event handlers!"
 					);
-					event_handler = locked_asset_manager->GetLuaScript(scene_path + event_handler_file);
 				}
 
 				scene->lua_event_handlers.emplace(
@@ -135,12 +163,6 @@ namespace Engine
 			}
 
 			this->logger->SimpleLog(Logging::LogLevel::Debug2, LOGPFX_CURRENT "Done stage: Event Handlers");
-
-			// Load Templates
-			this->LoadSceneTemplates(data, scene);
-
-			// Load scene
-			this->LoadSceneTree(data, scene);
 		}
 	}
 
@@ -216,7 +238,7 @@ namespace Engine
 					}
 				}
 
-				RendererType use_renderer_type = this->InterpretRendererType(scene_entry["renderer"]);
+				RendererType use_renderer_type = SceneLoader::InterpretRendererType(scene_entry["renderer"]);
 
 				Object* object = nullptr;
 
@@ -280,27 +302,6 @@ namespace Engine
 		}
 	}
 
-	RendererType SceneLoader::InterpretRendererType(nlohmann::json& from)
-	{
-		static const std::map<std::string, RendererType> renderer_type_map = {
-			{"text", RendererType::TEXT},
-			{"sprite", RendererType::SPRITE},
-			{"mesh", RendererType::MESH},
-		};
-
-		std::string renderer_type = from.get<std::string>();
-		const auto& found_renderer_type = renderer_type_map.find(renderer_type);
-
-		if (found_renderer_type != renderer_type_map.end())
-		{
-			return found_renderer_type->second;
-		}
-		else
-		{
-			return RendererType::MAX_ENUM;
-		}
-	}
-
 	void SceneLoader::LoadSceneTemplates(nlohmann::json& data, std::shared_ptr<Scene>& scene)
 	{
 		std::weak_ptr<AssetManager> asset_manager = this->owner_engine->GetAssetManager();
@@ -311,7 +312,7 @@ namespace Engine
 			{
 				ObjectTemplate object = ObjectTemplate();
 
-				RendererType use_renderer_type = this->InterpretRendererType(template_entry["renderer"]);
+				RendererType use_renderer_type = SceneLoader::InterpretRendererType(template_entry["renderer"]);
 
 				if (RendererType::MIN_ENUM < use_renderer_type && use_renderer_type < RendererType::MAX_ENUM)
 				{
@@ -491,6 +492,8 @@ namespace Engine
 					throw;
 				}
 			}
+
+			this->logger->SimpleLog(Logging::LogLevel::Debug2, LOGPFX_CURRENT "Done stage: Assets");
 		}
 	}
 } // namespace Engine

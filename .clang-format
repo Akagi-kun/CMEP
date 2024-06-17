@@ -21,6 +21,8 @@ BraceWrapping:
 BreakBeforeBraces: Custom
 AllowShortIfStatementsOnASingleLine: false
 IndentCaseLabels: true
+AlignConsecutiveAssignments:
+  Enabled: true
 #ColumnLimit: 0
 AccessModifierOffset: -4
 NamespaceIndentation: All
