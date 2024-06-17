@@ -49,7 +49,7 @@ if(WIN32)
 	set(STATIC_LIBRARIES
 		vulkan-1
 		glfw3
-		lua54
+		lua51
 		)
 elseif(APPLE)
 	set(STATIC_LIBRARIES
@@ -65,10 +65,9 @@ else()
 		)
 endif()
 
-include_directories(include)
+#include_directories(include)
 
 add_library(EngineCore SHARED ${SRC_FILES})
-
 
 if(MSVC)
 # TODO: Remove /wd4996 after deprecation fixes
@@ -86,6 +85,7 @@ elseif(APPLE)
 endif()
 
 target_include_directories(EngineCore PUBLIC include
+											 ../external/luajit/src
 											 ../external/glfw/include
 											 ../external/nlohmann-json/single_include
 											 ../external/VulkanMemoryAllocator/include

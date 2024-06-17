@@ -7,13 +7,14 @@
 // #include "Rendering/Transform.hpp"
 
 #include "Scripting/API/LuaFactories.hpp"
-#include "Scripting/lualib/lua.h"
-
+// #include "Scripting/lualib/lua.h"
 #include "Factories/ObjectFactory.hpp"
 
 #include "Engine.hpp"
 #include "IModule.hpp"
 #include "SceneManager.hpp"
+#include "lua.hpp"
+
 
 // Prefixes for logging messages
 #define LOGPFX_CURRENT LOGPFX_LUA_MAPPED

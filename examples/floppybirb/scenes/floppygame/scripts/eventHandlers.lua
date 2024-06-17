@@ -12,20 +12,20 @@ local spawnPipeCount = 0;
 local pipeMoveSpeed = 0.12;
 
 -- Pipes original size is 110x338
-local pipe_xSize <const> = 110;
-local pipe_ySize <const> = 450;
-local pipe_spacing_start <const> = 200;
+local pipe_xSize = 110; -- was <const>
+local pipe_ySize = 450; -- was <const>
+local pipe_spacing_start = 200; -- was <const>
 local pipe_spacing = pipe_spacing_start;
 
-local birb_xSize <const> = 72;
-local birb_ySize <const> = 44;
+local birb_xSize = 72; -- was <const>
+local birb_ySize = 44; -- was <const>
 
 local gameIsGameOver = false;
 local gameLastScoredPipeIdx = 0;
 local gameScore = 0;
 
-local birbSetVelocityTo <const> = 0.36;
-local birbFallSpeed <const> = 0.68;
+local birbSetVelocityTo = 0.36; -- was <const>
+local birbFallSpeed = 0.68; -- was <const>
 
 birbVelocity = 0.1;
 birbIsVelociting = false;

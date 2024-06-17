@@ -1,10 +1,18 @@
 #include "Scripting/LuaScriptExecutor.hpp"
-#include "Engine.hpp"
-#include "Logging/Logging.hpp"
-#include "Scripting/Mappings.hpp"
 
 #include "Scripting/API/LuaFactories.hpp"
-#include "Scripting/lualib/lua.h"
+#include "Scripting/Mappings.hpp"
+
+#include "Logging/Logging.hpp"
+
+#include "Engine.hpp"
+
+// #include "Scripting/lualib/lua.h"
+#include "lua.hpp"
+
+// Prefixes for logging messages
+#define LOGPFX_CURRENT LOGPFX_LUA_SCRIPT_EXECUTOR
+#include "Logging/LoggingPrefix.hpp"
 
 namespace Engine
 {
@@ -66,7 +74,10 @@ namespace Engine
 		}
 
 		int LuaScriptExecutor::CallIntoScript(
-			ExecuteType etype, std::shared_ptr<LuaScript> script, std::string function, void* data
+			ExecuteType etype,
+			std::shared_ptr<LuaScript> script,
+			std::string function,
+			void* data
 		)
 		{
 			// this->logger->SimpleLog(Logging::LogLevel::Debug2,
@@ -134,12 +145,12 @@ namespace Engine
 			if (errcall != LUA_OK)
 			{
 				const char* errormsg = "";
-				errormsg = lua_tostring(state, -1);
+				errormsg			 = lua_tostring(state, -1);
 
 				this->logger->SimpleLog(
 					Logging::LogLevel::Warning,
-					"Error when calling Lua\n\tscript '%s' function: "
-					"'%s'\n\tCall error code: %i\n\tError message: %s",
+					LOGPFX_CURRENT "Error when calling Lua\n\tscript '%s' function: "
+								   "'%s'\n\tCall error code: %i\n\tError message: %s",
 					script->path.c_str(),
 					function.c_str(),
 					errcall,
@@ -159,8 +170,8 @@ namespace Engine
 			lua_State* state = script->GetState();
 
 			// Load file and compile it
-			int errload = luaL_loadfile(state, script->path.c_str());
-			int errexec = lua_pcall(state, 0, LUA_MULTRET, 0);
+			int errload			  = luaL_loadfile(state, script->path.c_str());
+			int errexec			  = lua_pcall(state, 0, LUA_MULTRET, 0);
 			const char* errorexec = lua_tostring(state, -1);
 
 			// Register c callback functions
@@ -171,9 +182,9 @@ namespace Engine
 			{
 				this->logger->SimpleLog(
 					Logging::LogLevel::Error,
-					"Error when loading and compiling Lua script "
-					"'%s'\n   Error codes:\n    load: %i\n    compile: "
-					"%i\n  Compilation error: %s",
+					LOGPFX_CURRENT "Error when loading and compiling Lua script "
+								   "'%s'\n   Error codes:\n    load: %i\n    compile: "
+								   "%i\n  Compilation error: %s",
 					script->path.c_str(),
 					errload,
 					errexec,
@@ -184,7 +195,9 @@ namespace Engine
 			}
 
 			this->logger->SimpleLog(
-				Logging::LogLevel::Debug1, "Loaded and compiled Lua script: '%s'", script->path.c_str()
+				Logging::LogLevel::Debug1,
+				LOGPFX_CURRENT "Loaded and compiled Lua script: '%s'",
+				script->path.c_str()
 			);
 
 			return 0;

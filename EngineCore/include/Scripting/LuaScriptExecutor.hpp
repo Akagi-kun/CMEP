@@ -2,7 +2,8 @@
 
 #include "InternalEngineObject.hpp"
 #include "LuaScript.hpp"
-#include "lualib/lua.hpp"
+#include "lua.hpp"
+// #include "lualib/lua.hpp"
 
 namespace Engine::Scripting
 {
@@ -23,7 +24,7 @@ namespace Engine::Scripting
 		void RegisterMeta(lua_State* state);
 
 	public:
-		LuaScriptExecutor() = default;
+		LuaScriptExecutor()	 = default;
 		~LuaScriptExecutor() = default;
 
 		int CallIntoScript(ExecuteType etype, std::shared_ptr<LuaScript> script, std::string function, void* data);

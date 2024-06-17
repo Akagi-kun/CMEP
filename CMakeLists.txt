@@ -22,7 +22,6 @@ if(MSVC)
 	# Debug only
 	add_compile_definitions($<$<CONFIG:Debug>:DEBUG=1>)
 	add_compile_options($<$<CONFIG:Debug>:/Od>)
-	#add_compile_options($<$<CONFIG:Debug>:/DEBUG:FULL>)
 
 	# Release only
 	add_compile_options($<$<CONFIG:Release>:/O2>)
@@ -50,27 +49,11 @@ add_dependencies(EngineCore glfw)
 add_subdirectory(rungame)
 add_dependencies(rungame glfw)
 
-if(NOT MSVC)
-	if(NOT APPLE)
-		message("-- Will build lua for Linux")
-		add_custom_target(lua_build COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/external/build_lua.sh linux)
-	else()
-		message("-- Will build lua for MacOS")
-		add_custom_target(lua_build COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/external/build_lua.sh macosx)
-	endif()
-else()
-	message("-- Will copy lua from prebuilt (Windows); Workdir is: " ${CMAKE_CURRENT_SOURCE_DIR})
-	add_custom_target(lua_build)
-	add_custom_command(TARGET lua_build
-						COMMAND ${CMAKE_COMMAND} -E
-						copy external/lua-prebuilt/lua54.dll build/lua54.dll
-						WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-						)
-	#add_custom_target(lua_build xcopy /s /e /i /y /f "external\\lua-prebuilt\\lua54.dll" "build\\lua54.dll" WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
-endif()
+add_subdirectory(external)
+
 add_dependencies(EngineCore lua_build)
+
 add_dependencies(rungame EngineCore)
-add_dependencies(rungame lua_build)
 
 #set(TESTS_TO_RUN
 #	vulkan_init_cleanup

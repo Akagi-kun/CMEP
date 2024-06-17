@@ -1,9 +1,12 @@
 #include "Scripting/API/Engine_API.hpp"
 
-#include "Engine.hpp"
 #include "Scripting/API/LuaFactories.hpp"
 #include "Scripting/API/framework.hpp"
-#include "Scripting/lualib/lua.h"
+
+#include "Engine.hpp"
+
+// #include "Scripting/lualib/lua.h"
+#include "lua.hpp"
 
 // Prefixes for logging messages
 #define LOGPFX_CURRENT LOGPFX_LUA_MAPPED
@@ -31,7 +34,8 @@ namespace Engine::Scripting::API
 				if (auto locked_logger = logger.lock())
 				{
 					locked_logger->SimpleLog(
-						Logging::LogLevel::Warning, LOGPFX_CURRENT "AssetManager requested but is expired!"
+						Logging::LogLevel::Warning,
+						LOGPFX_CURRENT "AssetManager requested but is expired!"
 					);
 				}
 
@@ -59,7 +63,8 @@ namespace Engine::Scripting::API
 				if (auto locked_logger = logger.lock())
 				{
 					locked_logger->SimpleLog(
-						Logging::LogLevel::Warning, LOGPFX_CURRENT "SceneManager requested but is expired!"
+						Logging::LogLevel::Warning,
+						LOGPFX_CURRENT "SceneManager requested but is expired!"
 					);
 				}
 
