@@ -37,11 +37,12 @@ namespace Engine::Rendering
 		{
 			swapchain_image_count = swap_chain_support.capabilities.maxImageCount;
 			this->logger->SimpleLog(
-				Logging::LogLevel::Debug1, LOGPFX_CURRENT "Using maxImageCount capability, GPU support limited"
+				Logging::LogLevel::Debug1,
+				LOGPFX_CURRENT "Using maxImageCount capability, GPU support limited"
 			);
 		}
 		// Save this value to be used later
-		this->max_frames_in_flight = swapchain_image_count;
+		// this->max_frames_in_flight = swapchain_image_count;
 
 		VkSwapchainCreateInfoKHR create_info{};
 		create_info.sType	= VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
@@ -94,7 +95,10 @@ namespace Engine::Rendering
 		vkGetSwapchainImagesKHR(logical_device, this->vk_swap_chain, &swapchain_image_count, nullptr);
 		this->vk_swap_chain_images.resize(swapchain_image_count);
 		vkGetSwapchainImagesKHR(
-			logical_device, this->vk_swap_chain, &swapchain_image_count, this->vk_swap_chain_images.data()
+			logical_device,
+			this->vk_swap_chain,
+			&swapchain_image_count,
+			this->vk_swap_chain_images.data()
 		);
 
 		this->vk_swap_chain_image_format = VK_FORMAT_B8G8R8A8_UNORM;
@@ -160,7 +164,9 @@ namespace Engine::Rendering
 			for (size_t i = 0; i < this->vk_swap_chain_images.size(); i++)
 			{
 				this->vk_swap_chain_image_views[i] = vulkan_image_factory->CreateImageView(
-					this->vk_swap_chain_images[i], VK_FORMAT_B8G8R8A8_UNORM, VK_IMAGE_ASPECT_COLOR_BIT
+					this->vk_swap_chain_images[i],
+					VK_FORMAT_B8G8R8A8_UNORM,
+					VK_IMAGE_ASPECT_COLOR_BIT
 				);
 			}
 		}
@@ -196,7 +202,9 @@ namespace Engine::Rendering
 		pipeline_settings.descriptorLayoutSettings.stageFlags.push_back(VK_SHADER_STAGE_VERTEX_BIT);
 
 		this->graphics_pipeline_default = this->CreateVulkanPipeline(
-			pipeline_settings, "game/shaders/vulkan/default_vert.spv", "game/shaders/vulkan/default_frag.spv"
+			pipeline_settings,
+			"game/shaders/vulkan/default_vert.spv",
+			"game/shaders/vulkan/default_frag.spv"
 		);
 	}
 
@@ -251,9 +259,8 @@ namespace Engine::Rendering
 		subpass.pDepthStencilAttachment = &depth_attachment_ref;
 		subpass.pResolveAttachments		= &color_attachment_resolve_ref;
 
-		std::array<VkAttachmentDescription, 3> attachments = {
-			color_attachment, depth_attachment, color_attachment_resolve
-		};
+		std::array<VkAttachmentDescription, 3> attachments =
+			{color_attachment, depth_attachment, color_attachment_resolve};
 
 		VkSubpassDependency dependency{};
 		dependency.srcSubpass	= VK_SUBPASS_EXTERNAL;
@@ -397,7 +404,9 @@ namespace Engine::Rendering
 			);
 
 			this->vk_depth_buffer->imageView = vulkan_image_factory->CreateImageView(
-				this->vk_depth_buffer->image, depth_format, VK_IMAGE_ASPECT_DEPTH_BIT
+				this->vk_depth_buffer->image,
+				depth_format,
+				VK_IMAGE_ASPECT_DEPTH_BIT
 			);
 		}
 	}

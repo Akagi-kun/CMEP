@@ -125,9 +125,17 @@ onKeyUp = function(event)
 	end
 end
 
+max_deltaTime = 0.0
+min_deltaTime = 1000.0
+was_logged = false
+
 -- ON_UPDATE event
 onUpdate = function(event)
 	deltaTimeAvg = deltaTimeAvg + event.deltaTime;
+
+	if event.deltaTime > max_deltaTime then max_deltaTime = event.deltaTime end
+	if event.deltaTime < min_deltaTime and was_logged then min_deltaTime = event.deltaTime end
+
 	deltaTimeCount = deltaTimeCount + 1;
 
 	local asset_manager = event.engine:GetAssetManager();
@@ -137,9 +145,10 @@ onUpdate = function(event)
 
 	-- Update frametime counter, recommend to leave this here for debugging purposes
 	if deltaTimeCount >= 30 then
+		was_logged = true
 		--cmepmeta.logger.SimpleLog(string.format("Hello from Lua! Last FT is: %f ms!", deltaTimeAvg / deltaTimeCount * 1000))
 		local object = scene_manager:FindObject("_debug_info");
-		cmepapi.TextRendererUpdateText(object.renderer, "FT: "..tostring(deltaTimeAvg / deltaTimeCount * 1000).." ms");
+		cmepapi.TextRendererUpdateText(object.renderer, string.format("FT: %f; min: %f; max: %f", deltaTimeAvg / deltaTimeCount * 1000, min_deltaTime * 1000, max_deltaTime * 1000).." ms");
 		
 		deltaTimeAvg = 0;
 		deltaTimeCount = 0;
@@ -238,34 +247,23 @@ onUpdate = function(event)
 		y = y - birbVelocity * event.deltaTime;
 		birb:Translate(x, y, z);
 
-		local ground1 = scene_manager:FindObject("ground_top");
-		local ground2 = scene_manager:FindObject("ground_bottom");
-		local g1_x, g1_y, g1_z = ground1:GetPosition();
-		local g2_x, g2_y, g2_z = ground2:GetPosition();
+--		local ground1 = scene_manager:FindObject("ground_top");
+--		local ground2 = scene_manager:FindObject("ground_bottom");
+--		local g1_x, g1_y, g1_z = ground1:GetPosition();
+--		local g2_x, g2_y, g2_z = ground2:GetPosition();
 
-		g1_x = g1_x - (pipeMoveSpeed * 1.05) * event.deltaTime;
-		g2_x = g2_x - (pipeMoveSpeed * 1.05) * event.deltaTime;
+--		g1_x = g1_x - (pipeMoveSpeed * 1.05) * event.deltaTime;
+--		g2_x = g2_x - (pipeMoveSpeed * 1.05) * event.deltaTime;
 
-		if	(g1_x > pxToScreenX(-120)) or
-			(g2_x > pxToScreenX(-120))
-		then
-			ground1:Translate(g1_x, g1_y, g1_z);
-			ground2:Translate(g2_x, g2_y, g2_z);
-		else
-			ground1:Translate(0.0, g1_y, g1_z);
-			ground2:Translate(0.0, g2_y, g2_z);
-		end
-			--cmepmeta.logger.SimpleLog(string.format("Valid pos %f", g1_x))
-			--g1_x = g1_x - (pipeMoveSpeed * 1.05) * event.deltaTime;
-			--g2_x = g2_x - (pipeMoveSpeed * 1.05) * event.deltaTime;
-		--else
-		--	cmepmeta.logger.SimpleLog(string.format("Reset on %f", g1_x))
-		--	g1_x = 0.0
-		--	g2_x = 0.0
-		--end
-
-		--ground1:Translate(g1_x, g1_y, g1_z);
-		--ground2:Translate(g2_x, g2_y, g2_z);
+--		if	(g1_x > pxToScreenX(-120)) or
+--			(g2_x > pxToScreenX(-120))
+--		then
+--			ground1:Translate(g1_x, g1_y, g1_z);
+--			ground2:Translate(g2_x, g2_y, g2_z);
+--		else
+--			ground1:Translate(0.0, g1_y, g1_z);
+--			ground2:Translate(0.0, g2_y, g2_z);
+--		end
 
 		birbVelocity = birbVelocity - birbFallSpeed * event.deltaTime;
 		spawnPipeSinceLast = spawnPipeSinceLast + event.deltaTime;
@@ -275,7 +273,7 @@ onUpdate = function(event)
 end
 
 onInit = function(event)
-	event.engine:SetFramerateTarget(event.engine, 0); -- VSYNC enabled if target is 0
+	event.engine:SetFramerateTarget(0); -- VSYNC enabled if target is 0
 	--cmepapi.EngineSetFramerateTarget(event.engine, 0); -- VSYNC enabled
 
 	-- Get managers

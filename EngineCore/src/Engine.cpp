@@ -199,8 +199,6 @@ namespace Engine
 
 	void Engine::RenderCallback(VkCommandBuffer commandBuffer, uint32_t currentFrame, Engine* engine)
 	{
-		// engine->scene_manager->GetSceneCurrent()->TriggerResort();
-
 		const auto* objects = engine->scene_manager->GetSceneCurrent()->GetAllObjectsSorted();
 
 		for (const auto& [name, ptr] : *objects)
@@ -278,6 +276,13 @@ namespace Engine
 			const double framerate2second_ratio = 1.0 / this->framerate_target;
 			const double sleep_secs				= framerate2second_ratio -
 									  static_cast<double>((frame_clock - next_clock).count()) / 1.e9;
+			/* this->logger->SimpleLog(
+				Logging::LogLevel::Info,
+				LOGPFX_CURRENT "Sleeping %lf (%lf %u)",
+				sleep_secs,
+				framerate2second_ratio,
+				this->framerate_target
+			); */
 			// spin sleep if sleep necessary and VSYNC disabled
 			if (sleep_secs > 0 && this->framerate_target != 0)
 			{
@@ -340,8 +345,9 @@ namespace Engine
 		delete this->rendering_engine;
 	}
 
-	void Engine::SetFramerateTarget(unsigned framerate) noexcept
+	void Engine::SetFramerateTarget(uint_fast16_t framerate) noexcept
 	{
+		// this->logger->SimpleLog(Logging::LogLevel::Info, "Framerate target set to %u", framerate);
 		this->framerate_target = framerate;
 	}
 

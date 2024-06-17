@@ -79,7 +79,7 @@ namespace Engine::Scripting::API
 			lua_getfield(state, 1, "_pointer");
 			Engine* engine = *static_cast<Engine**>(lua_touserdata(state, -1));
 
-			unsigned int framerate_target = static_cast<unsigned int>(lua_tointeger(state, 2));
+			auto framerate_target = static_cast<uint_fast16_t>(lua_tointeger(state, 2));
 
 			engine->SetFramerateTarget(framerate_target);
 

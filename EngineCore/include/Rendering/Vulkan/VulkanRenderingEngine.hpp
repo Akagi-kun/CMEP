@@ -28,7 +28,7 @@ namespace Engine::Rendering
 	class VulkanRenderingEngine : public InternalEngineObject
 	{
 	private:
-		uint_fast16_t max_frames_in_flight = 0;
+		const uint_fast16_t max_frames_in_flight = 2;
 
 		GLFWwindow* window = nullptr;
 		ScreenSize window_size;
@@ -173,7 +173,7 @@ namespace Engine::Rendering
 
 		// Getters
 		VkDevice GetLogicalDevice();
-		GLFWwindowData const GetWindow();
+		[[nodiscard]] GLFWwindowData GetWindow() const;
 		uint32_t GetMaxFramesInFlight();
 		VmaAllocator GetVMAAllocator();
 

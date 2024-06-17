@@ -39,7 +39,7 @@ namespace Engine
 		{
 			unsigned int size_x = 0;
 			unsigned int size_y = 0;
-			std::string title	= "I am a title!";
+			std::string title	= "nil";
 		} window;
 
 		struct
@@ -64,7 +64,7 @@ namespace Engine
 		std::string config_path;
 
 		// Window
-		uint_fast16_t framerate_target = 30;
+		uint_fast16_t framerate_target = 10;
 
 		double last_delta_time = 0.0;
 
@@ -96,13 +96,13 @@ namespace Engine
 
 		void HandleConfig();
 
-	public:
 		std::shared_ptr<SceneManager> scene_manager;
 
+	public:
 		Engine(std::shared_ptr<Logging::Logger> logger) noexcept;
 		~Engine() noexcept;
 
-		void SetFramerateTarget(unsigned framerate) noexcept;
+		void SetFramerateTarget(uint_fast16_t framerate) noexcept;
 
 		void Init();
 		void Run();
