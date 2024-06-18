@@ -21,18 +21,18 @@ namespace Engine::Rendering
 	{
 		VulkanRenderingEngine* renderer = this->owner_engine->GetRenderingEngine();
 
-		VulkanPipelineSettings pipeline_settings = renderer->GetVulkanDefaultPipelineSettings();
-		pipeline_settings.inputAssembly.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
+		VulkanPipelineSettings pipeline_settings  = renderer->GetVulkanDefaultPipelineSettings();
+		pipeline_settings.input_assembly.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
 
-		pipeline_settings.descriptorLayoutSettings.binding.push_back(0);
-		pipeline_settings.descriptorLayoutSettings.descriptorCount.push_back(1);
-		pipeline_settings.descriptorLayoutSettings.types.push_back(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER);
-		pipeline_settings.descriptorLayoutSettings.stageFlags.push_back(VK_SHADER_STAGE_VERTEX_BIT);
+		pipeline_settings.descriptor_layout_settings.binding.push_back(0);
+		pipeline_settings.descriptor_layout_settings.descriptorCount.push_back(1);
+		pipeline_settings.descriptor_layout_settings.types.push_back(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER);
+		pipeline_settings.descriptor_layout_settings.stageFlags.push_back(VK_SHADER_STAGE_VERTEX_BIT);
 
-		pipeline_settings.descriptorLayoutSettings.binding.push_back(1);
-		pipeline_settings.descriptorLayoutSettings.descriptorCount.push_back(1);
-		pipeline_settings.descriptorLayoutSettings.types.push_back(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
-		pipeline_settings.descriptorLayoutSettings.stageFlags.push_back(VK_SHADER_STAGE_FRAGMENT_BIT);
+		pipeline_settings.descriptor_layout_settings.binding.push_back(1);
+		pipeline_settings.descriptor_layout_settings.descriptorCount.push_back(1);
+		pipeline_settings.descriptor_layout_settings.types.push_back(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
+		pipeline_settings.descriptor_layout_settings.stageFlags.push_back(VK_SHADER_STAGE_FRAGMENT_BIT);
 
 		this->pipeline = renderer->CreateVulkanPipeline(
 			pipeline_settings,
@@ -93,7 +93,7 @@ namespace Engine::Rendering
 			this->vbo = nullptr;
 		}
 
-		int fontsize = std::stoi(*this->font->GetFontInfoParameter("size"), nullptr, 10);
+		int fontsize = std::stoi(*this->font->GetFontInfoParameter("size"));
 
 		assert(fontsize > 0);
 

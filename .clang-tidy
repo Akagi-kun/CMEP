@@ -5,7 +5,8 @@ Checks: ['-*',
   '-readability-function-cognitive-complexity',
   'modernize-use-*',
   '-modernize-use-using',
-  '-modernize-use-trailing-return-type']
+  '-modernize-use-trailing-return-type',
+  'performance-*']
 CheckOptions:
   - key: readability-identifier-naming.VariableCase
     value: 'lower_case'

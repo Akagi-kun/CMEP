@@ -18,18 +18,18 @@ namespace Engine::Rendering
 	{
 		VulkanRenderingEngine* renderer = this->owner_engine->GetRenderingEngine();
 
-		VulkanPipelineSettings pipeline_settings = renderer->GetVulkanDefaultPipelineSettings();
-		pipeline_settings.inputAssembly.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
+		VulkanPipelineSettings pipeline_settings  = renderer->GetVulkanDefaultPipelineSettings();
+		pipeline_settings.input_assembly.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
 
-		pipeline_settings.descriptorLayoutSettings.binding.push_back(0);
-		pipeline_settings.descriptorLayoutSettings.descriptorCount.push_back(1);
-		pipeline_settings.descriptorLayoutSettings.types.push_back(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER);
-		pipeline_settings.descriptorLayoutSettings.stageFlags.push_back(VK_SHADER_STAGE_VERTEX_BIT);
+		pipeline_settings.descriptor_layout_settings.binding.push_back(0);
+		pipeline_settings.descriptor_layout_settings.descriptorCount.push_back(1);
+		pipeline_settings.descriptor_layout_settings.types.push_back(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER);
+		pipeline_settings.descriptor_layout_settings.stageFlags.push_back(VK_SHADER_STAGE_VERTEX_BIT);
 
-		pipeline_settings.descriptorLayoutSettings.binding.push_back(1);
-		pipeline_settings.descriptorLayoutSettings.descriptorCount.push_back(16);
-		pipeline_settings.descriptorLayoutSettings.types.push_back(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
-		pipeline_settings.descriptorLayoutSettings.stageFlags.push_back(VK_SHADER_STAGE_FRAGMENT_BIT);
+		pipeline_settings.descriptor_layout_settings.binding.push_back(1);
+		pipeline_settings.descriptor_layout_settings.descriptorCount.push_back(16);
+		pipeline_settings.descriptor_layout_settings.types.push_back(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
+		pipeline_settings.descriptor_layout_settings.stageFlags.push_back(VK_SHADER_STAGE_FRAGMENT_BIT);
 
 		this->pipeline = renderer->CreateVulkanPipeline(
 			pipeline_settings,
@@ -144,26 +144,26 @@ namespace Engine::Rendering
 
 			generated_mesh.resize(this->mesh->mesh_vertices.size());
 
-			uint32_t i = 0;
+			uint32_t vertex_idx = 0;
 			for (glm::vec3 pos : this->mesh->mesh_vertices)
 			{
-				generated_mesh[i].pos	= pos;
-				generated_mesh[i].color = glm::vec3(0);
-				i++;
+				generated_mesh[vertex_idx].pos	 = pos;
+				generated_mesh[vertex_idx].color = glm::vec3(0);
+				vertex_idx++;
 			}
 
-			i = 0;
+			vertex_idx = 0;
 			for (glm::vec2 tex_coord : this->mesh->mesh_uvs)
 			{
-				generated_mesh[i].texcoord = tex_coord;
-				i++;
+				generated_mesh[vertex_idx].texcoord = tex_coord;
+				vertex_idx++;
 			}
 
-			i = 0;
+			vertex_idx = 0;
 			for (glm::vec3 normal : this->mesh->mesh_normals)
 			{
-				generated_mesh[i].normal = normal;
-				i++;
+				generated_mesh[vertex_idx].normal = normal;
+				vertex_idx++;
 			}
 
 			this->vbo = renderer->CreateVulkanVertexBufferFromData(generated_mesh);

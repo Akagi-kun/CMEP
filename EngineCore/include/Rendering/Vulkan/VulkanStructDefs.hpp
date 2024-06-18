@@ -16,7 +16,7 @@ namespace Engine::Rendering
 		std::optional<uint32_t> graphics_family;
 		std::optional<uint32_t> present_family;
 
-		bool IsComplete()
+		[[nodiscard]] bool IsComplete() const
 		{
 			return graphics_family.has_value() && present_family.has_value();
 		}
@@ -33,12 +33,13 @@ namespace Engine::Rendering
 	{
 		VkSurfaceCapabilitiesKHR capabilities;
 		std::vector<VkSurfaceFormatKHR> formats;
-		std::vector<VkPresentModeKHR> presentModes;
+		std::vector<VkPresentModeKHR> present_modes;
 	};
 
 	struct VulkanBuffer
 	{
 		VkBuffer buffer;
+		VkDeviceSize buffer_size;
 		VmaAllocation allocation;
 		VmaAllocationInfo allocationInfo;
 		void* mappedData;
@@ -71,17 +72,17 @@ namespace Engine::Rendering
 
 	struct VulkanPipelineSettings
 	{
-		VkPipelineInputAssemblyStateCreateInfo inputAssembly;
+		VkPipelineInputAssemblyStateCreateInfo input_assembly;
 		VkViewport viewport;
 		VkRect2D scissor;
-		VkPipelineViewportStateCreateInfo viewportState;
+		VkPipelineViewportStateCreateInfo viewport_state;
 		VkPipelineRasterizationStateCreateInfo rasterizer;
 		VkPipelineMultisampleStateCreateInfo multisampling;
-		VkPipelineColorBlendAttachmentState colorBlendAttachment;
-		VkPipelineColorBlendStateCreateInfo colorBlending;
-		VkPipelineDepthStencilStateCreateInfo depthStencil;
+		VkPipelineColorBlendAttachmentState color_blend_attachment;
+		VkPipelineColorBlendStateCreateInfo color_blending;
+		VkPipelineDepthStencilStateCreateInfo depth_stencil;
 
-		VulkanDescriptorLayoutSettings descriptorLayoutSettings;
+		VulkanDescriptorLayoutSettings descriptor_layout_settings;
 	};
 
 	struct VulkanPipeline
@@ -105,8 +106,8 @@ namespace Engine::Rendering
 		{
 			VkVertexInputBindingDescription binding_description{};
 
-			binding_description.binding = 0;
-			binding_description.stride = sizeof(RenderingVertex);
+			binding_description.binding	  = 0;
+			binding_description.stride	  = sizeof(RenderingVertex);
 			binding_description.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
 
 			return binding_description;
@@ -116,25 +117,25 @@ namespace Engine::Rendering
 		{
 			std::array<VkVertexInputAttributeDescription, 4> attribute_descriptions{};
 
-			attribute_descriptions[0].binding = 0;
+			attribute_descriptions[0].binding  = 0;
 			attribute_descriptions[0].location = 0;
-			attribute_descriptions[0].format = VK_FORMAT_R32G32B32_SFLOAT;
-			attribute_descriptions[0].offset = offsetof(RenderingVertex, pos);
+			attribute_descriptions[0].format   = VK_FORMAT_R32G32B32_SFLOAT;
+			attribute_descriptions[0].offset   = offsetof(RenderingVertex, pos);
 
-			attribute_descriptions[1].binding = 0;
+			attribute_descriptions[1].binding  = 0;
 			attribute_descriptions[1].location = 1;
-			attribute_descriptions[1].format = VK_FORMAT_R32G32B32_SFLOAT;
-			attribute_descriptions[1].offset = offsetof(RenderingVertex, color);
+			attribute_descriptions[1].format   = VK_FORMAT_R32G32B32_SFLOAT;
+			attribute_descriptions[1].offset   = offsetof(RenderingVertex, color);
 
-			attribute_descriptions[2].binding = 0;
+			attribute_descriptions[2].binding  = 0;
 			attribute_descriptions[2].location = 2;
-			attribute_descriptions[2].format = VK_FORMAT_R32G32_SFLOAT;
-			attribute_descriptions[2].offset = offsetof(RenderingVertex, texcoord);
+			attribute_descriptions[2].format   = VK_FORMAT_R32G32_SFLOAT;
+			attribute_descriptions[2].offset   = offsetof(RenderingVertex, texcoord);
 
-			attribute_descriptions[3].binding = 0;
+			attribute_descriptions[3].binding  = 0;
 			attribute_descriptions[3].location = 3;
-			attribute_descriptions[3].format = VK_FORMAT_R32G32B32_SFLOAT;
-			attribute_descriptions[3].offset = offsetof(RenderingVertex, normal);
+			attribute_descriptions[3].format   = VK_FORMAT_R32G32B32_SFLOAT;
+			attribute_descriptions[3].offset   = offsetof(RenderingVertex, normal);
 
 			return attribute_descriptions;
 		}

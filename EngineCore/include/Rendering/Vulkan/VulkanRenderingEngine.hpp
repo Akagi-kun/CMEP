@@ -35,7 +35,7 @@ namespace Engine::Rendering
 		// int_fast16_t window_x = 0, window_y = 0;
 		std::string window_title;
 
-		static std::vector<char> ReadShaderFile(std::string path);
+		static std::vector<char> ReadShaderFile(const std::string& path);
 
 		uint32_t current_frame	 = 0;
 		bool framebuffer_resized = false;
@@ -120,7 +120,7 @@ namespace Engine::Rendering
 		// Cleanup functions
 		void Cleanup();
 		void CleanupVulkanBuffer(VulkanBuffer* buffer);
-		void CleanupVulkanTextureImage(VulkanTextureImage* buffer);
+		void CleanupVulkanTextureImage(VulkanTextureImage* image);
 		void CleanupVulkanPipeline(VulkanPipeline* pipeline);
 		void CleanupVulkanImage(VulkanImage* image);
 
@@ -156,25 +156,25 @@ namespace Engine::Rendering
 		VulkanPipeline* CreateVulkanPipelineFromPrealloc(
 			VulkanPipeline* pipeline,
 			VulkanPipelineSettings& settings,
-			std::string vert_path,
-			std::string frag_path
+			const std::string& vert_path,
+			const std::string& frag_path
 		);
 		VulkanPipeline* CreateVulkanPipeline(
 			VulkanPipelineSettings& settings,
-			std::string vert_path,
-			std::string frag_path
+			const std::string& vert_path,
+			const std::string& frag_path
 		);
 
 		// Pipeline descriptor functions
 		void CreateVulkanDescriptorSetLayout(VulkanPipeline* pipeline, VulkanDescriptorLayoutSettings settings);
 		void CreateVulkanUniformBuffers(VulkanPipeline* pipeline);
 		void CreateVulkanDescriptorPool(VulkanPipeline* pipeline, VulkanDescriptorLayoutSettings settings);
-		void CreateVulkanDescriptorSets(VulkanPipeline* pipeline, VulkanDescriptorLayoutSettings settings);
+		void CreateVulkanDescriptorSets(VulkanPipeline* pipeline);
 
 		// Getters
 		VkDevice GetLogicalDevice();
 		[[nodiscard]] GLFWwindowData GetWindow() const;
-		uint32_t GetMaxFramesInFlight();
+		[[nodiscard]] uint32_t GetMaxFramesInFlight() const;
 		VmaAllocator GetVMAAllocator();
 
 		// Utility functions

@@ -23,7 +23,7 @@ namespace Engine::Rendering
 
 		// Get the info out of the capabilities
 		VkSurfaceFormatKHR surface_format = VulkanUtils::ChooseVulkanSwapSurfaceFormat(swap_chain_support.formats);
-		VkPresentModeKHR present_mode	  = VulkanUtils::ChooseVulkanSwapPresentMode(swap_chain_support.presentModes);
+		VkPresentModeKHR present_mode	  = VulkanUtils::ChooseVulkanSwapPresentMode(swap_chain_support.present_modes);
 		VkExtent2D extent				  = this->ChooseVulkanSwapExtent(swap_chain_support.capabilities);
 
 		// Request one image more than is the required minimum
@@ -193,13 +193,13 @@ namespace Engine::Rendering
 
 	void VulkanRenderingEngine::CreateVulkanDefaultGraphicsPipeline()
 	{
-		VulkanPipelineSettings pipeline_settings = this->GetVulkanDefaultPipelineSettings();
-		pipeline_settings.inputAssembly.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
+		VulkanPipelineSettings pipeline_settings  = this->GetVulkanDefaultPipelineSettings();
+		pipeline_settings.input_assembly.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
 
-		pipeline_settings.descriptorLayoutSettings.binding.push_back(0);
-		pipeline_settings.descriptorLayoutSettings.descriptorCount.push_back(1);
-		pipeline_settings.descriptorLayoutSettings.types.push_back(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER);
-		pipeline_settings.descriptorLayoutSettings.stageFlags.push_back(VK_SHADER_STAGE_VERTEX_BIT);
+		pipeline_settings.descriptor_layout_settings.binding.push_back(0);
+		pipeline_settings.descriptor_layout_settings.descriptorCount.push_back(1);
+		pipeline_settings.descriptor_layout_settings.types.push_back(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER);
+		pipeline_settings.descriptor_layout_settings.stageFlags.push_back(VK_SHADER_STAGE_VERTEX_BIT);
 
 		this->graphics_pipeline_default = this->CreateVulkanPipeline(
 			pipeline_settings,

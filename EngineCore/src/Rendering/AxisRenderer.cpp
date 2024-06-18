@@ -17,16 +17,18 @@ namespace Engine::Rendering
 	{
 		VulkanRenderingEngine* renderer = this->owner_engine->GetRenderingEngine();
 
-		VulkanPipelineSettings pipeline_settings = renderer->GetVulkanDefaultPipelineSettings();
-		pipeline_settings.inputAssembly.topology = VK_PRIMITIVE_TOPOLOGY_LINE_LIST;
+		VulkanPipelineSettings pipeline_settings  = renderer->GetVulkanDefaultPipelineSettings();
+		pipeline_settings.input_assembly.topology = VK_PRIMITIVE_TOPOLOGY_LINE_LIST;
 
-		pipeline_settings.descriptorLayoutSettings.binding.push_back(0);
-		pipeline_settings.descriptorLayoutSettings.descriptorCount.push_back(1);
-		pipeline_settings.descriptorLayoutSettings.types.push_back(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER);
-		pipeline_settings.descriptorLayoutSettings.stageFlags.push_back(VK_SHADER_STAGE_VERTEX_BIT);
+		pipeline_settings.descriptor_layout_settings.binding.push_back(0);
+		pipeline_settings.descriptor_layout_settings.descriptorCount.push_back(1);
+		pipeline_settings.descriptor_layout_settings.types.push_back(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER);
+		pipeline_settings.descriptor_layout_settings.stageFlags.push_back(VK_SHADER_STAGE_VERTEX_BIT);
 
 		this->pipeline = renderer->CreateVulkanPipeline(
-			pipeline_settings, "game/shaders/vulkan/axisrenderer_vert.spv", "game/shaders/vulkan/axisrenderer_frag.spv"
+			pipeline_settings,
+			"game/shaders/vulkan/axisrenderer_vert.spv",
+			"game/shaders/vulkan/axisrenderer_frag.spv"
 		);
 	}
 
@@ -80,9 +82,8 @@ namespace Engine::Rendering
 			{{0.0, 0.0, 1.0}, {1.0f, 0.0f, 0.0f}}
 		};
 
-		glm::mat4 projection = glm::perspective(
-			glm::radians(45.0f), static_cast<float>(this->screen.x / this->screen.y), 0.1f, 100.0f
-		);
+		glm::mat4 projection =
+			glm::perspective(glm::radians(45.0f), static_cast<float>(this->screen.x / this->screen.y), 0.1f, 100.0f);
 
 		glm::mat4 view;
 		if (auto locked_scene_manager = this->scene_manager.lock())
@@ -107,18 +108,18 @@ namespace Engine::Rendering
 			VkDescriptorBufferInfo buffer_info{};
 			buffer_info.buffer = pipeline->uniform_buffers[i]->buffer;
 			buffer_info.offset = 0;
-			buffer_info.range = sizeof(glm::mat4);
+			buffer_info.range  = sizeof(glm::mat4);
 
 			std::vector<VkWriteDescriptorSet> descriptor_writes{};
 			descriptor_writes.resize(1);
 
-			descriptor_writes[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-			descriptor_writes[0].dstSet = pipeline->vk_descriptor_sets[i];
-			descriptor_writes[0].dstBinding = 0;
+			descriptor_writes[0].sType			 = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+			descriptor_writes[0].dstSet			 = pipeline->vk_descriptor_sets[i];
+			descriptor_writes[0].dstBinding		 = 0;
 			descriptor_writes[0].dstArrayElement = 0;
-			descriptor_writes[0].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+			descriptor_writes[0].descriptorType	 = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
 			descriptor_writes[0].descriptorCount = 1;
-			descriptor_writes[0].pBufferInfo = &buffer_info;
+			descriptor_writes[0].pBufferInfo	 = &buffer_info;
 
 			vkUpdateDescriptorSets(
 				renderer->GetLogicalDevice(),
@@ -149,7 +150,8 @@ namespace Engine::Rendering
 
 		memcpy(this->pipeline->uniform_buffers[currentFrame]->mappedData, &this->mat_mvp, sizeof(glm::mat4));
 		vkUnmapMemory(
-			renderer->GetLogicalDevice(), pipeline->uniform_buffers[currentFrame]->allocationInfo.deviceMemory
+			renderer->GetLogicalDevice(),
+			pipeline->uniform_buffers[currentFrame]->allocationInfo.deviceMemory
 		);
 
 		vkCmdBindDescriptorSets(
@@ -165,9 +167,10 @@ namespace Engine::Rendering
 
 		vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, this->pipeline->pipeline);
 		VkBuffer vertex_buffers[] = {this->vbo->buffer};
-		VkDeviceSize offsets[] = {0};
+		VkDeviceSize offsets[]	  = {0};
 		vkCmdBindVertexBuffers(commandBuffer, 0, 1, vertex_buffers, offsets);
 
-		vkCmdDraw(commandBuffer, 6, 1, 0, 0);
+		const size_t vertex_count = this->vbo->buffer_size / sizeof(RenderingVertex);
+		vkCmdDraw(commandBuffer, static_cast<uint32_t>(vertex_count), 1, 0, 0);
 	}
 } // namespace Engine::Rendering

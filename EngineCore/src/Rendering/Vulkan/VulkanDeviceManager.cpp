@@ -100,19 +100,20 @@ namespace Engine::Rendering
 	{
 		// Application information
 		VkApplicationInfo app_info{};
-		app_info.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
-		app_info.pApplicationName = "An unknown CMEP application"; // TODO: this->windowTitle.c_str();
+		app_info.sType				= VK_STRUCTURE_TYPE_APPLICATION_INFO;
+		app_info.pApplicationName	= "An unknown CMEP application"; // TODO: this->windowTitle.c_str();
 		app_info.applicationVersion = VK_MAKE_VERSION(1, 0, 0);
-		app_info.pEngineName = "CMEP EngineCore";
-		app_info.engineVersion = VK_MAKE_VERSION(1, 0, 0);
-		app_info.apiVersion = VK_API_VERSION_1_1;
+		app_info.pEngineName		= "CMEP EngineCore";
+		app_info.engineVersion		= VK_MAKE_VERSION(1, 0, 0);
+		app_info.apiVersion			= VK_API_VERSION_1_1;
 
 		// Check validation layer support
 		if (this->enable_vk_validation_layers && !this->CheckVulkanValidationLayers())
 		{
 			// TODO: Remove?
 			this->logger->SimpleLog(
-				Logging::LogLevel::Error, LOGPFX_CURRENT "Validation layer support requested but not allowed!"
+				Logging::LogLevel::Error,
+				LOGPFX_CURRENT "Validation layer support requested but not allowed!"
 			);
 
 			throw std::runtime_error("Validation layers requested but unsupported!");
@@ -120,12 +121,12 @@ namespace Engine::Rendering
 
 		// Vulkan instance information
 		VkInstanceCreateInfo create_info{};
-		create_info.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
+		create_info.sType			 = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
 		create_info.pApplicationInfo = &app_info;
 
 		// Get extensions required by GLFW
 		uint32_t glfw_extension_count = 0;
-		const char** glfw_extensions = glfwGetRequiredInstanceExtensions(&glfw_extension_count);
+		const char** glfw_extensions  = glfwGetRequiredInstanceExtensions(&glfw_extension_count);
 
 		// Get our required extensions
 		std::vector<const char*> vk_extensions(glfw_extensions, glfw_extensions + glfw_extension_count);
@@ -137,13 +138,13 @@ namespace Engine::Rendering
 		}
 
 		// Add the required extensions
-		create_info.enabledExtensionCount = static_cast<uint32_t>(vk_extensions.size());
+		create_info.enabledExtensionCount	= static_cast<uint32_t>(vk_extensions.size());
 		create_info.ppEnabledExtensionNames = vk_extensions.data();
 
 		// Enable validation layers if it's a debug build
 		if (this->enable_vk_validation_layers)
 		{
-			create_info.enabledLayerCount = static_cast<uint32_t>(this->vk_validation_layers.size());
+			create_info.enabledLayerCount	= static_cast<uint32_t>(this->vk_validation_layers.size());
 			create_info.ppEnabledLayerNames = this->vk_validation_layers.data();
 		}
 		else
@@ -166,7 +167,7 @@ namespace Engine::Rendering
 		{
 			this->logger->SimpleLog(Logging::LogLevel::Debug2, LOGPFX_CURRENT "Creating debug messenger");
 			VkDebugUtilsMessengerCreateInfoEXT debug_messenger_create_info{};
-			debug_messenger_create_info.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT;
+			debug_messenger_create_info.sType			= VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT;
 			debug_messenger_create_info.messageSeverity = VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT |
 														  VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT |
 														  VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT;
@@ -174,10 +175,13 @@ namespace Engine::Rendering
 													  VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT |
 													  VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT;
 			debug_messenger_create_info.pfnUserCallback = VulkanDebugCallback;
-			debug_messenger_create_info.pUserData = this;
+			debug_messenger_create_info.pUserData		= this;
 
 			if (CreateDebugUtilsMessengerEXT(
-					this->vk_instance, &debug_messenger_create_info, nullptr, &(this->vk_debug_messenger)
+					this->vk_instance,
+					&debug_messenger_create_info,
+					nullptr,
+					&(this->vk_debug_messenger)
 				) != VK_SUCCESS)
 			{
 				// TODO: Remove?
@@ -200,7 +204,8 @@ namespace Engine::Rendering
 		{
 			// TODO: Remove?
 			this->logger->SimpleLog(
-				Logging::LogLevel::Error, LOGPFX_CURRENT "Found no device supporting the Vulkan API"
+				Logging::LogLevel::Error,
+				LOGPFX_CURRENT "Found no device supporting the Vulkan API"
 			);
 
 			throw std::runtime_error("Found no device supporting the Vulkan API");
@@ -222,7 +227,7 @@ namespace Engine::Rendering
 		if (candidates.rbegin()->first > 0)
 		{
 			this->vk_physical_device = candidates.rbegin()->second;
-			this->msaa_samples = this->GetMaxUsableSampleCount();
+			this->msaa_samples		 = this->GetMaxUsableSampleCount();
 			this->logger->SimpleLog(Logging::LogLevel::Info, LOGPFX_CURRENT "Using MSAAx%u", this->msaa_samples);
 		}
 
@@ -230,7 +235,8 @@ namespace Engine::Rendering
 		{
 			// TODO: Remove?
 			this->logger->SimpleLog(
-				Logging::LogLevel::Error, LOGPFX_CURRENT "No suitable physical device found, fatal error"
+				Logging::LogLevel::Error,
+				LOGPFX_CURRENT "No suitable physical device found, fatal error"
 			);
 			throw std::runtime_error("No physical device found!");
 		}
@@ -298,7 +304,8 @@ namespace Engine::Rendering
 
 		// Indices of which queue families we're going to use
 		std::set<uint32_t> unique_queue_families = {
-			this->graphics_queue_indices.graphics_family.value(), this->graphics_queue_indices.present_family.value()
+			this->graphics_queue_indices.graphics_family.value(),
+			this->graphics_queue_indices.present_family.value()
 		};
 
 		// Fill queueCreateInfos
@@ -306,9 +313,9 @@ namespace Engine::Rendering
 		for (uint32_t queue_family : unique_queue_families)
 		{
 			VkDeviceQueueCreateInfo queue_create_info{};
-			queue_create_info.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
+			queue_create_info.sType			   = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
 			queue_create_info.queueFamilyIndex = queue_family;
-			queue_create_info.queueCount = 1;
+			queue_create_info.queueCount	   = 1;
 			queue_create_info.pQueuePriorities = &queue_priority;
 			queue_create_infos.push_back(queue_create_info);
 		}
@@ -318,9 +325,9 @@ namespace Engine::Rendering
 		device_descriptor_indexing_features.descriptorBindingPartiallyBound = VK_TRUE;
 
 		VkPhysicalDeviceRobustness2FeaturesEXT device_robustness_features{};
-		device_robustness_features.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ROBUSTNESS_2_FEATURES_EXT;
+		device_robustness_features.sType		  = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ROBUSTNESS_2_FEATURES_EXT;
 		device_robustness_features.nullDescriptor = VK_TRUE;
-		device_robustness_features.pNext = &device_descriptor_indexing_features;
+		device_robustness_features.pNext		  = &device_descriptor_indexing_features;
 
 		VkPhysicalDeviceFeatures2 device_features2{};
 		device_features2.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2;
@@ -329,21 +336,21 @@ namespace Engine::Rendering
 
 		// Logical device creation information
 		VkDeviceCreateInfo create_info{};
-		create_info.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
-		create_info.pQueueCreateInfos = queue_create_infos.data();
-		create_info.queueCreateInfoCount = static_cast<uint32_t>(queue_create_infos.size());
-		create_info.enabledExtensionCount = static_cast<uint32_t>(this->device_extensions.size());
+		create_info.sType					= VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
+		create_info.pQueueCreateInfos		= queue_create_infos.data();
+		create_info.queueCreateInfoCount	= static_cast<uint32_t>(queue_create_infos.size());
+		create_info.enabledExtensionCount	= static_cast<uint32_t>(this->device_extensions.size());
 		create_info.ppEnabledExtensionNames = this->device_extensions.data();
-		create_info.pNext = &device_features2;
+		create_info.pNext					= &device_features2;
 
 		// Set logical device extensions
-		create_info.enabledExtensionCount = static_cast<uint32_t>(this->device_extensions.size());
+		create_info.enabledExtensionCount	= static_cast<uint32_t>(this->device_extensions.size());
 		create_info.ppEnabledExtensionNames = this->device_extensions.data();
 
 		// Again set validation layers, this part is apparently ignored by modern drivers
 		if (this->enable_vk_validation_layers)
 		{
-			create_info.enabledLayerCount = static_cast<uint32_t>(this->vk_validation_layers.size());
+			create_info.enabledLayerCount	= static_cast<uint32_t>(this->vk_validation_layers.size());
 			create_info.ppEnabledLayerNames = this->vk_validation_layers.data();
 		}
 		else
@@ -357,17 +364,25 @@ namespace Engine::Rendering
 		{
 			// TODO: Remove?
 			this->logger->SimpleLog(
-				Logging::LogLevel::Error, LOGPFX_CURRENT "Vulkan logical device creation failed with %u code", result
+				Logging::LogLevel::Error,
+				LOGPFX_CURRENT "Vulkan logical device creation failed with %u code",
+				result
 			);
 			throw std::runtime_error("Vulkan: failed to create logical device!");
 		}
 
 		// Get queue handles
 		vkGetDeviceQueue(
-			this->vk_logical_device, this->graphics_queue_indices.graphics_family.value(), 0, &this->vk_graphics_queue
+			this->vk_logical_device,
+			this->graphics_queue_indices.graphics_family.value(),
+			0,
+			&this->vk_graphics_queue
 		);
 		vkGetDeviceQueue(
-			this->vk_logical_device, this->graphics_queue_indices.present_family.value(), 0, &this->vk_present_queue
+			this->vk_logical_device,
+			this->graphics_queue_indices.present_family.value(),
+			0,
+			&this->vk_present_queue
 		);
 	}
 
@@ -395,9 +410,12 @@ namespace Engine::Rendering
 
 		if (present_mode_count != 0)
 		{
-			details.presentModes.resize(present_mode_count);
+			details.present_modes.resize(present_mode_count);
 			vkGetPhysicalDeviceSurfacePresentModesKHR(
-				device, this->vk_surface, &present_mode_count, details.presentModes.data()
+				device,
+				this->vk_surface,
+				&present_mode_count,
+				details.present_modes.data()
 			);
 		}
 
@@ -421,9 +439,8 @@ namespace Engine::Rendering
 
 		for (const auto& extension : required_extensions)
 		{
-			this->logger->SimpleLog(
-				Logging::LogLevel::Warning, LOGPFX_CURRENT "Unsupported extension: %s", extension.c_str()
-			);
+			this->logger
+				->SimpleLog(Logging::LogLevel::Warning, LOGPFX_CURRENT "Unsupported extension: %s", extension.c_str());
 		}
 
 		return required_extensions.empty();
@@ -506,7 +523,8 @@ namespace Engine::Rendering
 			);
 			return 0;
 		}
-		else if (!this->CheckVulkanDeviceExtensionSupport(device))
+
+		if (!this->CheckVulkanDeviceExtensionSupport(device))
 		{
 			this->logger->SimpleLog(
 				Logging::LogLevel::Debug2,
@@ -515,7 +533,8 @@ namespace Engine::Rendering
 			);
 			return 0;
 		}
-		else if (!device_features.samplerAnisotropy)
+
+		if (!device_features.samplerAnisotropy)
 		{
 			this->logger->SimpleLog(
 				Logging::LogLevel::Debug2,
@@ -525,9 +544,9 @@ namespace Engine::Rendering
 			return 0;
 		}
 
-		bool swap_chain_adequate = false;
+		bool swap_chain_adequate				   = false;
 		SwapChainSupportDetails swap_chain_support = this->QueryVulkanSwapChainSupport(device);
-		swap_chain_adequate = !swap_chain_support.formats.empty() && !swap_chain_support.presentModes.empty();
+		swap_chain_adequate = !swap_chain_support.formats.empty() && !swap_chain_support.present_modes.empty();
 
 		if (!swap_chain_adequate)
 		{
@@ -556,27 +575,27 @@ namespace Engine::Rendering
 
 		VkSampleCountFlags counts = physical_device_properties.limits.framebufferColorSampleCounts &
 									physical_device_properties.limits.framebufferDepthSampleCounts;
-		if (counts & VK_SAMPLE_COUNT_64_BIT)
+		if ((counts & VK_SAMPLE_COUNT_64_BIT) != 0)
 		{
 			return VK_SAMPLE_COUNT_64_BIT;
 		}
-		if (counts & VK_SAMPLE_COUNT_32_BIT)
+		if ((counts & VK_SAMPLE_COUNT_32_BIT) != 0)
 		{
 			return VK_SAMPLE_COUNT_32_BIT;
 		}
-		if (counts & VK_SAMPLE_COUNT_16_BIT)
+		if ((counts & VK_SAMPLE_COUNT_16_BIT) != 0)
 		{
 			return VK_SAMPLE_COUNT_16_BIT;
 		}
-		if (counts & VK_SAMPLE_COUNT_8_BIT)
+		if ((counts & VK_SAMPLE_COUNT_8_BIT) != 0)
 		{
 			return VK_SAMPLE_COUNT_8_BIT;
 		}
-		if (counts & VK_SAMPLE_COUNT_4_BIT)
+		if ((counts & VK_SAMPLE_COUNT_4_BIT) != 0)
 		{
 			return VK_SAMPLE_COUNT_4_BIT;
 		}
-		if (counts & VK_SAMPLE_COUNT_2_BIT)
+		if ((counts & VK_SAMPLE_COUNT_2_BIT) != 0)
 		{
 			return VK_SAMPLE_COUNT_2_BIT;
 		}

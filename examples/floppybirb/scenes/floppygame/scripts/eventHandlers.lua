@@ -133,15 +133,13 @@ was_logged = false
 onUpdate = function(event)
 	deltaTimeAvg = deltaTimeAvg + event.deltaTime;
 
-	if event.deltaTime > max_deltaTime then max_deltaTime = event.deltaTime end
-	if event.deltaTime < min_deltaTime and was_logged then min_deltaTime = event.deltaTime end
+	max_deltaTime = math.max(max_deltaTime, event.deltaTime);
+	if was_logged then min_deltaTime = math.min(min_deltaTime, event.deltaTime); end
 
 	deltaTimeCount = deltaTimeCount + 1;
 
 	local asset_manager = event.engine:GetAssetManager();
 	local scene_manager = event.engine:GetSceneManager();
-	--local asset_manager = cmepapi.EngineGetAssetManager(event.engine);
-	--local scene_manager = cmepapi.EngineGetSceneManager(event.engine);
 
 	-- Update frametime counter, recommend to leave this here for debugging purposes
 	if deltaTimeCount >= 30 then
@@ -154,22 +152,22 @@ onUpdate = function(event)
 		deltaTimeCount = 0;
 	end
 
-	-- We can use the math library in here!
-	local offset = -200 + math.random(-15, 15) * 10;
-
 	if gameIsGameOver == false then
 		if spawnPipeSinceLast > spawnPipeEvery then
 			-- Spawn new pipes
 
+			-- We can use the math library in here!
+			local pipe_y_offset = -200 + math.random(-15, 15) * 10;
+
 			scene_manager:AddTemplatedObject("sprite_pipe_down"..tostring(spawnPipeLastIdx + 1), "pipe_down");
-			local object1 = scene_manager:FindObject("sprite_pipe_down"..tostring(spawnPipeLastIdx + 1));
-			object1:Translate(1.0, pxToScreenY(offset), -0.15);
-			object1:Scale(pxToScreenX(pipe_xSize), pxToScreenY(pipe_ySize), 1.0);
+			local pipe1 = scene_manager:FindObject("sprite_pipe_down"..tostring(spawnPipeLastIdx + 1));
+			pipe1:Translate(1.0, pxToScreenY(pipe_y_offset), -0.15);
+			pipe1:Scale(pxToScreenX(pipe_xSize), pxToScreenY(pipe_ySize), 1.0);
 
 			scene_manager:AddTemplatedObject("sprite_pipe_up"..tostring(spawnPipeLastIdx + 1), "pipe_up");
-			local object2 = scene_manager:FindObject("sprite_pipe_up"..tostring(spawnPipeLastIdx + 1));
-			object2:Translate(1.0, pxToScreenY(pipe_ySize + pipe_spacing + offset), -0.15);
-			object2:Scale(pxToScreenX(pipe_xSize), pxToScreenY(pipe_ySize), 1.0);
+			local pipe2 = scene_manager:FindObject("sprite_pipe_up"..tostring(spawnPipeLastIdx + 1));
+			pipe2:Translate(1.0, pxToScreenY(pipe_ySize + pipe_spacing + pipe_y_offset), -0.15);
+			pipe2:Scale(pxToScreenX(pipe_xSize), pxToScreenY(pipe_ySize), 1.0);
 
 			spawnPipeLastIdx = spawnPipeLastIdx + 1;
 			spawnPipeCount = spawnPipeCount + 1;
@@ -212,9 +210,9 @@ onUpdate = function(event)
 					local score_object = scene_manager:FindObject("text_score");
 					cmepapi.TextRendererUpdateText(score_object.renderer, tostring(gameScore));
 
-					pipeMoveSpeed = pipeMoveSpeed * 1.01;
-					pipe_spacing = pipe_spacing * 0.990;
-					spawnPipeEvery = spawnPipeEvery * 0.98;
+					pipeMoveSpeed = pipeMoveSpeed * 1.01; -- Increase pipe move speed
+					pipe_spacing = pipe_spacing * 0.990; -- Decrease pipe spacing (between top and bottom pipe)
+					spawnPipeEvery = spawnPipeEvery * 0.98; -- Increase spawn rate (decrease timeout)
 				end
 
 				if x1 < (0.0 - pxToScreenX(pipe_xSize + 5)) then
@@ -242,29 +240,33 @@ onUpdate = function(event)
 		end
 
 		-- Fall birb
-		local birb = scene_manager:FindObject("birb");
-		local x, y, z = birb:GetPosition();
-		y = y - birbVelocity * event.deltaTime;
-		birb:Translate(x, y, z);
+		-- we already have birbx/y/z from before
+		birby = birby - birbVelocity * event.deltaTime;
+		birb:Translate(birbx, birby, birbz);
 
---		local ground1 = scene_manager:FindObject("ground_top");
---		local ground2 = scene_manager:FindObject("ground_bottom");
---		local g1_x, g1_y, g1_z = ground1:GetPosition();
---		local g2_x, g2_y, g2_z = ground2:GetPosition();
+		local ground1 = scene_manager:FindObject("ground_top");
+		local ground2 = scene_manager:FindObject("ground_bottom");
+		local g1_x, g1_y, g1_z = ground1:GetPosition();
+		local g2_x, g2_y, g2_z = ground2:GetPosition();
+		
+		-- Move ground on X axis (slightly faster than pipes)
+		g1_x = g1_x - (pipeMoveSpeed * 1.05) * event.deltaTime;
+		g2_x = g2_x - (pipeMoveSpeed * 1.05) * event.deltaTime;
 
---		g1_x = g1_x - (pipeMoveSpeed * 1.05) * event.deltaTime;
---		g2_x = g2_x - (pipeMoveSpeed * 1.05) * event.deltaTime;
+		-- Check whether ground is in a correct position
+		-- (the right end of sprite cannot be visible)
+		if	(g1_x > pxToScreenX(-120)) or
+			(g2_x > pxToScreenX(-120))
+		then
+			ground1:Translate(g1_x, g1_y, g1_z);
+			ground2:Translate(g2_x, g2_y, g2_z);
+		-- If it's not, reset back to 0
+		else
+			ground1:Translate(0.0, g1_y, g1_z);
+			ground2:Translate(0.0, g2_y, g2_z);
+		end
 
---		if	(g1_x > pxToScreenX(-120)) or
---			(g2_x > pxToScreenX(-120))
---		then
---			ground1:Translate(g1_x, g1_y, g1_z);
---			ground2:Translate(g2_x, g2_y, g2_z);
---		else
---			ground1:Translate(0.0, g1_y, g1_z);
---			ground2:Translate(0.0, g2_y, g2_z);
---		end
-
+		-- Add birbFallSpeed to birb velocity
 		birbVelocity = birbVelocity - birbFallSpeed * event.deltaTime;
 		spawnPipeSinceLast = spawnPipeSinceLast + event.deltaTime;
 	end

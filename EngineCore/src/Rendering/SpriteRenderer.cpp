@@ -1,10 +1,12 @@
 #include "Rendering/SpriteRenderer.hpp"
 
 #include "Assets/Texture.hpp"
+#include "Rendering/Vulkan/VulkanStructDefs.hpp"
 
 #include "Engine.hpp"
 
 #include <assert.h>
+#include <cstdint>
 #include <cstring>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -16,19 +18,19 @@ namespace Engine::Rendering
 	{
 		VulkanRenderingEngine* renderer = this->owner_engine->GetRenderingEngine();
 
-		VulkanPipelineSettings pipeline_settings = renderer->GetVulkanDefaultPipelineSettings();
-		pipeline_settings.inputAssembly.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
+		VulkanPipelineSettings pipeline_settings  = renderer->GetVulkanDefaultPipelineSettings();
+		pipeline_settings.input_assembly.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
 		// pipeline_settings.rasterizer.cullMode = VK_CULL_MODE_BACK_BIT;
 
-		pipeline_settings.descriptorLayoutSettings.binding.push_back(0);
-		pipeline_settings.descriptorLayoutSettings.descriptorCount.push_back(1);
-		pipeline_settings.descriptorLayoutSettings.types.push_back(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER);
-		pipeline_settings.descriptorLayoutSettings.stageFlags.push_back(VK_SHADER_STAGE_VERTEX_BIT);
+		pipeline_settings.descriptor_layout_settings.binding.push_back(0);
+		pipeline_settings.descriptor_layout_settings.descriptorCount.push_back(1);
+		pipeline_settings.descriptor_layout_settings.types.push_back(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER);
+		pipeline_settings.descriptor_layout_settings.stageFlags.push_back(VK_SHADER_STAGE_VERTEX_BIT);
 
-		pipeline_settings.descriptorLayoutSettings.binding.push_back(1);
-		pipeline_settings.descriptorLayoutSettings.descriptorCount.push_back(1);
-		pipeline_settings.descriptorLayoutSettings.types.push_back(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
-		pipeline_settings.descriptorLayoutSettings.stageFlags.push_back(VK_SHADER_STAGE_FRAGMENT_BIT);
+		pipeline_settings.descriptor_layout_settings.binding.push_back(1);
+		pipeline_settings.descriptor_layout_settings.descriptorCount.push_back(1);
+		pipeline_settings.descriptor_layout_settings.types.push_back(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
+		pipeline_settings.descriptor_layout_settings.stageFlags.push_back(VK_SHADER_STAGE_FRAGMENT_BIT);
 
 		this->pipeline = renderer->CreateVulkanPipeline(
 			pipeline_settings,
@@ -78,16 +80,23 @@ namespace Engine::Rendering
 
 		if (this->vbo == nullptr)
 		{
-			std::array<RenderingVertex, 6> vertices = {};
-			vertices[0] = {glm::vec3(0.0, 1.0, 0.0), glm::vec3(1.f, 0.f, 0.f), glm::vec2(0.0, 1.0)};
-			vertices[1] = {glm::vec3(1.0, 1.0, 0.0), glm::vec3(1.f, 0.f, 0.f), glm::vec2(1.0, 1.0)};
-			vertices[2] = {glm::vec3(0.0, 0.0, 0.0), glm::vec3(1.f, 0.f, 0.f), glm::vec2(0.0, 0.0)};
-			vertices[3] = {glm::vec3(1.0, 1.0, 0.0), glm::vec3(1.f, 0.f, 0.f), glm::vec2(1.0, 1.0)};
-			vertices[4] = {glm::vec3(1.0, 0.0, 0.0), glm::vec3(1.f, 0.f, 0.f), glm::vec2(1.0, 0.0)};
-			vertices[5] = {glm::vec3(0.0, 0.0, 0.0), glm::vec3(1.f, 0.f, 0.f), glm::vec2(0.0, 0.0)};
-
-			std::vector<RenderingVertex> generated_mesh{};
-			generated_mesh.insert(generated_mesh.end(), vertices.begin(), vertices.end());
+			/* 			std::array<RenderingVertex, 6> vertices = {};
+						vertices[0] = {glm::vec3(0.0, 1.0, 0.0), glm::vec3(1.f, 0.f, 0.f), glm::vec2(0.0, 1.0)};
+						vertices[1] = {glm::vec3(1.0, 1.0, 0.0), glm::vec3(1.f, 0.f, 0.f), glm::vec2(1.0, 1.0)};
+						vertices[2] = {glm::vec3(0.0, 0.0, 0.0), glm::vec3(1.f, 0.f, 0.f), glm::vec2(0.0, 0.0)};
+						vertices[3] = {glm::vec3(1.0, 1.0, 0.0), glm::vec3(1.f, 0.f, 0.f), glm::vec2(1.0, 1.0)};
+						vertices[4] = {glm::vec3(1.0, 0.0, 0.0), glm::vec3(1.f, 0.f, 0.f), glm::vec2(1.0, 0.0)};
+						vertices[5] = {glm::vec3(0.0, 0.0, 0.0), glm::vec3(1.f, 0.f, 0.f), glm::vec2(0.0, 0.0)};
+			 */
+			std::vector<RenderingVertex> generated_mesh = {
+				{glm::vec3(0.0, 1.0, 0.0), glm::vec3(1.f, 0.f, 0.f), glm::vec2(0.0, 1.0)},
+				{glm::vec3(1.0, 1.0, 0.0), glm::vec3(1.f, 0.f, 0.f), glm::vec2(1.0, 1.0)},
+				{glm::vec3(0.0, 0.0, 0.0), glm::vec3(1.f, 0.f, 0.f), glm::vec2(0.0, 0.0)},
+				{glm::vec3(1.0, 1.0, 0.0), glm::vec3(1.f, 0.f, 0.f), glm::vec2(1.0, 1.0)},
+				{glm::vec3(1.0, 0.0, 0.0), glm::vec3(1.f, 0.f, 0.f), glm::vec2(1.0, 0.0)},
+				{glm::vec3(0.0, 0.0, 0.0), glm::vec3(1.f, 0.f, 0.f), glm::vec2(0.0, 0.0)},
+			};
+			// generated_mesh.insert(generated_mesh.end(), vertices.begin(), vertices.end());
 
 			this->vbo = renderer->CreateVulkanVertexBufferFromData(generated_mesh);
 		}
@@ -195,6 +204,7 @@ namespace Engine::Rendering
 		VkDeviceSize offsets[]	  = {0};
 		vkCmdBindVertexBuffers(commandBuffer, 0, 1, vertex_buffers, offsets);
 
-		vkCmdDraw(commandBuffer, 6, 1, 0, 0);
+		const size_t vertex_count = this->vbo->buffer_size / sizeof(RenderingVertex);
+		vkCmdDraw(commandBuffer, static_cast<uint32_t>(vertex_count), 1, 0, 0);
 	}
 } // namespace Engine::Rendering
