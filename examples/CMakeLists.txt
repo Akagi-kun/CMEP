@@ -18,7 +18,8 @@ add_custom_command(TARGET floppybirb-perform-copy
                     )
 
 add_custom_target(floppybirb-remove-excess)
-add_custom_command(TARGET floppybirb-remove-excess
+add_custom_command(TARGET floppybirb-perform-copy
+		   POST_BUILD
                    COMMAND ${CMAKE_COMMAND} -E
                    rm
                    shaders/vulkan/compile.bat
@@ -26,7 +27,7 @@ add_custom_command(TARGET floppybirb-remove-excess
                    shaders/vulkan/compile.sh
                    shaders/vulkan/cleanup.sh
                    #shaders/vulkan/*.frag
-                   WORKING_DIRECTORY ../build/game/
+                   WORKING_DIRECTORY ../build/game
                    )
 
 add_custom_target(floppybirb)

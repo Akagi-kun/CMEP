@@ -16,7 +16,7 @@ include_directories(external/glm)
 
 # Global compile options
 if(MSVC)
-    add_compile_options(/std:c++17 /MP /EHs)
+	add_compile_options(/std:c++17 /MP /EHs)
 	add_link_options(/DEBUG /INCREMENTAL:NO)
 
 	# Debug only
@@ -28,10 +28,10 @@ if(MSVC)
 
 else()
 	add_compile_options(-std=c++17)
-	add_link_options(-lpthread)
+	add_link_options(-lpthread -lstdc++)
 	if(NOT APPLE)
-		add_compile_options(--coverage)
-		add_link_options(--coverage -lgcov)
+		#	add_compile_options(--coverage)
+		#add_link_options(--coverage -lgcov)
 	endif()
 
 	# Debug only

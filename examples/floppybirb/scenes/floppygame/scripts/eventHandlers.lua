@@ -275,7 +275,7 @@ onUpdate = function(event)
 end
 
 onInit = function(event)
-	event.engine:SetFramerateTarget(0); -- VSYNC enabled if target is 0
+	event.engine:SetFramerateTarget(60); -- VSYNC enabled if target is 0
 	--cmepapi.EngineSetFramerateTarget(event.engine, 0); -- VSYNC enabled
 
 	-- Get managers

@@ -1,5 +1,7 @@
 #include "Rendering/Vulkan/VulkanImageFactory.hpp"
 
+#include <stdexcept>
+
 // Prefixes for logging messages
 #define LOGPFX_CURRENT LOGPFX_CLASS_VULKAN_IMAGE_FACTORY
 #include "Logging/LoggingPrefix.hpp"

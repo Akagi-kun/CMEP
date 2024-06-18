@@ -17,5 +17,5 @@ fi
 
 echo Building "$CURRENTCFG"
 
-cmake .
+cmake -DCMAKE_BUILD_TYPE=$CURRENTCFG .
 cmake --build . -j --parallel --target rungame --config $CURRENTCFG

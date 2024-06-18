@@ -98,7 +98,8 @@ namespace Engine::Factories
 					return 1;
 				}
 		 */
-		fclose(file);
+		// TODO: Double free detected in tcache!
+		//fclose(file);
 
 		std::shared_ptr<Rendering::Texture> texture = std::make_shared<Rendering::Texture>();
 		texture->UpdateOwnerEngine(this->owner_engine);

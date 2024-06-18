@@ -41,6 +41,7 @@ namespace Engine::Scripting::API::LuaObjectFactories
 		}
 
 		// Add Object pointer
+		// TODO: use light userdata ?
 		auto** ptr_obj = static_cast<Object**>(lua_newuserdata(state, sizeof(Object*)));
 		(*ptr_obj) = (object_ptr);
 		lua_setfield(state, -2, "_pointer");
