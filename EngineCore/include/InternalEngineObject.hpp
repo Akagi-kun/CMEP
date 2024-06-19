@@ -26,7 +26,7 @@ namespace Engine
 			this->owner_engine = new_owner_engine;
 		}
 
-		void UpdateHeldLogger(std::shared_ptr<Logging::Logger> new_logger)
+		void UpdateHeldLogger(std::shared_ptr<Logging::Logger>& new_logger)
 		{
 			this->logger = new_logger;
 		}

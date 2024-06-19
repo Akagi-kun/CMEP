@@ -1,7 +1,6 @@
 #pragma once
 
 #include <stdint.h>
-#include <string>
 
 namespace Engine
 {
@@ -12,11 +11,11 @@ namespace Engine::EventHandling
 {
 	enum class EventType
 	{
-		ON_INIT = 0x1,
-		ON_UPDATE = 0x2,
-		ON_KEYDOWN = 0x4,
-		ON_KEYUP = 0x8,
-		ON_MOUSEMOVED = 0x10,
+		ON_INIT			= 0x1,
+		ON_UPDATE		= 0x2,
+		ON_KEYDOWN		= 0x4,
+		ON_KEYUP		= 0x8,
+		ON_MOUSEMOVED	= 0x10,
 		EVENT_UNDEFINED = 0xffff
 	};
 
@@ -39,7 +38,9 @@ namespace Engine::EventHandling
 			} mouse; // ON_MOUSEMOVED event
 		};
 
-		Event(const EventType eventtype) : event_type(eventtype) {};
-		~Event() {};
+		Event(const EventType eventtype) : event_type(eventtype)
+		{
+		}
+		~Event() = default;
 	};
 } // namespace Engine::EventHandling

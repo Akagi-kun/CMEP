@@ -31,7 +31,7 @@ namespace Engine
 		}
 	}
 
-	void Object::UpdateHeldLogger(std::shared_ptr<Logging::Logger> new_logger)
+	void Object::UpdateHeldLogger(std::shared_ptr<Logging::Logger>& new_logger)
 	{
 		InternalEngineObject::UpdateHeldLogger(new_logger);
 

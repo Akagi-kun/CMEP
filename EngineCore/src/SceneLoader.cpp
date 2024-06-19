@@ -20,7 +20,7 @@
 
 namespace Engine
 {
-	SceneLoader::SceneLoader(std::shared_ptr<Logging::Logger> with_logger)
+	SceneLoader::SceneLoader(std::shared_ptr<Logging::Logger>& with_logger)
 	{
 		this->logger = with_logger;
 	}

@@ -29,7 +29,7 @@ namespace Engine
 	public:
 		std::string scene_prefix;
 
-		SceneLoader(std::shared_ptr<Logging::Logger> with_logger);
+		SceneLoader(std::shared_ptr<Logging::Logger>& with_logger);
 		~SceneLoader();
 
 		std::shared_ptr<Scene> LoadScene(std::string name);

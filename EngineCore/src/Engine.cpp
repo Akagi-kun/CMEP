@@ -326,7 +326,7 @@ namespace Engine
 		return this->last_delta_time;
 	}
 
-	Engine::Engine(std::shared_ptr<Logging::Logger> with_logger) noexcept : logger(with_logger)
+	Engine::Engine(std::shared_ptr<Logging::Logger>& with_logger) noexcept : logger(with_logger)
 	{
 	}
 

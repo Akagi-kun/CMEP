@@ -28,7 +28,7 @@ namespace Engine
 		~Object() noexcept;
 
 		// Overrides InternalEngineObject::UpdateHeldLogger
-		void UpdateHeldLogger(std::shared_ptr<Logging::Logger> new_logger);
+		void UpdateHeldLogger(std::shared_ptr<Logging::Logger>& new_logger);
 
 		void ScreenSizeInform(unsigned int with_screenx, unsigned int with_screeny) noexcept;
 

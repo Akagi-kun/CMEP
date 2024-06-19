@@ -99,7 +99,7 @@ namespace Engine
 		std::shared_ptr<SceneManager> scene_manager;
 
 	public:
-		Engine(std::shared_ptr<Logging::Logger> logger) noexcept;
+		Engine(std::shared_ptr<Logging::Logger>& logger) noexcept;
 		~Engine() noexcept;
 
 		void SetFramerateTarget(uint_fast16_t framerate) noexcept;
@@ -125,7 +125,7 @@ namespace Engine
 		{
 			return this->rendering_engine;
 		}
-		inline std::weak_ptr<SceneManager> GetSceneManager() const noexcept
+		[[nodiscard]] inline std::weak_ptr<SceneManager> GetSceneManager() const noexcept
 		{
 			return std::weak_ptr<SceneManager>(this->scene_manager);
 		}

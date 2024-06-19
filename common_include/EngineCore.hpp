@@ -13,12 +13,12 @@ namespace Logging
 {
 	enum class LogLevel
 	{
-		Debug3 = 0,
-		Debug2 = 1,
-		Debug1 = 2,
-		Info = 3,
-		Warning = 4,
-		Error = 5,
+		Debug3	  = 0,
+		Debug2	  = 1,
+		Debug1	  = 2,
+		Info	  = 3,
+		Warning	  = 4,
+		Error	  = 5,
 		Exception = 6
 	};
 
@@ -65,7 +65,7 @@ namespace Engine
 		std::unique_ptr<Engine> d_engine;
 
 	public:
-		CMEP_EXPORT OpaqueEngine(std::shared_ptr<Logging::Logger> logger) noexcept;
+		CMEP_EXPORT OpaqueEngine(std::shared_ptr<Logging::Logger>& logger) noexcept;
 		CMEP_EXPORT ~OpaqueEngine() noexcept;
 
 		CMEP_EXPORT void Init();
