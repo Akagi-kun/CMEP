@@ -23,14 +23,14 @@ namespace Engine::Rendering::VulkanUtils
 
 	inline VkPresentModeKHR ChooseVulkanSwapPresentMode(const std::vector<VkPresentModeKHR>& availablePresentModes)
 	{
-		for (const auto& available_present_mode : availablePresentModes)
+		/*for (const auto& available_present_mode : availablePresentModes)
 		{
 			if (available_present_mode == VK_PRESENT_MODE_MAILBOX_KHR)
 			{
 				// TODO: Check this value
 				return available_present_mode;
 			}
-		}
+		}*/
 
 		// Return unpreferred present mode
 		// FIFO is guaranteed to be available by the spec

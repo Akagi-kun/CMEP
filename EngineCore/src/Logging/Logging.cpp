@@ -28,6 +28,18 @@ static constexpr size_t level_count = std::min(
 	sizeof(level_to_string_table) / sizeof(char*)
 );
 
+Logging::Logger::~Logger()
+{
+	// Close all handles
+	for(auto& output : this->outputs)
+	{
+		if(output.handle != stdout)
+		{
+			fclose(output.handle);
+		}
+	}
+}
+
 void Logging::Logger::AddOutputHandle(Logging::LogLevel min_level, FILE* handle, bool use_colors)
 {
 	// Check if enum valid
@@ -85,8 +97,9 @@ void Logging::Logger::StartLog(Logging::LogLevel level)
 	std::tm cur_time = {};
 #if defined(_MSC_VER)
 	localtime_s(&cur_time, &tmp);
-#elif defined(_GNUC_)
-	localtime_r(&cur_time, &tmp);
+// TODO: Check this macro
+#else
+	localtime_r(&tmp, &cur_time);
 #endif
 
 	// StartLog for all outputs

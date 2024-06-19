@@ -69,8 +69,6 @@ static void RunEngine(bool verbose)
 		my_logger->SimpleLog(Logging::LogLevel::Exception, "Exception running engine! e.what(): %s", e.what());
 		throw;
 	}
-
-	fclose(logfile);
 }
 
 int main(int argc, char** argv)

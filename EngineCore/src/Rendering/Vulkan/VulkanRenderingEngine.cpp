@@ -271,6 +271,10 @@ namespace Engine::Rendering
 		// Create a GLFW window
 		glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
 		glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE);
+		// Quick hack for i3wm
+		// TODO: Fix i3wm 
+		glfwWindowHint(GLFW_FLOATING, GLFW_TRUE);
+		glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
 		this->window = glfwCreateWindow(
 			static_cast<int>(this->window_size.x),
 			static_cast<int>(this->window_size.y),

@@ -35,6 +35,8 @@ namespace Engine
 		}
 
 		this->textures.clear();
+		this->texture_factory.reset();
+		this->font_factory.reset();
 	}
 
 	void AssetManager::UpdateHeldLogger(std::shared_ptr<Logging::Logger> new_logger)

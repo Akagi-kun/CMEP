@@ -39,9 +39,7 @@ namespace Logging
 
 	public:
 		CMEP_EXPORT Logger() = default;
-		CMEP_EXPORT ~Logger()
-		{
-		}
+		CMEP_EXPORT ~Logger();
 
 		void CMEP_EXPORT AddOutputHandle(LogLevel min_level, FILE* handle, bool useColors = false);
 		void CMEP_EXPORT MapCurrentThreadToName(std::string name);

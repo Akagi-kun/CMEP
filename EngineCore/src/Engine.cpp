@@ -244,6 +244,8 @@ namespace Engine
 
 		glfwShowWindow(this->rendering_engine->GetWindow().window);
 
+		this->logger->SimpleLog(Logging::LogLevel::Debug1, LOGPFX_CURRENT "Locked to framerate %u%s", this->framerate_target, this->framerate_target == 0 ? " (VSYNC)" : "");
+
 		// uint16_t counter = 0;
 		auto prev_clock = std::chrono::steady_clock::now();
 		// hot loop
