@@ -358,7 +358,7 @@ namespace Engine
 		{
 			this->HandleConfig();
 		}
-		catch (std::exception e)
+		catch (std::exception& e)
 		{
 			this->logger->SimpleLog(
 				Logging::LogLevel::Exception,

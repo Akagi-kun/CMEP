@@ -56,7 +56,7 @@ namespace Engine::Factories
 		static constexpr uint_fast16_t entry_buffer_limit = 16;
 		static const uint_fast16_t buffer_limit = 255;
 
-		uint_fast16_t cur_offset = 0;
+		unsigned int cur_offset = 0;
 		char cur_data[entry_buffer_limit] = {};
 		char* data = new char[buffer_limit + 1];
 
@@ -83,7 +83,7 @@ namespace Engine::Factories
 				break;
 			}
 
-			assert(0 < cur_offset && cur_offset < buffer_limit);
+			assert(0 < cur_offset && cur_offset < buffer_limit && "Current offset is outside limits!");
 
 			static constexpr char info_str[] = "info";
 			static constexpr char char_str[] = "char";
@@ -138,7 +138,7 @@ namespace Engine::Factories
 			cur_offset = 0;
 
 			// Get the key and value
-			(void)sscanf(cur_data, "%[^=]=%s", &key[0], &value);
+			(void)sscanf(cur_data, "%[^=]=%63s", &key[0], &value[0]);
 
 			switch (type)
 			{
