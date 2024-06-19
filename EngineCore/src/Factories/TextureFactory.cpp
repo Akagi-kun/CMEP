@@ -1,5 +1,6 @@
 // #include <fstream>
 
+#include <cstdint>
 #pragma warning(push, 2)
 #include "lodepng.h"
 #pragma warning(pop)
@@ -16,12 +17,8 @@
 
 namespace Engine::Factories
 {
-	TextureFactory::TextureFactory()
-	{
-	}
-
 	std::shared_ptr<Rendering::Texture> TextureFactory::InitFile(
-		std::string path,
+		const std::string& path,
 		Rendering::VulkanBuffer* staging_buffer,
 		Rendering::Texture_InitFiletype filetype,
 		VkFilter filtering,
@@ -41,9 +38,8 @@ namespace Engine::Factories
 			throw std::runtime_error("Could not find texture!");
 		}
 
-		this->logger->SimpleLog(
-			Logging::LogLevel::Debug2, LOGPFX_CURRENT "Initializing texture from file %s", path.c_str()
-		);
+		this->logger
+			->SimpleLog(Logging::LogLevel::Debug2, LOGPFX_CURRENT "Initializing texture from file %s", path.c_str());
 
 		// Get size
 		// fseek(file, 0, SEEK_END);
@@ -73,13 +69,18 @@ namespace Engine::Factories
 					filtering
 				);
 
-				fclose(file);
-
 				assert(0 < size_x && size_x < 0x2fff);
 				assert(0 < size_y && size_y < 0x2fff);
 
 				this->InitRaw(
-					texture_data, staging_buffer, std::move(data), 4, filtering, sampler_address_mode, size_x, size_y
+					texture_data,
+					staging_buffer,
+					std::move(data),
+					4,
+					filtering,
+					sampler_address_mode,
+					size_x,
+					size_y
 				);
 				break;
 			}
@@ -97,9 +98,9 @@ namespace Engine::Factories
 				{
 					return 1;
 				}
-		 */
-		// TODO: Double free detected in tcache!
-		//fclose(file);
+		*/
+
+		fclose(file);
 
 		std::shared_ptr<Rendering::Texture> texture = std::make_shared<Rendering::Texture>();
 		texture->UpdateOwnerEngine(this->owner_engine);
@@ -121,7 +122,7 @@ namespace Engine::Factories
 		unsigned int ysize
 	)
 	{
-		int channel_count = 4;
+		uint_fast8_t channel_count = 4;
 
 		texture_data->data		   = raw_data;
 		texture_data->color_fmt	   = color_format;
@@ -130,7 +131,7 @@ namespace Engine::Factories
 		texture_data->x			   = xsize;
 		texture_data->y			   = ysize;
 
-		VkDeviceSize memory_size = static_cast<VkDeviceSize>(xsize) * static_cast<VkDeviceSize>(ysize) * channel_count;
+		auto memory_size = static_cast<VkDeviceSize>(xsize * ysize * channel_count);
 
 		Rendering::VulkanRenderingEngine* renderer = this->owner_engine->GetRenderingEngine();
 

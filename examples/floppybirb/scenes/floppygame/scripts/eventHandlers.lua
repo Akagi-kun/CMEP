@@ -133,7 +133,7 @@ was_logged = false
 onUpdate = function(event)
 	deltaTimeAvg = deltaTimeAvg + event.deltaTime;
 
-	max_deltaTime = math.max(max_deltaTime, event.deltaTime);
+	if was_logged then max_deltaTime = math.max(max_deltaTime, event.deltaTime); end
 	if was_logged then min_deltaTime = math.min(min_deltaTime, event.deltaTime); end
 
 	deltaTimeCount = deltaTimeCount + 1;
@@ -276,13 +276,10 @@ end
 
 onInit = function(event)
 	event.engine:SetFramerateTarget(60); -- VSYNC enabled if target is 0
-	--cmepapi.EngineSetFramerateTarget(event.engine, 0); -- VSYNC enabled
 
 	-- Get managers
 	local asset_manager = event.engine:GetAssetManager();
 	local scene_manager = event.engine:GetSceneManager();
-	--local asset_manager = cmepapi.EngineGetAssetManager(event.engine);
-	--local scene_manager = cmepapi.EngineGetSceneManager(event.engine);
 
 	-- Create frametime counter and add it to scene
 	local font = asset_manager:GetFont("myfont");

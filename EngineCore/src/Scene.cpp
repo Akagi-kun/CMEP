@@ -104,7 +104,7 @@ namespace Engine
 		}
 	}
 
-	void Scene::AddTemplatedObject(std::string name, std::string template_name)
+	void Scene::AddTemplatedObject(const std::string& name, const std::string& template_name)
 	{
 		auto templated_object = this->templates.find(template_name);
 
@@ -157,7 +157,7 @@ namespace Engine
 		}
 	}
 
-	void Scene::AddObject(std::string name, Object* ptr)
+	void Scene::AddObject(const std::string& name, Object* ptr)
 	{
 		// this->logger->SimpleLog(Logging::LogLevel::Debug2, LOGPFX_CURRENT "Adding object \"%s\"", name.c_str());
 		if (ptr != nullptr)
@@ -175,7 +175,7 @@ namespace Engine
 		this->was_scene_modified = true;
 	}
 
-	Object* Scene::FindObject(std::string name)
+	Object* Scene::FindObject(const std::string& name)
 	{
 		auto find_ret = this->objects.find(name);
 		if (find_ret != this->objects.end())
@@ -185,7 +185,7 @@ namespace Engine
 		return nullptr;
 	}
 
-	void Scene::RemoveObject(std::string name)
+	void Scene::RemoveObject(const std::string& name)
 	{
 		Object* object = this->FindObject(name);
 

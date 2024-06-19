@@ -98,7 +98,7 @@ namespace Engine::Scripting::API
 
 	} // namespace Functions_Engine
 
-	std::unordered_map<std::string, lua_CFunction> engine_mappings = {
+	const std::unordered_map<std::string, lua_CFunction> engine_mappings = {
 		CMEP_LUAMAPPING_DEFINE(Functions_Engine, GetAssetManager),
 		CMEP_LUAMAPPING_DEFINE(Functions_Engine, GetSceneManager),
 		CMEP_LUAMAPPING_DEFINE(Functions_Engine, SetFramerateTarget),

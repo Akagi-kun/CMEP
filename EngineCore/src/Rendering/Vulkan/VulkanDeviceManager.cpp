@@ -22,7 +22,7 @@ namespace Engine::Rendering
 		void* pUserData
 	)
 	{
-		if (auto locked_logger = ((InternalEngineObject*)pUserData)->GetLogger().lock())
+		if (auto locked_logger = (static_cast<InternalEngineObject*>(pUserData))->GetLogger().lock())
 		{
 			locked_logger->SimpleLog(
 				Logging::LogLevel::Warning,
@@ -456,23 +456,23 @@ namespace Engine::Rendering
 		std::vector<VkQueueFamilyProperties> queue_families(queue_family_count);
 		vkGetPhysicalDeviceQueueFamilyProperties(device, &queue_family_count, queue_families.data());
 
-		uint32_t i = 0;
+		uint32_t indice = 0;
 		for (const auto& queue_family : queue_families)
 		{
-			if (queue_family.queueFlags & VK_QUEUE_GRAPHICS_BIT)
+			if ((queue_family.queueFlags & VK_QUEUE_GRAPHICS_BIT) != 0)
 			{
-				indices.graphics_family = i;
+				indices.graphics_family = indice;
 			}
 
 			VkBool32 present_support = false;
-			vkGetPhysicalDeviceSurfaceSupportKHR(device, i, this->vk_surface, &present_support);
+			vkGetPhysicalDeviceSurfaceSupportKHR(device, indice, this->vk_surface, &present_support);
 
-			if (present_support)
+			if (present_support != 0)
 			{
-				indices.present_family = i;
+				indices.present_family = indice;
 			}
 
-			i++;
+			indice++;
 		}
 
 		return indices;

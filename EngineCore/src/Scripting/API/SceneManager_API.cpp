@@ -150,11 +150,11 @@ namespace Engine::Scripting::API
 			std::string name = lua_tostring(state, 2);
 
 			lua_getfield(state, 3, "_pointer");
-			Object* obj = *static_cast<Object**>(lua_touserdata(state, -1));
+			auto* ptr_obj = static_cast<Object*>(lua_touserdata(state, -1));
 
 			if (auto locked_scene_manager = scene_manager.lock())
 			{
-				locked_scene_manager->AddObject(std::move(name), obj);
+				locked_scene_manager->AddObject(std::move(name), ptr_obj);
 			}
 			else
 			{
@@ -230,7 +230,7 @@ namespace Engine::Scripting::API
 				lua_touserdata(state, -1)
 			);
 
-			std::string name = lua_tostring(state, 2);
+			std::string name		  = lua_tostring(state, 2);
 			std::string template_name = lua_tostring(state, 3);
 
 			if (auto locked_scene_manager = scene_manager.lock())
@@ -267,7 +267,8 @@ namespace Engine::Scripting::API
 				if (auto locked_logger = logger.lock())
 				{
 					locked_logger->SimpleLog(
-						Logging::LogLevel::Error, LOGPFX_CURRENT "Scene manager could not be locked!"
+						Logging::LogLevel::Error,
+						LOGPFX_CURRENT "Scene manager could not be locked!"
 					);
 				}
 				// TODO: Possible lua_error?
@@ -279,7 +280,7 @@ namespace Engine::Scripting::API
 
 	} // namespace Functions_SceneManager
 
-	std::unordered_map<std::string, lua_CFunction> scene_manager_mappings = {
+	const std::unordered_map<std::string, lua_CFunction> scene_manager_mappings = {
 		CMEP_LUAMAPPING_DEFINE(Functions_SceneManager, GetCameraHVRotation),
 		CMEP_LUAMAPPING_DEFINE(Functions_SceneManager, SetCameraHVRotation),
 		CMEP_LUAMAPPING_DEFINE(Functions_SceneManager, GetCameraTransform),

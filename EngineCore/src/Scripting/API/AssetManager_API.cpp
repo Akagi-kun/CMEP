@@ -62,9 +62,8 @@ namespace Engine::Scripting::API
 					// Generate object table
 					lua_newtable(state);
 
-					std::shared_ptr<Rendering::Texture>* ptr = (std::shared_ptr<Rendering::Texture>*)lua_newuserdata(
-						state, sizeof(std::shared_ptr<Rendering::Texture>)
-					);
+					std::shared_ptr<Rendering::Texture>* ptr = (std::shared_ptr<Rendering::Texture>*)
+						lua_newuserdata(state, sizeof(std::shared_ptr<Rendering::Texture>));
 					new (ptr) std::shared_ptr<Rendering::Texture>(texture);
 					lua_setfield(state, -2, "_pointer");
 				}
@@ -125,9 +124,8 @@ namespace Engine::Scripting::API
 
 			if (auto locked_asset_manager = asset_manager.lock())
 			{
-				locked_asset_manager->AddTexture(
-					std::move(name), std::move(path), Rendering::Texture_InitFiletype::FILE_PNG
-				);
+				locked_asset_manager
+					->AddTexture(std::move(name), std::move(path), Rendering::Texture_InitFiletype::FILE_PNG);
 			}
 			else
 			{
@@ -138,7 +136,7 @@ namespace Engine::Scripting::API
 		}
 	} // namespace Functions_AssetManager
 
-	std::unordered_map<std::string, lua_CFunction> asset_manager_mappings = {
+	const std::unordered_map<std::string, lua_CFunction> asset_manager_mappings = {
 		CMEP_LUAMAPPING_DEFINE(Functions_AssetManager, GetFont),
 		CMEP_LUAMAPPING_DEFINE(Functions_AssetManager, GetTexture),
 		CMEP_LUAMAPPING_DEFINE(Functions_AssetManager, GetModel),

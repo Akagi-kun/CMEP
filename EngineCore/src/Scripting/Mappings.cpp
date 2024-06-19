@@ -15,7 +15,6 @@
 #include "SceneManager.hpp"
 #include "lua.hpp"
 
-
 // Prefixes for logging messages
 #define LOGPFX_CURRENT LOGPFX_LUA_MAPPED
 #include "Logging/LoggingPrefix.hpp"
@@ -57,7 +56,7 @@ namespace Engine::Scripting::Mappings
 			assert(lua_gettop(state) == 2);
 
 			lua_getfield(state, 1, "_pointer");
-			Rendering::IRenderer* renderer = *static_cast<Rendering::IRenderer**>(lua_touserdata(state, -1));
+			auto* renderer = static_cast<Rendering::IRenderer*>(lua_touserdata(state, -1));
 
 			const char* text = lua_tostring(state, 2);
 
@@ -81,7 +80,7 @@ namespace Engine::Scripting::Mappings
 			assert(lua_gettop(state) == 2);
 
 			lua_getfield(state, 1, "_pointer");
-			Rendering::IRenderer* renderer = *static_cast<Rendering::IRenderer**>(lua_touserdata(state, -1));
+			auto* renderer = static_cast<Rendering::IRenderer*>(lua_touserdata(state, -1));
 
 			lua_getfield(state, 2, "_smart_ptr");
 			std::shared_ptr<Rendering::Texture> texture = *static_cast<std::shared_ptr<Rendering::Texture>*>(

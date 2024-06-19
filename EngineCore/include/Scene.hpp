@@ -59,10 +59,10 @@ namespace Engine
 		[[nodiscard]] const std::unordered_map<std::string, Object*>* GetAllObjects() noexcept;
 		[[nodiscard]] const std::vector<std::pair<std::string, Object*>>* GetAllObjectsSorted() noexcept;
 
-		void AddObject(std::string name, Object* ptr);
-		void AddTemplatedObject(std::string name, std::string template_name);
-		[[nodiscard]] Object* FindObject(std::string name);
-		void RemoveObject(std::string name);
+		void AddObject(const std::string& name, Object* ptr);
+		void AddTemplatedObject(const std::string& name, const std::string& template_name);
+		[[nodiscard]] Object* FindObject(const std::string& name);
+		void RemoveObject(const std::string& name);
 
 		void LoadTemplatedObject(std::string name, ObjectTemplate object);
 	};

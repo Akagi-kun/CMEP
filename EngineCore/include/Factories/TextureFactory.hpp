@@ -22,10 +22,10 @@ namespace Engine::Factories
 		);
 
 	public:
-		TextureFactory();
+		TextureFactory() = default;
 
 		std::shared_ptr<Rendering::Texture> InitFile(
-			std::string path,
+			const std::string& path,
 			Rendering::VulkanBuffer* staging_buffer,
 			Rendering::Texture_InitFiletype filetype,
 			VkFilter filtering						  = VK_FILTER_LINEAR,

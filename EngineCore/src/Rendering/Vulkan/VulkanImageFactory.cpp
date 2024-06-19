@@ -101,9 +101,8 @@ namespace Engine::Rendering::Factories
 	{
 		VulkanTextureImage* new_texture_image = new VulkanTextureImage();
 
-		new_texture_image->image = this->CreateImage(
-			width, height, VK_SAMPLE_COUNT_1_BIT, format, tiling, usage, properties
-		);
+		new_texture_image
+			->image = this->CreateImage(width, height, VK_SAMPLE_COUNT_1_BIT, format, tiling, usage, properties);
 		new_texture_image->useAddressMode = addressMode;
 		new_texture_image->useFilter	  = useFilter;
 
@@ -113,7 +112,9 @@ namespace Engine::Rendering::Factories
 	void VulkanImageFactory::AppendImageViewToTextureImage(VulkanTextureImage* teximage)
 	{
 		teximage->image->imageView = this->CreateImageView(
-			teximage->image->image, teximage->image->imageFormat, VK_IMAGE_ASPECT_COLOR_BIT
+			teximage->image->image,
+			teximage->image->imageFormat,
+			VK_IMAGE_ASPECT_COLOR_BIT
 		);
 	}
 
