@@ -4,6 +4,7 @@
 
 #include <memory>
 #include <string>
+#include <utility>
 
 namespace Engine::Rendering
 {
@@ -38,19 +39,16 @@ namespace Engine::Rendering
 		std::shared_ptr<void> payload_ptr = nullptr;
 		std::string payload_string;
 
-		// RendererSupplyData_struct() = default;
-		//~RendererSupplyData_struct() = default;
-
 		RendererSupplyData_struct(RendererSupplyDataType with_type, std::shared_ptr<void> data)
 		{
 			this->type		  = with_type;
-			this->payload_ptr = data;
+			this->payload_ptr = std::move(data);
 		}
 
 		RendererSupplyData_struct(RendererSupplyDataType with_type, std::string data)
 		{
 			this->type			 = with_type;
-			this->payload_string = data;
+			this->payload_string = std::move(data);
 		}
 
 	} RendererSupplyData;

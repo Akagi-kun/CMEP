@@ -64,7 +64,7 @@ namespace Engine
 		std::string config_path;
 
 		// Window
-		uint_fast16_t framerate_target = 10;
+		uint_fast16_t framerate_target = 0;
 
 		double last_delta_time = 0.0;
 
@@ -102,18 +102,21 @@ namespace Engine
 		Engine(std::shared_ptr<Logging::Logger>& logger) noexcept;
 		~Engine() noexcept;
 
-		void SetFramerateTarget(uint_fast16_t framerate) noexcept;
-
 		void Init();
 		void Run();
 
 		void ConfigFile(std::string path);
-		// CMEP_EXPORT void RegisterEventHandler(EventHandling::EventType event_type,
+		// void RegisterEventHandler(EventHandling::EventType event_type,
 		// std::function<int(EventHandling::Event&)> function);
 
 		void Stop();
 
 		int FireEvent(EventHandling::Event& event);
+
+		inline void SetFramerateTarget(uint_fast16_t framerate) noexcept
+		{
+			this->framerate_target = framerate;
+		}
 
 		[[nodiscard]] double GetLastDeltaTime() const;
 

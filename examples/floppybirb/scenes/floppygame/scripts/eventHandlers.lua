@@ -125,16 +125,16 @@ onKeyUp = function(event)
 	end
 end
 
-max_deltaTime = 0.0
-min_deltaTime = 1000.0
-was_logged = false
+max_deltaTime_avg = 0.0
+min_deltaTime_avg = 1000.0
+--was_logged = false
 
 -- ON_UPDATE event
 onUpdate = function(event)
 	deltaTimeAvg = deltaTimeAvg + event.deltaTime;
 
-	if was_logged then max_deltaTime = math.max(max_deltaTime, event.deltaTime); end
-	if was_logged then min_deltaTime = math.min(min_deltaTime, event.deltaTime); end
+	max_deltaTime_avg = math.max(max_deltaTime_avg, event.deltaTime);
+	min_deltaTime_avg = math.min(min_deltaTime_avg, event.deltaTime);
 
 	deltaTimeCount = deltaTimeCount + 1;
 
@@ -142,12 +142,14 @@ onUpdate = function(event)
 	local scene_manager = event.engine:GetSceneManager();
 
 	-- Update frametime counter, recommend to leave this here for debugging purposes
-	if deltaTimeCount >= 30 then
-		was_logged = true
+	if deltaTimeCount >= 60 then
+		--was_logged = true
 		--cmepmeta.logger.SimpleLog(string.format("Hello from Lua! Last FT is: %f ms!", deltaTimeAvg / deltaTimeCount * 1000))
 		local object = scene_manager:FindObject("_debug_info");
-		cmepapi.TextRendererUpdateText(object.renderer, string.format("FT: %f; min: %f; max: %f", deltaTimeAvg / deltaTimeCount * 1000, min_deltaTime * 1000, max_deltaTime * 1000).." ms");
+		cmepapi.TextRendererUpdateText(object.renderer, string.format("FT: %f; min: %f; max: %f", deltaTimeAvg / deltaTimeCount * 1000, min_deltaTime_avg * 1000, max_deltaTime_avg * 1000).." ms");
 		
+		min_deltaTime_avg = 1000.0
+		max_deltaTime_avg = 0.0
 		deltaTimeAvg = 0;
 		deltaTimeCount = 0;
 	end
@@ -157,7 +159,8 @@ onUpdate = function(event)
 			-- Spawn new pipes
 
 			-- We can use the math library in here!
-			local pipe_y_offset = -200 + math.random(-15, 15) * 10;
+			local pipe_y_offset = -130
+			--local pipe_y_offset = -200 + math.random(-15, 15) * 10;
 
 			scene_manager:AddTemplatedObject("sprite_pipe_down"..tostring(spawnPipeLastIdx + 1), "pipe_down");
 			local pipe1 = scene_manager:FindObject("sprite_pipe_down"..tostring(spawnPipeLastIdx + 1));
@@ -210,9 +213,9 @@ onUpdate = function(event)
 					local score_object = scene_manager:FindObject("text_score");
 					cmepapi.TextRendererUpdateText(score_object.renderer, tostring(gameScore));
 
-					pipeMoveSpeed = pipeMoveSpeed * 1.01; -- Increase pipe move speed
-					pipe_spacing = pipe_spacing * 0.990; -- Decrease pipe spacing (between top and bottom pipe)
-					spawnPipeEvery = spawnPipeEvery * 0.98; -- Increase spawn rate (decrease timeout)
+					pipeMoveSpeed = pipeMoveSpeed * 1.005; -- Increase pipe move speed
+					pipe_spacing = pipe_spacing * 0.9990; -- Decrease pipe spacing (between top and bottom pipe)
+					spawnPipeEvery = spawnPipeEvery * 0.9950; -- Increase spawn rate (decrease timeout)
 				end
 
 				if x1 < (0.0 - pxToScreenX(pipe_xSize + 5)) then
@@ -241,8 +244,8 @@ onUpdate = function(event)
 
 		-- Fall birb
 		-- we already have birbx/y/z from before
-		birby = birby - birbVelocity * event.deltaTime;
-		birb:Translate(birbx, birby, birbz);
+		--birby = birby - birbVelocity * event.deltaTime;
+		--birb:Translate(birbx, birby, birbz);
 
 		local ground1 = scene_manager:FindObject("ground_top");
 		local ground2 = scene_manager:FindObject("ground_bottom");
@@ -250,8 +253,8 @@ onUpdate = function(event)
 		local g2_x, g2_y, g2_z = ground2:GetPosition();
 		
 		-- Move ground on X axis (slightly faster than pipes)
-		g1_x = g1_x - (pipeMoveSpeed * 1.05) * event.deltaTime;
-		g2_x = g2_x - (pipeMoveSpeed * 1.05) * event.deltaTime;
+		g1_x = g1_x - (pipeMoveSpeed * 1.1) * event.deltaTime;
+		g2_x = g2_x - (pipeMoveSpeed * 1.1) * event.deltaTime;
 
 		-- Check whether ground is in a correct position
 		-- (the right end of sprite cannot be visible)
@@ -267,7 +270,7 @@ onUpdate = function(event)
 		end
 
 		-- Add birbFallSpeed to birb velocity
-		birbVelocity = birbVelocity - birbFallSpeed * event.deltaTime;
+		--birbVelocity = birbVelocity - birbFallSpeed * event.deltaTime;
 		spawnPipeSinceLast = spawnPipeSinceLast + event.deltaTime;
 	end
 
@@ -275,7 +278,7 @@ onUpdate = function(event)
 end
 
 onInit = function(event)
-	event.engine:SetFramerateTarget(60); -- VSYNC enabled if target is 0
+	--event.engine:SetFramerateTarget(60); -- VSYNC enabled if target is 0
 
 	-- Get managers
 	local asset_manager = event.engine:GetAssetManager();

@@ -3,3 +3,8 @@ CompileFlags:
 If:
   PathMatch: [.*\**.hpp, .*\**.cpp]
   PathExclude: external/.*
+---
+InlayHints:
+  Enabled: Yes
+  ParameterNames: Yes
+  DeducedTypes: No

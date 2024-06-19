@@ -53,7 +53,7 @@ namespace Engine
 		}
 	}
 
-	void SceneManager::SetSceneLoadPrefix(std::string scene_prefix)
+	void SceneManager::SetSceneLoadPrefix(const std::string& scene_prefix)
 	{
 		this->scene_loader->scene_prefix = scene_prefix;
 	}
@@ -64,7 +64,7 @@ namespace Engine
 		this->scenes.emplace(scene_name, this->scene_loader->LoadScene(scene_name));
 	}
 
-	void SceneManager::SetScene(std::string scene_name)
+	void SceneManager::SetScene(const std::string& scene_name)
 	{
 		this->current_scene = scene_name;
 	}
@@ -74,23 +74,23 @@ namespace Engine
 		return this->scenes.at(this->current_scene);
 	}
 
-	void SceneManager::AddObject(std::string name, Object* ptr)
+	void SceneManager::AddObject(const std::string& name, Object* ptr)
 	{
 		this->scenes.at(this->current_scene)->UpdateOwnerEngine(this->owner_engine);
 		this->scenes.at(this->current_scene)->AddObject(name, ptr);
 	}
 
-	Object* SceneManager::FindObject(std::string name)
+	Object* SceneManager::FindObject(const std::string& name)
 	{
 		return this->scenes.at(this->current_scene)->FindObject(name);
 	}
 
-	void SceneManager::RemoveObject(std::string name) noexcept
+	void SceneManager::RemoveObject(const std::string& name) noexcept
 	{
 		this->scenes.at(this->current_scene)->RemoveObject(name);
 	}
 
-	void SceneManager::AddTemplatedObject(std::string name, std::string template_name)
+	void SceneManager::AddTemplatedObject(const std::string& name, const std::string& template_name)
 	{
 		this->scenes.at(this->current_scene)->AddTemplatedObject(name, template_name);
 	}

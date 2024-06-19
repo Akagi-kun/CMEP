@@ -26,8 +26,28 @@ namespace Engine::Rendering
 		VkPresentModeKHR present_mode	  = VulkanUtils::ChooseVulkanSwapPresentMode(swap_chain_support.present_modes);
 		VkExtent2D extent				  = this->ChooseVulkanSwapExtent(swap_chain_support.capabilities);
 
+		if (present_mode == VK_PRESENT_MODE_MAILBOX_KHR)
+		{
+			this->logger->SimpleLog(
+				Logging::LogLevel::Debug1,
+				LOGPFX_CURRENT "Present mode is VK_PRESENT_MODE_MAILBOX_KHR"
+			);
+		}
+		else if (present_mode == VK_PRESENT_MODE_FIFO_KHR)
+		{
+			this->logger->SimpleLog(
+				Logging::LogLevel::Debug1,
+				LOGPFX_CURRENT "Present mode is VK_PRESENT_MODE_FIFO_KHR"
+			);
+		}
+		else
+		{
+			this->logger->SimpleLog(Logging::LogLevel::Debug1, LOGPFX_CURRENT "Present mode is other");
+		}
+
 		// Request one image more than is the required minimum
 		uint32_t swapchain_image_count = swap_chain_support.capabilities.minImageCount + 1;
+
 		// Check if there is a defined maximum (maxImageCount > 0)
 		// where 0 is a special value meaning no maximum
 		//
@@ -41,6 +61,7 @@ namespace Engine::Rendering
 				LOGPFX_CURRENT "Using maxImageCount capability, GPU support limited"
 			);
 		}
+
 		// Save this value to be used later
 		// this->max_frames_in_flight = swapchain_image_count;
 

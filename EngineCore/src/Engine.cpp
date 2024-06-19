@@ -77,11 +77,11 @@ namespace Engine
 		{
 			if ((engine_mouse_x_pos - last_x) != 0.0 || (engine_mouse_y_pos - last_y) != 0.0)
 			{
-				EventHandling::Event event = EventHandling::Event(EventHandling::EventType::ON_MOUSEMOVED);
-				event.mouse.x			   = engine_mouse_x_pos - last_x;
-				event.mouse.y			   = engine_mouse_y_pos - last_y;
-				event.delta_time		   = deltaTime;
-				event.raised_from		   = this;
+				auto event		  = EventHandling::Event(EventHandling::EventType::ON_MOUSEMOVED);
+				event.mouse.x	  = engine_mouse_x_pos - last_x;
+				event.mouse.y	  = engine_mouse_y_pos - last_y;
+				event.delta_time  = deltaTime;
+				event.raised_from = this;
 				this->FireEvent(event);
 
 				last_x = engine_mouse_x_pos;
@@ -179,20 +179,20 @@ namespace Engine
 
 		if (action == GLFW_PRESS)
 		{
-			auto* renderer = static_cast<Rendering::VulkanRenderingEngine*>(glfwGetWindowUserPointer(window));
-			EventHandling::Event event = EventHandling::Event(EventHandling::EventType::ON_KEYDOWN);
-			event.keycode			   = static_cast<uint16_t>(key);
-			event.delta_time		   = renderer->GetOwnerEngine()->GetLastDeltaTime();
-			event.raised_from		   = renderer->GetOwnerEngine();
+			auto* renderer	  = static_cast<Rendering::VulkanRenderingEngine*>(glfwGetWindowUserPointer(window));
+			auto event		  = EventHandling::Event(EventHandling::EventType::ON_KEYDOWN);
+			event.keycode	  = static_cast<uint16_t>(key);
+			event.delta_time  = renderer->GetOwnerEngine()->GetLastDeltaTime();
+			event.raised_from = renderer->GetOwnerEngine();
 			renderer->GetOwnerEngine()->FireEvent(event);
 		}
 		else if (action == GLFW_RELEASE)
 		{
-			auto* renderer = static_cast<Rendering::VulkanRenderingEngine*>(glfwGetWindowUserPointer(window));
-			EventHandling::Event event = EventHandling::Event(EventHandling::EventType::ON_KEYUP);
-			event.keycode			   = static_cast<uint16_t>(key);
-			event.delta_time		   = renderer->GetOwnerEngine()->GetLastDeltaTime();
-			event.raised_from		   = renderer->GetOwnerEngine();
+			auto* renderer	  = static_cast<Rendering::VulkanRenderingEngine*>(glfwGetWindowUserPointer(window));
+			auto event		  = EventHandling::Event(EventHandling::EventType::ON_KEYUP);
+			event.keycode	  = static_cast<uint16_t>(key);
+			event.delta_time  = renderer->GetOwnerEngine()->GetLastDeltaTime();
+			event.raised_from = renderer->GetOwnerEngine();
 			renderer->GetOwnerEngine()->FireEvent(event);
 		}
 	}
@@ -239,8 +239,8 @@ namespace Engine
 		this->scene_manager->AddObject("_axis", object);
 
 		// Pre-make ON_UPDATE event so we don't have to create it over and over again in hot loop
-		EventHandling::Event premade_on_update_event = EventHandling::Event(EventHandling::EventType::ON_UPDATE);
-		premade_on_update_event.raised_from			 = this;
+		auto premade_on_update_event		= EventHandling::Event(EventHandling::EventType::ON_UPDATE);
+		premade_on_update_event.raised_from = this;
 
 		glfwShowWindow(this->rendering_engine->GetWindow().window);
 
@@ -276,13 +276,7 @@ namespace Engine
 			const double framerate2second_ratio = 1.0 / this->framerate_target;
 			const double sleep_secs				= framerate2second_ratio -
 									  static_cast<double>((frame_clock - next_clock).count()) / 1.e9;
-			/* this->logger->SimpleLog(
-				Logging::LogLevel::Info,
-				LOGPFX_CURRENT "Sleeping %lf (%lf %u)",
-				sleep_secs,
-				framerate2second_ratio,
-				this->framerate_target
-			); */
+
 			// spin sleep if sleep necessary and VSYNC disabled
 			if (sleep_secs > 0 && this->framerate_target != 0)
 			{
@@ -343,12 +337,6 @@ namespace Engine
 		this->rendering_engine->Cleanup();
 
 		delete this->rendering_engine;
-	}
-
-	void Engine::SetFramerateTarget(uint_fast16_t framerate) noexcept
-	{
-		// this->logger->SimpleLog(Logging::LogLevel::Info, "Framerate target set to %u", framerate);
-		this->framerate_target = framerate;
 	}
 
 	void Engine::Init()

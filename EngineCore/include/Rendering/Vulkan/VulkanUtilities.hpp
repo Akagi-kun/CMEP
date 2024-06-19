@@ -27,6 +27,7 @@ namespace Engine::Rendering::VulkanUtils
 		{
 			if (available_present_mode == VK_PRESENT_MODE_MAILBOX_KHR)
 			{
+				// TODO: Check this value
 				return available_present_mode;
 			}
 		}
