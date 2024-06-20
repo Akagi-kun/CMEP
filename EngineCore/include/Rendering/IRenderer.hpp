@@ -19,8 +19,6 @@ namespace Engine
 
 	namespace Rendering
 	{
-		class Shader;
-
 		// Interface for Renderers
 		class IRenderer : public IModule
 		{

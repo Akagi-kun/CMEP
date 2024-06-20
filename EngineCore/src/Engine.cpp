@@ -244,7 +244,12 @@ namespace Engine
 
 		glfwShowWindow(this->rendering_engine->GetWindow().window);
 
-		this->logger->SimpleLog(Logging::LogLevel::Debug1, LOGPFX_CURRENT "Locked to framerate %u%s", this->framerate_target, this->framerate_target == 0 ? " (VSYNC)" : "");
+		this->logger->SimpleLog(
+			Logging::LogLevel::Debug1,
+			LOGPFX_CURRENT "Locked to framerate %u%s",
+			this->framerate_target,
+			this->framerate_target == 0 ? " (VSYNC)" : ""
+		);
 
 		// uint16_t counter = 0;
 		auto prev_clock = std::chrono::steady_clock::now();
@@ -369,7 +374,7 @@ namespace Engine
 		}
 
 		// return;
-		//  Order matters here due to interdependency
+		// Order matters here due to interdependency
 
 		this->script_executor = new Scripting::LuaScriptExecutor();
 		this->script_executor->UpdateOwnerEngine(this);
@@ -424,9 +429,9 @@ namespace Engine
 		glfwSetErrorCallback(Engine::ErrorCallback);
 
 		// Fire ON_INIT event
-		EventHandling::Event on_init_event = EventHandling::Event(EventHandling::EventType::ON_INIT);
-		on_init_event.raised_from		   = this;
-		int on_init_event_ret			   = this->FireEvent(on_init_event);
+		auto on_init_event		  = EventHandling::Event(EventHandling::EventType::ON_INIT);
+		on_init_event.raised_from = this;
+		int on_init_event_ret	  = this->FireEvent(on_init_event);
 
 		// Measure and log ON_INIT time
 		static const double nano_to_ms = 1e6;

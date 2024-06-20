@@ -85,8 +85,9 @@ namespace Engine::Scripting::API::LuaObjectFactories
 		}
 
 		// Add Engine pointer
-		auto** ptr_obj = static_cast<Engine**>(lua_newuserdata(state, sizeof(Engine*)));
-		(*ptr_obj)	   = engine_ptr;
+		// auto** ptr_obj = static_cast<Engine**>(lua_newuserdata(state, sizeof(Engine*)));
+		//(*ptr_obj)	   = engine_ptr;
+		lua_pushlightuserdata(state, engine_ptr);
 		lua_setfield(state, -2, "_pointer");
 	}
 
