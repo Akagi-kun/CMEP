@@ -43,21 +43,22 @@
 #		if defined(__clang__)
 #			pragma message("Compiler LLVM-clang detected")
 #			define SEMANTICS_COMPILER_LLVM_CLANG
-#			define BUILDINFO_COMPILED_BY "LLVM-clang " MACRO_STR(__clang_major__) "." MACRO_STR(__clang_minor__
-) "." MACRO_STR(__clang_patchlevel__);
+#			define BUILDINFO_COMPILED_BY                                                                              \
+				"LLVM-clang " MACRO_STR(__clang_major__) "." MACRO_STR(__clang_minor__                                 \
+				) "." MACRO_STR(__clang_patchlevel__);
 //		An GNU-like compiler with LLVM that is not clang is likely to be LLVM GCC
 #		else
 #			pragma message("Compiler LLVM-GCC detected")
 #			define SEMANTICS_COMPILER_LLVM_GCC
-#			define BUILDINFO_COMPILED_BY "LLVM-GCC " MACRO_STR(__GNUC__) "." MACRO_STR(__GNUC_MINOR__
-) "." MACRO_STR(__GNUC_PATCHLEVEL__)
+#			define BUILDINFO_COMPILED_BY                                                                              \
+				"LLVM-GCC " MACRO_STR(__GNUC__) "." MACRO_STR(__GNUC_MINOR__) "." MACRO_STR(__GNUC_PATCHLEVEL__)
 #		endif
 //	An GNU-like compiler that is not using LLVM is likely to be pure GCC
 #	else
 #		pragma message("Compiler GCC detected")
 #		define SEMANTICS_COMPILER_GCC
-#		define BUILDINFO_COMPILED_BY "GCC " MACRO_STR(__GNUC__) "." MACRO_STR(__GNUC_MINOR__
-) "." MACRO_STR(__GNUC_PATCHLEVEL__);
+#		define BUILDINFO_COMPILED_BY                                                                                  \
+			"GCC " MACRO_STR(__GNUC__) "." MACRO_STR(__GNUC_MINOR__) "." MACRO_STR(__GNUC_PATCHLEVEL__);
 #	endif
 // Any other compiler will simply be Nil
 #else

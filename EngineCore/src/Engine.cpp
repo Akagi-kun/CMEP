@@ -34,8 +34,8 @@ namespace Engine
 	// Utility sleep function
 	void Engine::SpinSleep(double seconds)
 	{
-		static const double nano_to_sec = 1e9;
-		static const double spin_init	= 5e-3;
+		static constexpr double nano_to_sec = 1e9;
+		static constexpr double spin_init	= 5e-3;
 
 		static double estimate = spin_init;
 		static double mean	   = spin_init;
@@ -434,7 +434,7 @@ namespace Engine
 		int on_init_event_ret	  = this->FireEvent(on_init_event);
 
 		// Measure and log ON_INIT time
-		static const double nano_to_ms = 1e6;
+		static constexpr double nano_to_ms = 1e6;
 		double total = static_cast<double>((std::chrono::steady_clock::now() - start).count()) / nano_to_ms;
 		this->logger->SimpleLog(
 			Logging::LogLevel::Debug1,
