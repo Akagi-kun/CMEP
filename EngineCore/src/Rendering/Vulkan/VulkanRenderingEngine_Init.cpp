@@ -1,9 +1,11 @@
 #include "Rendering/Vulkan/VulkanRenderingEngine.hpp"
+#include "Rendering/Vulkan/VulkanStructDefs.hpp"
 #include "Rendering/Vulkan/VulkanUtilities.hpp"
 
 #include "Logging/Logging.hpp"
 
 #include "Engine.hpp"
+#include "vulkan/vulkan_core.h"
 
 // Prefixes for logging messages
 #define LOGPFX_CURRENT LOGPFX_CLASS_VULKAN_RENDERING_ENGINE
@@ -217,10 +219,9 @@ namespace Engine::Rendering
 		VulkanPipelineSettings pipeline_settings  = this->GetVulkanDefaultPipelineSettings();
 		pipeline_settings.input_assembly.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
 
-		pipeline_settings.descriptor_layout_settings.binding.push_back(0);
-		pipeline_settings.descriptor_layout_settings.descriptorCount.push_back(1);
-		pipeline_settings.descriptor_layout_settings.types.push_back(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER);
-		pipeline_settings.descriptor_layout_settings.stageFlags.push_back(VK_SHADER_STAGE_VERTEX_BIT);
+		pipeline_settings.descriptor_layout_settings.push_back(
+			VulkanDescriptorLayoutSettings{0, 1, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT}
+		);
 
 		this->graphics_pipeline_default = this->CreateVulkanPipeline(
 			pipeline_settings,
@@ -318,8 +319,8 @@ namespace Engine::Rendering
 		for (size_t i = 0; i < vk_swap_chain_image_views.size(); i++)
 		{
 			std::array<VkImageView, 3> attachments = {
-				this->multisampled_color_image->imageView,
-				this->vk_depth_buffer->imageView,
+				this->multisampled_color_image->image_view,
+				this->vk_depth_buffer->image_view,
 				this->vk_swap_chain_image_views[i]
 			};
 
@@ -424,7 +425,7 @@ namespace Engine::Rendering
 				VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT
 			);
 
-			this->vk_depth_buffer->imageView = vulkan_image_factory->CreateImageView(
+			this->vk_depth_buffer->image_view = vulkan_image_factory->CreateImageView(
 				this->vk_depth_buffer->image,
 				depth_format,
 				VK_IMAGE_ASPECT_DEPTH_BIT
@@ -448,9 +449,9 @@ namespace Engine::Rendering
 				VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT
 			);
 
-			this->multisampled_color_image->imageView = vulkan_image_factory->CreateImageView(
+			this->multisampled_color_image->image_view = vulkan_image_factory->CreateImageView(
 				this->multisampled_color_image->image,
-				this->multisampled_color_image->imageFormat,
+				this->multisampled_color_image->image_format,
 				VK_IMAGE_ASPECT_COLOR_BIT
 			);
 		}

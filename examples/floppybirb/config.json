@@ -2,7 +2,7 @@
     "window": {
         "title": "Floppybirb",
         "sizeX": 1100,
-        "sizeY": 720 
+        "sizeY": 720
     },
     "rendering": {
         "framerateTarget": 0

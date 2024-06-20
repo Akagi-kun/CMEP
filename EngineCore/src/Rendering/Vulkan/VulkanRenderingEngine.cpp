@@ -272,7 +272,7 @@ namespace Engine::Rendering
 		glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
 		glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE);
 		// Quick hack for i3wm
-		// TODO: Fix i3wm 
+		// TODO: Fix i3wm
 		glfwWindowHint(GLFW_FLOATING, GLFW_TRUE);
 		glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
 		this->window = glfwCreateWindow(
@@ -762,14 +762,14 @@ namespace Engine::Rendering
 
 		vkMapMemory(
 			this->device_manager->GetLogicalDevice(),
-			staging_buffer->allocationInfo.deviceMemory,
-			staging_buffer->allocationInfo.offset,
-			staging_buffer->allocationInfo.size,
+			staging_buffer->allocation_info.deviceMemory,
+			staging_buffer->allocation_info.offset,
+			staging_buffer->allocation_info.size,
 			0,
-			&staging_buffer->mappedData
+			&staging_buffer->mapped_data
 		);
-		memcpy(staging_buffer->mappedData, vertices.data(), static_cast<size_t>(buffer_size));
-		vkUnmapMemory(this->device_manager->GetLogicalDevice(), staging_buffer->allocationInfo.deviceMemory);
+		memcpy(staging_buffer->mapped_data, vertices.data(), static_cast<size_t>(buffer_size));
+		vkUnmapMemory(this->device_manager->GetLogicalDevice(), staging_buffer->allocation_info.deviceMemory);
 
 		this->BufferVulkanTransferCopy(staging_buffer, vertex_buffer, buffer_size);
 
@@ -826,7 +826,7 @@ namespace Engine::Rendering
 				&vma_alloc_info,
 				&(new_buffer->buffer),
 				&(new_buffer->allocation),
-				&(new_buffer->allocationInfo)
+				&(new_buffer->allocation_info)
 			) != VK_SUCCESS)
 		{
 			this->logger->SimpleLog(Logging::LogLevel::Error, LOGPFX_CURRENT "Vulkan failed creating buffer");
@@ -851,16 +851,16 @@ namespace Engine::Rendering
 
 		vkMapMemory(
 			this->device_manager->GetLogicalDevice(),
-			staging_buffer->allocationInfo.deviceMemory,
-			staging_buffer->allocationInfo.offset,
-			staging_buffer->allocationInfo.size,
+			staging_buffer->allocation_info.deviceMemory,
+			staging_buffer->allocation_info.offset,
+			staging_buffer->allocation_info.size,
 			0,
-			&staging_buffer->mappedData
+			&staging_buffer->mapped_data
 		);
 
-		memcpy(staging_buffer->mappedData, data, static_cast<size_t>(dataSize));
+		memcpy(staging_buffer->mapped_data, data, static_cast<size_t>(dataSize));
 
-		vkUnmapMemory(this->device_manager->GetLogicalDevice(), staging_buffer->allocationInfo.deviceMemory);
+		vkUnmapMemory(this->device_manager->GetLogicalDevice(), staging_buffer->allocation_info.deviceMemory);
 
 		return staging_buffer;
 	}
@@ -893,18 +893,19 @@ namespace Engine::Rendering
 
 	void VulkanRenderingEngine::CreateVulkanDescriptorSetLayout(
 		VulkanPipeline* pipeline,
-		VulkanDescriptorLayoutSettings settings
+		std::vector<VulkanDescriptorLayoutSettings>& settings
 	)
 	{
 		std::vector<VkDescriptorSetLayoutBinding> bindings	= {};
 		std::vector<VkDescriptorBindingFlags> binding_flags = {};
-		for (size_t i = 0; i < settings.binding.size(); i++)
+		// TODO: Range based for loop?
+		for (size_t i = 0; i < settings.size(); i++)
 		{
 			VkDescriptorSetLayoutBinding new_binding{};
-			new_binding.binding			   = settings.binding[i];
-			new_binding.descriptorCount	   = settings.descriptorCount[i];
-			new_binding.descriptorType	   = settings.types[i];
-			new_binding.stageFlags		   = settings.stageFlags[i];
+			new_binding.binding			   = settings[i].binding;
+			new_binding.descriptorCount	   = settings[i].descriptor_count;
+			new_binding.descriptorType	   = settings[i].types;
+			new_binding.stageFlags		   = settings[i].stage_flags;
 			new_binding.pImmutableSamplers = nullptr;
 
 			bindings.push_back(new_binding);
@@ -941,17 +942,18 @@ namespace Engine::Rendering
 
 	void VulkanRenderingEngine::CreateVulkanDescriptorPool(
 		VulkanPipeline* pipeline,
-		VulkanDescriptorLayoutSettings settings
+		std::vector<VulkanDescriptorLayoutSettings>& settings
 	)
 	{
 		std::vector<VkDescriptorPoolSize> pool_sizes{};
 
-		pool_sizes.resize(settings.binding.size());
-		for (size_t i = 0; i < settings.binding.size(); i++)
+		pool_sizes.resize(settings.size());
+		for (size_t i = 0; i < settings.size(); i++)
 		{
 			VkDescriptorPoolSize pool_size{};
-			pool_size.type			  = settings.types[i];
-			pool_size.descriptorCount = static_cast<uint32_t>(this->max_frames_in_flight) * settings.descriptorCount[i];
+			pool_size.type			  = settings[i].types;
+			pool_size.descriptorCount = static_cast<uint32_t>(this->max_frames_in_flight) *
+										settings[i].descriptor_count;
 
 			pool_sizes[i] = pool_size;
 		}
@@ -1030,12 +1032,12 @@ namespace Engine::Rendering
 	{
 		VkSamplerCreateInfo sampler_info{};
 		sampler_info.sType	   = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
-		sampler_info.magFilter = teximage->useFilter;
-		sampler_info.minFilter = teximage->useFilter; // VK_FILTER_LINEAR;
+		sampler_info.magFilter = teximage->use_filter;
+		sampler_info.minFilter = teximage->use_filter; // VK_FILTER_LINEAR;
 
-		sampler_info.addressModeU = teximage->useAddressMode; // VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
-		sampler_info.addressModeV = teximage->useAddressMode;
-		sampler_info.addressModeW = teximage->useAddressMode;
+		sampler_info.addressModeU = teximage->use_address_mode; // VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
+		sampler_info.addressModeV = teximage->use_address_mode;
+		sampler_info.addressModeW = teximage->use_address_mode;
 
 		VkPhysicalDeviceProperties properties{};
 		vkGetPhysicalDeviceProperties(this->device_manager->GetPhysicalDevice(), &properties);
@@ -1059,7 +1061,7 @@ namespace Engine::Rendering
 				this->device_manager->GetLogicalDevice(),
 				&sampler_info,
 				nullptr,
-				&(teximage->textureSampler)
+				&(teximage->texture_sampler)
 			) != VK_SUCCESS)
 		{
 			this->logger->SimpleLog(Logging::LogLevel::Error, LOGPFX_CURRENT "Failed to create texture sampler");
@@ -1069,7 +1071,7 @@ namespace Engine::Rendering
 
 	void VulkanRenderingEngine::CleanupVulkanImage(VulkanImage* image)
 	{
-		vkDestroyImageView(this->device_manager->GetLogicalDevice(), image->imageView, nullptr);
+		vkDestroyImageView(this->device_manager->GetLogicalDevice(), image->image_view, nullptr);
 		vkDestroyImage(this->device_manager->GetLogicalDevice(), image->image, nullptr);
 		vmaFreeMemory(this->vma_allocator, image->allocation);
 
@@ -1081,7 +1083,7 @@ namespace Engine::Rendering
 	{
 		this->logger->SimpleLog(Logging::LogLevel::Debug3, LOGPFX_CURRENT "Cleaning up Vulkan texture image");
 
-		vkDestroySampler(this->device_manager->GetLogicalDevice(), image->textureSampler, nullptr);
+		vkDestroySampler(this->device_manager->GetLogicalDevice(), image->texture_sampler, nullptr);
 
 		this->CleanupVulkanImage(image->image);
 

@@ -156,14 +156,14 @@ namespace Engine::Factories
 
 		vkMapMemory(
 			renderer->GetLogicalDevice(),
-			used_staging_buffer->allocationInfo.deviceMemory,
-			used_staging_buffer->allocationInfo.offset,
-			used_staging_buffer->allocationInfo.size,
+			used_staging_buffer->allocation_info.deviceMemory,
+			used_staging_buffer->allocation_info.offset,
+			used_staging_buffer->allocation_info.size,
 			0,
-			&used_staging_buffer->mappedData
+			&used_staging_buffer->mapped_data
 		);
 
-		memcpy(used_staging_buffer->mappedData, raw_data.data(), static_cast<size_t>(memory_size));
+		memcpy(used_staging_buffer->mapped_data, raw_data.data(), static_cast<size_t>(memory_size));
 
 		if (const auto& vulkan_image_factory = this->owner_engine->GetVulkanImageFactory().lock())
 		{
@@ -200,7 +200,7 @@ namespace Engine::Factories
 			);
 
 			// Unmap staging memory and cleanup buffer if we created it here
-			vkUnmapMemory(renderer->GetLogicalDevice(), used_staging_buffer->allocationInfo.deviceMemory);
+			vkUnmapMemory(renderer->GetLogicalDevice(), used_staging_buffer->allocation_info.deviceMemory);
 			if (staging_buffer == nullptr)
 			{
 				renderer->CleanupVulkanBuffer(used_staging_buffer);

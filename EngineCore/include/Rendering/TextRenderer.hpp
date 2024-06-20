@@ -13,12 +13,8 @@ namespace Engine::Rendering
 	class TextRenderer final : public IRenderer
 	{
 	private:
-		size_t vbo_vert_count = 0;
-
 		std::string text;
 
-		VulkanPipeline* pipeline		  = nullptr;
-		VulkanBuffer* vbo				  = nullptr;
 		VulkanTextureImage* texture_image = nullptr;
 
 		std::shared_ptr<Rendering::Font> font = nullptr;

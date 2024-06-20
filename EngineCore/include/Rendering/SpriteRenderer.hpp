@@ -15,11 +15,7 @@ namespace Engine::Rendering
 	class SpriteRenderer final : public IRenderer
 	{
 	private:
-		VulkanBuffer* vbo = nullptr;
-
 		glm::mat4 mat_mvp{};
-
-		VulkanPipeline* pipeline = nullptr;
 
 	public:
 		// TODO: Make private after fixes in Scene

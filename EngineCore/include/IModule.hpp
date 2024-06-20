@@ -34,12 +34,23 @@ namespace Engine
 		std::variant<Rendering::RendererSupplyData, Rendering::RendererTransformUpdate> payload;
 	};
 
+	enum class ModuleType
+	{
+		MIN_ENUM = 0x00,
+
+		RENDERER = 5,
+
+		MAX_ENUM = 0xFF
+	};
+
 	class IModule : public InternalEngineObject
 	{
-	private:
+	protected:
+		ModuleType type;
+
 	public:
 		IModule() = delete;
-		IModule(Engine* engine) : InternalEngineObject(engine)
+		IModule(Engine* engine, ModuleType as_type) : InternalEngineObject(engine), type(as_type)
 		{
 		}
 		virtual ~IModule() = default;

@@ -17,11 +17,6 @@ namespace Engine::Rendering
 	class MeshRenderer final : public IRenderer
 	{
 	private:
-		size_t vbo_vert_count = 0;
-
-		VulkanPipeline* pipeline = nullptr;
-		VulkanBuffer* vbo		 = nullptr;
-
 		glm::mat4 mat_m{};
 		glm::mat4 mat_v{};
 		glm::mat4 mat_mv{};

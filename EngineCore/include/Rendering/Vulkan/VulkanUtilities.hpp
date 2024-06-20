@@ -23,11 +23,11 @@ namespace Engine::Rendering::VulkanUtils
 
 	inline VkPresentModeKHR ChooseVulkanSwapPresentMode(const std::vector<VkPresentModeKHR>& availablePresentModes)
 	{
+		// Mailbox may be potentially worse?
 		/*for (const auto& available_present_mode : availablePresentModes)
 		{
 			if (available_present_mode == VK_PRESENT_MODE_MAILBOX_KHR)
 			{
-				// TODO: Check this value
 				return available_present_mode;
 			}
 		}*/

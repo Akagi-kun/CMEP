@@ -27,8 +27,11 @@ namespace Engine
 		protected:
 			Transform transform;
 			Transform parent_transform;
-
 			ScreenSize screen;
+
+			VulkanPipeline* pipeline = nullptr;
+			VulkanBuffer* vbo		 = nullptr;
+			size_t vbo_vert_count	 = 0;
 
 			// If this is false, UpdateMesh shall be internally called on next Render
 			bool has_updated_mesh = false;
@@ -46,13 +49,14 @@ namespace Engine
 				this->has_updated_mesh = false;
 			}
 
+			// Renderers shall implement this to get textures, fonts etc.
 			virtual void SupplyData(const RendererSupplyData& data) = 0;
 
 		public:
 			std::weak_ptr<::Engine::SceneManager> scene_manager;
 
 			IRenderer() = delete;
-			IRenderer(Engine* engine) : IModule(engine)
+			IRenderer(Engine* engine) : IModule(engine, ModuleType::RENDERER)
 			{
 			}
 			virtual ~IRenderer() override = default;

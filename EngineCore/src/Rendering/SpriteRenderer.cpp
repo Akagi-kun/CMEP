@@ -22,15 +22,19 @@ namespace Engine::Rendering
 		pipeline_settings.input_assembly.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
 		// pipeline_settings.rasterizer.cullMode = VK_CULL_MODE_BACK_BIT;
 
-		pipeline_settings.descriptor_layout_settings.binding.push_back(0);
-		pipeline_settings.descriptor_layout_settings.descriptorCount.push_back(1);
-		pipeline_settings.descriptor_layout_settings.types.push_back(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER);
-		pipeline_settings.descriptor_layout_settings.stageFlags.push_back(VK_SHADER_STAGE_VERTEX_BIT);
+		pipeline_settings.descriptor_layout_settings.push_back(VulkanDescriptorLayoutSettings{
+			0,
+			1,
+			VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
+			VK_SHADER_STAGE_VERTEX_BIT,
+		});
 
-		pipeline_settings.descriptor_layout_settings.binding.push_back(1);
-		pipeline_settings.descriptor_layout_settings.descriptorCount.push_back(1);
-		pipeline_settings.descriptor_layout_settings.types.push_back(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
-		pipeline_settings.descriptor_layout_settings.stageFlags.push_back(VK_SHADER_STAGE_FRAGMENT_BIT);
+		pipeline_settings.descriptor_layout_settings.push_back(VulkanDescriptorLayoutSettings{
+			1,
+			1,
+			VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
+			VK_SHADER_STAGE_FRAGMENT_BIT,
+		});
 
 		this->pipeline = renderer->CreateVulkanPipeline(
 			pipeline_settings,
@@ -66,7 +70,9 @@ namespace Engine::Rendering
 				return;
 			}
 			default:
+			{
 				break;
+			}
 		}
 
 		throw std::runtime_error("Tried to supply Renderer data with payload type unsupported by the renderer!");
@@ -80,15 +86,7 @@ namespace Engine::Rendering
 
 		if (this->vbo == nullptr)
 		{
-			/* 			std::array<RenderingVertex, 6> vertices = {};
-						vertices[0] = {glm::vec3(0.0, 1.0, 0.0), glm::vec3(1.f, 0.f, 0.f), glm::vec2(0.0, 1.0)};
-						vertices[1] = {glm::vec3(1.0, 1.0, 0.0), glm::vec3(1.f, 0.f, 0.f), glm::vec2(1.0, 1.0)};
-						vertices[2] = {glm::vec3(0.0, 0.0, 0.0), glm::vec3(1.f, 0.f, 0.f), glm::vec2(0.0, 0.0)};
-						vertices[3] = {glm::vec3(1.0, 1.0, 0.0), glm::vec3(1.f, 0.f, 0.f), glm::vec2(1.0, 1.0)};
-						vertices[4] = {glm::vec3(1.0, 0.0, 0.0), glm::vec3(1.f, 0.f, 0.f), glm::vec2(1.0, 0.0)};
-						vertices[5] = {glm::vec3(0.0, 0.0, 0.0), glm::vec3(1.f, 0.f, 0.f), glm::vec2(0.0, 0.0)};
-			 */
-			std::vector<RenderingVertex> generated_mesh = {
+			const std::vector<RenderingVertex> generated_mesh = {
 				{glm::vec3(0.0, 1.0, 0.0), glm::vec3(1.f, 0.f, 0.f), glm::vec2(0.0, 1.0)},
 				{glm::vec3(1.0, 1.0, 0.0), glm::vec3(1.f, 0.f, 0.f), glm::vec2(1.0, 1.0)},
 				{glm::vec3(0.0, 0.0, 0.0), glm::vec3(1.f, 0.f, 0.f), glm::vec2(0.0, 0.0)},
@@ -98,10 +96,11 @@ namespace Engine::Rendering
 			};
 			// generated_mesh.insert(generated_mesh.end(), vertices.begin(), vertices.end());
 
-			this->vbo = renderer->CreateVulkanVertexBufferFromData(generated_mesh);
+			this->vbo			 = renderer->CreateVulkanVertexBufferFromData(generated_mesh);
+			this->vbo_vert_count = generated_mesh.size();
 		}
 
-		glm::mat4 projection = glm::ortho(0.0f, 1.0f, 0.0f, 1.0f, -10.0f, 10.0f);
+		glm::mat4 projection = glm::ortho(0.0f, 1.0f, 0.0f, 1.0f); //, -10.0f, 10.0f);
 
 		if (this->parent_transform.size.x == 0.0f && this->parent_transform.size.y == 0.0f &&
 			this->parent_transform.size.z == 0.0f)
@@ -134,11 +133,12 @@ namespace Engine::Rendering
 
 			VkDescriptorImageInfo image_info{};
 			image_info.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-			image_info.imageView   = texture_image->image->imageView;
-			image_info.sampler	   = texture_image->textureSampler;
+			image_info.imageView   = texture_image->image->image_view;
+			image_info.sampler	   = texture_image->texture_sampler;
 
 			std::array<VkWriteDescriptorSet, 2> descriptor_writes{};
 
+			// Descriptor write for MVP matrix
 			descriptor_writes[0].sType			 = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
 			descriptor_writes[0].dstSet			 = pipeline->vk_descriptor_sets[i];
 			descriptor_writes[0].dstBinding		 = 0;
@@ -175,17 +175,17 @@ namespace Engine::Rendering
 		VulkanRenderingEngine* renderer = this->owner_engine->GetRenderingEngine();
 		vkMapMemory(
 			renderer->GetLogicalDevice(),
-			pipeline->uniform_buffers[currentFrame]->allocationInfo.deviceMemory,
-			pipeline->uniform_buffers[currentFrame]->allocationInfo.offset,
-			pipeline->uniform_buffers[currentFrame]->allocationInfo.size,
+			pipeline->uniform_buffers[currentFrame]->allocation_info.deviceMemory,
+			pipeline->uniform_buffers[currentFrame]->allocation_info.offset,
+			pipeline->uniform_buffers[currentFrame]->allocation_info.size,
 			0,
-			&(pipeline->uniform_buffers[currentFrame]->mappedData)
+			&(pipeline->uniform_buffers[currentFrame]->mapped_data)
 		);
 
-		memcpy(this->pipeline->uniform_buffers[currentFrame]->mappedData, &this->mat_mvp, sizeof(glm::mat4));
+		memcpy(this->pipeline->uniform_buffers[currentFrame]->mapped_data, &this->mat_mvp, sizeof(glm::mat4));
 		vkUnmapMemory(
 			renderer->GetLogicalDevice(),
-			pipeline->uniform_buffers[currentFrame]->allocationInfo.deviceMemory
+			pipeline->uniform_buffers[currentFrame]->allocation_info.deviceMemory
 		);
 
 		vkCmdBindDescriptorSets(
@@ -204,7 +204,6 @@ namespace Engine::Rendering
 		VkDeviceSize offsets[]	  = {0};
 		vkCmdBindVertexBuffers(commandBuffer, 0, 1, vertex_buffers, offsets);
 
-		const size_t vertex_count = this->vbo->buffer_size / sizeof(RenderingVertex);
-		vkCmdDraw(commandBuffer, static_cast<uint32_t>(vertex_count), 1, 0, 0);
+		vkCmdDraw(commandBuffer, static_cast<uint32_t>(this->vbo_vert_count), 1, 0, 0);
 	}
 } // namespace Engine::Rendering

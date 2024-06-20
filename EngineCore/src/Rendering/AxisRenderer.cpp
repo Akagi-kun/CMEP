@@ -20,10 +20,9 @@ namespace Engine::Rendering
 		VulkanPipelineSettings pipeline_settings  = renderer->GetVulkanDefaultPipelineSettings();
 		pipeline_settings.input_assembly.topology = VK_PRIMITIVE_TOPOLOGY_LINE_LIST;
 
-		pipeline_settings.descriptor_layout_settings.binding.push_back(0);
-		pipeline_settings.descriptor_layout_settings.descriptorCount.push_back(1);
-		pipeline_settings.descriptor_layout_settings.types.push_back(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER);
-		pipeline_settings.descriptor_layout_settings.stageFlags.push_back(VK_SHADER_STAGE_VERTEX_BIT);
+		pipeline_settings.descriptor_layout_settings.push_back(
+			VulkanDescriptorLayoutSettings{0, 1, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT}
+		);
 
 		this->pipeline = renderer->CreateVulkanPipeline(
 			pipeline_settings,
@@ -81,6 +80,8 @@ namespace Engine::Rendering
 			{{0.0, 0.0, 0.0}, {1.0f, 0.0f, 0.0f}},
 			{{0.0, 0.0, 1.0}, {1.0f, 0.0f, 0.0f}}
 		};
+
+		this->vbo_vert_count = vertices.size();
 
 		glm::mat4 projection =
 			glm::perspective(glm::radians(45.0f), static_cast<float>(this->screen.x / this->screen.y), 0.1f, 100.0f);
@@ -141,17 +142,17 @@ namespace Engine::Rendering
 		VulkanRenderingEngine* renderer = this->owner_engine->GetRenderingEngine();
 		vkMapMemory(
 			renderer->GetLogicalDevice(),
-			pipeline->uniform_buffers[currentFrame]->allocationInfo.deviceMemory,
-			pipeline->uniform_buffers[currentFrame]->allocationInfo.offset,
-			pipeline->uniform_buffers[currentFrame]->allocationInfo.size,
+			pipeline->uniform_buffers[currentFrame]->allocation_info.deviceMemory,
+			pipeline->uniform_buffers[currentFrame]->allocation_info.offset,
+			pipeline->uniform_buffers[currentFrame]->allocation_info.size,
 			0,
-			&(pipeline->uniform_buffers[currentFrame]->mappedData)
+			&(pipeline->uniform_buffers[currentFrame]->mapped_data)
 		);
 
-		memcpy(this->pipeline->uniform_buffers[currentFrame]->mappedData, &this->mat_mvp, sizeof(glm::mat4));
+		memcpy(this->pipeline->uniform_buffers[currentFrame]->mapped_data, &this->mat_mvp, sizeof(glm::mat4));
 		vkUnmapMemory(
 			renderer->GetLogicalDevice(),
-			pipeline->uniform_buffers[currentFrame]->allocationInfo.deviceMemory
+			pipeline->uniform_buffers[currentFrame]->allocation_info.deviceMemory
 		);
 
 		vkCmdBindDescriptorSets(
@@ -170,7 +171,6 @@ namespace Engine::Rendering
 		VkDeviceSize offsets[]	  = {0};
 		vkCmdBindVertexBuffers(commandBuffer, 0, 1, vertex_buffers, offsets);
 
-		const size_t vertex_count = this->vbo->buffer_size / sizeof(RenderingVertex);
-		vkCmdDraw(commandBuffer, static_cast<uint32_t>(vertex_count), 1, 0, 0);
+		vkCmdDraw(commandBuffer, static_cast<uint32_t>(this->vbo_vert_count), 1, 0, 0);
 	}
 } // namespace Engine::Rendering

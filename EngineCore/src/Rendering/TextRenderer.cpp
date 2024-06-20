@@ -24,15 +24,24 @@ namespace Engine::Rendering
 		VulkanPipelineSettings pipeline_settings  = renderer->GetVulkanDefaultPipelineSettings();
 		pipeline_settings.input_assembly.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
 
-		pipeline_settings.descriptor_layout_settings.binding.push_back(0);
-		pipeline_settings.descriptor_layout_settings.descriptorCount.push_back(1);
-		pipeline_settings.descriptor_layout_settings.types.push_back(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER);
-		pipeline_settings.descriptor_layout_settings.stageFlags.push_back(VK_SHADER_STAGE_VERTEX_BIT);
+		pipeline_settings.descriptor_layout_settings.push_back(
+			VulkanDescriptorLayoutSettings{0, 1, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT}
+		);
+		// pipeline_settings.descriptor_layout_settings.binding.push_back(0);
+		// pipeline_settings.descriptor_layout_settings.descriptor_count.push_back(1);
+		// pipeline_settings.descriptor_layout_settings.types.push_back(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER);
+		// pipeline_settings.descriptor_layout_settings.stage_flags.push_back(VK_SHADER_STAGE_VERTEX_BIT);
 
-		pipeline_settings.descriptor_layout_settings.binding.push_back(1);
-		pipeline_settings.descriptor_layout_settings.descriptorCount.push_back(1);
-		pipeline_settings.descriptor_layout_settings.types.push_back(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
-		pipeline_settings.descriptor_layout_settings.stageFlags.push_back(VK_SHADER_STAGE_FRAGMENT_BIT);
+		pipeline_settings.descriptor_layout_settings.push_back(VulkanDescriptorLayoutSettings{
+			1,
+			1,
+			VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
+			VK_SHADER_STAGE_FRAGMENT_BIT
+		});
+		// pipeline_settings.descriptor_layout_settings.binding.push_back(1);
+		// pipeline_settings.descriptor_layout_settings.descriptor_count.push_back(1);
+		// pipeline_settings.descriptor_layout_settings.types.push_back(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
+		// pipeline_settings.descriptor_layout_settings.stage_flags.push_back(VK_SHADER_STAGE_FRAGMENT_BIT);
 
 		this->pipeline = renderer->CreateVulkanPipeline(
 			pipeline_settings,
@@ -93,25 +102,47 @@ namespace Engine::Rendering
 			this->vbo = nullptr;
 		}
 
-		int fontsize = std::stoi(*this->font->GetFontInfoParameter("size"));
-
-		assert(fontsize > 0);
+		int font_size = std::stoi(*this->font->GetFontInfoParameter("size"));
+		// int font_line_height = std::stoi(*this->font->GetFontInfoParameter("lineHeight"));
+		assert(
+			font_size > 0 && ".fnt file should have a defined 'size' parameter but size acquired was 0 or less! (is "
+							 "font correctly loaded?)"
+		);
+		// assert(
+		//	font_line_height > 0 && ".fnt file should have a defined 'lineHeight' parameter but lineHeight acquired "
+		//							"was 0 or less! (is font correctly loaded?)"
+		//);
 
 		std::vector<RenderingVertex> generated_mesh = {};
 
-		float accu_x = 0.f;
-		float accu_y = 0.f;
+		// Positions that denote the origin for a specific character
+		// Moved as the mesh is built
+		float char_origin_x = 0.f;
+		float char_origin_y = 0.f;
 		for (size_t i = 0; i < this->text.size(); i++)
 		{
-			vbo = nullptr;
+			this->vbo = nullptr;
+
+			// Following calculations assume that font sizes are specified in pixels
+			// transform.size.y is rounded
+			//
+			// Ratio between font size (as defined by the .fnt file) and selected size for this renderer
+			// value 0.0 denotes 0 pixels and 1.0 denotes font_size (native) pixels
+			// used as a size multiplier for the rendered mesh
+			const auto font_size_ratio = static_cast<float>(
+				std::round(this->transform.size.y) / static_cast<float>(font_size)
+			);
+
+			// Denotes how the line height translates into screen space coordinates
+			const auto line_height_screenspace = static_cast<float>(
+				std::round(this->transform.size.y) / static_cast<float>(this->screen.y)
+			);
+
 			if (this->text[i] == '\n')
 			{
-				accu_y -= 0.35f * (float)(std::round(this->transform.size.y) / fontsize);
-				accu_x = 0.f;
-			}
-			else if (this->text[i] == ' ')
-			{
-				accu_x += 0.05f * (float)(std::round(this->transform.size.x) / fontsize);
+				// Simulate a newline
+				char_origin_y += line_height_screenspace;
+				char_origin_x = 0.f;
 			}
 			else
 			{
@@ -140,56 +171,84 @@ namespace Engine::Rendering
 
 				// Obscure math I don't understand, achieved with trial and error and works so just leave it like this
 				const float size_x = char_width / static_cast<float>(this->screen.x) *
-									 static_cast<float>(std::round(this->transform.size.x) / fontsize);
+									 static_cast<float>(
+										 std::round(this->transform.size.x) / static_cast<float>(font_size)
+									 );
 				const float size_y = char_height / static_cast<float>(this->screen.y) *
-									 static_cast<float>(std::round(this->transform.size.y) / fontsize);
-				const float position_x = accu_x;
-				const float position_y = accu_y;
+									 static_cast<float>(
+										 std::round(this->transform.size.y) / static_cast<float>(font_size)
+									 );
+
+				// Offset origin by xoffset of this char
+				const float position_x = char_origin_x + ((static_cast<float>(character->xoffset) * font_size_ratio) /
+														  static_cast<float>(this->screen.x));
+				const float position_y = char_origin_y;
 				const float position_z = 0.0f;
 
 				const float color_r = 1.0f;
 				const float color_g = 1.0f;
 				const float color_b = 1.0f;
 
+				// position_x is already set so we can
+				// move origin to the next character using xadvance from font
+				char_origin_x += (static_cast<float>(character->xadvance) * font_size_ratio) /
+								 static_cast<float>(this->screen.x);
+
+				// If this character is a space we can skip generating a mesh for it
+				if (this->text[i] == ' ')
+				{
+					continue;
+				}
+
 				std::array<RenderingVertex, 6> vertices = {};
 				vertices[0]								= {
-					glm::vec3(position_x, size_y + position_y, position_z),
-					glm::vec3(color_r, color_g, color_b),
-					glm::vec2((char_x) / (float)texture_width, (char_y + char_height) / (float)texture_height)
-				};
-				vertices[1] = {
-					glm::vec3(size_x + position_x, size_y + position_y, position_z),
+					glm::vec3(position_x, position_y + size_y, position_z),
 					glm::vec3(color_r, color_g, color_b),
 					glm::vec2(
-						(char_x + char_width) / (float)texture_width,
-						(char_y + char_height) / (float)texture_height
+						(char_x) / static_cast<float>(texture_width),
+						(char_y + char_height) / static_cast<float>(texture_height)
+					)
+				};
+				vertices[1] = {
+					glm::vec3(position_x + size_x, position_y + size_y, position_z),
+					glm::vec3(color_r, color_g, color_b),
+					glm::vec2(
+						(char_x + char_width) / static_cast<float>(texture_width),
+						(char_y + char_height) / static_cast<float>(texture_height)
 					)
 				};
 				vertices[2] = {
 					glm::vec3(position_x, position_y, position_z),
 					glm::vec3(color_r, color_g, color_b),
-					glm::vec2((char_x) / (float)texture_width, (char_y) / (float)texture_height)
+					glm::vec2(
+						(char_x) / static_cast<float>(texture_width),
+						(char_y) / static_cast<float>(texture_height)
+					)
 				};
 				vertices[3] = {
-					glm::vec3(size_x + position_x, size_y + position_y, position_z),
+					glm::vec3(position_x + size_x, position_y + size_y, position_z),
 					glm::vec3(color_r, color_g, color_b),
 					glm::vec2(
-						(char_x + char_width) / (float)texture_width,
-						(char_y + char_height) / (float)texture_height
+						(char_x + char_width) / static_cast<float>(texture_width),
+						(char_y + char_height) / static_cast<float>(texture_height)
 					)
 				};
 				vertices[4] = {
-					glm::vec3(size_x + position_x, position_y, position_z),
+					glm::vec3(position_x + size_x, position_y, position_z),
 					glm::vec3(color_r, color_g, color_b),
-					glm::vec2((char_x + char_width) / (float)texture_width, (char_y) / (float)texture_height)
+					glm::vec2(
+						(char_x + char_width) / static_cast<float>(texture_width),
+						(char_y) / static_cast<float>(texture_height)
+					)
 				};
 				vertices[5] = {
 					glm::vec3(position_x, position_y, position_z),
 					glm::vec3(color_r, color_g, color_b),
-					glm::vec2((char_x) / (float)texture_width, (char_y) / (float)texture_height)
+					glm::vec2(
+						(char_x) / static_cast<float>(texture_width),
+						(char_y) / static_cast<float>(texture_height)
+					)
 				};
-
-				accu_x += size_x + (2.f / this->screen.x);
 
 				generated_mesh.insert(generated_mesh.end(), vertices.begin(), vertices.end());
 
@@ -197,7 +256,7 @@ namespace Engine::Rendering
 			}
 		}
 
-		glm::mat4 projection = glm::ortho(0.0f, 1.0f, 0.0f, 1.0f, -10.0f, 10.0f);
+		glm::mat4 projection = glm::ortho(0.0f, 1.0f, 0.0f, 1.0f); //, -10.0f, 10.0f);
 
 		if (this->parent_transform.size.x == 0.0f && this->parent_transform.size.y == 0.0f &&
 			this->parent_transform.size.z == 0.0f)
@@ -231,8 +290,8 @@ namespace Engine::Rendering
 
 			VkDescriptorImageInfo image_info{};
 			image_info.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-			image_info.imageView   = this->texture_image->image->imageView;
-			image_info.sampler	   = this->texture_image->textureSampler;
+			image_info.imageView   = this->texture_image->image->image_view;
+			image_info.sampler	   = this->texture_image->texture_sampler;
 
 			std::array<VkWriteDescriptorSet, 2> descriptor_writes{};
 
@@ -279,17 +338,18 @@ namespace Engine::Rendering
 		VulkanRenderingEngine* renderer = this->owner_engine->GetRenderingEngine();
 		vkMapMemory(
 			renderer->GetLogicalDevice(),
-			pipeline->uniform_buffers[currentFrame]->allocationInfo.deviceMemory,
-			pipeline->uniform_buffers[currentFrame]->allocationInfo.offset,
-			pipeline->uniform_buffers[currentFrame]->allocationInfo.size,
+			pipeline->uniform_buffers[currentFrame]->allocation_info.deviceMemory,
+			pipeline->uniform_buffers[currentFrame]->allocation_info.offset,
+			pipeline->uniform_buffers[currentFrame]->allocation_info.size,
 			0,
-			&(pipeline->uniform_buffers[currentFrame]->mappedData)
+			&(pipeline->uniform_buffers[currentFrame]->mapped_data)
 		);
 
-		memcpy(this->pipeline->uniform_buffers[currentFrame]->mappedData, &this->mat_mvp, sizeof(glm::mat4));
+		memcpy(this->pipeline->uniform_buffers[currentFrame]->mapped_data, &this->mat_mvp, sizeof(glm::mat4));
+
 		vkUnmapMemory(
 			renderer->GetLogicalDevice(),
-			pipeline->uniform_buffers[currentFrame]->allocationInfo.deviceMemory
+			pipeline->uniform_buffers[currentFrame]->allocation_info.deviceMemory
 		);
 
 		vkCmdBindDescriptorSets(

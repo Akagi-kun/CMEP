@@ -41,33 +41,33 @@ namespace Engine::Rendering
 		VkBuffer buffer;
 		VkDeviceSize buffer_size;
 		VmaAllocation allocation;
-		VmaAllocationInfo allocationInfo;
-		void* mappedData;
+		VmaAllocationInfo allocation_info;
+		void* mapped_data;
 	};
 
 	struct VulkanImage
 	{
 		VkImage image;
 		VmaAllocation allocation;
-		VmaAllocationInfo allocationInfo;
-		VkFormat imageFormat;
-		VkImageView imageView;
+		VmaAllocationInfo allocation_info;
+		VkFormat image_format;
+		VkImageView image_view;
 	};
 
 	struct VulkanTextureImage
 	{
 		VulkanImage* image;
-		VkSampler textureSampler;
-		VkFilter useFilter;
-		VkSamplerAddressMode useAddressMode;
+		VkSampler texture_sampler;
+		VkFilter use_filter;
+		VkSamplerAddressMode use_address_mode;
 	};
 
 	struct VulkanDescriptorLayoutSettings
 	{
-		std::vector<uint32_t> binding;
-		std::vector<VkDescriptorType> types;
-		std::vector<VkShaderStageFlags> stageFlags;
-		std::vector<uint32_t> descriptorCount;
+		uint32_t binding;
+		uint32_t descriptor_count;
+		VkDescriptorType types;
+		VkShaderStageFlags stage_flags;
 	};
 
 	struct VulkanPipelineSettings
@@ -82,7 +82,7 @@ namespace Engine::Rendering
 		VkPipelineColorBlendStateCreateInfo color_blending;
 		VkPipelineDepthStencilStateCreateInfo depth_stencil;
 
-		VulkanDescriptorLayoutSettings descriptor_layout_settings;
+		std::vector<VulkanDescriptorLayoutSettings> descriptor_layout_settings;
 	};
 
 	struct VulkanPipeline

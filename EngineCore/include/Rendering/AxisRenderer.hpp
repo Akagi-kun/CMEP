@@ -12,9 +12,6 @@ namespace Engine::Rendering
 	class AxisRenderer final : public IRenderer
 	{
 	private:
-		VulkanPipeline* pipeline = nullptr;
-		VulkanBuffer* vbo		 = nullptr;
-
 		glm::mat4 mat_mvp{};
 
 	public:

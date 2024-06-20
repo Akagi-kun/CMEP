@@ -12,6 +12,13 @@ namespace Engine::Rendering
 	class Texture;
 	class Mesh;
 
+	struct RendererTransformUpdate
+	{
+		Transform current;
+		Transform parent;
+		ScreenSize screen;
+	};
+
 	enum class RendererSupplyDataType
 	{
 		MIN_ENUM = 0x00,
@@ -25,31 +32,23 @@ namespace Engine::Rendering
 		MAX_ENUM = 0xFF
 	};
 
-	typedef struct RendererTransformUpdate_struct
-	{
-		Transform current;
-		Transform parent;
-		ScreenSize screen;
-	} RendererTransformUpdate;
-
-	typedef struct RendererSupplyData_struct
+	struct RendererSupplyData
 	{
 		RendererSupplyDataType type = RendererSupplyDataType::MIN_ENUM;
 
 		std::shared_ptr<void> payload_ptr = nullptr;
 		std::string payload_string;
 
-		RendererSupplyData_struct(RendererSupplyDataType with_type, std::shared_ptr<void> data)
+		RendererSupplyData(RendererSupplyDataType with_type, std::shared_ptr<void> data)
 		{
 			this->type		  = with_type;
 			this->payload_ptr = std::move(data);
 		}
 
-		RendererSupplyData_struct(RendererSupplyDataType with_type, std::string data)
+		RendererSupplyData(RendererSupplyDataType with_type, std::string data)
 		{
 			this->type			 = with_type;
 			this->payload_string = std::move(data);
 		}
-
-	} RendererSupplyData;
+	};
 } // namespace Engine::Rendering

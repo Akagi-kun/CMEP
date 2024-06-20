@@ -1,7 +1,7 @@
 -----------------------
 ---->  Game data  <----
 
-local deltaTimeAvg = 0.0;
+local deltaTime_accum = 0.0;
 local deltaTimeCount = 0;
 
 local spawnPipeEvery = 4.5;
@@ -131,7 +131,7 @@ min_deltaTime_avg = 1000.0
 
 -- ON_UPDATE event
 onUpdate = function(event)
-	deltaTimeAvg = deltaTimeAvg + event.deltaTime;
+	deltaTime_accum = deltaTime_accum + event.deltaTime;
 
 	max_deltaTime_avg = math.max(max_deltaTime_avg, event.deltaTime);
 	min_deltaTime_avg = math.min(min_deltaTime_avg, event.deltaTime);
@@ -142,15 +142,16 @@ onUpdate = function(event)
 	local scene_manager = event.engine:GetSceneManager();
 
 	-- Update frametime counter, recommend to leave this here for debugging purposes
-	if deltaTimeCount >= 60 then
+	if deltaTime_accum >= 1.0 then
+		local deltaTime_avg = deltaTime_accum / deltaTimeCount
 		--was_logged = true
-		--cmepmeta.logger.SimpleLog(string.format("Hello from Lua! Last FT is: %f ms!", deltaTimeAvg / deltaTimeCount * 1000))
+		--cmepmeta.logger.SimpleLog(string.format("Hello from Lua! Last FT is: %f ms!", deltaTime_accum / deltaTimeCount * 1000))
 		local object = scene_manager:FindObject("_debug_info");
-		cmepapi.TextRendererUpdateText(object.renderer, string.format("FT: %f; min: %f; max: %f", deltaTimeAvg / deltaTimeCount * 1000, min_deltaTime_avg * 1000, max_deltaTime_avg * 1000).." ms");
+		cmepapi.TextRendererUpdateText(object.renderer, string.format("avg: %fms\nmin: %fms\nmax: %fms", deltaTime_avg * 1000, min_deltaTime_avg * 1000, max_deltaTime_avg * 1000));
 		
 		min_deltaTime_avg = 1000.0
 		max_deltaTime_avg = 0.0
-		deltaTimeAvg = 0;
+		deltaTime_accum = 0;
 		deltaTimeCount = 0;
 	end
 
@@ -159,17 +160,18 @@ onUpdate = function(event)
 			-- Spawn new pipes
 
 			-- We can use the math library in here!
-			local pipe_y_offset = -130
+			local const_pipe_y_offset = -100
+			local pipe_y_offset = const_pipe_y_offset
 			--local pipe_y_offset = -200 + math.random(-15, 15) * 10;
 
 			scene_manager:AddTemplatedObject("sprite_pipe_down"..tostring(spawnPipeLastIdx + 1), "pipe_down");
 			local pipe1 = scene_manager:FindObject("sprite_pipe_down"..tostring(spawnPipeLastIdx + 1));
-			pipe1:Translate(1.0, pxToScreenY(pipe_y_offset), -0.15);
+			pipe1:Translate(1.0, pxToScreenY(pipe_y_offset - (pipe_spacing / 2)), -0.15);
 			pipe1:Scale(pxToScreenX(pipe_xSize), pxToScreenY(pipe_ySize), 1.0);
 
 			scene_manager:AddTemplatedObject("sprite_pipe_up"..tostring(spawnPipeLastIdx + 1), "pipe_up");
 			local pipe2 = scene_manager:FindObject("sprite_pipe_up"..tostring(spawnPipeLastIdx + 1));
-			pipe2:Translate(1.0, pxToScreenY(pipe_ySize + pipe_spacing + pipe_y_offset), -0.15);
+			pipe2:Translate(1.0, pxToScreenY(pipe_ySize + (pipe_spacing / 2) + pipe_y_offset), -0.15);
 			pipe2:Scale(pxToScreenX(pipe_xSize), pxToScreenY(pipe_ySize), 1.0);
 
 			spawnPipeLastIdx = spawnPipeLastIdx + 1;
@@ -286,7 +288,7 @@ onInit = function(event)
 
 	-- Create frametime counter and add it to scene
 	local font = asset_manager:GetFont("myfont");
-	local object = cmepapi.ObjectFactoryCreateTextObject(scene_manager, 0.0, 0.0, -0.01, 22, "test", font);
+	local object = cmepapi.ObjectFactoryCreateTextObject(scene_manager, 0.0, 0.0, -0.01, 24, "test", font);
 	scene_manager:AddObject("_debug_info", object);
 	
 	-- Add score

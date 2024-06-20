@@ -166,9 +166,15 @@ namespace Engine::Rendering
 		);
 
 		// Pipeline descriptor functions
-		void CreateVulkanDescriptorSetLayout(VulkanPipeline* pipeline, VulkanDescriptorLayoutSettings settings);
+		void CreateVulkanDescriptorSetLayout(
+			VulkanPipeline* pipeline,
+			std::vector<VulkanDescriptorLayoutSettings>& settings
+		);
 		void CreateVulkanUniformBuffers(VulkanPipeline* pipeline);
-		void CreateVulkanDescriptorPool(VulkanPipeline* pipeline, VulkanDescriptorLayoutSettings settings);
+		void CreateVulkanDescriptorPool(
+			VulkanPipeline* pipeline,
+			std::vector<VulkanDescriptorLayoutSettings>& settings
+		);
 		void CreateVulkanDescriptorSets(VulkanPipeline* pipeline);
 
 		// Getters

@@ -21,15 +21,25 @@ namespace Engine::Rendering
 		VulkanPipelineSettings pipeline_settings  = renderer->GetVulkanDefaultPipelineSettings();
 		pipeline_settings.input_assembly.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
 
-		pipeline_settings.descriptor_layout_settings.binding.push_back(0);
-		pipeline_settings.descriptor_layout_settings.descriptorCount.push_back(1);
-		pipeline_settings.descriptor_layout_settings.types.push_back(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER);
-		pipeline_settings.descriptor_layout_settings.stageFlags.push_back(VK_SHADER_STAGE_VERTEX_BIT);
+		pipeline_settings.descriptor_layout_settings.push_back(
+			VulkanDescriptorLayoutSettings{0, 1, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT}
+		);
+		// pipeline_settings.descriptor_layout_settings.binding.push_back(0);
+		// pipeline_settings.descriptor_layout_settings.descriptor_count.push_back(1);
+		// pipeline_settings.descriptor_layout_settings.types.push_back(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER);
+		// pipeline_settings.descriptor_layout_settings.stage_flags.push_back(VK_SHADER_STAGE_VERTEX_BIT);
 
-		pipeline_settings.descriptor_layout_settings.binding.push_back(1);
-		pipeline_settings.descriptor_layout_settings.descriptorCount.push_back(16);
-		pipeline_settings.descriptor_layout_settings.types.push_back(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
-		pipeline_settings.descriptor_layout_settings.stageFlags.push_back(VK_SHADER_STAGE_FRAGMENT_BIT);
+		// TODO: Fix descriptor count
+		pipeline_settings.descriptor_layout_settings.push_back(VulkanDescriptorLayoutSettings{
+			1,
+			16,
+			VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
+			VK_SHADER_STAGE_FRAGMENT_BIT
+		});
+		// pipeline_settings.descriptor_layout_settings.binding.push_back(1);
+		// pipeline_settings.descriptor_layout_settings.descriptor_count.push_back(16);
+		// pipeline_settings.descriptor_layout_settings.types.push_back(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
+		// pipeline_settings.descriptor_layout_settings.stage_flags.push_back(VK_SHADER_STAGE_FRAGMENT_BIT);
 
 		this->pipeline = renderer->CreateVulkanPipeline(
 			pipeline_settings,
@@ -186,12 +196,12 @@ namespace Engine::Rendering
 					if (current_diffuse_texture_image != nullptr)
 					{
 						if (current_diffuse_texture_image->image != nullptr ||
-							current_diffuse_texture_image->textureSampler != VK_NULL_HANDLE)
+							current_diffuse_texture_image->texture_sampler != VK_NULL_HANDLE)
 						{
 							VkDescriptorImageInfo diffuse_image_buffer_info{};
 							diffuse_image_buffer_info.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-							diffuse_image_buffer_info.imageView	  = current_diffuse_texture_image->image->imageView;
-							diffuse_image_buffer_info.sampler	  = current_diffuse_texture_image->textureSampler;
+							diffuse_image_buffer_info.imageView	  = current_diffuse_texture_image->image->image_view;
+							diffuse_image_buffer_info.sampler	  = current_diffuse_texture_image->texture_sampler;
 							diffuse_image_buffer_infos[diffuse_texture_index] = diffuse_image_buffer_info;
 						}
 					}
@@ -405,17 +415,17 @@ namespace Engine::Rendering
 		VulkanRenderingEngine* renderer = this->owner_engine->GetRenderingEngine();
 		vkMapMemory(
 			renderer->GetLogicalDevice(),
-			pipeline->uniform_buffers[currentFrame]->allocationInfo.deviceMemory,
-			pipeline->uniform_buffers[currentFrame]->allocationInfo.offset,
-			pipeline->uniform_buffers[currentFrame]->allocationInfo.size,
+			pipeline->uniform_buffers[currentFrame]->allocation_info.deviceMemory,
+			pipeline->uniform_buffers[currentFrame]->allocation_info.offset,
+			pipeline->uniform_buffers[currentFrame]->allocation_info.size,
 			0,
-			&(pipeline->uniform_buffers[currentFrame]->mappedData)
+			&(pipeline->uniform_buffers[currentFrame]->mapped_data)
 		);
 
-		memcpy(this->pipeline->uniform_buffers[currentFrame]->mappedData, &this->mat_mvp, sizeof(glm::mat4));
+		memcpy(this->pipeline->uniform_buffers[currentFrame]->mapped_data, &this->mat_mvp, sizeof(glm::mat4));
 		vkUnmapMemory(
 			renderer->GetLogicalDevice(),
-			pipeline->uniform_buffers[currentFrame]->allocationInfo.deviceMemory
+			pipeline->uniform_buffers[currentFrame]->allocation_info.deviceMemory
 		);
 
 		vkCmdBindDescriptorSets(

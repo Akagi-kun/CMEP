@@ -43,7 +43,7 @@ namespace Engine::Rendering::Factories
 	{
 		VulkanImage* new_image = new VulkanImage();
 
-		new_image->imageFormat = format;
+		new_image->image_format = format;
 
 		VkImageCreateInfo image_info{};
 		image_info.sType		 = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
@@ -76,7 +76,7 @@ namespace Engine::Rendering::Factories
 				&vma_alloc_info,
 				&(new_image->image),
 				&(new_image->allocation),
-				&(new_image->allocationInfo)
+				&(new_image->allocation_info)
 			) != VK_SUCCESS)
 		{
 			this->logger->SimpleLog(Logging::LogLevel::Exception, LOGPFX_CURRENT "Failed to create image");
@@ -103,17 +103,17 @@ namespace Engine::Rendering::Factories
 
 		new_texture_image
 			->image = this->CreateImage(width, height, VK_SAMPLE_COUNT_1_BIT, format, tiling, usage, properties);
-		new_texture_image->useAddressMode = addressMode;
-		new_texture_image->useFilter	  = useFilter;
+		new_texture_image->use_address_mode = addressMode;
+		new_texture_image->use_filter		= useFilter;
 
 		return new_texture_image;
 	}
 
 	void VulkanImageFactory::AppendImageViewToTextureImage(VulkanTextureImage* teximage)
 	{
-		teximage->image->imageView = this->CreateImageView(
+		teximage->image->image_view = this->CreateImageView(
 			teximage->image->image,
-			teximage->image->imageFormat,
+			teximage->image->image_format,
 			VK_IMAGE_ASPECT_COLOR_BIT
 		);
 	}
