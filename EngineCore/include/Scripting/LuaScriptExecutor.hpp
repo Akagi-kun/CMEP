@@ -27,7 +27,12 @@ namespace Engine::Scripting
 		LuaScriptExecutor()	 = default;
 		~LuaScriptExecutor() = default;
 
-		int CallIntoScript(ExecuteType etype, std::shared_ptr<LuaScript> script, std::string function, void* data);
+		int CallIntoScript(
+			ExecuteType etype,
+			const std::shared_ptr<LuaScript>& script,
+			const std::string& function,
+			void* data
+		);
 
 		int LoadAndCompileScript(LuaScript* script);
 	};

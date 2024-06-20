@@ -18,12 +18,20 @@ namespace Engine
 		delete this->renderer;
 	}
 
+	void Object::ModuleBroadcast(ModuleMessageTarget for_modules, const ModuleMessage& data)
+	{
+		if (for_modules == ModuleMessageTarget::RENDERER)
+		{
+			this->renderer->Communicate(data);
+		}
+	}
+
 	void Object::UpdateRenderer() noexcept
 	{
 		if (this->renderer != nullptr)
 		{
 			ModuleMessage message = {
-				ModuleMessageTarget::RENDERER,
+				// ModuleMessageTarget::RENDERER,
 				ModuleMessageType::RENDERER_TRANSFORMS,
 				Rendering::RendererTransformUpdate{this->transform, this->parent_transform, this->screen}
 			};
@@ -86,9 +94,9 @@ namespace Engine
 		}
 	}
 
-	Rendering::IRenderer* Object::AssignRenderer(Rendering::IRenderer* with_renderer)
+	IModule* Object::AssignRenderer(Rendering::IRenderer* with_renderer)
 	{
-		Rendering::IRenderer* old_renderer = this->renderer;
+		IModule* old_renderer = this->renderer;
 
 		this->renderer = with_renderer;
 
@@ -97,14 +105,14 @@ namespace Engine
 
 	Rendering::IRenderer* Object::GetRenderer() noexcept
 	{
-		return this->renderer;
+		return static_cast<Rendering::IRenderer*>(this->renderer);
 	}
 
 	int Object::Render(VkCommandBuffer commandBuffer, uint32_t currentFrame)
 	{
 		if (this->renderer != nullptr)
 		{
-			this->renderer->Render(commandBuffer, currentFrame);
+			static_cast<Rendering::IRenderer*>(this->renderer)->Render(commandBuffer, currentFrame);
 		}
 		return 0;
 	}

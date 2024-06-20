@@ -22,14 +22,14 @@ namespace Engine
 	{
 		MIN_ENUM = 0x00,
 
-		RENDERER = 5,
+		RENDERER	 = 5,
+		MESH_BUILDER = 20,
 
 		MAX_ENUM = 0xFF
 	};
 
 	struct ModuleMessage
 	{
-		ModuleMessageTarget target;
 		ModuleMessageType type;
 		std::variant<Rendering::RendererSupplyData, Rendering::RendererTransformUpdate> payload;
 	};
@@ -38,7 +38,8 @@ namespace Engine
 	{
 		MIN_ENUM = 0x00,
 
-		RENDERER = 5,
+		RENDERER	 = 5,
+		MESH_BUILDER = 20,
 
 		MAX_ENUM = 0xFF
 	};
@@ -56,5 +57,10 @@ namespace Engine
 		virtual ~IModule() = default;
 
 		virtual void Communicate(const ModuleMessage& data) = 0;
+
+		[[nodiscard]] ModuleType GetType() const
+		{
+			return this->type;
+		}
 	};
 } // namespace Engine

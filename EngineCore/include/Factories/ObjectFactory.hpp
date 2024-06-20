@@ -15,27 +15,27 @@ namespace Engine::Rendering
 namespace Engine::ObjectFactory
 {
 	Object* CreateSpriteObject(
-		std::weak_ptr<SceneManager> scene_manager,
+		const std::weak_ptr<SceneManager>& scene_manager,
 		double x,
 		double y,
 		double z,
 		double sizex,
 		double sizey,
-		std::shared_ptr<Rendering::Texture> sprite
+		const std::shared_ptr<::Engine::Rendering::Texture>& sprite
 	);
 
 	Object* CreateTextObject(
-		std::weak_ptr<SceneManager> scene_manager,
+		const std::weak_ptr<SceneManager>& scene_manager,
 		double x,
 		double y,
 		double z,
 		int size,
 		std::string text,
-		std::shared_ptr<Rendering::Font> font
+		const std::shared_ptr<Rendering::Font>& font
 	);
 
 	Object* CreateGeneric3DObject(
-		std::weak_ptr<SceneManager> scene_manager,
+		const std::weak_ptr<SceneManager>& scene_manager,
 		double x,
 		double y,
 		double z,
@@ -45,6 +45,6 @@ namespace Engine::ObjectFactory
 		double rotx,
 		double roty,
 		double rotz,
-		std::shared_ptr<::Engine::Rendering::Mesh> mesh
+		const std::shared_ptr<::Engine::Rendering::Mesh>& mesh
 	);
 } // namespace Engine::ObjectFactory

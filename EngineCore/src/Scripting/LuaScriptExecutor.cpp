@@ -75,8 +75,8 @@ namespace Engine
 
 		int LuaScriptExecutor::CallIntoScript(
 			ExecuteType etype,
-			std::shared_ptr<LuaScript> script,
-			std::string function,
+			const std::shared_ptr<LuaScript>& script,
+			const std::string& function,
 			void* data
 		)
 		{

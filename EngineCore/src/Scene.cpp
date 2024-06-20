@@ -135,18 +135,19 @@ namespace Engine
 
 			// Allocate Object since we already know
 			// that the renderer is valid
-			auto* object = new Object();
+			auto* object	   = new Object();
+			auto* old_renderer = object->AssignRenderer(with_renderer);
+			assert(old_renderer == nullptr);
 
 			for (auto& supply : object_template.supply_list)
 			{
-				ModuleMessage supply_message =
-					{ModuleMessageTarget::RENDERER, ModuleMessageType::RENDERER_SUPPLY, supply};
-				with_renderer->Communicate(supply_message);
-				// with_renderer->SupplyData(supply);
+				ModuleMessage supply_message = {ModuleMessageType::RENDERER_SUPPLY, supply};
+				object->ModuleBroadcast(ModuleMessageTarget::RENDERER, supply_message);
+				// with_renderer->Communicate(supply_message);
 			}
 
-			auto* old_renderer = object->AssignRenderer(with_renderer);
-			assert(old_renderer == nullptr);
+			// auto* old_renderer = object->AssignRenderer(with_renderer);
+			// assert(old_renderer == nullptr);
 
 			object->UpdateHeldLogger(this->logger);
 			this->AddObject(name, object);

@@ -269,7 +269,6 @@ namespace Engine
 								);
 
 								ModuleMessage texture_supply_message = {
-									ModuleMessageTarget::RENDERER,
 									ModuleMessageType::RENDERER_SUPPLY,
 									Rendering::RendererSupplyData{Rendering::RendererSupplyDataType::TEXTURE, texture}
 								};

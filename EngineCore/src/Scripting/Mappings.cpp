@@ -60,8 +60,8 @@ namespace Engine::Scripting::Mappings
 
 			const char* text = lua_tostring(state, 2);
 
+			// TODO: Communicate using IModule or even Object?
 			ModuleMessage text_supply_message = {
-				ModuleMessageTarget::RENDERER,
 				ModuleMessageType::RENDERER_SUPPLY,
 				Rendering::RendererSupplyData{Rendering::RendererSupplyDataType::TEXT, text}
 			};
@@ -87,8 +87,8 @@ namespace Engine::Scripting::Mappings
 				lua_touserdata(state, -1)
 			);
 
+			// TODO: Communicate using IModule or even Object?
 			ModuleMessage texture_supply_message = {
-				ModuleMessageTarget::RENDERER,
 				ModuleMessageType::RENDERER_SUPPLY,
 				Rendering::RendererSupplyData{Rendering::RendererSupplyDataType::TEXTURE, texture}
 			};

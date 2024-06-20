@@ -17,13 +17,13 @@
 namespace Engine::ObjectFactory
 {
 	Object* CreateSpriteObject(
-		std::weak_ptr<SceneManager> scene_manager,
+		const std::weak_ptr<SceneManager>& scene_manager,
 		double x,
 		double y,
 		double z,
 		double sizex,
 		double sizey,
-		std::shared_ptr<::Engine::Rendering::Texture> sprite
+		const std::shared_ptr<::Engine::Rendering::Texture>& sprite
 	)
 	{
 		assert(sprite != nullptr);
@@ -41,7 +41,6 @@ namespace Engine::ObjectFactory
 			// object->renderer->scene_manager = scene_manager;
 
 			ModuleMessage texture_supply_message = {
-				ModuleMessageTarget::RENDERER,
 				ModuleMessageType::RENDERER_SUPPLY,
 				Rendering::RendererSupplyData{Rendering::RendererSupplyDataType::TEXTURE, sprite}
 			};
@@ -62,13 +61,13 @@ namespace Engine::ObjectFactory
 	}
 
 	Object* CreateTextObject(
-		std::weak_ptr<SceneManager> scene_manager,
+		const std::weak_ptr<SceneManager>& scene_manager,
 		double x,
 		double y,
 		double z,
 		int size,
 		std::string text,
-		std::shared_ptr<Rendering::Font> font
+		const std::shared_ptr<Rendering::Font>& font
 	)
 	{
 		assert(font != nullptr);
@@ -87,7 +86,6 @@ namespace Engine::ObjectFactory
 			// Rendering::RendererSupplyData font_supply(Rendering::RendererSupplyDataType::FONT, font);
 
 			ModuleMessage font_supply_message = {
-				ModuleMessageTarget::RENDERER,
 				ModuleMessageType::RENDERER_SUPPLY,
 				Rendering::RendererSupplyData{Rendering::RendererSupplyDataType::FONT, font}
 			};
@@ -96,9 +94,8 @@ namespace Engine::ObjectFactory
 			// with_renderer->SupplyData(font_supply);
 
 			ModuleMessage text_supply_message = {
-				ModuleMessageTarget::RENDERER,
 				ModuleMessageType::RENDERER_SUPPLY,
-				Rendering::RendererSupplyData{Rendering::RendererSupplyDataType::TEXT, text}
+				Rendering::RendererSupplyData{Rendering::RendererSupplyDataType::TEXT, std::move(text)}
 			};
 			// Rendering::RendererSupplyData text_supply(Rendering::RendererSupplyDataType::TEXT, text);
 			with_renderer->Communicate(text_supply_message);
@@ -115,7 +112,7 @@ namespace Engine::ObjectFactory
 	}
 
 	Object* CreateGeneric3DObject(
-		std::weak_ptr<SceneManager> scene_manager,
+		const std::weak_ptr<SceneManager>& scene_manager,
 		double x,
 		double y,
 		double z,
@@ -125,7 +122,7 @@ namespace Engine::ObjectFactory
 		double rotx,
 		double roty,
 		double rotz,
-		std::shared_ptr<Rendering::Mesh> mesh
+		const std::shared_ptr<Rendering::Mesh>& mesh
 	)
 	{
 		if (auto locked_scene_manager = scene_manager.lock())
@@ -140,7 +137,6 @@ namespace Engine::ObjectFactory
 			with_renderer->scene_manager		= scene_manager;
 
 			ModuleMessage mesh_supply_message = {
-				ModuleMessageTarget::RENDERER,
 				ModuleMessageType::RENDERER_SUPPLY,
 				Rendering::RendererSupplyData{Rendering::RendererSupplyDataType::MESH, mesh}
 			};
