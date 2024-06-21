@@ -21,6 +21,11 @@ namespace Engine
 		this->d_engine->Init();
 	}
 
+	[[noreturn]] void OpaqueEngine::ThrowTest()
+	{
+		this->d_engine->ThrowTest();
+	}
+
 	void OpaqueEngine::Run()
 	{
 		this->d_engine->Run();

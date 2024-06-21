@@ -57,7 +57,7 @@ namespace Engine
 			IRenderer(Engine* engine) : IModule(engine, ModuleType::RENDERER)
 			{
 			}
-			virtual ~IRenderer() override = default;
+			~IRenderer() override = default;
 
 			void Communicate(const ModuleMessage& data) override
 			{
@@ -77,6 +77,12 @@ namespace Engine
 					{
 						const auto& processed_payload = std::get<RendererSupplyData>(data.payload);
 						this->SupplyData(processed_payload);
+						break;
+					}
+					case ModuleMessageType::RENDERER_REQ_RENDER:
+					{
+						const auto& processed_payload = std::get<RendererRenderRequest>(data.payload);
+						this->Render(processed_payload.command_buffer, processed_payload.current_frame);
 						break;
 					}
 					default:

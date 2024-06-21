@@ -1,8 +1,11 @@
 CompileFlags:
-  Add: [-Wall, -Wno-c++98-compat, -std=c++17, -Wno-switch-enum, -Wswitch, -Wno-date-time, -Wno-exit-time-destructors, -Wno-unsafe-buffer-usage]
+  Add: [-Wall, -Wextra, -Wno-c++98-compat, -std=c++17, -Wno-switch-enum, -Wswitch, -Wno-date-time, -Wno-exit-time-destructors, -Wno-unsafe-buffer-usage]
 If:
   PathMatch: [.*\**.hpp, .*\**.cpp]
   PathExclude: external/.*
+Diagnostics:
+  ClangTidy:
+    FastCheckFilter: None
 ---
 InlayHints:
   Enabled: Yes

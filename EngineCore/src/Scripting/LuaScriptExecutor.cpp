@@ -102,7 +102,7 @@ namespace Engine
 			// Run the start function in a way decided by the ExecuteType
 			switch (etype)
 			{
-				case ExecuteType::EventHandler:
+				case ExecuteType::EVENT_HANDLER:
 				{
 					auto* event = static_cast<EventHandling::Event*>(data);
 

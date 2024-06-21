@@ -58,8 +58,8 @@ namespace Engine
 			throw std::runtime_error("Could not sort scene, object is nullptr!");
 		}
 
-		Rendering::IRenderer* a_renderer = pair_a.second->GetRenderer();
-		Rendering::IRenderer* b_renderer = pair_b.second->GetRenderer();
+		auto* a_renderer = static_cast<Rendering::IRenderer*>(pair_a.second->GetFirstModule(ModuleType::RENDERER));
+		auto* b_renderer = static_cast<Rendering::IRenderer*>(pair_b.second->GetFirstModule(ModuleType::RENDERER));
 
 		assert(a_renderer != nullptr);
 		assert(b_renderer != nullptr);
@@ -135,19 +135,16 @@ namespace Engine
 
 			// Allocate Object since we already know
 			// that the renderer is valid
-			auto* object	   = new Object();
-			auto* old_renderer = object->AssignRenderer(with_renderer);
-			assert(old_renderer == nullptr);
+			auto* object = new Object();
+			/* auto* old_renderer =  */ object->AddModule(ModuleType::RENDERER, with_renderer);
+			// assert(old_renderer == nullptr);
 
 			for (auto& supply : object_template.supply_list)
 			{
 				ModuleMessage supply_message = {ModuleMessageType::RENDERER_SUPPLY, supply};
-				object->ModuleBroadcast(ModuleMessageTarget::RENDERER, supply_message);
+				object->ModuleBroadcast(ModuleType::RENDERER, supply_message);
 				// with_renderer->Communicate(supply_message);
 			}
-
-			// auto* old_renderer = object->AssignRenderer(with_renderer);
-			// assert(old_renderer == nullptr);
 
 			object->UpdateHeldLogger(this->logger);
 			this->AddObject(name, object);

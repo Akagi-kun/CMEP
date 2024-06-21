@@ -10,6 +10,7 @@
 
 #include <cstdint>
 #include <memory>
+#include <stdexcept>
 #include <string>
 
 namespace Engine
@@ -110,6 +111,8 @@ namespace Engine
 		// std::function<int(EventHandling::Event&)> function);
 
 		void Stop();
+
+		[[noreturn]] void ThrowTest();
 
 		int FireEvent(EventHandling::Event& event);
 

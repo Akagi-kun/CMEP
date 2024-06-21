@@ -273,25 +273,24 @@ namespace Engine
 									Rendering::RendererSupplyData{Rendering::RendererSupplyDataType::TEXTURE, texture}
 								};
 
-								// with_renderer->SupplyData(texture_supply);
 								with_renderer->Communicate(texture_supply_message);
 							}
 
 							with_renderer->UpdateMesh();
 
-							auto* old_renderer = object->AssignRenderer(with_renderer);
-							assert(old_renderer == nullptr);
+							object->AddModule(ModuleType::RENDERER, with_renderer);
 
 							break;
 						}
 						default:
 						{
 							delete object; // TODO: Reorder this
-							// object.reset();
+							object = nullptr;
 							break;
 						}
 					}
 
+					// We can assume that it's creation failed if it's nullptr
 					if (object != nullptr)
 					{
 						object->Translate(position);

@@ -8,7 +8,10 @@
 #include "Scripting/LuaScript.hpp"
 #include "Scripting/LuaScriptExecutor.hpp"
 
+#include "Logging/Logging.hpp"
+
 #include "GLFW/glfw3.h"
+#include "IModule.hpp"
 #include "Object.hpp"
 #include "buildinfo.hpp"
 #include "nlohmann/json.hpp"
@@ -17,6 +20,7 @@
 #include <exception>
 #include <fstream>
 #include <memory>
+#include <stdexcept>
 #include <thread>
 
 // Prefixes for logging messages
@@ -201,18 +205,25 @@ namespace Engine
 	{
 		const auto* objects = engine->scene_manager->GetSceneCurrent()->GetAllObjectsSorted();
 
+		const ModuleMessage render_message = {
+			ModuleMessageType::RENDERER_REQ_RENDER,
+			Rendering::RendererRenderRequest{commandBuffer, currentFrame}
+		};
+
 		for (const auto& [name, ptr] : *objects)
 		{
 			try
 			{
-				ptr->Render(commandBuffer, currentFrame);
-				// ptr->renderer->Render(commandBuffer, currentFrame);
+
+				ptr->ModuleBroadcast(ModuleType::RENDERER, render_message);
+				// ptr->Render(commandBuffer, currentFrame);
+				//  ptr->renderer->Render(commandBuffer, currentFrame);
 			}
 			catch (const std::exception& e)
 			{
 				engine->logger->SimpleLog(
 					Logging::LogLevel::Exception,
-					LOGPFX_CURRENT "Caught exception while rendering object %s: %s",
+					LOGPFX_CURRENT "Caught exception while rendering object '%s'! e.what(): %s",
 					name.c_str(),
 					e.what()
 				);
@@ -234,8 +245,9 @@ namespace Engine
 		Rendering::IRenderer* with_renderer = new Rendering::AxisRenderer(this);
 		with_renderer->scene_manager		= this->scene_manager;
 
-		auto* old_renderer = object->AssignRenderer(with_renderer);
-		assert(old_renderer == nullptr);
+		object->AddModule(ModuleType::RENDERER, with_renderer);
+		// auto* old_renderer = object->AssignRenderer(with_renderer);
+		// assert(old_renderer == nullptr);
 		this->scene_manager->AddObject("_axis", object);
 
 		// Pre-make ON_UPDATE event so we don't have to create it over and over again in hot loop
@@ -251,27 +263,38 @@ namespace Engine
 			this->framerate_target == 0 ? " (VSYNC)" : ""
 		);
 
-		// uint16_t counter = 0;
-		auto prev_clock = std::chrono::steady_clock::now();
-		// hot loop
+		// static constexpr double nano_to_msec = 1.e6;
+		static constexpr double nano_to_sec = 1.e9;
+
+		auto previous_clock = std::chrono::steady_clock::now();
+		// double on_update_delta = 0.0;
+		//  hot loop
 		while (glfwWindowShouldClose(this->rendering_engine->GetWindow().window) == 0)
 		{
 			const auto next_clock	= std::chrono::steady_clock::now();
-			const double delta_time = static_cast<double>((next_clock - prev_clock).count()) / 1.e9;
-			// if (counter == this->framerateTarget)
-			//{
-			//	// For debugging, use onscreen counter if possible
-			//	// printf("current frame time: %.2lf ms (%.1lf fps)\n", deltaTime * 1e3, (1 / (deltaTime)));
-			//	counter = 0;
-			// }
+			const double delta_time = static_cast<double>((next_clock - previous_clock).count()) / nano_to_sec;
 			this->last_delta_time	= delta_time;
 
 			// Update deltaTime of premade ON_UPDATE event and fire it
 			premade_on_update_event.delta_time = delta_time;
-			if (this->FireEvent(premade_on_update_event) != 0)
+
+			// Check return code of FireEvent (events should return non-zero codes as failure)
+			const auto ret = this->FireEvent(premade_on_update_event);
+			if (ret != 0)
 			{
+				this->logger->SimpleLog(
+					Logging::LogLevel::Error,
+					LOGPFX_CURRENT "Fired event ON_UPDATE but it returned %u! Exiting event-loop",
+					ret
+				);
 				break;
 			}
+
+			// Get delta time for the ON_UPDATE event only
+			// on_update_delta = static_cast<double>((std::chrono::steady_clock::now() - next_clock).count()) /
+			//				  nano_to_msec;
+			// this->logger->SimpleLog(Logging::LogLevel::Info, LOGPFX_CURRENT "Last ON_UPDATE took %lf",
+			// on_update_delta);
 
 			// Render
 			this->rendering_engine->DrawFrame();
@@ -290,8 +313,7 @@ namespace Engine
 				SpinSleep(sleep_secs);
 			}
 
-			prev_clock = next_clock;
-			// counter++;
+			previous_clock = next_clock;
 		}
 
 		this->logger->SimpleLog(Logging::LogLevel::Debug2, LOGPFX_CURRENT "Closing engine");
@@ -313,7 +335,7 @@ namespace Engine
 		for (auto handler = lua_handler_range.first; handler != lua_handler_range.second; ++handler)
 		{
 			sum += this->script_executor->CallIntoScript(
-				Scripting::ExecuteType::EventHandler,
+				Scripting::ExecuteType::EVENT_HANDLER,
 				handler->second.first,
 				handler->second.second,
 				&event
@@ -434,8 +456,8 @@ namespace Engine
 		int on_init_event_ret	  = this->FireEvent(on_init_event);
 
 		// Measure and log ON_INIT time
-		static constexpr double nano_to_ms = 1e6;
-		double total = static_cast<double>((std::chrono::steady_clock::now() - start).count()) / nano_to_ms;
+		static constexpr double nano_to_msec = 1.e6;
+		double total = static_cast<double>((std::chrono::steady_clock::now() - start).count()) / nano_to_msec;
 		this->logger->SimpleLog(
 			Logging::LogLevel::Debug1,
 			LOGPFX_CURRENT "Handling ON_INIT took %.3lf ms total and returned %i",
@@ -451,6 +473,11 @@ namespace Engine
 		}
 
 		this->EngineLoop();
+	}
+
+	[[noreturn]] void Engine::ThrowTest()
+	{
+		throw std::runtime_error("BEBEACAC");
 	}
 
 	void Engine::Stop()

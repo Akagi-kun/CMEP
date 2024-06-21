@@ -11,7 +11,7 @@ namespace Engine::Scripting
 	{
 		MIN_ENUM = 0x00,
 
-		EventHandler = 2,
+		EVENT_HANDLER = 2,
 
 		MAX_ENUM = 0xFF
 	};

@@ -15,37 +15,46 @@ namespace Engine
 	Object::~Object() noexcept
 	{
 		this->logger->SimpleLog(Logging::LogLevel::Debug3, LOGPFX_CURRENT "Destructor called");
-		delete this->renderer;
+
+		for (auto& module : this->modules)
+		{
+			delete module.second;
+		}
+
+		this->modules.clear();
+		// delete this->renderer;
 	}
 
-	void Object::ModuleBroadcast(ModuleMessageTarget for_modules, const ModuleMessage& data)
+	void Object::ModuleBroadcast(ModuleType for_type, const ModuleMessage& data)
 	{
-		if (for_modules == ModuleMessageTarget::RENDERER)
+		auto module_range = this->modules.equal_range(for_type);
+		for (auto module = module_range.first; module != module_range.second; ++module)
 		{
-			this->renderer->Communicate(data);
+			module->second->Communicate(data);
 		}
+	}
+
+	void Object::AddModule(ModuleType with_type, IModule* with_module)
+	{
+		this->modules.emplace(with_type, with_module);
 	}
 
 	void Object::UpdateRenderer() noexcept
 	{
-		if (this->renderer != nullptr)
-		{
-			ModuleMessage message = {
-				// ModuleMessageTarget::RENDERER,
-				ModuleMessageType::RENDERER_TRANSFORMS,
-				Rendering::RendererTransformUpdate{this->transform, this->parent_transform, this->screen}
-			};
-			this->renderer->Communicate(message);
-		}
+		ModuleMessage message = {
+			ModuleMessageType::RENDERER_TRANSFORMS,
+			Rendering::RendererTransformUpdate{this->transform, this->parent_transform, this->screen}
+		};
+		this->ModuleBroadcast(ModuleType::RENDERER, message);
 	}
 
 	void Object::UpdateHeldLogger(std::shared_ptr<Logging::Logger>& new_logger)
 	{
 		InternalEngineObject::UpdateHeldLogger(new_logger);
 
-		if (this->renderer != nullptr)
+		for (auto& module : this->modules)
 		{
-			this->renderer->UpdateHeldLogger(new_logger);
+			module.second->UpdateHeldLogger(new_logger);
 		}
 	}
 
@@ -94,29 +103,24 @@ namespace Engine
 		}
 	}
 
-	IModule* Object::AssignRenderer(Rendering::IRenderer* with_renderer)
+	IModule* Object::GetFirstModule(ModuleType with_type)
 	{
-		IModule* old_renderer = this->renderer;
+		auto module_range = this->modules.equal_range(with_type);
 
-		this->renderer = with_renderer;
-
-		return old_renderer;
+		// Returns first module of this type
+		return module_range.first->second;
 	}
 
-	Rendering::IRenderer* Object::GetRenderer() noexcept
-	{
-		return static_cast<Rendering::IRenderer*>(this->renderer);
-	}
-
-	int Object::Render(VkCommandBuffer commandBuffer, uint32_t currentFrame)
-	{
-		if (this->renderer != nullptr)
-		{
-			static_cast<Rendering::IRenderer*>(this->renderer)->Render(commandBuffer, currentFrame);
-		}
-		return 0;
-	}
-
+	/*
+	   int Object::Render(VkCommandBuffer commandBuffer, uint32_t currentFrame)
+	   {
+		   if (this->renderer != nullptr)
+		   {
+			   static_cast<Rendering::IRenderer*>(this->renderer)->Render(commandBuffer, currentFrame);
+		   }
+		   return 0;
+	   }
+	*/
 	glm::vec3 Object::Position() const noexcept
 	{
 		return this->transform.pos;

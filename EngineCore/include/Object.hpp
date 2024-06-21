@@ -22,8 +22,11 @@ namespace Engine
 
 		// std::function<void(Object*)> on_click = nullptr;
 
-		IModule* renderer	  = nullptr;
-		IModule* mesh_builder = nullptr;
+		// IModule* renderer = nullptr;
+
+		std::multimap<ModuleType, IModule*> modules;
+
+		void UpdateRenderer() noexcept;
 
 	public:
 		Object() noexcept;
@@ -39,16 +42,13 @@ namespace Engine
 		void Scale(glm::vec3 with_size) noexcept;
 		void Rotate(glm::vec3 with_rotation) noexcept;
 
-		void ModuleBroadcast(ModuleMessageTarget for_modules, const ModuleMessage& data);
+		void ModuleBroadcast(ModuleType for_type, const ModuleMessage& data);
 
-		void UpdateRenderer() noexcept;
-
-		[[nodiscard]]
-		IModule* AssignRenderer(Rendering::IRenderer* with_renderer);
-		Rendering::IRenderer* GetRenderer() noexcept;
+		void AddModule(ModuleType with_type, IModule* with_module);
+		IModule* GetFirstModule(ModuleType with_type);
 
 		// TODO: Remove
-		int Render(VkCommandBuffer commandBuffer, uint32_t currentFrame);
+		// int Render(VkCommandBuffer commandBuffer, uint32_t currentFrame);
 
 		// TODO: Rename to Get...
 		[[nodiscard]] glm::vec3 Position() const noexcept;

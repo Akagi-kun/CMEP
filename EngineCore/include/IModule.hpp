@@ -8,17 +8,18 @@
 
 namespace Engine
 {
-	enum class ModuleMessageType
+	enum class ModuleMessageType : uint8_t
 	{
 		MIN_ENUM = 0x00,
 
 		RENDERER_SUPPLY		= 1,
 		RENDERER_TRANSFORMS = 2,
+		RENDERER_REQ_RENDER = 5,
 
 		MAX_ENUM = 0xFF
 	};
 
-	enum class ModuleMessageTarget
+	enum class ModuleType : uint8_t
 	{
 		MIN_ENUM = 0x00,
 
@@ -31,17 +32,9 @@ namespace Engine
 	struct ModuleMessage
 	{
 		ModuleMessageType type;
-		std::variant<Rendering::RendererSupplyData, Rendering::RendererTransformUpdate> payload;
-	};
-
-	enum class ModuleType
-	{
-		MIN_ENUM = 0x00,
-
-		RENDERER	 = 5,
-		MESH_BUILDER = 20,
-
-		MAX_ENUM = 0xFF
+		std::
+			variant<Rendering::RendererSupplyData, Rendering::RendererTransformUpdate, Rendering::RendererRenderRequest>
+				payload;
 	};
 
 	class IModule : public InternalEngineObject

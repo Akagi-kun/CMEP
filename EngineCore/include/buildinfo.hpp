@@ -22,7 +22,7 @@
 
 // This absolute abomination of macros defines BUILDINFO_COMPILED_BY
 // and SEMANTICS_COMPILER_* which can be used instead of
-// common_include/PlatformSemantics SEMANTICS_*
+// common_include/PlatformSemantics.hpp SEMANTICS_*
 // to get more precise semantic checks (not extra reliable though)
 //
 // MSVC compiler

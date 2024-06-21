@@ -52,8 +52,9 @@ namespace Engine::ObjectFactory
 			//((Rendering::SpriteRenderer*)object->renderer)->UpdateMesh();
 			// object->renderer->UpdateMesh();
 
-			auto* old_renderer = object->AssignRenderer(with_renderer);
-			assert(old_renderer == nullptr);
+			object->AddModule(ModuleType::RENDERER, with_renderer);
+			// auto* old_renderer = object->AssignRenderer(with_renderer);
+			// assert(old_renderer == nullptr);
 
 			return object;
 		}
@@ -103,8 +104,9 @@ namespace Engine::ObjectFactory
 
 			// object->renderer->UpdateMesh();
 
-			auto* old_renderer = object->AssignRenderer(with_renderer);
-			assert(old_renderer == nullptr);
+			object->AddModule(ModuleType::RENDERER, with_renderer);
+			// auto* old_renderer = object->AssignRenderer(with_renderer);
+			// assert(old_renderer == nullptr);
 
 			return object;
 		}
@@ -144,8 +146,9 @@ namespace Engine::ObjectFactory
 			// Rendering::RendererSupplyData mesh_supply(Rendering::RendererSupplyDataType::MESH, mesh);
 			// with_renderer->SupplyData(mesh_supply);
 
-			auto* old_renderer = object->AssignRenderer(with_renderer);
-			assert(old_renderer == nullptr);
+			object->AddModule(ModuleType::RENDERER, with_renderer);
+			// auto* old_renderer = object->AssignRenderer(with_renderer);
+			// assert(old_renderer == nullptr);
 
 			return object;
 		}

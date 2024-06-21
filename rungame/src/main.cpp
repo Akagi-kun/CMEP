@@ -59,6 +59,24 @@ static void RunEngine(bool verbose)
 		throw;
 	}
 
+	try
+	{
+		engine->ThrowTest();
+	}
+	catch (std::exception& e)
+	{
+		if (strcmp(e.what(), "BEBEACAC") == 0)
+		{
+			my_logger->SimpleLog(Logging::LogLevel::Info, "ABI Boundary exception check successful");
+		}
+		else
+		{
+			// Impossible was achieved
+			// the exception was caught but is somehow malformed?
+			throw;
+		}
+	}
+
 	// Start execution
 	try
 	{
