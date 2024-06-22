@@ -91,6 +91,7 @@ target_include_directories(EngineCore PUBLIC include
 											 ../external/VulkanMemoryAllocator/include
 											 ../external/lua-prebuilt/include
 											 ../external/lodepng
+											 ../external/glm
 											 ../common_include
 											 )
 if(DEFINED ENV{VULKAN_SDK})

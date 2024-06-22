@@ -60,11 +60,11 @@
 #		define BUILDINFO_COMPILED_BY                                                                                  \
 			"GCC " MACRO_STR(__GNUC__) "." MACRO_STR(__GNUC_MINOR__) "." MACRO_STR(__GNUC_PATCHLEVEL__);
 #	endif
-// Any other compiler will simply be Nil
+// Any other compiler will simply be Unknown
 #else
 #	pragma warning "Compiler could not be identified"
 #	define SEMANTICS_COMPILER_UNKNOWN
-#	define BUILDINFO_COMPILED_BY "Nil"
+#	define BUILDINFO_COMPILED_BY "Unknown"
 #endif
 
 namespace Engine

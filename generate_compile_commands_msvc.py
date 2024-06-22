@@ -9,7 +9,6 @@ def parse_vcxproj(project_file):
 		data = file.read()
 
 	# Extract relevant information from the .vcxproj file
-	# This is a simplified example; you may need to adjust the parsing logic
 	includes = []
 	defines = []
 	files = []
@@ -84,7 +83,6 @@ def generate_compile_commands(vs_project_path, output_path, root_path, default_i
 
 			command = {
 				'directory': str(Path(root_path)),
-				#'command': f'cl /showIncludes /W{warning_level} /I{" /I".join(processed_includes)} /D{" /D".join(defines)} /c {file}',
 				'arguments': arguments + ["/c", file],
 				'file': processed_file
 			}

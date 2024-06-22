@@ -12,8 +12,6 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE ${builddir} CACHE PATH "Build directo
 
 add_subdirectory(external/glfw)
 
-include_directories(external/glm)
-
 # Global compile options
 if(MSVC)
 	add_compile_options(/std:c++17 /MP /EHs)
@@ -29,10 +27,6 @@ if(MSVC)
 else()
 	add_compile_options(-std=c++17)
 	add_link_options(-lpthread -lstdc++)
-	#if(NOT APPLE)
-	#	add_compile_options(--coverage)
-	#	add_link_options(--coverage -lgcov)
-	#endif()
 
 	# Debug only
 	add_compile_definitions($<$<CONFIG:Debug>:DEBUG=1>)
