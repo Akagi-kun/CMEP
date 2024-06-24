@@ -5,11 +5,13 @@
 
 #include "IModule.hpp"
 #include "InternalEngineObject.hpp"
+#include "ModuleMediator.hpp"
+
 // #include <functional>
 
 namespace Engine
 {
-	class Object final : public InternalEngineObject
+	class Object final : public InternalEngineObject, public ModuleMediator
 	{
 	private:
 		Rendering::Transform transform;
@@ -30,7 +32,7 @@ namespace Engine
 
 	public:
 		Object() noexcept;
-		~Object() noexcept;
+		~Object() noexcept override;
 
 		// Overrides InternalEngineObject::UpdateHeldLogger
 		void UpdateHeldLogger(std::shared_ptr<Logging::Logger>& new_logger);
@@ -42,7 +44,7 @@ namespace Engine
 		void Scale(glm::vec3 with_size) noexcept;
 		void Rotate(glm::vec3 with_rotation) noexcept;
 
-		void ModuleBroadcast(ModuleType for_type, const ModuleMessage& data);
+		void ModuleBroadcast(ModuleType for_type, const ModuleMessage& data) final;
 
 		void AddModule(ModuleType with_type, IModule* with_module);
 		IModule* GetFirstModule(ModuleType with_type);

@@ -31,13 +31,10 @@ static void RunEngine(bool verbose)
 {
 	std::shared_ptr<Logging::Logger> my_logger = std::make_shared<Logging::Logger>();
 
-	Logging::LogLevel loglevel = DEFAULT_LOG_LEVEL;
-	if (verbose)
-	{
-		loglevel = Logging::LogLevel::Debug3;
-	}
+	Logging::LogLevel loglevel = verbose ? Logging::LogLevel::Debug3 : DEFAULT_LOG_LEVEL;
 
-	FILE* logfile = fopen("latest.log", "w");
+	FILE* logfile = nullptr;
+	fopen_s(&logfile, "latest.log", "w");
 
 	my_logger->AddOutputHandle(loglevel, stdout, true);
 	my_logger->AddOutputHandle(Logging::LogLevel::Debug3, logfile, false);
@@ -59,6 +56,8 @@ static void RunEngine(bool verbose)
 		throw;
 	}
 
+	// This tests whether exceptions thrown inside EngineCore
+	// can be successfully caught in rungame
 	try
 	{
 		engine->ThrowTest();
@@ -67,13 +66,13 @@ static void RunEngine(bool verbose)
 	{
 		if (strcmp(e.what(), "BEBEACAC") == 0)
 		{
-			my_logger->SimpleLog(Logging::LogLevel::Info, "ABI Boundary exception check successful");
+			my_logger->SimpleLog(Logging::LogLevel::Info, "ABI exception check successful");
 		}
 		else
 		{
-			// Impossible was achieved
-			// the exception was caught but is somehow malformed?
+			// The exception was caught but is somehow malformed?
 			throw;
+			assert(false && "ABI exception check failed");
 		}
 	}
 

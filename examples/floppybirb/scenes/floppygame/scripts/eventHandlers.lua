@@ -2,7 +2,7 @@
 ---->  Game data  <----
 
 local deltaTime_accum = 0.0;
-local deltaTimeCount = 0;
+local deltaTime_count = 0;
 
 -- Related to spawning pipes
 local spawn_pipe_every = 4.5;
@@ -153,23 +153,22 @@ onUpdate = function(event)
 	max_deltatime_avg = math.max(max_deltatime_avg, event.deltaTime);
 	min_deltatime_avg = math.min(min_deltatime_avg, event.deltaTime);
 
-	deltaTimeCount = deltaTimeCount + 1;
+	deltaTime_count = deltaTime_count + 1;
 
 	local asset_manager = event.engine:GetAssetManager();
 	local scene_manager = event.engine:GetSceneManager();
 
-	-- Update frametime counter, recommend to leave this here for debugging purposes
+	-- Updates frametime counter, recommend to leave this here for debugging purposes
 	if deltaTime_accum >= 1.0 then
-		local deltaTime_avg = deltaTime_accum / deltaTimeCount
-		--was_logged = true
-		--cmepmeta.logger.SimpleLog(string.format("Hello from Lua! Last FT is: %f ms!", deltaTime_accum / deltaTimeCount * 1000))
+		local deltaTime_avg = deltaTime_accum / deltaTime_count
+		--cmepmeta.logger.SimpleLog(string.format("Hello from Lua! Last FT is: %f ms!", deltaTime_accum / deltaTime_count * 1000))
 		local object = scene_manager:FindObject("_debug_info");
 		cmepapi.TextRendererUpdateText(object.renderer, string.format("avg: %fms\nmin: %fms\nmax: %fms", deltaTime_avg * 1000, min_deltatime_avg * 1000, max_deltatime_avg * 1000));
 		
 		min_deltatime_avg = 1000.0
 		max_deltatime_avg = 0.0
 		deltaTime_accum = 0;
-		deltaTimeCount = 0;
+		deltaTime_count = 0;
 	end
 
 	if game_gameover_state == false then
@@ -318,10 +317,12 @@ onInit = function(event)
 	scene_manager:AddObject("text_score", object);
 
 	-- Set-up camera
+	-- (this is essentially unnecessary for 2D-only scenes)
 	scene_manager:SetCameraTransform(0.0, 0.0, 0.0);
 	scene_manager:SetCameraHVRotation(0, 0);
 
 	-- Set-up light
+	-- (unnecessary for scenes that don't employ renderers which support lighting)
 	scene_manager:SetLightTransform(-1, 1, 0);
 
 	return 0;

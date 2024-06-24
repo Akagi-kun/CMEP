@@ -36,6 +36,8 @@ namespace Engine
 
 	void Object::AddModule(ModuleType with_type, IModule* with_module)
 	{
+		with_module->SetMediator(this);
+
 		this->modules.emplace(with_type, with_module);
 	}
 

@@ -37,10 +37,15 @@ namespace Engine
 				payload;
 	};
 
+	// ModuleMediator.hpp
+	class ModuleMediator;
+
 	class IModule : public InternalEngineObject
 	{
 	protected:
 		ModuleType type;
+
+		ModuleMediator* mediator;
 
 	public:
 		IModule() = delete;
@@ -48,6 +53,11 @@ namespace Engine
 		{
 		}
 		virtual ~IModule() = default;
+
+		void SetMediator(ModuleMediator* with_mediator)
+		{
+			this->mediator = with_mediator;
+		}
 
 		virtual void Communicate(const ModuleMessage& data) = 0;
 
