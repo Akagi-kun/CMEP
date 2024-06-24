@@ -33,8 +33,14 @@ static void RunEngine(bool verbose)
 
 	Logging::LogLevel loglevel = verbose ? Logging::LogLevel::Debug3 : DEFAULT_LOG_LEVEL;
 
+	constexpr const char* logfile_name = "latest.log";
+
 	FILE* logfile = nullptr;
-	fopen_s(&logfile, "latest.log", "w");
+#if defined(_MSC_VER)
+	fopen_s(&logfile, logfile_name, "w");
+#else
+	logfile = fopen(logfile_name, "w");
+#endif
 
 	my_logger->AddOutputHandle(loglevel, stdout, true);
 	my_logger->AddOutputHandle(Logging::LogLevel::Debug3, logfile, false);
