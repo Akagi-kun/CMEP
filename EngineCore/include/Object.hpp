@@ -40,22 +40,20 @@ namespace Engine
 		void ScreenSizeInform(unsigned int with_screenx, unsigned int with_screeny) noexcept;
 
 		// Rename to Set...
-		void Translate(glm::vec3 with_pos) noexcept;
-		void Scale(glm::vec3 with_size) noexcept;
-		void Rotate(glm::vec3 with_rotation) noexcept;
+		// relative functions?
+		void SetPosition(glm::vec3 with_pos) noexcept;
+		void SetSize(glm::vec3 with_size) noexcept;
+		void SetRotation(glm::vec3 with_rotation) noexcept;
 
 		void ModuleBroadcast(ModuleType for_type, const ModuleMessage& data) final;
 
 		void AddModule(ModuleType with_type, IModule* with_module);
 		IModule* GetFirstModule(ModuleType with_type);
 
-		// TODO: Remove
-		// int Render(VkCommandBuffer commandBuffer, uint32_t currentFrame);
-
 		// TODO: Rename to Get...
-		[[nodiscard]] glm::vec3 Position() const noexcept;
-		[[nodiscard]] glm::vec3 Size() const noexcept;
-		[[nodiscard]] glm::vec3 Rotation() const noexcept;
+		[[nodiscard]] glm::vec3 GetPosition() const noexcept;
+		[[nodiscard]] glm::vec3 GetSize() const noexcept;
+		[[nodiscard]] glm::vec3 GetRotation() const noexcept;
 
 		void SetParentPositionRotationSize(Rendering::Transform with_parent_transform);
 

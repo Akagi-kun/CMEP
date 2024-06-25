@@ -68,7 +68,7 @@ namespace Engine
 		this->UpdateRenderer();
 	}
 
-	void Object::Translate(const glm::vec3 with_pos) noexcept
+	void Object::SetPosition(const glm::vec3 with_pos) noexcept
 	{
 		this->transform.pos = with_pos;
 		this->UpdateRenderer();
@@ -80,7 +80,7 @@ namespace Engine
 		}
 	}
 
-	void Object::Scale(const glm::vec3 with_size) noexcept
+	void Object::SetSize(const glm::vec3 with_size) noexcept
 	{
 		this->transform.size = with_size;
 		this->UpdateRenderer();
@@ -92,7 +92,7 @@ namespace Engine
 		}
 	}
 
-	void Object::Rotate(const glm::vec3 with_rotation) noexcept
+	void Object::SetRotation(const glm::vec3 with_rotation) noexcept
 	{
 		this->transform.rotation = with_rotation;
 
@@ -123,15 +123,15 @@ namespace Engine
 		   return 0;
 	   }
 	*/
-	glm::vec3 Object::Position() const noexcept
+	glm::vec3 Object::GetPosition() const noexcept
 	{
 		return this->transform.pos;
 	}
-	glm::vec3 Object::Size() const noexcept
+	glm::vec3 Object::GetSize() const noexcept
 	{
 		return this->transform.size;
 	}
-	glm::vec3 Object::Rotation() const noexcept
+	glm::vec3 Object::GetRotation() const noexcept
 	{
 		return this->transform.rotation;
 	}

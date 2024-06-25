@@ -29,7 +29,7 @@ namespace Engine::Scripting::API
 			lua_getfield(state, 1, "_pointer");
 			auto* ptr_obj = static_cast<Object*>(lua_touserdata(state, -1));
 
-			glm::vec3 rotation = ptr_obj->Rotation();
+			glm::vec3 rotation = ptr_obj->GetRotation();
 
 			lua_pushnumber(state, static_cast<double>(rotation.x));
 			lua_pushnumber(state, static_cast<double>(rotation.y));
@@ -38,7 +38,7 @@ namespace Engine::Scripting::API
 			return 3;
 		}
 
-		static int Rotate(lua_State* state)
+		static int SetRotation(lua_State* state)
 		{
 			lua_getfield(state, 1, "_pointer");
 			auto* ptr_obj = static_cast<Object*>(lua_touserdata(state, -1));
@@ -48,7 +48,7 @@ namespace Engine::Scripting::API
 			rotation.y = static_cast<float>(lua_tonumber(state, 3));
 			rotation.z = static_cast<float>(lua_tonumber(state, 4));
 
-			ptr_obj->Rotate(rotation);
+			ptr_obj->SetRotation(rotation);
 
 			return 0;
 		}
@@ -58,7 +58,7 @@ namespace Engine::Scripting::API
 			lua_getfield(state, 1, "_pointer");
 			auto* ptr_obj = static_cast<Object*>(lua_touserdata(state, -1));
 
-			glm::vec3 size = ptr_obj->Size();
+			glm::vec3 size = ptr_obj->GetSize();
 
 			lua_pushnumber(state, static_cast<double>(size.x));
 			lua_pushnumber(state, static_cast<double>(size.y));
@@ -67,7 +67,7 @@ namespace Engine::Scripting::API
 			return 3;
 		}
 
-		static int Scale(lua_State* state)
+		static int SetSize(lua_State* state)
 		{
 			lua_getfield(state, 1, "_pointer");
 			auto* ptr_obj = static_cast<Object*>(lua_touserdata(state, -1));
@@ -77,7 +77,7 @@ namespace Engine::Scripting::API
 			size.y = static_cast<float>(lua_tonumber(state, 3));
 			size.z = static_cast<float>(lua_tonumber(state, 4));
 
-			ptr_obj->Scale(size);
+			ptr_obj->SetSize(size);
 
 			return 0;
 		}
@@ -87,7 +87,7 @@ namespace Engine::Scripting::API
 			lua_getfield(state, 1, "_pointer");
 			auto* ptr_obj = static_cast<Object*>(lua_touserdata(state, -1));
 
-			auto rotation = ptr_obj->Position();
+			auto rotation = ptr_obj->GetPosition();
 
 			lua_pushnumber(state, static_cast<double>(rotation.x));
 			lua_pushnumber(state, static_cast<double>(rotation.y));
@@ -96,7 +96,7 @@ namespace Engine::Scripting::API
 			return 3;
 		}
 
-		static int Translate(lua_State* state)
+		static int SetPosition(lua_State* state)
 		{
 			lua_getfield(state, 1, "_pointer");
 			auto* ptr_obj = static_cast<Object*>(lua_touserdata(state, -1));
@@ -106,7 +106,7 @@ namespace Engine::Scripting::API
 			position.y = static_cast<float>(lua_tonumber(state, 3));
 			position.z = static_cast<float>(lua_tonumber(state, 4));
 
-			ptr_obj->Translate(position);
+			ptr_obj->SetPosition(position);
 
 			return 0;
 		}
@@ -115,10 +115,10 @@ namespace Engine::Scripting::API
 	const std::unordered_map<std::string, lua_CFunction> object_mappings = {
 		CMEP_LUAMAPPING_DEFINE(Functions_Object, AddChild),
 		CMEP_LUAMAPPING_DEFINE(Functions_Object, GetSize),
-		CMEP_LUAMAPPING_DEFINE(Functions_Object, Scale),
+		CMEP_LUAMAPPING_DEFINE(Functions_Object, SetSize),
 		CMEP_LUAMAPPING_DEFINE(Functions_Object, GetRotation),
-		CMEP_LUAMAPPING_DEFINE(Functions_Object, Rotate),
+		CMEP_LUAMAPPING_DEFINE(Functions_Object, SetRotation),
 		CMEP_LUAMAPPING_DEFINE(Functions_Object, GetPosition),
-		CMEP_LUAMAPPING_DEFINE(Functions_Object, Translate)
+		CMEP_LUAMAPPING_DEFINE(Functions_Object, SetPosition)
 	};
 } // namespace Engine::Scripting::API

@@ -19,7 +19,6 @@ namespace Engine
 		InternalEngineObject(Engine* engine) : owner_engine(engine)
 		{
 		}
-		//~InternalEngineObject() {}
 
 		void UpdateOwnerEngine(Engine* new_owner_engine)
 		{

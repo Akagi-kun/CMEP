@@ -293,8 +293,8 @@ namespace Engine
 					// We can assume that it's creation failed if it's nullptr
 					if (object != nullptr)
 					{
-						object->Translate(position);
-						object->Scale(scale);
+						object->SetPosition(position);
+						object->SetSize(scale);
 
 						scene->AddObject(object_name, object);
 					}

@@ -116,26 +116,26 @@ namespace Engine
 
 		int FireEvent(EventHandling::Event& event);
 
-		inline void SetFramerateTarget(uint_fast16_t framerate) noexcept
+		void SetFramerateTarget(uint_fast16_t framerate) noexcept
 		{
 			this->framerate_target = framerate;
 		}
 
 		[[nodiscard]] double GetLastDeltaTime() const;
 
-		inline std::weak_ptr<AssetManager> GetAssetManager() noexcept
+		std::weak_ptr<AssetManager> GetAssetManager() noexcept
 		{
 			return this->asset_manager;
 		}
-		inline Rendering::VulkanRenderingEngine* GetRenderingEngine() noexcept
+		Rendering::VulkanRenderingEngine* GetRenderingEngine() noexcept
 		{
 			return this->rendering_engine;
 		}
-		[[nodiscard]] inline std::weak_ptr<SceneManager> GetSceneManager() const noexcept
+		[[nodiscard]] std::weak_ptr<SceneManager> GetSceneManager() const noexcept
 		{
 			return std::weak_ptr<SceneManager>(this->scene_manager);
 		}
-		inline std::weak_ptr<Rendering::Factories::VulkanImageFactory> GetVulkanImageFactory() noexcept
+		std::weak_ptr<Rendering::Factories::VulkanImageFactory> GetVulkanImageFactory() noexcept
 		{
 			return this->vulkan_image_factory;
 		}

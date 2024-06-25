@@ -4,6 +4,7 @@
 #include "Assets/AssetManager.hpp"
 #include "Rendering/AxisRenderer.hpp"
 #include "Rendering/IRenderer.hpp"
+#include "Rendering/Vulkan/VulkanStructDefs.hpp"
 
 #include "Scripting/LuaScript.hpp"
 #include "Scripting/LuaScriptExecutor.hpp"
@@ -214,10 +215,7 @@ namespace Engine
 		{
 			try
 			{
-
 				ptr->ModuleBroadcast(ModuleType::RENDERER, render_message);
-				// ptr->Render(commandBuffer, currentFrame);
-				//  ptr->renderer->Render(commandBuffer, currentFrame);
 			}
 			catch (const std::exception& e)
 			{
@@ -237,9 +235,9 @@ namespace Engine
 		// TODO: Remove this!
 		// Create axis object
 		auto* object = new Object();
-		object->Translate(glm::vec3(0, 0, 0));
-		object->Scale(glm::vec3(1, 1, 1));
-		object->Rotate(glm::vec3(0, 0, 0));
+		object->SetPosition(glm::vec3(0, 0, 0));
+		object->SetSize(glm::vec3(1, 1, 1));
+		object->SetRotation(glm::vec3(0, 0, 0));
 		object->ScreenSizeInform(this->config->window.size_x, this->config->window.size_y);
 
 		Rendering::IRenderer* with_renderer = new Rendering::AxisRenderer(this);
@@ -254,7 +252,9 @@ namespace Engine
 		auto premade_on_update_event		= EventHandling::Event(EventHandling::EventType::ON_UPDATE);
 		premade_on_update_event.raised_from = this;
 
-		glfwShowWindow(this->rendering_engine->GetWindow().window);
+		Rendering::GLFWwindowData glfw_window = this->rendering_engine->GetWindow();
+
+		glfwShowWindow(glfw_window.window);
 
 		this->logger->SimpleLog(
 			Logging::LogLevel::Debug1,
@@ -264,15 +264,15 @@ namespace Engine
 		);
 
 		// static constexpr double nano_to_msec = 1.e6;
-		static constexpr double nano_to_sec = 1.e9;
+		static constexpr double nano_to_sec = 1e9;
 
-		auto previous_clock = std::chrono::steady_clock::now();
+		auto prev_clock = std::chrono::steady_clock::now();
 		// double on_update_delta = 0.0;
 		//  hot loop
-		while (glfwWindowShouldClose(this->rendering_engine->GetWindow().window) == 0)
+		while (glfwWindowShouldClose(glfw_window.window) == 0)
 		{
 			const auto next_clock	= std::chrono::steady_clock::now();
-			const double delta_time = static_cast<double>((next_clock - previous_clock).count()) / nano_to_sec;
+			const double delta_time = static_cast<double>((next_clock - prev_clock).count()) / nano_to_sec;
 			this->last_delta_time	= delta_time;
 
 			// Update deltaTime of premade ON_UPDATE event and fire it
@@ -290,11 +290,7 @@ namespace Engine
 				break;
 			}
 
-			// Get delta time for the ON_UPDATE event only
-			// on_update_delta = static_cast<double>((std::chrono::steady_clock::now() - next_clock).count()) /
-			//				  nano_to_msec;
-			// this->logger->SimpleLog(Logging::LogLevel::Info, LOGPFX_CURRENT "Last ON_UPDATE took %lf",
-			// on_update_delta);
+			// this->logger->SimpleLog(Logging::LogLevel::Warning, "FT %lf", 0.016666 / delta_time);
 
 			// Render
 			this->rendering_engine->DrawFrame();
@@ -302,18 +298,16 @@ namespace Engine
 			// Sync with glfw event loop
 			glfwPollEvents();
 
-			const auto frame_clock				= std::chrono::steady_clock::now();
-			const double framerate2second_ratio = 1.0 / this->framerate_target;
-			const double sleep_secs				= framerate2second_ratio -
-									  static_cast<double>((frame_clock - next_clock).count()) / 1.e9;
-
+			const auto frame_clock	= std::chrono::steady_clock::now();
+			const double sleep_secs = 1.0 / this->framerate_target -
+									  static_cast<double>((frame_clock - next_clock).count()) / nano_to_sec;
 			// spin sleep if sleep necessary and VSYNC disabled
 			if (sleep_secs > 0 && this->framerate_target != 0)
 			{
 				SpinSleep(sleep_secs);
 			}
 
-			previous_clock = next_clock;
+			prev_clock = next_clock;
 		}
 
 		this->logger->SimpleLog(Logging::LogLevel::Debug2, LOGPFX_CURRENT "Closing engine");

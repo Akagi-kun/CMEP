@@ -72,8 +72,8 @@ namespace Engine
 		if (is_a_ui && is_b_ui)
 		{
 			// Introduce positive offset (TODO: is this necessary?)
-			const float a_z = pair_a.second->Position().z + positive_offset;
-			const float b_z = pair_b.second->Position().z + positive_offset;
+			const float a_z = pair_a.second->GetPosition().z + positive_offset;
+			const float b_z = pair_b.second->GetPosition().z + positive_offset;
 
 			return a_z < b_z;
 		}

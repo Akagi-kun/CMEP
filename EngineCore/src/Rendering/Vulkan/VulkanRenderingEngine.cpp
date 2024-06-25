@@ -408,7 +408,7 @@ namespace Engine::Rendering
 		VkPresentInfoKHR present_info{};
 		present_info.sType				= VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
 		// Wait for render_finished_semaphores to be signaled
-		// (wait for render to finish = image is ready to be presented)
+		// (when signaled = image is ready to be presented)
 		present_info.waitSemaphoreCount = 1;
 		present_info.pWaitSemaphores	= signal_semaphores;
 

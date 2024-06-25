@@ -24,7 +24,6 @@ namespace Engine
 		default_scene->UpdateHeldLogger(this->logger);
 
 		this->scenes.emplace("_default", default_scene);
-		// this->scenes.at(this->current_scene)->UpdateHeldLogger(this->logger);
 
 		this->scene_loader = std::make_unique<SceneLoader>(with_logger);
 	}
@@ -33,10 +32,10 @@ namespace Engine
 	{
 		this->logger->SimpleLog(Logging::LogLevel::Info, LOGPFX_CURRENT "Destructor called");
 		/*
-				for (auto& scene : this->scenes)
-				{
-					scene.second.reset();
-				} */
+		for (auto& scene : this->scenes)
+		{
+			scene.second.reset();
+		} */
 		this->scenes.clear();
 
 		this->scene_loader.reset();

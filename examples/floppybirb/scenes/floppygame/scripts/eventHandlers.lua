@@ -11,20 +11,22 @@ local spawn_pipe_last_idx = 0;
 local spawn_pipe_first_idx = 1;
 local spawn_pipe_count = 0;
 
--- Related to pipes themselves (note: pipe original size is 110x338)
-local pipe_x_size = 110; -- was <const>
-local pipe_y_size = 450; -- was <const>
+-- Pipe sprite size in pixels (note: pipe original size is 110x338)
+local pipe_x_size = 110;
+local pipe_y_size = 450;
 
--- Related to pipe behavior
-local pipe_spacing_start = 200; -- was <const>
+-- Pipe behavior
+local pipe_spacing_start = 200;
 local pipe_spacing = pipe_spacing_start;
 local pipe_move_speed = 0.12;
 
--- Related to birb
-local birb_x_size = 72; -- was <const>
-local birb_y_size = 44; -- was <const>
-local birb_jump_velocity = 0.36; -- was <const>
-local birb_gravity = 0.68; -- was <const>
+-- Birb sprite size in pixels
+local birb_x_size = 72;
+local birb_y_size = 44;
+
+-- Birb behavior
+local birb_jump_velocity = 0.36;
+local birb_gravity = 0.68;
 local birb_velocity = 0.1;
 local birb_is_velociting = false;
 
@@ -67,7 +69,9 @@ local gameOnGameOver = function(asset_manager, scene_manager)
 	cmepmeta.logger.SimpleLog(string.format("Game over!"))
 
 	local font = asset_manager:GetFont("myfont");
-	local object = cmepapi.ObjectFactoryCreateTextObject(scene_manager, 0.34, 0.45, -0.01, 64, "GAME OVER", font);
+	local object = cmepapi.ObjectFactoryCreateTextObject(scene_manager, "GAME OVER", font);
+	object:SetPosition(0.34, 0.45, -0.01)
+	object:SetSize(64, 64, 1.0)
 	scene_manager:AddObject("text_gameover", object);
 end
 
@@ -97,14 +101,6 @@ end
 -- always check whether a key was unpressed when necessary
 -- 
 onKeyDown = function(event)
-	-- Stop engine if ESC is pressed
-	-- 256 is the keycode of the ESC key
-	--
-	if event.keycode == 256 then
-		event.engine:Stop();
-		return 0;
-	end
-
 	-- Check for space press
 	--
 	-- note: it is not recommended to convert event.keycode with string.char
@@ -118,7 +114,16 @@ onKeyDown = function(event)
 		if birb_is_velociting == false then
 			birb_velocity = birb_jump_velocity;
 			birb_is_velociting = true;
+			return 0;
 		end
+	end
+
+	-- Stop engine if ESC is pressed
+	-- 256 is the keycode of the ESC key
+	--
+	if event.keycode == 256 then
+		event.engine:Stop();
+		return 0;
 	end
 
 	return 0;
@@ -136,8 +141,10 @@ onKeyUp = function(event)
 	end
 end
 
-max_deltatime_avg = 0.0
-min_deltatime_avg = 1000.0
+-- Minimum & Maximum reached deltatime
+local max_deltatime_avg = 0.0
+local min_deltatime_avg = 2000.0
+
 --was_logged = false
 
 -- ON_UPDATE event
@@ -161,11 +168,11 @@ onUpdate = function(event)
 	-- Updates frametime counter, recommend to leave this here for debugging purposes
 	if deltaTime_accum >= 1.0 then
 		local deltaTime_avg = deltaTime_accum / deltaTime_count
-		--cmepmeta.logger.SimpleLog(string.format("Hello from Lua! Last FT is: %f ms!", deltaTime_accum / deltaTime_count * 1000))
+		--cmepmeta.logger.SimpleLog(string.format("Frametime is: %f ms!", deltaTime_accum / deltaTime_count * 1000))
 		local object = scene_manager:FindObject("_debug_info");
 		cmepapi.TextRendererUpdateText(object.renderer, string.format("avg: %fms\nmin: %fms\nmax: %fms", deltaTime_avg * 1000, min_deltatime_avg * 1000, max_deltatime_avg * 1000));
 		
-		min_deltatime_avg = 1000.0
+		min_deltatime_avg = 2000.0
 		max_deltatime_avg = 0.0
 		deltaTime_accum = 0;
 		deltaTime_count = 0;
@@ -182,13 +189,13 @@ onUpdate = function(event)
 
 			scene_manager:AddTemplatedObject("sprite_pipe_down"..tostring(spawn_pipe_last_idx + 1), "pipe_down");
 			local pipe1 = scene_manager:FindObject("sprite_pipe_down"..tostring(spawn_pipe_last_idx + 1));
-			pipe1:Translate(1.0, pxToScreenY(pipe_y_offset - (pipe_spacing / 2)), -0.15);
-			pipe1:Scale(pxToScreenX(pipe_x_size), pxToScreenY(pipe_y_size), 1.0);
+			pipe1:SetPosition(1.0, pxToScreenY(pipe_y_offset - (pipe_spacing / 2)), -0.15);
+			pipe1:SetSize(pxToScreenX(pipe_x_size), pxToScreenY(pipe_y_size), 1.0);
 
 			scene_manager:AddTemplatedObject("sprite_pipe_up"..tostring(spawn_pipe_last_idx + 1), "pipe_up");
 			local pipe2 = scene_manager:FindObject("sprite_pipe_up"..tostring(spawn_pipe_last_idx + 1));
-			pipe2:Translate(1.0, pxToScreenY(pipe_y_size + (pipe_spacing / 2) + pipe_y_offset), -0.15);
-			pipe2:Scale(pxToScreenX(pipe_x_size), pxToScreenY(pipe_y_size), 1.0);
+			pipe2:SetPosition(1.0, pxToScreenY(pipe_y_size + (pipe_spacing / 2) + pipe_y_offset), -0.15);
+			pipe2:SetSize(pxToScreenX(pipe_x_size), pxToScreenY(pipe_y_size), 1.0);
 
 			spawn_pipe_last_idx = spawn_pipe_last_idx + 1;
 			spawn_pipe_count = spawn_pipe_count + 1;
@@ -208,8 +215,8 @@ onUpdate = function(event)
 				local x2, y2, z2 = pipe2:GetPosition();
 				x1 = x1 - pipe_move_speed * event.deltaTime;
 				x2 = x2 - pipe_move_speed * event.deltaTime;
-				pipe1:Translate(x1, y1, z1);
-				pipe2:Translate(x2, y2, z2);
+				pipe1:SetPosition(x1, y1, z1);
+				pipe2:SetPosition(x2, y2, z2);
 
 				-- Check collisions with both pipes
 				if checkCollisions2DBox(birbx, birby, pxToScreenX(birb_x_size), pxToScreenY(birb_y_size), x1, y1, pxToScreenX(pipe_x_size), pxToScreenY(pipe_y_size)) or -- pipe 1
@@ -259,7 +266,7 @@ onUpdate = function(event)
 		-- Fall birb
 		-- we already have birbx/y/z from before
 		birby = birby - birb_velocity * event.deltaTime;
-		birb:Translate(birbx, birby, birbz);
+		birb:SetPosition(birbx, birby, birbz);
 
 		local ground1 = scene_manager:FindObject("ground_top");
 		local ground2 = scene_manager:FindObject("ground_bottom");
@@ -275,12 +282,12 @@ onUpdate = function(event)
 		if	(g1_x > pxToScreenX(-120)) or
 			(g2_x > pxToScreenX(-120))
 		then
-			ground1:Translate(g1_x, g1_y, g1_z);
-			ground2:Translate(g2_x, g2_y, g2_z);
+			ground1:SetPosition(g1_x, g1_y, g1_z);
+			ground2:SetPosition(g2_x, g2_y, g2_z);
 		-- If it's not, reset back to 0
 		else
-			ground1:Translate(0.0, g1_y, g1_z);
-			ground2:Translate(0.0, g2_y, g2_z);
+			ground1:SetPosition(0.0, g1_y, g1_z);
+			ground2:SetPosition(0.0, g2_y, g2_z);
 		end
 
 		-- Add birb_gravity to birb velocity
@@ -309,11 +316,15 @@ onInit = function(event)
 
 	-- Create frametime counter and add it to scene
 	local font = asset_manager:GetFont("myfont");
-	local object = cmepapi.ObjectFactoryCreateTextObject(scene_manager, 0.0, 0.0, -0.01, 24, "avg: \nmin: \nmax: ", font);
+	local object = cmepapi.ObjectFactoryCreateTextObject(scene_manager, "avg: \nmin: \nmax: ", font);
+	object:SetPosition(0.0, 0.0, -0.01)
+	object:SetSize(24, 24, 1.0)
 	scene_manager:AddObject("_debug_info", object);
 	
 	-- Add score
-	local object = cmepapi.ObjectFactoryCreateTextObject(scene_manager, 0.5, 0.0, -0.01, 64, "0", font);
+	local object = cmepapi.ObjectFactoryCreateTextObject(scene_manager, "0", font);
+	object:SetPosition(0.5, 0.0, -0.01)
+	object:SetSize(64, 64, 1.0)
 	scene_manager:AddObject("text_score", object);
 
 	-- Set-up camera
