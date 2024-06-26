@@ -1,10 +1,12 @@
 #include "SceneManager.hpp"
 
 #include "Rendering/IRenderer.hpp"
+#include "Rendering/Transform.hpp"
 
 #include "Logging/Logging.hpp"
 
 #include "Engine.hpp"
+#include "glm/ext/matrix_clip_space.hpp"
 #include "glm/ext/matrix_transform.hpp"
 
 // Prefixes for logging messages
@@ -22,6 +24,7 @@ namespace Engine
 
 		std::shared_ptr<Scene> default_scene = std::make_shared<Scene>();
 		default_scene->UpdateHeldLogger(this->logger);
+		default_scene->UpdateOwnerEngine(this->owner_engine);
 
 		this->scenes.emplace("_default", default_scene);
 
@@ -60,6 +63,8 @@ namespace Engine
 
 	void SceneManager::LoadScene(std::string scene_name)
 	{
+		assert(this->owner_engine != nullptr);
+
 		this->scene_loader->UpdateOwnerEngine(this->owner_engine);
 		this->scenes.emplace(scene_name, this->scene_loader->LoadScene(scene_name));
 	}
@@ -113,6 +118,21 @@ namespace Engine
 	glm::vec2 SceneManager::GetCameraHVRotation()
 	{
 		return this->camera_hv_rotation;
+	}
+
+	glm::mat4 SceneManager::GetProjectionMatrix(Rendering::ScreenSize screen) const
+	{
+		return glm::perspective<float>(
+			glm::radians(this->field_of_vision),
+			static_cast<float>(screen.x / screen.y),
+			0.1f,
+			100.0f
+		);
+	}
+
+	glm::mat4 SceneManager::GetProjectionMatrixOrtho()
+	{
+		return glm::ortho(0.0f, 1.0f, 0.0f, 1.0f);
 	}
 
 	glm::mat4 SceneManager::GetCameraViewMatrix()

@@ -16,60 +16,27 @@ namespace Engine
 		this->logger->SimpleLog(Logging::LogLevel::Debug3, LOGPFX_CURRENT "Destructor called");
 
 		delete this->renderer;
-
-		// for (auto& module : this->modules)
-		//{
-		//	delete module.second;
-		// }
-		//
-		// this->modules.clear();
-		// delete this->renderer;
 	}
-	/*
-		void Object::ModuleBroadcast(ModuleType for_type, const ModuleMessage& data)
-		{
-			auto module_range = this->modules.equal_range(for_type);
-			for (auto module = module_range.first; module != module_range.second; ++module)
-			{
-				module->second->Communicate(data);
-			}
-		}
-
-		void Object::AddModule(ModuleType with_type, IModule* with_module)
-		{
-			with_module->SetMediator(this);
-
-			this->modules.emplace(with_type, with_module);
-		}
-	 */
 
 	void Object::SetRenderer(Rendering::IRenderer* with_renderer)
 	{
+		assert(this->owner_engine != nullptr);
+
 		this->renderer = with_renderer;
 		this->renderer->UpdateHeldLogger(this->logger);
+		this->renderer->UpdateOwnerEngine(this->owner_engine);
 	}
 
 	Rendering::IRenderer* Object::GetRenderer()
 	{
 		return this->renderer;
 	}
-	/*
-		void Object::SetMeshBuilder(Rendering::IMeshBuilder* with_builder)
-		{
-			this->mesh_builder = with_builder;
-		}
 
-		Rendering::IMeshBuilder* Object::GetMeshBuilder()
-		{
-			return this->mesh_builder;
-		}
-	 */
 	void Object::UpdateRenderer() noexcept
 	{
 		if (this->renderer != nullptr)
 		{
 			this->renderer->UpdateTransform(this->transform, this->parent_transform, this->screen);
-			// this->renderer->Communicate(message);
 		}
 	}
 

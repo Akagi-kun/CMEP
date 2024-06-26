@@ -12,7 +12,7 @@ namespace Engine
 	{
 	protected:
 		std::shared_ptr<Logging::Logger> logger;
-		Engine* owner_engine;
+		Engine* owner_engine = nullptr;
 
 	public:
 		InternalEngineObject() = default;

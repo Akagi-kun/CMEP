@@ -23,6 +23,9 @@ namespace Engine
 
 		glm::vec3 light_position{};
 
+		static constexpr float base_fov = 45.0f;
+		float field_of_vision			= base_fov;
+
 		void OnCameraUpdated();
 
 		std::unique_ptr<SceneLoader> scene_loader;
@@ -48,6 +51,9 @@ namespace Engine
 		glm::vec3 GetCameraTransform();
 		glm::vec2 GetCameraHVRotation();
 		glm::mat4 GetCameraViewMatrix();
+
+		glm::mat4 GetProjectionMatrix(Rendering::ScreenSize screen) const;
+		static glm::mat4 GetProjectionMatrixOrtho();
 
 		void SetCameraTransform(glm::vec3 transform);
 		void SetCameraHVRotation(glm::vec2 hvrotation);

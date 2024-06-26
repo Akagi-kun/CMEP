@@ -41,6 +41,8 @@ namespace Engine
 
 		this->LoadSceneInternal(new_scene, scene_name);
 
+		new_scene->UpdateOwnerEngine(this->owner_engine);
+
 		return new_scene;
 	}
 
@@ -285,28 +287,12 @@ namespace Engine
 									Rendering::RendererSupplyDataType::TEXTURE,
 									texture
 								};
-								/*
-								ModuleMessage texture_supply_message = {
-									ModuleMessageType::RENDERER_SUPPLY,
-									Rendering::RendererSupplyData{Rendering::RendererSupplyDataType::TEXTURE, texture}
-								};
-								 */
-								with_renderer->SupplyData(texture_supply);
 
-								// with_renderer->Communicate(texture_supply_message);
+								with_renderer->SupplyData(texture_supply);
 							}
 
-							// with_renderer->UpdateMesh();
-
-							// object->AddModule(ModuleType::RENDERER, with_renderer);
+							object->UpdateOwnerEngine(engine);
 							object->SetRenderer(with_renderer);
-
-							// ModuleMessage builder_build_message = {ModuleMessageType::MESHBUILDER_BUILD, nullptr};
-							// with_builder->Communicate(builder_build_message);
-							// with_builder->Build();
-
-							// object->AddModule(ModuleType::MESH_BUILDER, with_builder);
-							// object->SetMeshBuilder(with_builder);
 
 							break;
 						}

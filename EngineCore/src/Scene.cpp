@@ -133,6 +133,7 @@ namespace Engine
 					with_renderer = new Rendering::SpriteRenderer(this->owner_engine, with_builder);
 					// object->UpdateHeldLogger(this->logger);
 					with_renderer->UpdateHeldLogger(this->logger);
+					with_renderer->UpdateOwnerEngine(this->owner_engine);
 
 					break;
 				}
@@ -146,6 +147,7 @@ namespace Engine
 			// Allocate Object since we already know
 			// that the renderer is valid
 			auto* object = new Object();
+			object->UpdateOwnerEngine(this->owner_engine);
 			object->SetRenderer(with_renderer);
 			// object->SetMeshBuilder(with_builder);
 
@@ -156,6 +158,7 @@ namespace Engine
 			}
 
 			object->UpdateHeldLogger(this->logger);
+			object->UpdateOwnerEngine(this->owner_engine);
 			this->AddObject(name, object);
 		}
 		else

@@ -42,32 +42,7 @@ namespace Engine::Rendering
 		renderer->CleanupVulkanBuffer(this->vbo);
 		renderer->CleanupVulkanPipeline(this->pipeline);
 	}
-	/*
-		void AxisRenderer::Update(
-			glm::vec3 pos,
-			glm::vec3 size,
-			glm::vec3 rotation,
-			uint_fast16_t screenx,
-			uint_fast16_t screeny,
-			glm::vec3 parent_position,
-			glm::vec3 parent_rotation,
-			glm::vec3 parent_size
-		)
-		{
-			this->transform.pos = pos;
-			this->transform.size = size;
-			this->transform.rotation = rotation;
 
-			this->parent_transform.pos = parent_position;
-			this->parent_transform.rotation = parent_rotation;
-			this->parent_transform.size = parent_size;
-
-			this->screenx = screenx;
-			this->screeny = screeny;
-
-			this->has_updated_mesh = false;
-		}
-	 */
 	void AxisRenderer::UpdateMesh()
 	{
 		this->has_updated_mesh = true;
@@ -87,7 +62,7 @@ namespace Engine::Rendering
 			glm::perspective(glm::radians(45.0f), static_cast<float>(this->screen.x / this->screen.y), 0.1f, 100.0f);
 
 		glm::mat4 view;
-		if (auto locked_scene_manager = this->scene_manager.lock())
+		if (auto locked_scene_manager = this->owner_engine->GetSceneManager().lock())
 		{
 			view = locked_scene_manager->GetCameraViewMatrix();
 		}

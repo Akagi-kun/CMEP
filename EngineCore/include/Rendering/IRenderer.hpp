@@ -39,7 +39,7 @@ namespace Engine
 			bool has_updated_mesh = false;
 
 		public:
-			std::weak_ptr<::Engine::SceneManager> scene_manager;
+			// std::weak_ptr<::Engine::SceneManager> scene_manager;
 
 			IRenderer() = delete;
 			IRenderer(Engine* engine, IMeshBuilder* with_builder)

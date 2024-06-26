@@ -31,7 +31,7 @@ namespace Engine::Rendering
 
 		virtual void Build() = 0;
 
-		const MeshBuildContext& GetContext()
+		[[nodiscard]] const MeshBuildContext& GetContext() const
 		{
 			return this->context;
 		}

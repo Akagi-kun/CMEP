@@ -6,7 +6,7 @@
 
 #include "Engine.hpp"
 
-#include <assert.h>
+#include <cassert>
 #include <cstdint>
 #include <cstring>
 #include <glm/glm.hpp>
@@ -84,6 +84,8 @@ namespace Engine::Rendering
 
 	void SpriteRenderer::UpdateMesh()
 	{
+		assert(this->owner_engine != nullptr);
+
 		this->has_updated_mesh = true;
 
 		VulkanRenderingEngine* renderer = this->owner_engine->GetRenderingEngine();
@@ -109,7 +111,14 @@ namespace Engine::Rendering
 			this->mesh_context = this->mesh_builder->GetContext();
 		}
 
-		glm::mat4 projection = glm::ortho(0.0f, 1.0f, 0.0f, 1.0f); //, -10.0f, 10.0f);
+		glm::mat4 projection{};
+		if (auto locked_scene_manager = this->owner_engine->GetSceneManager().lock())
+		{
+			projection = locked_scene_manager->GetProjectionMatrixOrtho();
+			// projection = glm::ortho(0.0f, 1.0f, 0.0f, 1.0f); //, -10.0f, 10.0f);
+		}
+
+		// projection = glm::ortho(0.0f, 1.0f, 0.0f, 1.0f); //, -10.0f, 10.0f);
 
 		if (this->parent_transform.size.x == 0.0f && this->parent_transform.size.y == 0.0f &&
 			this->parent_transform.size.z == 0.0f)

@@ -256,7 +256,12 @@ namespace Engine::Rendering
 			}
 		}
 
-		glm::mat4 projection = glm::ortho(0.0f, 1.0f, 0.0f, 1.0f); //, -10.0f, 10.0f);
+		glm::mat4 projection{};
+		if (auto locked_scene_manager = this->owner_engine->GetSceneManager().lock())
+		{
+			projection = locked_scene_manager->GetProjectionMatrixOrtho();
+			// projection = glm::ortho(0.0f, 1.0f, 0.0f, 1.0f); //, -10.0f, 10.0f);
+		}
 
 		if (this->parent_transform.size.x == 0.0f && this->parent_transform.size.y == 0.0f &&
 			this->parent_transform.size.z == 0.0f)

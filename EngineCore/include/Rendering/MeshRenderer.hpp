@@ -10,17 +10,13 @@ namespace Engine::Rendering
 	class Texture;
 	class Shader;
 
-	/// <summary>
-	/// Implementation of <seealso cref="IRenderer"/> for custom mesh renderables.
-	/// </summary>
-	/// <inheritdoc cref="IRenderer"/>
 	class MeshRenderer final : public IRenderer
 	{
 	private:
-		glm::mat4 mat_m{};
-		glm::mat4 mat_v{};
-		glm::mat4 mat_mv{};
-		glm::mat3 mat_mv_3x3{};
+		// glm::mat4 mat_m{};
+		// glm::mat4 mat_v{};
+		// glm::mat4 mat_mv{};
+		// glm::mat3 mat_mv_3x3{};
 		glm::mat4 mat_mvp{};
 
 		std::shared_ptr<Rendering::Texture> texture;

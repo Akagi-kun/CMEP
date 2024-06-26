@@ -238,9 +238,10 @@ namespace Engine
 		auto* object = new Object();
 
 		Rendering::IRenderer* with_renderer = new Rendering::AxisRenderer(this);
-		with_renderer->scene_manager		= this->scene_manager;
+		// with_renderer->scene_manager		= this->scene_manager;
 
 		// object->AddModule(ModuleType::RENDERER, with_renderer);
+		object->UpdateOwnerEngine(this);
 		object->SetRenderer(with_renderer);
 
 		object->SetPosition(glm::vec3(0, 0, 0));
