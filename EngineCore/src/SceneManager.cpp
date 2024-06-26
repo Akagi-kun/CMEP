@@ -45,7 +45,8 @@ namespace Engine
 	{
 		for (const auto& [name, ptr] : *(this->scenes.at(this->current_scene)->GetAllObjects()))
 		{
-			auto* object_renderer = static_cast<Rendering::IRenderer*>(ptr->GetFirstModule(ModuleType::RENDERER));
+			// auto* object_renderer = static_cast<Rendering::IRenderer*>(ptr->GetFirstModule(ModuleType::RENDERER));
+			auto* object_renderer = static_cast<Rendering::IRenderer*>(ptr->GetRenderer());
 			assert(object_renderer != nullptr);
 
 			object_renderer->UpdateMesh();

@@ -2,7 +2,6 @@
 
 #include <algorithm>
 #include <fstream>
-
 /*
 #define VMA_DEBUG_LOG_FORMAT(format, ...)                                                                              \
 	do                                                                                                                 \

@@ -26,6 +26,8 @@ set(SRC_FILES
 	src/Rendering/MeshRenderer.cpp
 	src/Rendering/SpriteRenderer.cpp
 	src/Rendering/TextRenderer.cpp
+
+	src/Rendering/SpriteMeshBuilder.cpp
 	
 	src/Rendering/Vulkan/VulkanDeviceManager.cpp
 	src/Rendering/Vulkan/VulkanRenderingEngine.cpp

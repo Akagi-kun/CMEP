@@ -170,8 +170,10 @@ onUpdate = function(event)
 		local deltaTime_avg = deltaTime_accum / deltaTime_count
 		--cmepmeta.logger.SimpleLog(string.format("Frametime is: %f ms!", deltaTime_accum / deltaTime_count * 1000))
 		local object = scene_manager:FindObject("_debug_info");
-		cmepapi.TextRendererUpdateText(object.renderer, string.format("avg: %fms\nmin: %fms\nmax: %fms", deltaTime_avg * 1000, min_deltatime_avg * 1000, max_deltatime_avg * 1000));
+		--cmepapi.TextRendererUpdateText(object.renderer, string.format("avg: %fms\nmin: %fms\nmax: %fms", deltaTime_avg * 1000, min_deltatime_avg * 1000, max_deltatime_avg * 1000));
 		
+		cmepapi.RendererSupplyText(object.renderer, string.format("avg: %fms\nmin: %fms\nmax: %fms", deltaTime_avg * 1000, min_deltatime_avg * 1000, max_deltatime_avg * 1000));
+
 		min_deltatime_avg = 2000.0
 		max_deltatime_avg = 0.0
 		deltaTime_accum = 0;
@@ -235,7 +237,7 @@ onUpdate = function(event)
 					game_score = game_score + 1;
 					game_last_scored_pipe_idx = pipeIdx;
 					local score_object = scene_manager:FindObject("text_score");
-					cmepapi.TextRendererUpdateText(score_object.renderer, tostring(game_score));
+					cmepapi.RendererSupplyText(score_object.renderer, tostring(game_score));
 
 					pipe_move_speed = pipe_move_speed * 1.005; -- Increase pipe move speed
 					pipe_spacing = pipe_spacing * 0.9990; -- Decrease pipe spacing (between top and bottom pipe)

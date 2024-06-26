@@ -1,10 +1,11 @@
 #pragma once
 
+#include "Rendering/IMeshBuilder.hpp"
 #include "Rendering/Transform.hpp"
 #include "Rendering/Vulkan/VulkanRenderingEngine.hpp"
 
-#include "IModule.hpp"
 #include "InternalEngineObject.hpp"
+#include "MeshBuildContext.hpp"
 #include "SupplyData.hpp"
 #include "Transform.hpp"
 // #include "glm/glm.hpp"
@@ -20,7 +21,7 @@ namespace Engine
 	namespace Rendering
 	{
 		// Interface for Renderers
-		class IRenderer : public IModule
+		class IRenderer : public InternalEngineObject
 		{
 		protected:
 			Transform transform;
@@ -31,8 +32,24 @@ namespace Engine
 			VulkanBuffer* vbo		 = nullptr;
 			size_t vbo_vert_count	 = 0;
 
+			IMeshBuilder* mesh_builder = nullptr;
+			MeshBuildContext mesh_context{};
+
 			// If this is false, UpdateMesh shall be internally called on next Render
 			bool has_updated_mesh = false;
+
+		public:
+			std::weak_ptr<::Engine::SceneManager> scene_manager;
+
+			IRenderer() = delete;
+			IRenderer(Engine* engine, IMeshBuilder* with_builder)
+				: InternalEngineObject(engine), mesh_builder(with_builder)
+			{
+			}
+			virtual ~IRenderer() = default;
+
+			// Renderers shall implement this to get textures, fonts etc.
+			virtual void SupplyData(const RendererSupplyData& data) = 0;
 
 			void UpdateTransform(
 				const Transform& with_transform,
@@ -47,48 +64,13 @@ namespace Engine
 				this->has_updated_mesh = false;
 			}
 
-			// Renderers shall implement this to get textures, fonts etc.
-			virtual void SupplyData(const RendererSupplyData& data) = 0;
-
-		public:
-			std::weak_ptr<::Engine::SceneManager> scene_manager;
-
-			IRenderer() = delete;
-			IRenderer(Engine* engine) : IModule(engine, ModuleType::RENDERER)
+			void UpdateHeldLogger(std::shared_ptr<Logging::Logger>& new_logger)
 			{
-			}
-			~IRenderer() override = default;
+				InternalEngineObject::UpdateHeldLogger(new_logger);
 
-			void Communicate(const ModuleMessage& data) override
-			{
-				switch (data.type)
+				if (this->mesh_builder != nullptr)
 				{
-					case ModuleMessageType::RENDERER_TRANSFORMS:
-					{
-						const auto& processed_payload = std::get<RendererTransformUpdate>(data.payload);
-						this->UpdateTransform(
-							processed_payload.current,
-							processed_payload.parent,
-							processed_payload.screen
-						);
-						break;
-					}
-					case ModuleMessageType::RENDERER_SUPPLY:
-					{
-						const auto& processed_payload = std::get<RendererSupplyData>(data.payload);
-						this->SupplyData(processed_payload);
-						break;
-					}
-					case ModuleMessageType::RENDERER_REQ_RENDER:
-					{
-						const auto& processed_payload = std::get<RendererRenderRequest>(data.payload);
-						this->Render(processed_payload.command_buffer, processed_payload.current_frame);
-						break;
-					}
-					default:
-					{
-						break;
-					}
+					this->mesh_builder->UpdateHeldLogger(new_logger);
 				}
 			}
 

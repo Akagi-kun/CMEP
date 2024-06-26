@@ -1,9 +1,9 @@
 #pragma once
 
+#include "Rendering/IMeshBuilder.hpp"
 #include "Rendering/Vulkan/VulkanRenderingEngine.hpp"
 
 #include "IRenderer.hpp"
-#include "PlatformSemantics.hpp"
 
 #include <memory>
 
@@ -21,7 +21,7 @@ namespace Engine::Rendering
 		// TODO: Make private after fixes in Scene
 		std::shared_ptr<const Rendering::Texture> texture;
 
-		SpriteRenderer(Engine* engine);
+		SpriteRenderer(Engine* engine, IMeshBuilder* with_builder);
 		~SpriteRenderer() override;
 
 		void SupplyData(const RendererSupplyData& data) override;

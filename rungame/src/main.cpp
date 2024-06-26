@@ -76,7 +76,7 @@ static void RunEngine(bool verbose)
 		}
 		else
 		{
-			// The exception was caught but is somehow malformed?
+			// The exception was caught but is different from expected?
 			throw;
 			assert(false && "ABI exception check failed");
 		}
@@ -92,6 +92,8 @@ static void RunEngine(bool verbose)
 		my_logger->SimpleLog(Logging::LogLevel::Exception, "Exception running engine! e.what(): %s", e.what());
 		throw;
 	}
+
+	my_logger->SimpleLog(Logging::LogLevel::Info, "Bye!");
 }
 
 int main(int argc, char** argv)

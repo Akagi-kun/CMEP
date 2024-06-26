@@ -1,10 +1,11 @@
 #include "Scene.hpp"
 
+#include "Rendering/IMeshBuilder.hpp"
 #include "Rendering/IRenderer.hpp"
+#include "Rendering/SpriteMeshBuilder.hpp"
 #include "Rendering/SpriteRenderer.hpp"
 
 #include "Engine.hpp"
-#include "IModule.hpp"
 
 // #include <exception>
 #include <memory>
@@ -58,8 +59,11 @@ namespace Engine
 			throw std::runtime_error("Could not sort scene, object is nullptr!");
 		}
 
-		auto* a_renderer = static_cast<Rendering::IRenderer*>(pair_a.second->GetFirstModule(ModuleType::RENDERER));
-		auto* b_renderer = static_cast<Rendering::IRenderer*>(pair_b.second->GetFirstModule(ModuleType::RENDERER));
+		// auto* a_renderer = static_cast<Rendering::IRenderer*>(pair_a.second->GetFirstModule(ModuleType::RENDERER));
+		// auto* b_renderer = static_cast<Rendering::IRenderer*>(pair_b.second->GetFirstModule(ModuleType::RENDERER));
+
+		auto* a_renderer = static_cast<Rendering::IRenderer*>(pair_a.second->GetRenderer());
+		auto* b_renderer = static_cast<Rendering::IRenderer*>(pair_b.second->GetRenderer());
 
 		assert(a_renderer != nullptr);
 		assert(b_renderer != nullptr);
@@ -111,7 +115,8 @@ namespace Engine
 		if (templated_object != this->templates.end())
 		{
 			// Object* object = nullptr;
-			Rendering::IRenderer* with_renderer = nullptr;
+			Rendering::IRenderer* with_renderer	  = nullptr;
+			Rendering::IMeshBuilder* with_builder = nullptr;
 
 			ObjectTemplate object_template = templated_object->second;
 
@@ -119,8 +124,13 @@ namespace Engine
 			{
 				case RendererType::SPRITE:
 				{
+					with_builder = new Rendering::SpriteMeshBuilder(
+						this->owner_engine,
+						this->owner_engine->GetRenderingEngine()
+					);
+
 					// object = new Object();
-					with_renderer = new Rendering::SpriteRenderer(this->owner_engine);
+					with_renderer = new Rendering::SpriteRenderer(this->owner_engine, with_builder);
 					// object->UpdateHeldLogger(this->logger);
 					with_renderer->UpdateHeldLogger(this->logger);
 
@@ -136,14 +146,13 @@ namespace Engine
 			// Allocate Object since we already know
 			// that the renderer is valid
 			auto* object = new Object();
-			/* auto* old_renderer =  */ object->AddModule(ModuleType::RENDERER, with_renderer);
-			// assert(old_renderer == nullptr);
+			object->SetRenderer(with_renderer);
+			// object->SetMeshBuilder(with_builder);
 
 			for (auto& supply : object_template.supply_list)
 			{
-				ModuleMessage supply_message = {ModuleMessageType::RENDERER_SUPPLY, supply};
-				object->ModuleBroadcast(ModuleType::RENDERER, supply_message);
 				// with_renderer->Communicate(supply_message);
+				with_renderer->SupplyData(supply);
 			}
 
 			object->UpdateHeldLogger(this->logger);
@@ -157,20 +166,21 @@ namespace Engine
 
 	void Scene::AddObject(const std::string& name, Object* ptr)
 	{
-		// this->logger->SimpleLog(Logging::LogLevel::Debug2, LOGPFX_CURRENT "Adding object \"%s\"", name.c_str());
 		if (ptr != nullptr)
 		{
+			this->logger->SimpleLog(Logging::LogLevel::Debug3, LOGPFX_CURRENT "Adding object '%s'", name.c_str());
+
 			Rendering::GLFWwindowData data = this->owner_engine->GetRenderingEngine()->GetWindow();
 			ptr->ScreenSizeInform(data.window_x, data.window_y);
 			ptr->UpdateHeldLogger(this->logger);
+
 			this->objects.emplace(name, ptr);
+			this->was_scene_modified = true;
 		}
 		else
 		{
 			throw std::runtime_error("Cannot add object'" + name + "', it is nullptr!");
 		}
-
-		this->was_scene_modified = true;
 	}
 
 	Object* Scene::FindObject(const std::string& name)

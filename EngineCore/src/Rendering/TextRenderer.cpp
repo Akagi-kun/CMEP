@@ -17,7 +17,7 @@
 
 namespace Engine::Rendering
 {
-	TextRenderer::TextRenderer(Engine* engine) : IRenderer(engine)
+	TextRenderer::TextRenderer(Engine* engine) : IRenderer(engine, nullptr)
 	{
 		VulkanRenderingEngine* renderer = this->owner_engine->GetRenderingEngine();
 

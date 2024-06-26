@@ -2,14 +2,15 @@
 
 #include "Assets/AssetManager.hpp"
 #include "Rendering/AxisRenderer.hpp"
+#include "Rendering/IMeshBuilder.hpp"
 #include "Rendering/IRenderer.hpp"
 #include "Rendering/MeshRenderer.hpp"
+#include "Rendering/SpriteMeshBuilder.hpp"
 #include "Rendering/SpriteRenderer.hpp"
 #include "Rendering/TextRenderer.hpp"
 
 #include "Engine.hpp"
 #include "EventHandling.hpp"
-#include "IModule.hpp"
 
 #include <fstream>
 #include <stdexcept>
@@ -256,11 +257,23 @@ namespace Engine
 					// Allocate new object when renderer type is known
 					object = new Object();
 
+					Engine* engine = locked_asset_manager->GetOwnerEngine();
+
 					switch (use_renderer_type)
 					{
 						case RendererType::SPRITE:
 						{
-							Rendering::IRenderer* with_renderer = new Rendering::SpriteRenderer(this->GetOwnerEngine());
+							Rendering::IMeshBuilder* with_builder = new Rendering::SpriteMeshBuilder(
+								engine,
+								engine->GetRenderingEngine()
+							);
+							with_builder->UpdateHeldLogger(this->logger);
+							// with_builder->UpdateOwnerEngine(engine);
+
+							Rendering::IRenderer* with_renderer = new Rendering::SpriteRenderer(
+								this->GetOwnerEngine(),
+								with_builder
+							);
 
 							for (auto& supply_texture : scene_entry["renderer_supply_textures"])
 							{
@@ -268,17 +281,32 @@ namespace Engine
 									supply_texture.get<std::string>()
 								);
 
+								Rendering::RendererSupplyData texture_supply = {
+									Rendering::RendererSupplyDataType::TEXTURE,
+									texture
+								};
+								/*
 								ModuleMessage texture_supply_message = {
 									ModuleMessageType::RENDERER_SUPPLY,
 									Rendering::RendererSupplyData{Rendering::RendererSupplyDataType::TEXTURE, texture}
 								};
+								 */
+								with_renderer->SupplyData(texture_supply);
 
-								with_renderer->Communicate(texture_supply_message);
+								// with_renderer->Communicate(texture_supply_message);
 							}
 
-							with_renderer->UpdateMesh();
+							// with_renderer->UpdateMesh();
 
-							object->AddModule(ModuleType::RENDERER, with_renderer);
+							// object->AddModule(ModuleType::RENDERER, with_renderer);
+							object->SetRenderer(with_renderer);
+
+							// ModuleMessage builder_build_message = {ModuleMessageType::MESHBUILDER_BUILD, nullptr};
+							// with_builder->Communicate(builder_build_message);
+							// with_builder->Build();
+
+							// object->AddModule(ModuleType::MESH_BUILDER, with_builder);
+							// object->SetMeshBuilder(with_builder);
 
 							break;
 						}

@@ -1,17 +1,16 @@
 #pragma once
 
+#include "Rendering/IMeshBuilder.hpp"
 #include "Rendering/IRenderer.hpp"
 #include "Rendering/Transform.hpp"
 
-#include "IModule.hpp"
 #include "InternalEngineObject.hpp"
-#include "ModuleMediator.hpp"
 
 // #include <functional>
 
 namespace Engine
 {
-	class Object final : public InternalEngineObject, public ModuleMediator
+	class Object final : public InternalEngineObject //, public ModuleMediator
 	{
 	private:
 		Rendering::Transform transform;
@@ -26,13 +25,16 @@ namespace Engine
 
 		// IModule* renderer = nullptr;
 
-		std::multimap<ModuleType, IModule*> modules;
+		Rendering::IRenderer* renderer		  = nullptr;
+		Rendering::IMeshBuilder* mesh_builder = nullptr;
+
+		// std::multimap<ModuleType, IModule*> modules;
 
 		void UpdateRenderer() noexcept;
 
 	public:
 		Object() noexcept;
-		~Object() noexcept override;
+		~Object() noexcept; // override;
 
 		// Overrides InternalEngineObject::UpdateHeldLogger
 		void UpdateHeldLogger(std::shared_ptr<Logging::Logger>& new_logger);
@@ -45,10 +47,16 @@ namespace Engine
 		void SetSize(glm::vec3 with_size) noexcept;
 		void SetRotation(glm::vec3 with_rotation) noexcept;
 
-		void ModuleBroadcast(ModuleType for_type, const ModuleMessage& data) final;
+		// void ModuleBroadcast(ModuleType for_type, const ModuleMessage& data) final;
 
-		void AddModule(ModuleType with_type, IModule* with_module);
-		IModule* GetFirstModule(ModuleType with_type);
+		// void AddModule(ModuleType with_type, IModule* with_module);
+		// IModule* GetFirstModule(ModuleType with_type);
+
+		void SetRenderer(Rendering::IRenderer* with_renderer);
+		Rendering::IRenderer* GetRenderer();
+
+		// void SetMeshBuilder(Rendering::IMeshBuilder* with_builder);
+		// Rendering::IMeshBuilder* GetMeshBuilder();
 
 		// TODO: Rename to Get...
 		[[nodiscard]] glm::vec3 GetPosition() const noexcept;

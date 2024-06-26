@@ -13,7 +13,7 @@
 
 namespace Engine::Rendering
 {
-	AxisRenderer::AxisRenderer(Engine* engine) : IRenderer(engine)
+	AxisRenderer::AxisRenderer(Engine* engine) : IRenderer(engine, nullptr)
 	{
 		VulkanRenderingEngine* renderer = this->owner_engine->GetRenderingEngine();
 

@@ -15,7 +15,7 @@ namespace Engine
 {
 	class Engine;
 
-	enum class RendererType
+	enum class RendererType : uint8_t
 	{
 		MIN_ENUM = 0x00,
 

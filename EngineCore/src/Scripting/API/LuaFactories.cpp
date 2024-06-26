@@ -49,7 +49,8 @@ namespace Engine::Scripting::API::LuaObjectFactories
 
 		// Generate renderer table
 		lua_newtable(state);
-		lua_pushlightuserdata(state, object_ptr->GetFirstModule(ModuleType::RENDERER));
+		// lua_pushlightuserdata(state, object_ptr->GetFirstModule(ModuleType::RENDERER));
+		lua_pushlightuserdata(state, object_ptr->GetRenderer());
 		lua_setfield(state, -2, "_pointer");
 		lua_setfield(state, -2, "renderer");
 	}

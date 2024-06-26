@@ -12,7 +12,7 @@
 #include "Logging/Logging.hpp"
 
 #include "GLFW/glfw3.h"
-#include "IModule.hpp"
+// #include "IModule.hpp"
 #include "Object.hpp"
 #include "buildinfo.hpp"
 #include "nlohmann/json.hpp"
@@ -205,17 +205,18 @@ namespace Engine
 	void Engine::RenderCallback(VkCommandBuffer commandBuffer, uint32_t currentFrame, Engine* engine)
 	{
 		const auto* objects = engine->scene_manager->GetSceneCurrent()->GetAllObjectsSorted();
-
-		const ModuleMessage render_message = {
-			ModuleMessageType::RENDERER_REQ_RENDER,
-			Rendering::RendererRenderRequest{commandBuffer, currentFrame}
-		};
-
+		/*
+				const ModuleMessage render_message = {
+					ModuleMessageType::RENDERER_REQ_RENDER,
+					Rendering::RendererRenderRequest{commandBuffer, currentFrame}
+				};
+		 */
 		for (const auto& [name, ptr] : *objects)
 		{
 			try
 			{
-				ptr->ModuleBroadcast(ModuleType::RENDERER, render_message);
+				ptr->GetRenderer()->Render(commandBuffer, currentFrame);
+				// ptr->ModuleBroadcast(ModuleType::RENDERER, render_message);
 			}
 			catch (const std::exception& e)
 			{
@@ -235,17 +236,18 @@ namespace Engine
 		// TODO: Remove this!
 		// Create axis object
 		auto* object = new Object();
+
+		Rendering::IRenderer* with_renderer = new Rendering::AxisRenderer(this);
+		with_renderer->scene_manager		= this->scene_manager;
+
+		// object->AddModule(ModuleType::RENDERER, with_renderer);
+		object->SetRenderer(with_renderer);
+
 		object->SetPosition(glm::vec3(0, 0, 0));
 		object->SetSize(glm::vec3(1, 1, 1));
 		object->SetRotation(glm::vec3(0, 0, 0));
 		object->ScreenSizeInform(this->config->window.size_x, this->config->window.size_y);
 
-		Rendering::IRenderer* with_renderer = new Rendering::AxisRenderer(this);
-		with_renderer->scene_manager		= this->scene_manager;
-
-		object->AddModule(ModuleType::RENDERER, with_renderer);
-		// auto* old_renderer = object->AssignRenderer(with_renderer);
-		// assert(old_renderer == nullptr);
 		this->scene_manager->AddObject("_axis", object);
 
 		// Pre-make ON_UPDATE event so we don't have to create it over and over again in hot loop
@@ -351,11 +353,11 @@ namespace Engine
 	{
 		this->logger->SimpleLog(Logging::LogLevel::Info, LOGPFX_CURRENT "Destructor called");
 
-		this->scene_manager.reset(); // swapped
+		this->scene_manager.reset();
 
 		delete this->script_executor;
 
-		this->asset_manager.reset(); // swapped
+		this->asset_manager.reset();
 
 		this->rendering_engine->Cleanup();
 

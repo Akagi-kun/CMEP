@@ -1,6 +1,7 @@
 #include "Rendering/SpriteRenderer.hpp"
 
 #include "Assets/Texture.hpp"
+#include "Rendering/IRenderer.hpp"
 #include "Rendering/Vulkan/VulkanStructDefs.hpp"
 
 #include "Engine.hpp"
@@ -14,7 +15,7 @@
 
 namespace Engine::Rendering
 {
-	SpriteRenderer::SpriteRenderer(Engine* engine) : IRenderer(engine)
+	SpriteRenderer::SpriteRenderer(Engine* engine, IMeshBuilder* with_builder) : IRenderer(engine, with_builder)
 	{
 		VulkanRenderingEngine* renderer = this->owner_engine->GetRenderingEngine();
 
@@ -45,6 +46,9 @@ namespace Engine::Rendering
 
 	SpriteRenderer::~SpriteRenderer()
 	{
+		delete this->mesh_builder;
+		this->mesh_builder = nullptr;
+
 		this->logger->SimpleLog(Logging::LogLevel::Debug3, "Cleaning up sprite renderer");
 		VulkanRenderingEngine* renderer = this->owner_engine->GetRenderingEngine();
 
@@ -52,10 +56,10 @@ namespace Engine::Rendering
 
 		vkDeviceWaitIdle(renderer->GetLogicalDevice());
 
-		if (this->vbo != nullptr)
-		{
-			renderer->CleanupVulkanBuffer(this->vbo);
-		}
+		// if (this->vbo != nullptr)
+		//{
+		//	renderer->CleanupVulkanBuffer(this->vbo);
+		// }
 		renderer->CleanupVulkanPipeline(this->pipeline);
 	}
 
@@ -83,21 +87,26 @@ namespace Engine::Rendering
 		this->has_updated_mesh = true;
 
 		VulkanRenderingEngine* renderer = this->owner_engine->GetRenderingEngine();
+		/*
+				if (this->vbo == nullptr)
+				{
+					const std::vector<RenderingVertex> generated_mesh = {
+						{glm::vec3(0.0, 1.0, 0.0), glm::vec3(1.f, 0.f, 0.f), glm::vec2(0.0, 1.0)},
+						{glm::vec3(1.0, 1.0, 0.0), glm::vec3(1.f, 0.f, 0.f), glm::vec2(1.0, 1.0)},
+						{glm::vec3(0.0, 0.0, 0.0), glm::vec3(1.f, 0.f, 0.f), glm::vec2(0.0, 0.0)},
+						{glm::vec3(1.0, 1.0, 0.0), glm::vec3(1.f, 0.f, 0.f), glm::vec2(1.0, 1.0)},
+						{glm::vec3(1.0, 0.0, 0.0), glm::vec3(1.f, 0.f, 0.f), glm::vec2(1.0, 0.0)},
+						{glm::vec3(0.0, 0.0, 0.0), glm::vec3(1.f, 0.f, 0.f), glm::vec2(0.0, 0.0)},
+					};
 
-		if (this->vbo == nullptr)
+					this->vbo			 = renderer->CreateVulkanVertexBufferFromData(generated_mesh);
+					this->vbo_vert_count = generated_mesh.size();
+				}
+		*/
+		if (this->mesh_builder != nullptr)
 		{
-			const std::vector<RenderingVertex> generated_mesh = {
-				{glm::vec3(0.0, 1.0, 0.0), glm::vec3(1.f, 0.f, 0.f), glm::vec2(0.0, 1.0)},
-				{glm::vec3(1.0, 1.0, 0.0), glm::vec3(1.f, 0.f, 0.f), glm::vec2(1.0, 1.0)},
-				{glm::vec3(0.0, 0.0, 0.0), glm::vec3(1.f, 0.f, 0.f), glm::vec2(0.0, 0.0)},
-				{glm::vec3(1.0, 1.0, 0.0), glm::vec3(1.f, 0.f, 0.f), glm::vec2(1.0, 1.0)},
-				{glm::vec3(1.0, 0.0, 0.0), glm::vec3(1.f, 0.f, 0.f), glm::vec2(1.0, 0.0)},
-				{glm::vec3(0.0, 0.0, 0.0), glm::vec3(1.f, 0.f, 0.f), glm::vec2(0.0, 0.0)},
-			};
-			// generated_mesh.insert(generated_mesh.end(), vertices.begin(), vertices.end());
-
-			this->vbo			 = renderer->CreateVulkanVertexBufferFromData(generated_mesh);
-			this->vbo_vert_count = generated_mesh.size();
+			this->mesh_builder->Build();
+			this->mesh_context = this->mesh_builder->GetContext();
 		}
 
 		glm::mat4 projection = glm::ortho(0.0f, 1.0f, 0.0f, 1.0f); //, -10.0f, 10.0f);
@@ -200,10 +209,10 @@ namespace Engine::Rendering
 		);
 
 		vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, this->pipeline->pipeline);
-		VkBuffer vertex_buffers[] = {this->vbo->buffer};
+		VkBuffer vertex_buffers[] = {this->mesh_context.vbo->buffer};
 		VkDeviceSize offsets[]	  = {0};
 		vkCmdBindVertexBuffers(commandBuffer, 0, 1, vertex_buffers, offsets);
 
-		vkCmdDraw(commandBuffer, static_cast<uint32_t>(this->vbo_vert_count), 1, 0, 0);
+		vkCmdDraw(commandBuffer, static_cast<uint32_t>(this->mesh_context.vbo_vert_count), 1, 0, 0);
 	}
 } // namespace Engine::Rendering

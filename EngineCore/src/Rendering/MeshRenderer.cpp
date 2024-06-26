@@ -14,7 +14,7 @@
 
 namespace Engine::Rendering
 {
-	MeshRenderer::MeshRenderer(Engine* engine) : IRenderer(engine)
+	MeshRenderer::MeshRenderer(Engine* engine) : IRenderer(engine, nullptr)
 	{
 		VulkanRenderingEngine* renderer = this->owner_engine->GetRenderingEngine();
 

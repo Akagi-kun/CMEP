@@ -3,16 +3,17 @@
 #include "Assets/AssetManager.hpp"
 #include "Assets/Texture.hpp"
 #include "Rendering/MeshRenderer.hpp"
+#include "Rendering/SupplyData.hpp"
 #include "Rendering/TextRenderer.hpp"
 // #include "Rendering/Transform.hpp"
 
 #include "Scripting/API/LuaFactories.hpp"
-// #include "Scripting/lualib/lua.h"
+
 #include "Factories/ObjectFactory.hpp"
 
 #include "Engine.hpp"
-#include "IModule.hpp"
 #include "SceneManager.hpp"
+#include "lua.h"
 #include "lua.hpp"
 
 // Prefixes for logging messages
@@ -48,10 +49,51 @@ namespace Engine::Scripting::Mappings
 		}
 
 #pragma endregion
+		/*
+		#pragma region TextRenderer
 
-#pragma region TextRenderer
+				int TextRendererUpdateText(lua_State* state)
+				{
+					assert(lua_gettop(state) == 2);
 
-		int TextRendererUpdateText(lua_State* state)
+					lua_getfield(state, 1, "_pointer");
+					auto* renderer = static_cast<Rendering::IRenderer*>(lua_touserdata(state, -1));
+
+					const char* text = lua_tostring(state, 2);
+
+					Rendering::RendererSupplyData text_supply = {Rendering::RendererSupplyDataType::TEXT, text};
+					renderer->SupplyData(text_supply);
+
+					return 0;
+				}
+
+		#pragma endregion
+		 */
+		/*
+		#pragma region MeshRenderer
+				int MeshRendererUpdateTexture(lua_State* state)
+				{
+					assert(lua_gettop(state) == 2);
+
+					lua_getfield(state, 1, "_pointer");
+					auto* renderer = static_cast<Rendering::IRenderer*>(lua_touserdata(state, -1));
+
+					lua_getfield(state, 2, "_smart_ptr");
+					std::shared_ptr<Rendering::Texture> texture = *static_cast<std::shared_ptr<Rendering::Texture>*>(
+						lua_touserdata(state, -1)
+					);
+
+					Rendering::RendererSupplyData texture_supply = {Rendering::RendererSupplyDataType::TEXTURE,
+		texture}; renderer->SupplyData(texture_supply);
+
+					return 0;
+				}
+		#pragma endregion
+		*/
+
+#pragma region Renderer supply
+
+		static int RendererSupplyText(lua_State* state)
 		{
 			assert(lua_gettop(state) == 2);
 
@@ -60,21 +102,13 @@ namespace Engine::Scripting::Mappings
 
 			const char* text = lua_tostring(state, 2);
 
-			// TODO: Communicate using IModule or even Object?
-			ModuleMessage text_supply_message = {
-				ModuleMessageType::RENDERER_SUPPLY,
-				Rendering::RendererSupplyData{Rendering::RendererSupplyDataType::TEXT, text}
-			};
-			renderer->Communicate(text_supply_message);
+			Rendering::RendererSupplyData text_supply = {Rendering::RendererSupplyDataType::TEXT, text};
+			renderer->SupplyData(text_supply);
 
 			return 0;
 		}
 
-#pragma endregion
-
-#pragma region MeshRenderer
-
-		int MeshRendererUpdateTexture(lua_State* state)
+		static int RendererSupplyTexture(lua_State* state)
 		{
 			assert(lua_gettop(state) == 2);
 
@@ -86,12 +120,8 @@ namespace Engine::Scripting::Mappings
 				lua_touserdata(state, -1)
 			);
 
-			// TODO: Communicate using IModule or even Object?
-			ModuleMessage texture_supply_message = {
-				ModuleMessageType::RENDERER_SUPPLY,
-				Rendering::RendererSupplyData{Rendering::RendererSupplyDataType::TEXTURE, texture}
-			};
-			renderer->Communicate(texture_supply_message);
+			Rendering::RendererSupplyData texture_supply = {Rendering::RendererSupplyDataType::TEXTURE, texture};
+			renderer->SupplyData(texture_supply);
 
 			return 0;
 		}
@@ -100,7 +130,7 @@ namespace Engine::Scripting::Mappings
 
 #pragma region ObjectFactory
 
-		int ObjectFactoryCreateSpriteObject(lua_State* state)
+		static int ObjectFactoryCreateSpriteObject(lua_State* state)
 		{
 			assert(lua_gettop(state) == 3);
 
@@ -127,7 +157,7 @@ namespace Engine::Scripting::Mappings
 			return 1;
 		}
 
-		int ObjectFactoryCreateTextObject(lua_State* state)
+		static int ObjectFactoryCreateTextObject(lua_State* state)
 		{
 			assert(lua_gettop(state) == 3);
 
@@ -161,7 +191,7 @@ namespace Engine::Scripting::Mappings
 			return 1;
 		}
 
-		int ObjectFactoryCreateGeneric3DObject(lua_State* state)
+		static int ObjectFactoryCreateGeneric3DObject(lua_State* state)
 		{
 			assert(lua_gettop(state) == 2);
 
@@ -191,9 +221,12 @@ namespace Engine::Scripting::Mappings
 	} // namespace Functions
 
 	std::unordered_map<std::string, lua_CFunction> mappings = {
-		CMEP_LUAMAPPING_DEFINE(TextRendererUpdateText),
+		// CMEP_LUAMAPPING_DEFINE(TextRendererUpdateText),
 
-		CMEP_LUAMAPPING_DEFINE(MeshRendererUpdateTexture),
+		// CMEP_LUAMAPPING_DEFINE(MeshRendererUpdateTexture),
+
+		CMEP_LUAMAPPING_DEFINE(RendererSupplyText),
+		CMEP_LUAMAPPING_DEFINE(RendererSupplyTexture),
 
 		CMEP_LUAMAPPING_DEFINE(ObjectFactoryCreateSpriteObject),
 		CMEP_LUAMAPPING_DEFINE(ObjectFactoryCreateTextObject),
