@@ -10,8 +10,10 @@ namespace Engine::Rendering
 		{
 		}
 
-		void Build() override;
+		void SupplyData(const RendererSupplyData& data) override
+		{
+		}
 
-		// MeshBuildContext& GetContext() override;
+		void Build() override;
 	};
 } // namespace Engine::Rendering

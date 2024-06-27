@@ -22,7 +22,7 @@ namespace Engine::Rendering
 		glm::mat4 mat_mvp{};
 
 	public:
-		TextRenderer(Engine* engine);
+		TextRenderer(Engine* engine, IMeshBuilder* with_builder);
 		~TextRenderer() override;
 
 		void SupplyData(const RendererSupplyData& data) override;

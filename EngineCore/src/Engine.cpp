@@ -331,13 +331,26 @@ namespace Engine
 		auto lua_handler_range = current_scene->lua_event_handlers.equal_range(event.event_type);
 		for (auto handler = lua_handler_range.first; handler != lua_handler_range.second; ++handler)
 		{
-			sum += this->script_executor->CallIntoScript(
-				Scripting::ExecuteType::EVENT_HANDLER,
-				handler->second.first,
-				handler->second.second,
-				&event
-			);
+			try
+			{
+				sum += this->script_executor->CallIntoScript(
+					Scripting::ExecuteType::EVENT_HANDLER,
+					handler->second.first,
+					handler->second.second,
+					&event
+				);
+			}
+			catch (std::runtime_error& e)
+			{
+				this->logger->SimpleLog(
+					Logging::LogLevel::Exception,
+					"Caught exception trying to fire event '%u'! e.what(): %s",
+					event.event_type,
+					e.what()
+				);
+			}
 		}
+
 		return sum;
 	}
 

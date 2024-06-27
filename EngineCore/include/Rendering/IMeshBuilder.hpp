@@ -2,6 +2,7 @@
 
 #include "InternalEngineObject.hpp"
 #include "MeshBuildContext.hpp"
+#include "SupplyData.hpp"
 #include "Vulkan/VulkanRenderingEngine.hpp"
 
 namespace Engine::Rendering
@@ -28,6 +29,8 @@ namespace Engine::Rendering
 				renderer->CleanupVulkanBuffer(this->context.vbo);
 			}
 		}
+
+		virtual void SupplyData(const RendererSupplyData& data) = 0;
 
 		virtual void Build() = 0;
 

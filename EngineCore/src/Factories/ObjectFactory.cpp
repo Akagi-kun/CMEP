@@ -7,6 +7,7 @@
 #include "Rendering/SpriteMeshBuilder.hpp"
 #include "Rendering/SpriteRenderer.hpp"
 #include "Rendering/SupplyData.hpp"
+#include "Rendering/TextMeshBuilder.hpp"
 #include "Rendering/TextRenderer.hpp"
 
 #include "Engine.hpp"
@@ -63,7 +64,15 @@ namespace Engine::ObjectFactory
 
 			auto* object = new Object();
 
-			Rendering::IRenderer* with_renderer = new Rendering::TextRenderer(locked_scene_manager->GetOwnerEngine());
+			Rendering::IMeshBuilder* with_builder = new Rendering::TextMeshBuilder(
+				engine,
+				engine->GetRenderingEngine()
+			);
+
+			Rendering::IRenderer* with_renderer = new Rendering::TextRenderer(
+				locked_scene_manager->GetOwnerEngine(),
+				with_builder
+			);
 			// with_renderer->scene_manager		= scene_manager;
 
 			// Rendering::RendererSupplyData font_supply = {Rendering::RendererSupplyDataType::FONT, font};

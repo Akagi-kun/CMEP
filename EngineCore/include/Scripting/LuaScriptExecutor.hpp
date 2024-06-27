@@ -20,6 +20,7 @@ namespace Engine::Scripting
 	{
 	protected:
 		static void RegisterCallbacks(lua_State* state);
+		static void RegisterWrapper(lua_State* state);
 
 		void RegisterMeta(lua_State* state);
 

@@ -73,6 +73,33 @@ namespace Engine
 			return 1;
 		}
 
+		static int LuajitExceptionWrap(lua_State* state, lua_CFunction func)
+		{
+			try
+			{
+				return func(state);
+			}
+			catch (const char* str)
+			{
+				return luaL_error(state, str);
+			}
+			catch (std::exception& e)
+			{
+				return luaL_error(state, "Wrapper caught exception! e.what(): %s", e.what());
+			}
+			catch (...)
+			{
+				return luaL_error(state, "Error caught");
+			}
+		}
+
+		void LuaScriptExecutor::RegisterWrapper(lua_State* state)
+		{
+			lua_pushlightuserdata(state, (void*)LuajitExceptionWrap);
+			luaJIT_setmode(state, -1, LUAJIT_MODE_WRAPCFUNC | LUAJIT_MODE_ON);
+			lua_pop(state, 1);
+		}
+
 		int LuaScriptExecutor::CallIntoScript(
 			ExecuteType etype,
 			const std::shared_ptr<LuaScript>& script,
@@ -177,6 +204,9 @@ namespace Engine
 			// Register c callback functions
 			LuaScriptExecutor::RegisterCallbacks(state);
 			this->RegisterMeta(state);
+
+			// Register exception-handling wrapper
+			LuaScriptExecutor::RegisterWrapper(state);
 
 			if (errload != LUA_OK || errexec != LUA_OK)
 			{

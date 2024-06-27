@@ -54,8 +54,8 @@ local checkCollisions2DBox = function(x1, y1, w1, h1, x2, y2, w2, h2)
 	end
 end
 
-local screen_size_x = 1100;
-local screen_size_y = 720;
+local screen_size_x = 1100; -- 1100
+local screen_size_y = 720; -- 720
 
 local pxToScreenX = function(x)
 	return x / screen_size_x
