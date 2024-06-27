@@ -188,14 +188,16 @@ onUpdate = function(event)
 			local const_pipe_y_offset = -100
 			--local pipe_y_offset = const_pipe_y_offset
 			local pipe_y_offset = const_pipe_y_offset + math.random(-15, 15) * 10;
+			
+			local pipe_id = tostring(spawn_pipe_last_idx + 1)
 
-			scene_manager:AddTemplatedObject("sprite_pipe_down"..tostring(spawn_pipe_last_idx + 1), "pipe_down");
-			local pipe1 = scene_manager:FindObject("sprite_pipe_down"..tostring(spawn_pipe_last_idx + 1));
+			scene_manager:AddTemplatedObject("sprite_pipe_down"..pipe_id, "pipe_down");
+			local pipe1 = scene_manager:FindObject("sprite_pipe_down"..pipe_id);
 			pipe1:SetPosition(1.0, pxToScreenY(pipe_y_offset - (pipe_spacing / 2)), -0.15);
 			pipe1:SetSize(pxToScreenX(pipe_x_size), pxToScreenY(pipe_y_size), 1.0);
 
-			scene_manager:AddTemplatedObject("sprite_pipe_up"..tostring(spawn_pipe_last_idx + 1), "pipe_up");
-			local pipe2 = scene_manager:FindObject("sprite_pipe_up"..tostring(spawn_pipe_last_idx + 1));
+			scene_manager:AddTemplatedObject("sprite_pipe_up"..pipe_id, "pipe_up");
+			local pipe2 = scene_manager:FindObject("sprite_pipe_up"..pipe_id);
 			pipe2:SetPosition(1.0, pxToScreenY(pipe_y_size + (pipe_spacing / 2) + pipe_y_offset), -0.15);
 			pipe2:SetSize(pxToScreenX(pipe_x_size), pxToScreenY(pipe_y_size), 1.0);
 
