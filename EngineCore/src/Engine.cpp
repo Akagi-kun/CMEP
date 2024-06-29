@@ -292,7 +292,12 @@ namespace Engine
 				);
 				break;
 			}
-
+			/*
+						if (delta_time < 0.01)
+						{
+							break;
+						}
+			 */
 			// this->logger->SimpleLog(Logging::LogLevel::Warning, "FT %lf", 0.016666 / delta_time);
 
 			// Render

@@ -49,6 +49,7 @@ namespace Engine::Rendering
 
 		// Request one image more than is the required minimum
 		// uint32_t swapchain_image_count = swap_chain_support.capabilities.minImageCount + 1;
+		// Temporary fix for screen lag
 		uint32_t swapchain_image_count = 1;
 
 		// Check if there is a defined maximum (maxImageCount > 0)
@@ -60,8 +61,8 @@ namespace Engine::Rendering
 		{
 			swapchain_image_count = swap_chain_support.capabilities.maxImageCount;
 			this->logger->SimpleLog(
-				Logging::LogLevel::Debug1,
-				LOGPFX_CURRENT "Using maxImageCount capability, GPU support limited"
+				Logging::LogLevel::Warning,
+				LOGPFX_CURRENT "Swap chain image count limited by maxImageCount capability"
 			);
 		}
 
@@ -95,10 +96,14 @@ namespace Engine::Rendering
 			create_info.imageSharingMode	  = VK_SHARING_MODE_CONCURRENT;
 			create_info.queueFamilyIndexCount = 2;
 			create_info.pQueueFamilyIndices	  = queue_family_indices;
+
+			this->logger->SimpleLog(Logging::LogLevel::Debug1, LOGPFX_CURRENT "Using concurrent sharing mode");
 		}
 		else
 		{
 			create_info.imageSharingMode = VK_SHARING_MODE_EXCLUSIVE;
+
+			this->logger->SimpleLog(Logging::LogLevel::Debug1, LOGPFX_CURRENT "Using exclusive sharing mode");
 		}
 
 		create_info.preTransform   = swap_chain_support.capabilities.currentTransform;
@@ -363,7 +368,7 @@ namespace Engine::Rendering
 
 	void VulkanRenderingEngine::CreateVulkanCommandBuffers()
 	{
-		vk_command_buffers.resize(this->max_frames_in_flight);
+		// vk_command_buffers.resize(this->max_frames_in_flight);
 
 		VkCommandBufferAllocateInfo alloc_info{};
 		alloc_info.sType			  = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
@@ -382,9 +387,9 @@ namespace Engine::Rendering
 
 	void VulkanRenderingEngine::CreateVulkanSyncObjects()
 	{
-		this->image_available_semaphores.resize(this->max_frames_in_flight);
-		this->render_finished_semaphores.resize(this->max_frames_in_flight);
-		this->in_flight_fences.resize(this->max_frames_in_flight);
+		// this->image_available_semaphores.resize(this->max_frames_in_flight);
+		// this->render_finished_semaphores.resize(this->max_frames_in_flight);
+		// this->in_flight_fences.resize(this->max_frames_in_flight);
 
 		VkSemaphoreCreateInfo semaphore_info{};
 		semaphore_info.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
@@ -393,17 +398,17 @@ namespace Engine::Rendering
 		fence_info.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
 		fence_info.flags = VK_FENCE_CREATE_SIGNALED_BIT;
 
+		VkDevice logical_device = this->device_manager->GetLogicalDevice();
+
 		for (size_t i = 0; i < this->max_frames_in_flight; i++)
 		{
-			VkDevice logical_device = this->device_manager->GetLogicalDevice();
-
 			if (vkCreateSemaphore(logical_device, &semaphore_info, nullptr, &(this->image_available_semaphores[i])) !=
 					VK_SUCCESS ||
-				vkCreateSemaphore(logical_device, &semaphore_info, nullptr, &(this->render_finished_semaphores[i])) !=
+				vkCreateSemaphore(logical_device, &semaphore_info, nullptr, &(this->present_ready_semaphores[i])) !=
 					VK_SUCCESS ||
+				vkCreateFence(logical_device, &fence_info, nullptr, &(this->acquire_ready_fences[i])) != VK_SUCCESS ||
 				vkCreateFence(logical_device, &fence_info, nullptr, &(this->in_flight_fences[i])) != VK_SUCCESS)
 			{
-
 				this->logger->SimpleLog(Logging::LogLevel::Error, LOGPFX_CURRENT "Vulkan failed creating sync objects");
 				throw std::runtime_error("failed to create sync objects!");
 			}

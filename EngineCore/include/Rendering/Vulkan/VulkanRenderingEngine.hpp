@@ -29,7 +29,8 @@ namespace Engine::Rendering
 	class VulkanRenderingEngine : public InternalEngineObject
 	{
 	private:
-		const uint_fast16_t max_frames_in_flight = 2;
+		// Maximum number of frames in rotation/flight
+		static constexpr uint_fast16_t max_frames_in_flight = 2;
 
 		GLFWwindow* window = nullptr;
 		ScreenSize window_size;
@@ -54,14 +55,16 @@ namespace Engine::Rendering
 
 		// Command pools and buffers
 		VkCommandPool vk_command_pool = VK_NULL_HANDLE;
-		std::vector<VkCommandBuffer> vk_command_buffers;
+		std::array<VkCommandBuffer, max_frames_in_flight> vk_command_buffers;
 
 		// Synchronisation
-		std::vector<VkSemaphore> image_available_semaphores;
-		std::vector<VkSemaphore> render_finished_semaphores;
-		std::vector<VkFence> in_flight_fences;
+		// std::vector<VkSemaphore> image_available_semaphores;
+		std::array<VkSemaphore, max_frames_in_flight> image_available_semaphores;
+		std::array<VkSemaphore, max_frames_in_flight> present_ready_semaphores; // render_finished_semaphores
+		std::array<VkFence, max_frames_in_flight> acquire_ready_fences;			// maybe useless?
+		std::array<VkFence, max_frames_in_flight> in_flight_fences;
 
-		// Pipeline
+		// Default pipeline
 		VulkanPipeline* graphics_pipeline_default = nullptr;
 		VkRenderPass vk_render_pass				  = VK_NULL_HANDLE;
 

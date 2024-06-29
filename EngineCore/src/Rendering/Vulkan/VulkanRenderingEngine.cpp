@@ -1,6 +1,8 @@
+#include "GLFW/glfw3.h"
 #include "vulkan/vulkan_core.h"
 
 #include <algorithm>
+#include <cstdint>
 
 /*
 #define VMA_DEBUG_LOG_FORMAT(format, ...)                                                                              \
@@ -25,27 +27,6 @@
 
 namespace Engine::Rendering
 {
-	/*
-		std::vector<char> VulkanRenderingEngine::ReadShaderFile(const std::string& path)
-		{
-			std::ifstream file(path, std::ios::ate | std::ios::binary);
-
-			if (!file.is_open())
-			{
-				throw std::runtime_error("failed to open file!");
-			}
-
-			size_t file_size = static_cast<size_t>(file.tellg());
-			std::vector<char> buffer(file_size);
-
-			file.seekg(0);
-			file.read(buffer.data(), static_cast<std::streamsize>(file_size));
-
-			file.close();
-
-			return buffer;
-		}
-	 */
 	static void FramebufferResizeCallback(GLFWwindow* window, int width, int height)
 	{
 		auto* app = reinterpret_cast<VulkanRenderingEngine*>(glfwGetWindowUserPointer(window));
@@ -112,7 +93,8 @@ namespace Engine::Rendering
 			0,
 			nullptr
 		);
-		// this->SelectCurrentTopology(commandBuffer, VULKAN_RENDERING_ENGINE_TOPOLOGY_TRIANGLE_LIST);
+
+		// Perform actual render
 		vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, this->graphics_pipeline_default->pipeline);
 		if (this->external_callback)
 		{
@@ -234,9 +216,12 @@ namespace Engine::Rendering
 
 		for (size_t i = 0; i < this->max_frames_in_flight; i++)
 		{
-			vkDestroySemaphore(logical_device, render_finished_semaphores[i], nullptr);
-			vkDestroySemaphore(logical_device, image_available_semaphores[i], nullptr);
-			vkDestroyFence(logical_device, in_flight_fences[i], nullptr);
+			vkDestroySemaphore(logical_device, this->present_ready_semaphores[i], nullptr);
+			vkDestroySemaphore(logical_device, this->image_available_semaphores[i], nullptr);
+			vkDestroyFence(logical_device, this->in_flight_fences[i], nullptr);
+
+			vkWaitForFences(logical_device, 1, &this->acquire_ready_fences[i], VK_TRUE, UINT64_MAX);
+			vkDestroyFence(logical_device, this->acquire_ready_fences[i], nullptr);
 		}
 
 		vkDestroyCommandPool(logical_device, this->vk_command_pool, nullptr);
@@ -328,6 +313,12 @@ namespace Engine::Rendering
 
 		// Wait for fence
 		vkWaitForFences(logical_device, 1, &this->in_flight_fences[current_frame], VK_TRUE, UINT64_MAX);
+		vkWaitForFences(logical_device, 1, &this->acquire_ready_fences[current_frame], VK_TRUE, UINT64_MAX);
+
+		// Reset fence after wait is over
+		// (fence has to be reset before being used again)
+		vkResetFences(logical_device, 1, &this->in_flight_fences[current_frame]);
+		vkResetFences(logical_device, 1, &this->acquire_ready_fences[current_frame]);
 
 		// Index of framebuffer in this->vk_swap_chain_framebuffers
 		uint32_t image_index;
@@ -338,7 +329,7 @@ namespace Engine::Rendering
 			this->vk_swap_chain,
 			UINT64_MAX,
 			this->image_available_semaphores[current_frame],
-			VK_NULL_HANDLE,
+			this->acquire_ready_fences[current_frame],
 			&image_index
 		);
 
@@ -347,7 +338,7 @@ namespace Engine::Rendering
 			acquire_result == VK_SUBOPTIMAL_KHR)
 		{
 			// Increment current_frame (clamp to max_frames_in_flight)
-			this->current_frame		  = (this->current_frame + 1) % this->max_frames_in_flight;
+			// this->current_frame		  = (this->current_frame + 1) % this->max_frames_in_flight;
 			this->framebuffer_resized = false;
 
 			this->logger->SimpleLog(
@@ -364,10 +355,6 @@ namespace Engine::Rendering
 		{
 			throw std::runtime_error("failed to acquire swap chain image!");
 		}
-
-		// Reset fence for current frame
-		// (fence will be submitted to queue and cannot be signaled)
-		vkResetFences(logical_device, 1, &this->in_flight_fences[current_frame]);
 
 		// Reset command buffer to initial state
 		vkResetCommandBuffer(this->vk_command_buffers[current_frame], 0);
@@ -389,8 +376,8 @@ namespace Engine::Rendering
 
 		// Signal semaphores to be signaled once
 		// all submit_info.pCommandBuffers finish executing
-		// render_finished_semaphores are used in the next step
-		VkSemaphore signal_semaphores[]	 = {this->render_finished_semaphores[current_frame]};
+		// present_ready_semaphores are used in the next step
+		VkSemaphore signal_semaphores[]	 = {this->present_ready_semaphores[current_frame]};
 		submit_info.signalSemaphoreCount = 1;
 		submit_info.pSignalSemaphores	 = signal_semaphores;
 
@@ -408,11 +395,12 @@ namespace Engine::Rendering
 		}
 
 		// Increment current frame
-		this->current_frame = (this->current_frame + 1) % this->max_frames_in_flight;
+		this->current_frame = 0;
+		// this->current_frame = (this->current_frame + 1) % this->max_frames_in_flight;
 
 		VkPresentInfoKHR present_info{};
 		present_info.sType				= VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
-		// Wait for render_finished_semaphores to be signaled
+		// Wait for present_ready_semaphores to be signaled
 		// (when signaled = image is ready to be presented)
 		present_info.waitSemaphoreCount = 1;
 		present_info.pWaitSemaphores	= signal_semaphores;
@@ -503,12 +491,7 @@ namespace Engine::Rendering
 
 		vkFreeCommandBuffers(this->device_manager->GetLogicalDevice(), this->vk_command_pool, 1, &commandBuffer);
 	}
-	/*
-		VkDevice VulkanRenderingEngine::GetLogicalDevice()
-		{
-			return this->device_manager->GetLogicalDevice();
-		}
-	 */
+
 	// Pipelines
 
 	VulkanPipelineSettings VulkanRenderingEngine::GetVulkanDefaultPipelineSettings()
