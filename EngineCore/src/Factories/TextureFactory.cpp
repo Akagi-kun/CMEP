@@ -154,66 +154,71 @@ namespace Engine::Factories
 			used_staging_buffer = staging_buffer;
 		}
 
-		vkMapMemory(
-			renderer->GetLogicalDevice(),
-			used_staging_buffer->allocation_info.deviceMemory,
-			used_staging_buffer->allocation_info.offset,
-			used_staging_buffer->allocation_info.size,
-			0,
-			&used_staging_buffer->mapped_data
-		);
-
-		memcpy(used_staging_buffer->mapped_data, raw_data.data(), static_cast<size_t>(memory_size));
-
-		if (const auto& vulkan_image_factory = this->owner_engine->GetVulkanImageFactory().lock())
+		if (auto locked_device_manager = renderer->GetDeviceManager().lock())
 		{
-			texture_data->texture_image = vulkan_image_factory->CreateTextureImage(
-				xsize,
-				ysize,
-				VK_FORMAT_R8G8B8A8_UNORM,
-				VK_IMAGE_TILING_OPTIMAL,
-				VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
-				VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
-				filtering,			 // Filter for both mag and min
-				sampler_address_mode // sampler address mode
+			vkMapMemory(
+				locked_device_manager->GetLogicalDevice(),
+				used_staging_buffer->allocation_info.deviceMemory,
+				used_staging_buffer->allocation_info.offset,
+				used_staging_buffer->allocation_info.size,
+				0,
+				&used_staging_buffer->mapped_data
 			);
 
-			// Transfer image layout to one usable by the shader
-			// TODO: Create utility function for image transfers
-			vulkan_image_factory->TransitionImageLayout(
-				texture_data->texture_image->image->image,
-				VK_FORMAT_R8G8B8A8_UNORM,
-				VK_IMAGE_LAYOUT_UNDEFINED,
-				VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL
-			);
-			renderer->CopyVulkanBufferToImage(
-				used_staging_buffer->buffer,
-				texture_data->texture_image->image->image,
-				static_cast<uint32_t>(xsize),
-				static_cast<uint32_t>(ysize)
-			);
-			vulkan_image_factory->TransitionImageLayout(
-				texture_data->texture_image->image->image,
-				VK_FORMAT_R8G8B8A8_SRGB,
-				VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
-				VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL
-			);
+			memcpy(used_staging_buffer->mapped_data, raw_data.data(), static_cast<size_t>(memory_size));
 
-			// Unmap staging memory and cleanup buffer if we created it here
-			vkUnmapMemory(renderer->GetLogicalDevice(), used_staging_buffer->allocation_info.deviceMemory);
-			if (staging_buffer == nullptr)
+			if (const auto& vulkan_image_factory = this->owner_engine->GetVulkanImageFactory().lock())
 			{
-				renderer->CleanupVulkanBuffer(used_staging_buffer);
+				texture_data->texture_image = vulkan_image_factory->CreateTextureImage(
+					xsize,
+					ysize,
+					VK_FORMAT_R8G8B8A8_UNORM,
+					VK_IMAGE_TILING_OPTIMAL,
+					VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
+					VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
+					filtering,			 // Filter for both mag and min
+					sampler_address_mode // sampler address mode
+				);
+
+				// Transfer image layout to one usable by the shader
+				// TODO: Create utility function for image transfers
+				vulkan_image_factory->TransitionImageLayout(
+					texture_data->texture_image->image->image,
+					VK_FORMAT_R8G8B8A8_UNORM,
+					VK_IMAGE_LAYOUT_UNDEFINED,
+					VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL
+				);
+				renderer->CopyVulkanBufferToImage(
+					used_staging_buffer->buffer,
+					texture_data->texture_image->image->image,
+					static_cast<uint32_t>(xsize),
+					static_cast<uint32_t>(ysize)
+				);
+				vulkan_image_factory->TransitionImageLayout(
+					texture_data->texture_image->image->image,
+					VK_FORMAT_R8G8B8A8_SRGB,
+					VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+					VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL
+				);
+
+				// Unmap staging memory and cleanup buffer if we created it here
+				vkUnmapMemory(
+					locked_device_manager->GetLogicalDevice(),
+					used_staging_buffer->allocation_info.deviceMemory
+				);
+				if (staging_buffer == nullptr)
+				{
+					renderer->CleanupVulkanBuffer(used_staging_buffer);
+				}
+
+				vulkan_image_factory->AppendImageViewToTextureImage(texture_data->texture_image);
+				renderer->AppendVulkanSamplerToVulkanTextureImage(texture_data->texture_image);
 			}
-
-			vulkan_image_factory->AppendImageViewToTextureImage(texture_data->texture_image);
-			renderer->AppendVulkanSamplerToVulkanTextureImage(texture_data->texture_image);
+			else
+			{
+				return 1;
+			}
 		}
-		else
-		{
-			return 1;
-		}
-
 		return 0;
 	}
 } // namespace Engine::Factories

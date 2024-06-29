@@ -15,9 +15,8 @@ namespace Engine::Rendering
 	private:
 		std::string text;
 
-		VulkanTextureImage* texture_image = nullptr;
-
-		std::shared_ptr<Rendering::Font> font = nullptr;
+		std::shared_ptr<Rendering::Texture> texture = nullptr;
+		// std::shared_ptr<Rendering::Font> font		= nullptr;
 
 		glm::mat4 mat_mvp{};
 

@@ -59,7 +59,7 @@ namespace Engine::Rendering::Factories
 
 		void AppendImageViewToTextureImage(VulkanTextureImage* teximage);
 
-		// void appendVulkanSamplerToVulkanTextureImage(VulkanTextureImage* teximage);
+		void AppendVulkanSamplerToVulkanTextureImage(VulkanTextureImage* teximage);
 
 		void TransitionImageLayout(VkImage image, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout);
 	};

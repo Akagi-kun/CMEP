@@ -4,6 +4,7 @@
 #include "Rendering/IRenderer.hpp"
 #include "Rendering/SpriteMeshBuilder.hpp"
 #include "Rendering/SpriteRenderer.hpp"
+#include "Rendering/TextRenderer.hpp"
 
 #include "Engine.hpp"
 
@@ -129,8 +130,8 @@ namespace Engine
 						this->owner_engine->GetRenderingEngine()
 					);
 
-					// object = new Object();
 					with_renderer = new Rendering::SpriteRenderer(this->owner_engine, with_builder);
+					// with_renderer = new Rendering::TextRenderer(this->owner_engine, with_builder);
 					// object->UpdateHeldLogger(this->logger);
 					with_renderer->UpdateHeldLogger(this->logger);
 					with_renderer->UpdateOwnerEngine(this->owner_engine);

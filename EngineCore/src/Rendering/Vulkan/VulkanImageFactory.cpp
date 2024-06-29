@@ -10,22 +10,28 @@ namespace Engine::Rendering::Factories
 {
 	VkImageView VulkanImageFactory::CreateImageView(VkImage image, VkFormat format, VkImageAspectFlags aspectFlags)
 	{
-		VkImageViewCreateInfo view_info{};
-		view_info.sType							  = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
-		view_info.image							  = image;
-		view_info.viewType						  = VK_IMAGE_VIEW_TYPE_2D;
-		view_info.format						  = format;
-		view_info.subresourceRange.aspectMask	  = aspectFlags;
-		view_info.subresourceRange.baseMipLevel	  = 0;
-		view_info.subresourceRange.levelCount	  = 1;
-		view_info.subresourceRange.baseArrayLayer = 0;
-		view_info.subresourceRange.layerCount	  = 1;
+		auto device_manager = this->vulkan_rendering_engine->GetDeviceManager();
 
-		VkImageView image_view;
-		if (vkCreateImageView(this->vulkan_rendering_engine->GetLogicalDevice(), &view_info, nullptr, &image_view) !=
-			VK_SUCCESS)
+		VkImageView image_view{};
+
+		if (auto locked_device_manager = device_manager.lock())
 		{
-			throw std::runtime_error("failed to create texture image view!");
+			VkImageViewCreateInfo view_info{};
+			view_info.sType							  = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
+			view_info.image							  = image;
+			view_info.viewType						  = VK_IMAGE_VIEW_TYPE_2D;
+			view_info.format						  = format;
+			view_info.subresourceRange.aspectMask	  = aspectFlags;
+			view_info.subresourceRange.baseMipLevel	  = 0;
+			view_info.subresourceRange.levelCount	  = 1;
+			view_info.subresourceRange.baseArrayLayer = 0;
+			view_info.subresourceRange.layerCount	  = 1;
+
+			if (vkCreateImageView(locked_device_manager->GetLogicalDevice(), &view_info, nullptr, &image_view) !=
+				VK_SUCCESS)
+			{
+				throw std::runtime_error("failed to create texture image view!");
+			}
 		}
 
 		return image_view;
@@ -48,8 +54,8 @@ namespace Engine::Rendering::Factories
 		VkImageCreateInfo image_info{};
 		image_info.sType		 = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
 		image_info.imageType	 = VK_IMAGE_TYPE_2D;
-		image_info.extent.width	 = static_cast<uint32_t>(width);
-		image_info.extent.height = static_cast<uint32_t>(height);
+		image_info.extent.width	 = width;
+		image_info.extent.height = height;
 		image_info.extent.depth	 = 1;
 		image_info.mipLevels	 = 1;
 		image_info.arrayLayers	 = 1;
@@ -99,7 +105,7 @@ namespace Engine::Rendering::Factories
 		VkSamplerAddressMode addressMode
 	)
 	{
-		VulkanTextureImage* new_texture_image = new VulkanTextureImage();
+		auto* new_texture_image = new VulkanTextureImage();
 
 		new_texture_image
 			->image = this->CreateImage(width, height, VK_SAMPLE_COUNT_1_BIT, format, tiling, usage, properties);
@@ -118,7 +124,52 @@ namespace Engine::Rendering::Factories
 		);
 	}
 
-	// void appendVulkanSamplerToVulkanTextureImage(VulkanTextureImage* teximage);
+	void VulkanImageFactory::AppendVulkanSamplerToVulkanTextureImage(VulkanTextureImage* teximage)
+	{
+		auto device_manager = this->vulkan_rendering_engine->GetDeviceManager();
+
+		if (auto locked_device_manager = device_manager.lock())
+		{
+			VkSamplerCreateInfo sampler_info{};
+			sampler_info.sType	   = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
+			sampler_info.magFilter = teximage->use_filter;
+			sampler_info.minFilter = teximage->use_filter; // VK_FILTER_LINEAR;
+
+			sampler_info.addressModeU = teximage->use_address_mode; // VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
+			sampler_info.addressModeV = teximage->use_address_mode;
+			sampler_info.addressModeW = teximage->use_address_mode;
+
+			VkPhysicalDeviceProperties properties{};
+			vkGetPhysicalDeviceProperties(locked_device_manager->GetPhysicalDevice(), &properties);
+
+			sampler_info.anisotropyEnable = VK_TRUE;
+			sampler_info.maxAnisotropy	  = properties.limits.maxSamplerAnisotropy;
+
+			sampler_info.borderColor = VK_BORDER_COLOR_INT_OPAQUE_BLACK;
+
+			sampler_info.unnormalizedCoordinates = VK_FALSE;
+
+			sampler_info.compareEnable = VK_FALSE;
+			sampler_info.compareOp	   = VK_COMPARE_OP_ALWAYS;
+
+			sampler_info.mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR;
+			sampler_info.mipLodBias = 0.0f;
+			sampler_info.minLod		= 0.0f;
+			sampler_info.maxLod		= 0.0f;
+
+			if (vkCreateSampler(
+					locked_device_manager->GetLogicalDevice(),
+					&sampler_info,
+					nullptr,
+					&(teximage->texture_sampler)
+				) != VK_SUCCESS)
+			{
+				this->logger->SimpleLog(Logging::LogLevel::Error, LOGPFX_CURRENT "Failed to create texture sampler");
+				throw std::runtime_error("failed to create texture sampler!");
+			}
+		}
+	}
+
 	void VulkanImageFactory::TransitionImageLayout(
 		VkImage image,
 		VkFormat format,

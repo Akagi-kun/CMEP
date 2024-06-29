@@ -1,6 +1,7 @@
 #include "Rendering/MeshRenderer.hpp"
 
 #include "Assets/Texture.hpp"
+#include "Rendering/Vulkan/VulkanUtilities.hpp"
 
 #include "Logging/Logging.hpp"
 
@@ -45,9 +46,10 @@ namespace Engine::Rendering
 	MeshRenderer::~MeshRenderer()
 	{
 		this->logger->SimpleLog(Logging::LogLevel::Debug3, "Cleaning up mesh renderer");
-		VulkanRenderingEngine* renderer = this->owner_engine->GetRenderingEngine();
 
-		vkDeviceWaitIdle(renderer->GetLogicalDevice());
+		VulkanRenderingEngine* renderer = this->owner_engine->GetRenderingEngine();
+		renderer->SyncDeviceWaitIdle();
+		// vkDeviceWaitIdle(renderer->GetLogicalDevice());
 
 		if (this->vbo != nullptr)
 		{
@@ -91,20 +93,22 @@ namespace Engine::Rendering
 		this->has_updated_mesh = true;
 
 		VulkanRenderingEngine* renderer = this->owner_engine->GetRenderingEngine();
+		/*
+				glm::mat4 projection = glm::perspective<float>(
+					glm::radians(45.0f),
+					static_cast<float>(this->screen.x / this->screen.y),
+					0.1f,
+					100.0f
+				); */
 
-		glm::mat4 projection = glm::perspective<float>(
-			glm::radians(45.0f),
-			static_cast<float>(this->screen.x / this->screen.y),
-			0.1f,
-			100.0f
-		);
-		projection[1][1] *= -1;
-
+		glm::mat4 projection;
 		glm::mat4 view;
 		if (auto locked_scene_manager = this->owner_engine->GetSceneManager().lock())
 		{
-			view = locked_scene_manager->GetCameraViewMatrix();
+			view	   = locked_scene_manager->GetCameraViewMatrix();
+			projection = locked_scene_manager->GetProjectionMatrix(this->screen);
 		}
+		projection[1][1] *= -1;
 
 		if (this->parent_transform.size.x == 0.0f && this->parent_transform.size.y == 0.0f &&
 			this->parent_transform.size.z == 0.0f)
@@ -137,7 +141,8 @@ namespace Engine::Rendering
 
 			if (this->vbo != nullptr)
 			{
-				vkDeviceWaitIdle(renderer->GetLogicalDevice());
+				renderer->SyncDeviceWaitIdle();
+				// vkDeviceWaitIdle(renderer->GetLogicalDevice());
 				renderer->CleanupVulkanBuffer(this->vbo);
 				this->vbo = nullptr;
 			}
@@ -200,56 +205,59 @@ namespace Engine::Rendering
 				}
 			}
 
-			for (size_t i = 0; i < renderer->GetMaxFramesInFlight(); i++)
+			if (auto locked_device_manager = renderer->GetDeviceManager().lock())
 			{
-				VkDescriptorBufferInfo uniform_buffer_info{};
-				uniform_buffer_info.buffer = pipeline->uniform_buffers[i]->buffer;
-				uniform_buffer_info.offset = 0;
-				uniform_buffer_info.range  = sizeof(glm::mat4);
-
-				std::vector<VkWriteDescriptorSet> descriptor_writes{};
-				descriptor_writes.resize(1);
-
-				descriptor_writes[0].sType			 = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-				descriptor_writes[0].dstSet			 = pipeline->vk_descriptor_sets[i];
-				descriptor_writes[0].dstBinding		 = 0;
-				descriptor_writes[0].dstArrayElement = 0;
-				descriptor_writes[0].descriptorType	 = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-				descriptor_writes[0].descriptorCount = 1;
-				descriptor_writes[0].pBufferInfo	 = &uniform_buffer_info;
-
-				if (diffuse_image_buffer_infos.size() > 0)
+				for (size_t i = 0; i < renderer->GetMaxFramesInFlight(); i++)
 				{
+					VkDescriptorBufferInfo uniform_buffer_info{};
+					uniform_buffer_info.buffer = pipeline->uniform_buffers[i]->buffer;
+					uniform_buffer_info.offset = 0;
+					uniform_buffer_info.range  = sizeof(glm::mat4);
+
+					std::vector<VkWriteDescriptorSet> descriptor_writes{};
+					descriptor_writes.resize(1);
+
+					descriptor_writes[0].sType			 = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+					descriptor_writes[0].dstSet			 = pipeline->vk_descriptor_sets[i];
+					descriptor_writes[0].dstBinding		 = 0;
+					descriptor_writes[0].dstArrayElement = 0;
+					descriptor_writes[0].descriptorType	 = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+					descriptor_writes[0].descriptorCount = 1;
+					descriptor_writes[0].pBufferInfo	 = &uniform_buffer_info;
+
+					if (diffuse_image_buffer_infos.empty())
+					{
+						this->logger->SimpleLog(
+							Logging::LogLevel::Debug3,
+							"Updating set 0x%x binding 1",
+							pipeline->vk_descriptor_sets[i]
+						);
+
+						descriptor_writes.resize(2);
+						descriptor_writes[1].sType			 = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+						descriptor_writes[1].dstSet			 = pipeline->vk_descriptor_sets[i];
+						descriptor_writes[1].dstBinding		 = 1;
+						descriptor_writes[1].dstArrayElement = 0;
+						descriptor_writes[1].descriptorType	 = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+						descriptor_writes[1].descriptorCount = static_cast<uint32_t>(diffuse_image_buffer_infos.size());
+						descriptor_writes[1].pImageInfo		 = diffuse_image_buffer_infos.data();
+					}
 					this->logger->SimpleLog(
 						Logging::LogLevel::Debug3,
-						"Updating set 0x%x binding 1",
-						pipeline->vk_descriptor_sets[i]
+						"Descriptor set 0x%x write of index 1 has binding %u, descriptorWrite size is %u",
+						pipeline->vk_descriptor_sets[i],
+						descriptor_writes[1].dstBinding,
+						static_cast<unsigned int>(descriptor_writes.size())
 					);
 
-					descriptor_writes.resize(2);
-					descriptor_writes[1].sType			 = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-					descriptor_writes[1].dstSet			 = pipeline->vk_descriptor_sets[i];
-					descriptor_writes[1].dstBinding		 = 1;
-					descriptor_writes[1].dstArrayElement = 0;
-					descriptor_writes[1].descriptorType	 = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-					descriptor_writes[1].descriptorCount = static_cast<uint32_t>(diffuse_image_buffer_infos.size());
-					descriptor_writes[1].pImageInfo		 = diffuse_image_buffer_infos.data();
+					vkUpdateDescriptorSets(
+						locked_device_manager->GetLogicalDevice(),
+						static_cast<uint32_t>(descriptor_writes.size()),
+						descriptor_writes.data(),
+						0,
+						nullptr
+					);
 				}
-				this->logger->SimpleLog(
-					Logging::LogLevel::Debug3,
-					"Descriptor set 0x%x write of index 1 has binding %u, descriptorWrite size is %u",
-					pipeline->vk_descriptor_sets[i],
-					descriptor_writes[1].dstBinding,
-					static_cast<unsigned int>(descriptor_writes.size())
-				);
-
-				vkUpdateDescriptorSets(
-					renderer->GetLogicalDevice(),
-					static_cast<uint32_t>(descriptor_writes.size()),
-					descriptor_writes.data(),
-					0,
-					nullptr
-				);
 			}
 		}
 	}
@@ -262,6 +270,14 @@ namespace Engine::Rendering
 		}
 
 		VulkanRenderingEngine* renderer = this->owner_engine->GetRenderingEngine();
+		VulkanUtils::VulkanUniformBufferTransfer(
+			renderer,
+			this->pipeline,
+			currentFrame,
+			&this->mat_mvp,
+			sizeof(glm::mat4)
+		);
+		/*
 		vkMapMemory(
 			renderer->GetLogicalDevice(),
 			pipeline->uniform_buffers[currentFrame]->allocation_info.deviceMemory,
@@ -276,7 +292,7 @@ namespace Engine::Rendering
 			renderer->GetLogicalDevice(),
 			pipeline->uniform_buffers[currentFrame]->allocation_info.deviceMemory
 		);
-
+ */
 		vkCmdBindDescriptorSets(
 			commandBuffer,
 			VK_PIPELINE_BIND_POINT_GRAPHICS,

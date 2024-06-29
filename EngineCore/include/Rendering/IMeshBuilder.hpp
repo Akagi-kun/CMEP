@@ -23,7 +23,8 @@ namespace Engine::Rendering
 		{
 			this->logger->SimpleLog(Logging::LogLevel::Debug3, "Cleaning up MeshBuilder");
 
-			vkDeviceWaitIdle(renderer->GetLogicalDevice());
+			this->renderer->SyncDeviceWaitIdle();
+			// vkDeviceWaitIdle(renderer->GetLogicalDevice());
 			if (this->context.vbo != nullptr)
 			{
 				renderer->CleanupVulkanBuffer(this->context.vbo);

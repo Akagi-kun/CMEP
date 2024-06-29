@@ -1,7 +1,7 @@
 #include "vulkan/vulkan_core.h"
 
 #include <algorithm>
-#include <fstream>
+
 /*
 #define VMA_DEBUG_LOG_FORMAT(format, ...)                                                                              \
 	do                                                                                                                 \
@@ -11,7 +11,9 @@
 	} while (false)
  */
 #define VMA_IMPLEMENTATION
+#include "Rendering/Vulkan/VulkanDeviceManager.hpp"
 #include "Rendering/Vulkan/VulkanRenderingEngine.hpp"
+#include "Rendering/Vulkan/VulkanUtilities.hpp"
 
 #include "Logging/Logging.hpp"
 
@@ -23,27 +25,27 @@
 
 namespace Engine::Rendering
 {
-
-	std::vector<char> VulkanRenderingEngine::ReadShaderFile(const std::string& path)
-	{
-		std::ifstream file(path, std::ios::ate | std::ios::binary);
-
-		if (!file.is_open())
+	/*
+		std::vector<char> VulkanRenderingEngine::ReadShaderFile(const std::string& path)
 		{
-			throw std::runtime_error("failed to open file!");
+			std::ifstream file(path, std::ios::ate | std::ios::binary);
+
+			if (!file.is_open())
+			{
+				throw std::runtime_error("failed to open file!");
+			}
+
+			size_t file_size = static_cast<size_t>(file.tellg());
+			std::vector<char> buffer(file_size);
+
+			file.seekg(0);
+			file.read(buffer.data(), static_cast<std::streamsize>(file_size));
+
+			file.close();
+
+			return buffer;
 		}
-
-		size_t file_size = static_cast<size_t>(file.tellg());
-		std::vector<char> buffer(file_size);
-
-		file.seekg(0);
-		file.read(buffer.data(), static_cast<std::streamsize>(file_size));
-
-		file.close();
-
-		return buffer;
-	}
-
+	 */
 	static void FramebufferResizeCallback(GLFWwindow* window, int width, int height)
 	{
 		auto* app = reinterpret_cast<VulkanRenderingEngine*>(glfwGetWindowUserPointer(window));
@@ -270,10 +272,14 @@ namespace Engine::Rendering
 		// Create a GLFW window
 		glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
 		glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE);
+
 		// Quick hack for i3wm
+		// (this one is likely unnecessary and can be left commented out)
+		// glfwWindowHint(GLFW_FLOATING, GLFW_TRUE);
+		//
 		// TODO: Fix i3wm
-		glfwWindowHint(GLFW_FLOATING, GLFW_TRUE);
 		glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
+
 		this->window = glfwCreateWindow(
 			static_cast<int>(this->window_size.x),
 			static_cast<int>(this->window_size.y),
@@ -432,6 +438,11 @@ namespace Engine::Rendering
 		return data;
 	}
 
+	std::weak_ptr<VulkanDeviceManager> VulkanRenderingEngine::GetDeviceManager()
+	{
+		return this->device_manager;
+	}
+
 	uint32_t VulkanRenderingEngine::GetMaxFramesInFlight() const
 	{
 		return this->max_frames_in_flight;
@@ -445,6 +456,11 @@ namespace Engine::Rendering
 	void VulkanRenderingEngine::SetRenderCallback(std::function<void(VkCommandBuffer, uint32_t, Engine*)> callback)
 	{
 		this->external_callback = std::move(callback);
+	}
+
+	void VulkanRenderingEngine::SyncDeviceWaitIdle()
+	{
+		vkDeviceWaitIdle(this->device_manager->GetLogicalDevice());
 	}
 
 	void VulkanRenderingEngine::SignalFramebufferResizeGLFW(ScreenSize with_size)
@@ -487,12 +503,12 @@ namespace Engine::Rendering
 
 		vkFreeCommandBuffers(this->device_manager->GetLogicalDevice(), this->vk_command_pool, 1, &commandBuffer);
 	}
-
-	VkDevice VulkanRenderingEngine::GetLogicalDevice()
-	{
-		return this->device_manager->GetLogicalDevice();
-	}
-
+	/*
+		VkDevice VulkanRenderingEngine::GetLogicalDevice()
+		{
+			return this->device_manager->GetLogicalDevice();
+		}
+	 */
 	// Pipelines
 
 	VulkanPipelineSettings VulkanRenderingEngine::GetVulkanDefaultPipelineSettings()
@@ -603,8 +619,8 @@ namespace Engine::Rendering
 
 		settings.color_blending.pAttachments = &settings.color_blend_attachment;
 
-		auto vert_shader_code = VulkanRenderingEngine::ReadShaderFile(vert_path);
-		auto frag_shader_code = VulkanRenderingEngine::ReadShaderFile(frag_path);
+		auto vert_shader_code = VulkanUtils::ReadShaderFile(vert_path);
+		auto frag_shader_code = VulkanUtils::ReadShaderFile(frag_path);
 
 		VkShaderModule vert_shader_module = this->CreateVulkanShaderModule(vert_shader_code);
 		VkShaderModule frag_shader_module = this->CreateVulkanShaderModule(frag_shader_code);
@@ -931,8 +947,9 @@ namespace Engine::Rendering
 				&(pipeline->vk_descriptor_set_layout)
 			) != VK_SUCCESS)
 		{
+			// TODO: Remove this?
 			this->logger->SimpleLog(
-				Logging::LogLevel::Exception,
+				Logging::LogLevel::Error,
 				LOGPFX_CURRENT "Vulkan failed to create descriptor set layout"
 			);
 			throw std::runtime_error("failed to create descriptor set layout!");
@@ -970,10 +987,8 @@ namespace Engine::Rendering
 				&(pipeline->vk_descriptor_pool)
 			) != VK_SUCCESS)
 		{
-			this->logger->SimpleLog(
-				Logging::LogLevel::Exception,
-				LOGPFX_CURRENT "Vulkan failed to create descriptor pool"
-			);
+			// TODO: Remove this?
+			this->logger->SimpleLog(Logging::LogLevel::Error, LOGPFX_CURRENT "Vulkan failed to create descriptor pool");
 			throw std::runtime_error("failed to create descriptor pool!");
 		}
 	}

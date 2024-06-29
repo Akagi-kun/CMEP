@@ -3,6 +3,9 @@
 #include "Assets/Texture.hpp"
 #include "Rendering/IRenderer.hpp"
 #include "Rendering/Vulkan/VulkanStructDefs.hpp"
+#include "Rendering/Vulkan/VulkanUtilities.hpp"
+
+#include "Logging/Logging.hpp"
 
 #include "Engine.hpp"
 
@@ -50,11 +53,12 @@ namespace Engine::Rendering
 		this->mesh_builder = nullptr;
 
 		this->logger->SimpleLog(Logging::LogLevel::Debug3, "Cleaning up sprite renderer");
-		VulkanRenderingEngine* renderer = this->owner_engine->GetRenderingEngine();
 
 		this->texture.reset();
 
-		vkDeviceWaitIdle(renderer->GetLogicalDevice());
+		VulkanRenderingEngine* renderer = this->owner_engine->GetRenderingEngine();
+		renderer->SyncDeviceWaitIdle();
+		// vkDeviceWaitIdle(renderer->GetLogicalDevice());
 
 		// if (this->vbo != nullptr)
 		//{
@@ -89,22 +93,7 @@ namespace Engine::Rendering
 		this->has_updated_mesh = true;
 
 		VulkanRenderingEngine* renderer = this->owner_engine->GetRenderingEngine();
-		/*
-				if (this->vbo == nullptr)
-				{
-					const std::vector<RenderingVertex> generated_mesh = {
-						{glm::vec3(0.0, 1.0, 0.0), glm::vec3(1.f, 0.f, 0.f), glm::vec2(0.0, 1.0)},
-						{glm::vec3(1.0, 1.0, 0.0), glm::vec3(1.f, 0.f, 0.f), glm::vec2(1.0, 1.0)},
-						{glm::vec3(0.0, 0.0, 0.0), glm::vec3(1.f, 0.f, 0.f), glm::vec2(0.0, 0.0)},
-						{glm::vec3(1.0, 1.0, 0.0), glm::vec3(1.f, 0.f, 0.f), glm::vec2(1.0, 1.0)},
-						{glm::vec3(1.0, 0.0, 0.0), glm::vec3(1.f, 0.f, 0.f), glm::vec2(1.0, 0.0)},
-						{glm::vec3(0.0, 0.0, 0.0), glm::vec3(1.f, 0.f, 0.f), glm::vec2(0.0, 0.0)},
-					};
 
-					this->vbo			 = renderer->CreateVulkanVertexBufferFromData(generated_mesh);
-					this->vbo_vert_count = generated_mesh.size();
-				}
-		*/
 		if (this->mesh_builder != nullptr)
 		{
 			this->mesh_builder->Build();
@@ -115,12 +104,9 @@ namespace Engine::Rendering
 		if (auto locked_scene_manager = this->owner_engine->GetSceneManager().lock())
 		{
 			projection = locked_scene_manager->GetProjectionMatrixOrtho();
-			// projection = glm::ortho(0.0f, 1.0f, 0.0f, 1.0f); //, -10.0f, 10.0f);
 		}
 
-		// projection = glm::ortho(0.0f, 1.0f, 0.0f, 1.0f); //, -10.0f, 10.0f);
-
-		if (this->parent_transform.size.x == 0.0f && this->parent_transform.size.y == 0.0f &&
+		if (this->parent_transform.size.x == 0.0f || this->parent_transform.size.y == 0.0f ||
 			this->parent_transform.size.z == 0.0f)
 		{
 			this->parent_transform.size = glm::vec3(1, 1, 1);
@@ -128,58 +114,62 @@ namespace Engine::Rendering
 
 		glm::quat model_rotation  = glm::quat(glm::radians(this->transform.rotation));
 		glm::quat parent_rotation = glm::quat(glm::radians(this->parent_transform.rotation));
-		glm::mat4 model			  = glm::scale(
-			  glm::translate(
-				  glm::scale(
-					  glm::translate(glm::mat4(1.0f), this->parent_transform.pos) * glm::mat4_cast(parent_rotation),
-					  this->parent_transform.size
-				  ),
-				  this->transform.pos
-			  ) * glm::mat4_cast(model_rotation),
-			  this->transform.size
-		  );
+
+		glm::mat4 model = glm::scale(
+			glm::translate(
+				glm::scale(
+					glm::translate(glm::mat4(1.0f), this->parent_transform.pos) * glm::mat4_cast(parent_rotation),
+					this->parent_transform.size
+				),
+				this->transform.pos
+			) * glm::mat4_cast(model_rotation),
+			this->transform.size
+		);
 
 		this->mat_mvp = projection * model;
 
 		VulkanTextureImage* texture_image = this->texture->GetTextureImage();
-		for (size_t i = 0; i < renderer->GetMaxFramesInFlight(); i++)
+
+		if (auto locked_device_manager = renderer->GetDeviceManager().lock())
 		{
-			VkDescriptorBufferInfo buffer_info{};
-			buffer_info.buffer = pipeline->uniform_buffers[i]->buffer;
-			buffer_info.offset = 0;
-			buffer_info.range  = sizeof(glm::mat4);
+			for (size_t i = 0; i < renderer->GetMaxFramesInFlight(); i++)
+			{
+				VkDescriptorBufferInfo buffer_info{};
+				buffer_info.buffer = pipeline->uniform_buffers[i]->buffer;
+				buffer_info.offset = 0;
+				buffer_info.range  = sizeof(glm::mat4);
 
-			VkDescriptorImageInfo image_info{};
-			image_info.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-			image_info.imageView   = texture_image->image->image_view;
-			image_info.sampler	   = texture_image->texture_sampler;
+				VkDescriptorImageInfo image_info{};
+				image_info.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+				image_info.imageView   = texture_image->image->image_view;
+				image_info.sampler	   = texture_image->texture_sampler;
 
-			std::array<VkWriteDescriptorSet, 2> descriptor_writes{};
+				std::array<VkWriteDescriptorSet, 2> descriptor_writes{};
 
-			// Descriptor write for MVP matrix
-			descriptor_writes[0].sType			 = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-			descriptor_writes[0].dstSet			 = pipeline->vk_descriptor_sets[i];
-			descriptor_writes[0].dstBinding		 = 0;
-			descriptor_writes[0].dstArrayElement = 0;
-			descriptor_writes[0].descriptorType	 = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-			descriptor_writes[0].descriptorCount = 1;
-			descriptor_writes[0].pBufferInfo	 = &buffer_info;
+				descriptor_writes[0].sType			 = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+				descriptor_writes[0].dstSet			 = pipeline->vk_descriptor_sets[i];
+				descriptor_writes[0].dstBinding		 = 0;
+				descriptor_writes[0].dstArrayElement = 0;
+				descriptor_writes[0].descriptorType	 = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+				descriptor_writes[0].descriptorCount = 1;
+				descriptor_writes[0].pBufferInfo	 = &buffer_info;
 
-			descriptor_writes[1].sType			 = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-			descriptor_writes[1].dstSet			 = pipeline->vk_descriptor_sets[i];
-			descriptor_writes[1].dstBinding		 = 1;
-			descriptor_writes[1].dstArrayElement = 0;
-			descriptor_writes[1].descriptorType	 = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-			descriptor_writes[1].descriptorCount = 1;
-			descriptor_writes[1].pImageInfo		 = &image_info;
+				descriptor_writes[1].sType			 = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+				descriptor_writes[1].dstSet			 = pipeline->vk_descriptor_sets[i];
+				descriptor_writes[1].dstBinding		 = 1;
+				descriptor_writes[1].dstArrayElement = 0;
+				descriptor_writes[1].descriptorType	 = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+				descriptor_writes[1].descriptorCount = 1;
+				descriptor_writes[1].pImageInfo		 = &image_info;
 
-			vkUpdateDescriptorSets(
-				renderer->GetLogicalDevice(),
-				static_cast<uint32_t>(descriptor_writes.size()),
-				descriptor_writes.data(),
-				0,
-				nullptr
-			);
+				vkUpdateDescriptorSets(
+					locked_device_manager->GetLogicalDevice(),
+					static_cast<uint32_t>(descriptor_writes.size()),
+					descriptor_writes.data(),
+					0,
+					nullptr
+				);
+			}
 		}
 	}
 
@@ -190,22 +180,35 @@ namespace Engine::Rendering
 			this->UpdateMesh();
 		}
 
+		// Skip render if VBO empty
+		if (this->mesh_context.vbo_vert_count <= 0)
+		{
+			return;
+		}
+
 		VulkanRenderingEngine* renderer = this->owner_engine->GetRenderingEngine();
-		vkMapMemory(
-			renderer->GetLogicalDevice(),
-			pipeline->uniform_buffers[currentFrame]->allocation_info.deviceMemory,
-			pipeline->uniform_buffers[currentFrame]->allocation_info.offset,
-			pipeline->uniform_buffers[currentFrame]->allocation_info.size,
-			0,
-			&(pipeline->uniform_buffers[currentFrame]->mapped_data)
-		);
+		VulkanUtils::VulkanUniformBufferTransfer(
+			renderer,
+			this->pipeline,
+			currentFrame,
+			&this->mat_mvp,
+			sizeof(glm::mat4)
+		); /*
+		 vkMapMemory(
+			 renderer->GetLogicalDevice(),
+			 pipeline->uniform_buffers[currentFrame]->allocation_info.deviceMemory,
+			 pipeline->uniform_buffers[currentFrame]->allocation_info.offset,
+			 pipeline->uniform_buffers[currentFrame]->allocation_info.size,
+			 0,
+			 &(pipeline->uniform_buffers[currentFrame]->mapped_data)
+		 );
 
-		memcpy(this->pipeline->uniform_buffers[currentFrame]->mapped_data, &this->mat_mvp, sizeof(glm::mat4));
-		vkUnmapMemory(
-			renderer->GetLogicalDevice(),
-			pipeline->uniform_buffers[currentFrame]->allocation_info.deviceMemory
-		);
-
+		 memcpy(this->pipeline->uniform_buffers[currentFrame]->mapped_data, &this->mat_mvp, sizeof(glm::mat4));
+		 vkUnmapMemory(
+			 renderer->GetLogicalDevice(),
+			 pipeline->uniform_buffers[currentFrame]->allocation_info.deviceMemory
+		 );
+  */
 		vkCmdBindDescriptorSets(
 			commandBuffer,
 			VK_PIPELINE_BIND_POINT_GRAPHICS,

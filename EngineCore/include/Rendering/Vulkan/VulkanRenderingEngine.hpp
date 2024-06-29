@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Rendering/Transform.hpp"
+#include "Rendering/Vulkan/VulkanDeviceManager.hpp"
 
 #include "ImportVulkan.hpp"
 #include "InternalEngineObject.hpp"
@@ -35,8 +36,6 @@ namespace Engine::Rendering
 		// int_fast16_t window_x = 0, window_y = 0;
 		std::string window_title;
 
-		static std::vector<char> ReadShaderFile(const std::string& path);
-
 		uint32_t current_frame	 = 0;
 		bool framebuffer_resized = false;
 
@@ -70,7 +69,7 @@ namespace Engine::Rendering
 		VulkanImage* vk_depth_buffer = nullptr;
 
 		// Device manager
-		std::unique_ptr<VulkanDeviceManager> device_manager;
+		std::shared_ptr<VulkanDeviceManager> device_manager;
 
 		// Memory management
 		VmaAllocator vma_allocator;
@@ -178,10 +177,13 @@ namespace Engine::Rendering
 		void CreateVulkanDescriptorSets(VulkanPipeline* pipeline);
 
 		// Getters
-		VkDevice GetLogicalDevice();
+		// VkDevice GetLogicalDevice();
+		std::weak_ptr<VulkanDeviceManager> GetDeviceManager();
 		[[nodiscard]] GLFWwindowData GetWindow() const;
 		[[nodiscard]] uint32_t GetMaxFramesInFlight() const;
 		VmaAllocator GetVMAAllocator();
+
+		void SyncDeviceWaitIdle();
 
 		// Utility functions
 		uint32_t FindVulkanMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties);

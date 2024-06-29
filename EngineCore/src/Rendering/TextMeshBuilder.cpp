@@ -38,7 +38,8 @@ namespace Engine::Rendering
 	{
 		if (this->context.vbo != nullptr)
 		{
-			vkDeviceWaitIdle(this->renderer->GetLogicalDevice());
+			this->renderer->SyncDeviceWaitIdle();
+			// vkDeviceWaitIdle(this->renderer->GetLogicalDevice());
 
 			this->renderer->CleanupVulkanBuffer(this->context.vbo);
 

@@ -16,16 +16,15 @@
 
 namespace Engine::Rendering
 {
-	Texture::Texture()
-	{
-	}
+	Texture::Texture() = default;
 	Texture::~Texture()
 	{
 		this->logger->SimpleLog(Logging::LogLevel::Debug3, LOGPFX_CURRENT "Destructor called");
 
 		VulkanRenderingEngine* renderer = this->owner_engine->GetRenderingEngine();
 
-		vkDeviceWaitIdle(renderer->GetLogicalDevice());
+		renderer->SyncDeviceWaitIdle();
+		// vkDeviceWaitIdle(renderer->GetLogicalDevice());
 
 		renderer->CleanupVulkanTextureImage(this->data->texture_image);
 

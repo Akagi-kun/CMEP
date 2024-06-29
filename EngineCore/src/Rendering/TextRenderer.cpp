@@ -2,6 +2,7 @@
 
 #include "Assets/Font.hpp"
 #include "Assets/Texture.hpp"
+#include "Rendering/Vulkan/VulkanUtilities.hpp"
 
 #include "Logging/Logging.hpp"
 
@@ -11,7 +12,6 @@
 #include <cassert>
 #include <cstdlib>
 #include <cstring>
-#include <exception>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/quaternion.hpp>
 #include <vector>
@@ -48,14 +48,9 @@ namespace Engine::Rendering
 		this->mesh_builder = nullptr;
 
 		this->logger->SimpleLog(Logging::LogLevel::Debug3, "Cleaning up text renderer");
+
 		VulkanRenderingEngine* renderer = this->owner_engine->GetRenderingEngine();
-
-		vkDeviceWaitIdle(renderer->GetLogicalDevice());
-
-		// if (this->vbo != nullptr)
-		//{
-		//	renderer->CleanupVulkanBuffer(this->vbo);
-		// }
+		renderer->SyncDeviceWaitIdle();
 		renderer->CleanupVulkanPipeline(this->pipeline);
 	}
 
@@ -65,9 +60,16 @@ namespace Engine::Rendering
 		{
 			case RendererSupplyDataType::FONT:
 			{
-				this->font			   = std::static_pointer_cast<Font>(data.payload_ptr);
+				auto font_cast		   = std::static_pointer_cast<Font>(data.payload_ptr);
+				this->texture		   = font_cast->GetPageTexture(0);
 				this->has_updated_mesh = false;
 				break;
+			}
+			case RendererSupplyDataType::TEXTURE:
+			{
+				this->texture		   = std::static_pointer_cast<Texture>(data.payload_ptr);
+				this->has_updated_mesh = false;
+				return;
 			}
 			case RendererSupplyDataType::TEXT:
 			{
@@ -82,6 +84,7 @@ namespace Engine::Rendering
 			}
 		}
 
+		assert(this->mesh_builder != nullptr && "This renderer has not been assigned a mesh builder!");
 		this->mesh_builder->SupplyData(data);
 	}
 
@@ -90,6 +93,12 @@ namespace Engine::Rendering
 		this->has_updated_mesh = true;
 
 		VulkanRenderingEngine* renderer = this->owner_engine->GetRenderingEngine();
+
+		if (this->mesh_builder != nullptr)
+		{
+			this->mesh_builder->Build();
+			this->mesh_context = this->mesh_builder->GetContext();
+		}
 
 		glm::mat4 projection{};
 		if (auto locked_scene_manager = this->owner_engine->GetSceneManager().lock())
@@ -120,86 +129,89 @@ namespace Engine::Rendering
 
 		this->mat_mvp = projection * model;
 
-		if (this->mesh_builder != nullptr)
+		auto* texture_image = this->texture->GetTextureImage();
+
+		if (auto locked_device_manager = renderer->GetDeviceManager().lock())
 		{
-			this->mesh_builder->Build();
-			this->mesh_context = this->mesh_builder->GetContext();
+			for (size_t i = 0; i < renderer->GetMaxFramesInFlight(); i++)
+			{
+				VkDescriptorBufferInfo buffer_info{};
+				buffer_info.buffer = pipeline->uniform_buffers[i]->buffer;
+				buffer_info.offset = 0;
+				buffer_info.range  = sizeof(glm::mat4);
+
+				VkDescriptorImageInfo image_info{};
+				image_info.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+				image_info.imageView   = texture_image->image->image_view;
+				image_info.sampler	   = texture_image->texture_sampler;
+
+				std::array<VkWriteDescriptorSet, 2> descriptor_writes{};
+
+				descriptor_writes[0].sType			 = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+				descriptor_writes[0].dstSet			 = pipeline->vk_descriptor_sets[i];
+				descriptor_writes[0].dstBinding		 = 0;
+				descriptor_writes[0].dstArrayElement = 0;
+				descriptor_writes[0].descriptorType	 = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+				descriptor_writes[0].descriptorCount = 1;
+				descriptor_writes[0].pBufferInfo	 = &buffer_info;
+
+				descriptor_writes[1].sType			 = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+				descriptor_writes[1].dstSet			 = pipeline->vk_descriptor_sets[i];
+				descriptor_writes[1].dstBinding		 = 1;
+				descriptor_writes[1].dstArrayElement = 0;
+				descriptor_writes[1].descriptorType	 = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+				descriptor_writes[1].descriptorCount = 1;
+				descriptor_writes[1].pImageInfo		 = &image_info;
+
+				vkUpdateDescriptorSets(
+					locked_device_manager->GetLogicalDevice(),
+					static_cast<uint32_t>(descriptor_writes.size()),
+					descriptor_writes.data(),
+					0,
+					nullptr
+				);
+			}
 		}
-
-		auto page_texture	= this->font->GetPageTexture(0);
-		this->texture_image = page_texture->GetTextureImage();
-
-		for (size_t i = 0; i < renderer->GetMaxFramesInFlight(); i++)
-		{
-			VkDescriptorBufferInfo buffer_info{};
-			buffer_info.buffer = pipeline->uniform_buffers[i]->buffer;
-			buffer_info.offset = 0;
-			buffer_info.range  = sizeof(glm::mat4);
-
-			VkDescriptorImageInfo image_info{};
-			image_info.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-			image_info.imageView   = this->texture_image->image->image_view;
-			image_info.sampler	   = this->texture_image->texture_sampler;
-
-			std::array<VkWriteDescriptorSet, 2> descriptor_writes{};
-
-			descriptor_writes[0].sType			 = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-			descriptor_writes[0].dstSet			 = pipeline->vk_descriptor_sets[i];
-			descriptor_writes[0].dstBinding		 = 0;
-			descriptor_writes[0].dstArrayElement = 0;
-			descriptor_writes[0].descriptorType	 = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-			descriptor_writes[0].descriptorCount = 1;
-			descriptor_writes[0].pBufferInfo	 = &buffer_info;
-
-			descriptor_writes[1].sType			 = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-			descriptor_writes[1].dstSet			 = pipeline->vk_descriptor_sets[i];
-			descriptor_writes[1].dstBinding		 = 1;
-			descriptor_writes[1].dstArrayElement = 0;
-			descriptor_writes[1].descriptorType	 = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-			descriptor_writes[1].descriptorCount = 1;
-			descriptor_writes[1].pImageInfo		 = &image_info;
-
-			vkUpdateDescriptorSets(
-				renderer->GetLogicalDevice(),
-				static_cast<uint32_t>(descriptor_writes.size()),
-				descriptor_writes.data(),
-				0,
-				nullptr
-			);
-		}
-
-		// renderer->updateVulkanDescriptorSetsVulkanTextureImage(this->pipeline, this->textureImage);
 	}
 
 	void TextRenderer::Render(VkCommandBuffer commandBuffer, uint32_t currentFrame)
 	{
-		if (this->text.empty())
-		{
-			return;
-		}
-
 		if (!this->has_updated_mesh)
 		{
 			this->UpdateMesh();
 		}
 
+		// Skip render if VBO empty
+		if (this->mesh_context.vbo_vert_count <= 0)
+		{
+			return;
+		}
+
 		VulkanRenderingEngine* renderer = this->owner_engine->GetRenderingEngine();
-		vkMapMemory(
-			renderer->GetLogicalDevice(),
-			pipeline->uniform_buffers[currentFrame]->allocation_info.deviceMemory,
-			pipeline->uniform_buffers[currentFrame]->allocation_info.offset,
-			pipeline->uniform_buffers[currentFrame]->allocation_info.size,
-			0,
-			&(pipeline->uniform_buffers[currentFrame]->mapped_data)
+		VulkanUtils::VulkanUniformBufferTransfer(
+			renderer,
+			this->pipeline,
+			currentFrame,
+			&this->mat_mvp,
+			sizeof(glm::mat4)
 		);
+		/*
+			vkMapMemory(
+				renderer->GetLogicalDevice(),
+				pipeline->uniform_buffers[currentFrame]->allocation_info.deviceMemory,
+				pipeline->uniform_buffers[currentFrame]->allocation_info.offset,
+				pipeline->uniform_buffers[currentFrame]->allocation_info.size,
+				0,
+				&(pipeline->uniform_buffers[currentFrame]->mapped_data)
+			);
 
-		memcpy(this->pipeline->uniform_buffers[currentFrame]->mapped_data, &this->mat_mvp, sizeof(glm::mat4));
+			memcpy(this->pipeline->uniform_buffers[currentFrame]->mapped_data, &this->mat_mvp, sizeof(glm::mat4));
 
-		vkUnmapMemory(
-			renderer->GetLogicalDevice(),
-			pipeline->uniform_buffers[currentFrame]->allocation_info.deviceMemory
-		);
-
+			vkUnmapMemory(
+				renderer->GetLogicalDevice(),
+				pipeline->uniform_buffers[currentFrame]->allocation_info.deviceMemory
+			);
+		 */
 		vkCmdBindDescriptorSets(
 			commandBuffer,
 			VK_PIPELINE_BIND_POINT_GRAPHICS,

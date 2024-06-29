@@ -50,18 +50,6 @@ static void RunEngine(bool verbose)
 	// Initialize engine
 	std::unique_ptr<Engine::OpaqueEngine> engine = std::make_unique<Engine::OpaqueEngine>(my_logger);
 
-	// Initialize engine, load config
-	try
-	{
-		engine->ConfigFile("game/config.json");
-		engine->Init();
-	}
-	catch (std::exception& e)
-	{
-		my_logger->SimpleLog(Logging::LogLevel::Exception, "Exception loading config! e.what(): %s", e.what());
-		throw;
-	}
-
 	// This tests whether exceptions thrown inside EngineCore
 	// can be successfully caught in rungame
 	try
@@ -80,6 +68,18 @@ static void RunEngine(bool verbose)
 			throw;
 			assert(false && "ABI exception check failed");
 		}
+	}
+
+	// Initialize engine, load config
+	try
+	{
+		engine->ConfigFile("game/config.json");
+		engine->Init();
+	}
+	catch (std::exception& e)
+	{
+		my_logger->SimpleLog(Logging::LogLevel::Exception, "Exception loading config! e.what(): %s", e.what());
+		throw;
 	}
 
 	// Start execution

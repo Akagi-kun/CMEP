@@ -17,10 +17,9 @@ namespace Engine::Rendering
 	private:
 		glm::mat4 mat_mvp{};
 
-	public:
-		// TODO: Make private after fixes in Scene
 		std::shared_ptr<const Rendering::Texture> texture;
 
+	public:
 		SpriteRenderer(Engine* engine, IMeshBuilder* with_builder);
 		~SpriteRenderer() override;
 

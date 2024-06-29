@@ -48,7 +48,8 @@ namespace Engine::Rendering
 		}
 
 		// Request one image more than is the required minimum
-		uint32_t swapchain_image_count = swap_chain_support.capabilities.minImageCount + 1;
+		// uint32_t swapchain_image_count = swap_chain_support.capabilities.minImageCount + 1;
+		uint32_t swapchain_image_count = 1;
 
 		// Check if there is a defined maximum (maxImageCount > 0)
 		// where 0 is a special value meaning no maximum
