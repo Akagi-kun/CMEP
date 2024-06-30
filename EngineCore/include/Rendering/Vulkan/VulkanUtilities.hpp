@@ -4,6 +4,7 @@
 #include "VulkanRenderingEngine.hpp"
 #include "VulkanStructDefs.hpp"
 
+#include <cstring>
 #include <fstream>
 #include <vector>
 
@@ -85,7 +86,7 @@ namespace Engine::Rendering::VulkanUtils
 				&(pipeline->uniform_buffers[current_frame]->mapped_data)
 			);
 
-			memcpy(pipeline->uniform_buffers[current_frame]->mapped_data, data, data_size);
+			std::memcpy(pipeline->uniform_buffers[current_frame]->mapped_data, data, data_size);
 
 			vkUnmapMemory(
 				locked_device_manager->GetLogicalDevice(),
