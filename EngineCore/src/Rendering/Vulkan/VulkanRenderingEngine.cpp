@@ -1,4 +1,3 @@
-#include "GLFW/glfw3.h"
 #include "vulkan/vulkan_core.h"
 
 #include <algorithm>
@@ -13,6 +12,7 @@
 	} while (false)
  */
 #define VMA_IMPLEMENTATION
+#include "Rendering/Vulkan/ImportVulkan.hpp"
 #include "Rendering/Vulkan/VulkanDeviceManager.hpp"
 #include "Rendering/Vulkan/VulkanRenderingEngine.hpp"
 #include "Rendering/Vulkan/VulkanUtilities.hpp"
