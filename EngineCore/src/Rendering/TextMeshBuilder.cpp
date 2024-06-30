@@ -6,6 +6,7 @@
 
 #include "vulkan/vulkan_core.h"
 
+#include <cstdint>
 #include <cstdlib>
 #include <iterator>
 
@@ -48,7 +49,10 @@ namespace Engine::Rendering
 		}
 
 		auto window_data  = this->renderer->GetWindow();
-		this->screen_size = {window_data.window_x, window_data.window_y};
+		this->screen_size = {
+			static_cast<uint_fast16_t>(window_data.window_x),
+			static_cast<uint_fast16_t>(window_data.window_y)
+		};
 
 		int font_size = std::stoi(*this->font->GetFontInfoParameter("size"));
 
