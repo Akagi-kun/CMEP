@@ -177,7 +177,7 @@ namespace Engine::Rendering::Factories
 		VkImageLayout newLayout
 	)
 	{
-		VkCommandBuffer command_buffer = this->vulkan_rendering_engine->BeginVulkanSingleTimeCommandsCommandBuffer();
+		VkCommandBuffer command_buffer = this->vulkan_rendering_engine->BeginSingleTimeCommandBuffer();
 
 		VkImageMemoryBarrier barrier{};
 		barrier.sType							= VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
@@ -220,6 +220,6 @@ namespace Engine::Rendering::Factories
 
 		vkCmdPipelineBarrier(command_buffer, source_stage, destination_stage, 0, 0, nullptr, 0, nullptr, 1, &barrier);
 
-		this->vulkan_rendering_engine->EndVulkanSingleTimeCommandsCommandBuffer(command_buffer);
+		this->vulkan_rendering_engine->EndSingleTimeCommandBuffer(command_buffer);
 	}
 } // namespace Engine::Rendering::Factories

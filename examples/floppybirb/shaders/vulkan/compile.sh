@@ -1,16 +1,16 @@
 #!/bin/bash
 
-$VULKAN_SDK/bin/glslc textrenderer.vert -o textrenderer_vert.spv
-$VULKAN_SDK/bin/glslc textrenderer.frag -o textrenderer_frag.spv
+$VULKAN_SDK/bin/glslc text_vert.glsl -o text_vert.spv
+$VULKAN_SDK/bin/glslc text_frag.glsl -o text_frag.spv
 
-$VULKAN_SDK/bin/glslc axisrenderer.vert -o axisrenderer_vert.spv
-$VULKAN_SDK/bin/glslc axisrenderer.frag -o axisrenderer_frag.spv
+$VULKAN_SDK/bin/glslc axis_vert.glsl -o axis_vert.spv
+$VULKAN_SDK/bin/glslc axis_frag.glsl -o axis_frag.spv
 
-$VULKAN_SDK/bin/glslc meshrenderer.vert -o meshrenderer_vert.spv
-$VULKAN_SDK/bin/glslc meshrenderer.frag -o meshrenderer_frag.spv
+$VULKAN_SDK/bin/glslc mesh_vert.glsl -o mesh_vert.spv
+$VULKAN_SDK/bin/glslc mesh_frag.glsl -o mesh_frag.spv
 
-$VULKAN_SDK/bin/glslc spriterenderer.vert -o spriterenderer_vert.spv
-$VULKAN_SDK/bin/glslc spriterenderer.frag -o spriterenderer_frag.spv
+$VULKAN_SDK/bin/glslc sprite_vert.glsl -o sprite_vert.spv
+$VULKAN_SDK/bin/glslc sprite_frag.glsl -o sprite_frag.spv
 
-$VULKAN_SDK/bin/glslc default.vert -o default_vert.spv
-$VULKAN_SDK/bin/glslc default.frag -o default_frag.spv
+$VULKAN_SDK/bin/glslc default_vert.glsl -o default_vert.spv
+$VULKAN_SDK/bin/glslc default_frag.glsl -o default_frag.spv

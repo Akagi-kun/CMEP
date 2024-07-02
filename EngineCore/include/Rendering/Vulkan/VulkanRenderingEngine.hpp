@@ -20,7 +20,7 @@ namespace Engine
 
 namespace Engine::Rendering
 {
-	enum VulkanTopologySelection
+	enum class VulkanTopologySelection : uint8_t
 	{
 		VULKAN_RENDERING_ENGINE_TOPOLOGY_TRIANGLE_LIST,
 		VULKAN_RENDERING_ENGINE_TOPOLOGY_LINE_LIST
@@ -150,22 +150,13 @@ namespace Engine::Rendering
 		void AppendVulkanSamplerToVulkanTextureImage(VulkanTextureImage* teximage);
 
 		// Command buffer functions
-		VkCommandBuffer BeginVulkanSingleTimeCommandsCommandBuffer();
-		void EndVulkanSingleTimeCommandsCommandBuffer(VkCommandBuffer commandBuffer);
+		VkCommandBuffer BeginSingleTimeCommandBuffer();
+		void EndSingleTimeCommandBuffer(VkCommandBuffer commandBuffer);
 
 		// Pipeline functions
 		VulkanPipelineSettings GetVulkanDefaultPipelineSettings();
-		VulkanPipeline* CreateVulkanPipelineFromPrealloc(
-			VulkanPipeline* pipeline,
-			VulkanPipelineSettings& settings,
-			const std::string& vert_path,
-			const std::string& frag_path
-		);
-		VulkanPipeline* CreateVulkanPipeline(
-			VulkanPipelineSettings& settings,
-			const std::string& vert_path,
-			const std::string& frag_path
-		);
+		VulkanPipeline* CreateVulkanPipelineFromPrealloc(VulkanPipeline* pipeline, VulkanPipelineSettings& settings);
+		VulkanPipeline* CreateVulkanPipeline(VulkanPipelineSettings& settings);
 
 		// Pipeline descriptor functions
 		void CreateVulkanDescriptorSetLayout(
@@ -183,7 +174,7 @@ namespace Engine::Rendering
 		// VkDevice GetLogicalDevice();
 		std::weak_ptr<VulkanDeviceManager> GetDeviceManager();
 		[[nodiscard]] GLFWwindowData GetWindow() const;
-		[[nodiscard]] uint32_t GetMaxFramesInFlight() const;
+		[[nodiscard]] static uint32_t GetMaxFramesInFlight();
 		VmaAllocator GetVMAAllocator();
 
 		void SyncDeviceWaitIdle();

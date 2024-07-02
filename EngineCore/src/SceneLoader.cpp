@@ -9,6 +9,8 @@
 #include "Rendering/SpriteRenderer.hpp"
 #include "Rendering/TextRenderer.hpp"
 
+#include "Factories/ObjectFactory.hpp"
+
 #include "Engine.hpp"
 #include "EventHandling.hpp"
 

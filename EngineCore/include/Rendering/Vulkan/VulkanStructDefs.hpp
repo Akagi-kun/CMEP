@@ -25,7 +25,8 @@ namespace Engine::Rendering
 	struct GLFWwindowData
 	{
 		GLFWwindow* window;
-		unsigned int window_x = 0, window_y = 0;
+		unsigned int window_x = 0;
+		unsigned int window_y = 0;
 		std::string window_title;
 	};
 
@@ -70,6 +71,12 @@ namespace Engine::Rendering
 		VkShaderStageFlags stage_flags;
 	};
 
+	struct ShaderDefinition
+	{
+		const char* vertex_stage;
+		const char* fragment_stage;
+	};
+
 	struct VulkanPipelineSettings
 	{
 		VkPipelineInputAssemblyStateCreateInfo input_assembly;
@@ -81,6 +88,8 @@ namespace Engine::Rendering
 		VkPipelineColorBlendAttachmentState color_blend_attachment;
 		VkPipelineColorBlendStateCreateInfo color_blending;
 		VkPipelineDepthStencilStateCreateInfo depth_stencil;
+
+		ShaderDefinition shader;
 
 		std::vector<VulkanDescriptorLayoutSettings> descriptor_layout_settings;
 	};

@@ -1,4 +1,5 @@
 #version 450
+#pragma shader_stage(fragment)
 
 layout(set = 0, binding = 1) uniform sampler2D texSampler[16];
 

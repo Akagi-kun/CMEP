@@ -229,11 +229,9 @@ namespace Engine::Rendering
 			VulkanDescriptorLayoutSettings{0, 1, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT}
 		);
 
-		this->graphics_pipeline_default = this->CreateVulkanPipeline(
-			pipeline_settings,
-			"game/shaders/vulkan/default_vert.spv",
-			"game/shaders/vulkan/default_frag.spv"
-		);
+		pipeline_settings.shader = {"game/shaders/vulkan/default_vert.spv", "game/shaders/vulkan/default_frag.spv"};
+
+		this->graphics_pipeline_default = this->CreateVulkanPipeline(pipeline_settings);
 	}
 
 	void VulkanRenderingEngine::CreateVulkanRenderPass()

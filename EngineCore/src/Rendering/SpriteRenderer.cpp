@@ -26,6 +26,8 @@ namespace Engine::Rendering
 		pipeline_settings.input_assembly.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
 		// pipeline_settings.rasterizer.cullMode = VK_CULL_MODE_BACK_BIT;
 
+		pipeline_settings.shader = {"game/shaders/vulkan/sprite_vert.spv", "game/shaders/vulkan/sprite_frag.spv"};
+
 		pipeline_settings.descriptor_layout_settings.push_back(VulkanDescriptorLayoutSettings{
 			0,
 			1,
@@ -40,11 +42,7 @@ namespace Engine::Rendering
 			VK_SHADER_STAGE_FRAGMENT_BIT,
 		});
 
-		this->pipeline = renderer->CreateVulkanPipeline(
-			pipeline_settings,
-			"game/shaders/vulkan/spriterenderer_vert.spv",
-			"game/shaders/vulkan/spriterenderer_frag.spv"
-		);
+		this->pipeline = renderer->CreateVulkanPipeline(pipeline_settings);
 	}
 
 	SpriteRenderer::~SpriteRenderer()
@@ -132,7 +130,7 @@ namespace Engine::Rendering
 
 		if (auto locked_device_manager = renderer->GetDeviceManager().lock())
 		{
-			for (size_t i = 0; i < renderer->GetMaxFramesInFlight(); i++)
+			for (size_t i = 0; i < VulkanRenderingEngine::GetMaxFramesInFlight(); i++)
 			{
 				VkDescriptorBufferInfo buffer_info{};
 				buffer_info.buffer = pipeline->uniform_buffers[i]->buffer;

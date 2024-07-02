@@ -205,16 +205,16 @@ namespace Engine::Rendering
 	{
 		VkDevice logical_device = this->device_manager->GetLogicalDevice();
 
-		vkDeviceWaitIdle(logical_device);
-
 		this->logger->SimpleLog(Logging::LogLevel::Info, LOGPFX_CURRENT "Cleaning up");
+
+		vkDeviceWaitIdle(logical_device);
 
 		this->CleanupVulkanSwapChain();
 
 		this->CleanupVulkanImage(this->multisampled_color_image);
 		this->CleanupVulkanImage(this->vk_depth_buffer);
 
-		for (size_t i = 0; i < this->max_frames_in_flight; i++)
+		for (size_t i = 0; i < VulkanRenderingEngine::max_frames_in_flight; i++)
 		{
 			vkDestroySemaphore(logical_device, this->present_ready_semaphores[i], nullptr);
 			vkDestroySemaphore(logical_device, this->image_available_semaphores[i], nullptr);
@@ -231,8 +231,10 @@ namespace Engine::Rendering
 
 		vkDestroyRenderPass(logical_device, this->vk_render_pass, nullptr);
 
+		// VMA Cleanup
 		vmaDestroyAllocator(this->vma_allocator);
 
+		// Destroy device after VMA
 		this->device_manager->Cleanup();
 
 		// Clean up GLFW
@@ -431,9 +433,9 @@ namespace Engine::Rendering
 		return this->device_manager;
 	}
 
-	uint32_t VulkanRenderingEngine::GetMaxFramesInFlight() const
+	uint32_t VulkanRenderingEngine::GetMaxFramesInFlight()
 	{
-		return this->max_frames_in_flight;
+		return VulkanRenderingEngine::max_frames_in_flight;
 	}
 
 	VmaAllocator VulkanRenderingEngine::GetVMAAllocator()
@@ -457,7 +459,7 @@ namespace Engine::Rendering
 		this->window_size		  = with_size;
 	}
 
-	VkCommandBuffer VulkanRenderingEngine::BeginVulkanSingleTimeCommandsCommandBuffer()
+	VkCommandBuffer VulkanRenderingEngine::BeginSingleTimeCommandBuffer()
 	{
 		VkCommandBufferAllocateInfo alloc_info{};
 		alloc_info.sType			  = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
@@ -477,7 +479,7 @@ namespace Engine::Rendering
 		return command_buffer;
 	}
 
-	void VulkanRenderingEngine::EndVulkanSingleTimeCommandsCommandBuffer(VkCommandBuffer commandBuffer)
+	void VulkanRenderingEngine::EndSingleTimeCommandBuffer(VkCommandBuffer commandBuffer)
 	{
 		vkEndCommandBuffer(commandBuffer);
 
@@ -593,26 +595,28 @@ namespace Engine::Rendering
 
 	VulkanPipeline* VulkanRenderingEngine::CreateVulkanPipelineFromPrealloc(
 		VulkanPipeline* pipeline,
-		VulkanPipelineSettings& settings,
-		const std::string& vert_path,
-		const std::string& frag_path
+		VulkanPipelineSettings& settings
 	)
 	{
 		VkDevice logical_device = this->device_manager->GetLogicalDevice();
 
 		settings.color_blending.pAttachments = &settings.color_blend_attachment;
 
-		auto vert_shader_code = VulkanUtils::ReadShaderFile(vert_path);
-		auto frag_shader_code = VulkanUtils::ReadShaderFile(frag_path);
-
+		// Vertex stage
+		assert(settings.shader.vertex_stage != nullptr && "A valid shader for this stage is required!");
+		auto vert_shader_code			  = VulkanUtils::ReadShaderFile(settings.shader.vertex_stage);
 		VkShaderModule vert_shader_module = this->CreateVulkanShaderModule(vert_shader_code);
-		VkShaderModule frag_shader_module = this->CreateVulkanShaderModule(frag_shader_code);
 
 		VkPipelineShaderStageCreateInfo vert_shader_stage_info{};
 		vert_shader_stage_info.sType  = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
 		vert_shader_stage_info.stage  = VK_SHADER_STAGE_VERTEX_BIT;
 		vert_shader_stage_info.module = vert_shader_module;
 		vert_shader_stage_info.pName  = "main";
+
+		// Fragment stage
+		assert(settings.shader.fragment_stage != nullptr && "A valid shader for this stage is required!");
+		auto frag_shader_code			  = VulkanUtils::ReadShaderFile(settings.shader.fragment_stage);
+		VkShaderModule frag_shader_module = this->CreateVulkanShaderModule(frag_shader_code);
 
 		VkPipelineShaderStageCreateInfo frag_shader_stage_info{};
 		frag_shader_stage_info.sType  = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
@@ -621,8 +625,7 @@ namespace Engine::Rendering
 		frag_shader_stage_info.pName  = "main";
 
 		VkPipelineShaderStageCreateInfo shader_stages[] = {vert_shader_stage_info, frag_shader_stage_info};
-
-		std::vector<VkDynamicState> dynamic_states = {VK_DYNAMIC_STATE_VIEWPORT, VK_DYNAMIC_STATE_SCISSOR};
+		std::vector<VkDynamicState> dynamic_states		= {VK_DYNAMIC_STATE_VIEWPORT, VK_DYNAMIC_STATE_SCISSOR};
 
 		VkPipelineDynamicStateCreateInfo dynamic_state{};
 		dynamic_state.sType				= VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
@@ -703,15 +706,11 @@ namespace Engine::Rendering
 		return pipeline;
 	}
 
-	VulkanPipeline* VulkanRenderingEngine::CreateVulkanPipeline(
-		VulkanPipelineSettings& settings,
-		const std::string& vert_path,
-		const std::string& frag_path
-	)
+	VulkanPipeline* VulkanRenderingEngine::CreateVulkanPipeline(VulkanPipelineSettings& settings)
 	{
 		auto* new_pipeline = new VulkanPipeline();
 
-		this->CreateVulkanPipelineFromPrealloc(new_pipeline, settings, vert_path, frag_path);
+		this->CreateVulkanPipelineFromPrealloc(new_pipeline, settings);
 
 		return new_pipeline;
 	}
@@ -720,7 +719,7 @@ namespace Engine::Rendering
 	{
 		this->logger->SimpleLog(Logging::LogLevel::Debug3, LOGPFX_CURRENT "Cleaning up vulkan pipeline");
 
-		for (size_t i = 0; i < this->max_frames_in_flight; i++)
+		for (size_t i = 0; i < VulkanRenderingEngine::max_frames_in_flight; i++)
 		{
 			this->CleanupVulkanBuffer(pipeline->uniform_buffers[i]);
 		}
@@ -780,9 +779,9 @@ namespace Engine::Rendering
 	{
 		VkDeviceSize buffer_size = sizeof(glm::mat4);
 
-		pipeline->uniform_buffers.resize(this->max_frames_in_flight);
+		pipeline->uniform_buffers.resize(VulkanRenderingEngine::max_frames_in_flight);
 
-		for (size_t i = 0; i < this->max_frames_in_flight; i++)
+		for (size_t i = 0; i < VulkanRenderingEngine::max_frames_in_flight; i++)
 		{
 			pipeline->uniform_buffers[i] = this->CreateVulkanBuffer(
 				buffer_size,
@@ -865,7 +864,7 @@ namespace Engine::Rendering
 
 	void VulkanRenderingEngine::BufferVulkanTransferCopy(VulkanBuffer* src, VulkanBuffer* dest, VkDeviceSize size)
 	{
-		VkCommandBuffer command_buffer = this->BeginVulkanSingleTimeCommandsCommandBuffer();
+		VkCommandBuffer command_buffer = this->BeginSingleTimeCommandBuffer();
 
 		VkBufferCopy copy_region{};
 		copy_region.srcOffset = 0; // Optional
@@ -873,7 +872,7 @@ namespace Engine::Rendering
 		copy_region.size	  = size;
 		vkCmdCopyBuffer(command_buffer, src->buffer, dest->buffer, 1, &copy_region);
 
-		this->EndVulkanSingleTimeCommandsCommandBuffer(command_buffer);
+		this->EndSingleTimeCommandBuffer(command_buffer);
 	}
 
 	void VulkanRenderingEngine::CleanupVulkanBuffer(VulkanBuffer* buffer)
@@ -951,7 +950,7 @@ namespace Engine::Rendering
 		{
 			VkDescriptorPoolSize pool_size{};
 			pool_size.type			  = settings[i].types;
-			pool_size.descriptorCount = static_cast<uint32_t>(this->max_frames_in_flight) *
+			pool_size.descriptorCount = static_cast<uint32_t>(VulkanRenderingEngine::max_frames_in_flight) *
 										settings[i].descriptor_count;
 
 			pool_sizes[i] = pool_size;
@@ -961,7 +960,7 @@ namespace Engine::Rendering
 		pool_info.sType			= VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
 		pool_info.poolSizeCount = static_cast<uint32_t>(pool_sizes.size());
 		pool_info.pPoolSizes	= pool_sizes.data();
-		pool_info.maxSets		= static_cast<uint32_t>(this->max_frames_in_flight);
+		pool_info.maxSets		= static_cast<uint32_t>(VulkanRenderingEngine::max_frames_in_flight);
 
 		if (vkCreateDescriptorPool(
 				this->device_manager->GetLogicalDevice(),
@@ -977,14 +976,17 @@ namespace Engine::Rendering
 	}
 	void VulkanRenderingEngine::CreateVulkanDescriptorSets(VulkanPipeline* pipeline)
 	{
-		std::vector<VkDescriptorSetLayout> layouts(this->max_frames_in_flight, pipeline->vk_descriptor_set_layout);
+		std::vector<VkDescriptorSetLayout> layouts(
+			VulkanRenderingEngine::max_frames_in_flight,
+			pipeline->vk_descriptor_set_layout
+		);
 		VkDescriptorSetAllocateInfo alloc_info{};
 		alloc_info.sType			  = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
 		alloc_info.descriptorPool	  = pipeline->vk_descriptor_pool;
-		alloc_info.descriptorSetCount = static_cast<uint32_t>(this->max_frames_in_flight);
+		alloc_info.descriptorSetCount = static_cast<uint32_t>(VulkanRenderingEngine::max_frames_in_flight);
 		alloc_info.pSetLayouts		  = layouts.data();
 
-		pipeline->vk_descriptor_sets.resize(this->max_frames_in_flight);
+		pipeline->vk_descriptor_sets.resize(VulkanRenderingEngine::max_frames_in_flight);
 		VkResult create_result{};
 		if ((create_result = vkAllocateDescriptorSets(
 				 this->device_manager->GetLogicalDevice(),
@@ -1005,7 +1007,7 @@ namespace Engine::Rendering
 
 	void VulkanRenderingEngine::CopyVulkanBufferToImage(VkBuffer buffer, VkImage image, uint32_t width, uint32_t height)
 	{
-		VkCommandBuffer command_buffer = this->BeginVulkanSingleTimeCommandsCommandBuffer();
+		VkCommandBuffer command_buffer = this->BeginSingleTimeCommandBuffer();
 
 		VkBufferImageCopy region{};
 		region.bufferOffset		 = 0;
@@ -1022,7 +1024,7 @@ namespace Engine::Rendering
 
 		vkCmdCopyBufferToImage(command_buffer, buffer, image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &region);
 
-		this->EndVulkanSingleTimeCommandsCommandBuffer(command_buffer);
+		this->EndSingleTimeCommandBuffer(command_buffer);
 	}
 
 	void VulkanRenderingEngine::AppendVulkanSamplerToVulkanTextureImage(VulkanTextureImage* teximage)

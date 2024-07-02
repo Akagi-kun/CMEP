@@ -1,16 +1,16 @@
-C:/VulkanSDK/1.3.261.1/Bin/glslc.exe textrenderer.vert -o textrenderer_vert.spv
-C:/VulkanSDK/1.3.261.1/Bin/glslc.exe textrenderer.frag -o textrenderer_frag.spv
+C:/VulkanSDK/1.3.261.1/Bin/glslc.exe text_vert.glsl -o text_vert.spv
+C:/VulkanSDK/1.3.261.1/Bin/glslc.exe text_frag.glsl -o text_frag.spv
 
-C:/VulkanSDK/1.3.261.1/Bin/glslc.exe axisrenderer.vert -o axisrenderer_vert.spv
-C:/VulkanSDK/1.3.261.1/Bin/glslc.exe axisrenderer.frag -o axisrenderer_frag.spv
+C:/VulkanSDK/1.3.261.1/Bin/glslc.exe axis_vert.glsl -o axis_vert.spv
+C:/VulkanSDK/1.3.261.1/Bin/glslc.exe axis_frag.glsl -o axis_frag.spv
 
-C:/VulkanSDK/1.3.261.1/Bin/glslc.exe meshrenderer.vert -o meshrenderer_vert.spv
-C:/VulkanSDK/1.3.261.1/Bin/glslc.exe meshrenderer.frag -o meshrenderer_frag.spv
+C:/VulkanSDK/1.3.261.1/Bin/glslc.exe mesh_vert.glsl -o mesh_vert.spv
+C:/VulkanSDK/1.3.261.1/Bin/glslc.exe mesh_frag.glsl -o mesh_frag.spv
 
-C:/VulkanSDK/1.3.261.1/Bin/glslc.exe spriterenderer.vert -o spriterenderer_vert.spv
-C:/VulkanSDK/1.3.261.1/Bin/glslc.exe spriterenderer.frag -o spriterenderer_frag.spv
+C:/VulkanSDK/1.3.261.1/Bin/glslc.exe sprite_vert.glsl -o sprite_vert.spv
+C:/VulkanSDK/1.3.261.1/Bin/glslc.exe sprite_frag.glsl -o sprite_frag.spv
 
-C:/VulkanSDK/1.3.261.1/Bin/glslc.exe default.vert -o default_vert.spv
-C:/VulkanSDK/1.3.261.1/Bin/glslc.exe default.frag -o default_frag.spv
+C:/VulkanSDK/1.3.261.1/Bin/glslc.exe default_vert.glsl -o default_vert.spv
+C:/VulkanSDK/1.3.261.1/Bin/glslc.exe default_frag.glsl -o default_frag.spv
 
 pause

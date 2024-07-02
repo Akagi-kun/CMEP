@@ -29,11 +29,6 @@ namespace Engine
 		class LuaScript;
 	} // namespace Scripting
 
-	extern bool engine_is_window_in_focus;
-	extern bool engine_is_window_in_content;
-	extern double engine_mouse_x_pos;
-	extern double engine_mouse_y_pos;
-
 	typedef struct structEngineConfig
 	{
 		struct
@@ -100,6 +95,11 @@ namespace Engine
 		std::shared_ptr<SceneManager> scene_manager;
 
 	public:
+		bool state_is_window_in_focus;
+		bool state_is_window_in_content;
+		double state_mouse_x_pos;
+		double state_mouse_y_pos;
+
 		Engine(std::shared_ptr<Logging::Logger>& logger) noexcept;
 		~Engine() noexcept;
 
