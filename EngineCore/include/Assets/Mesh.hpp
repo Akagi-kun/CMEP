@@ -4,6 +4,7 @@
 #include "Rendering/tinyobjloader/tiny_obj_loader.h"
 
 #include "InternalEngineObject.hpp"
+
 #include <cstdint>
 #include <string>
 #include <vector>
@@ -34,7 +35,9 @@ namespace Engine::Rendering
 		// std::vector<std::shared_ptr<Rendering::Texture>> roughness_textures;
 		// std::vector<std::shared_ptr<Rendering::Texture>> reflective_textures;
 
-		Mesh();
+		// public:
+		using InternalEngineObject::InternalEngineObject;
+		// Mesh();
 		~Mesh();
 
 		void CreateMeshFromObj(std::string path);

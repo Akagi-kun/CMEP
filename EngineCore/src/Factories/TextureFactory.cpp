@@ -1,6 +1,7 @@
-// #include <fstream>
+#include "InternalEngineObject.hpp"
 
 #include <cstdint>
+
 #pragma warning(push, 2)
 #include "lodepng.h"
 #pragma warning(pop)
@@ -17,14 +18,16 @@
 
 namespace Engine::Factories
 {
+	TextureFactory::TextureFactory(Engine* with_engine) : InternalEngineObject(with_engine)
+	{
+	}
+
 	std::shared_ptr<Rendering::Texture> TextureFactory::InitFile(
 		const std::string& path,
 		Rendering::VulkanBuffer* staging_buffer,
 		Rendering::Texture_InitFiletype filetype,
 		VkFilter filtering,
-		VkSamplerAddressMode sampler_address_mode,
-		unsigned int sizex,
-		unsigned int sizey
+		VkSamplerAddressMode sampler_address_mode
 	)
 	{
 		FILE* file = nullptr;
@@ -89,22 +92,11 @@ namespace Engine::Factories
 				throw std::runtime_error("Unknown texture filetype passed to TextureFactory!");
 			}
 		}
-		/*
-				if (sizex != 0 || sizey != 0)
-				{
-					this->InitRaw(std::move(data), 3, sizex, sizey);
-				}
-				else
-				{
-					return 1;
-				}
-		*/
 
 		fclose(file);
 
-		std::shared_ptr<Rendering::Texture> texture = std::make_shared<Rendering::Texture>();
-		texture->UpdateOwnerEngine(this->owner_engine);
-		texture->UpdateHeldLogger(this->logger);
+		std::shared_ptr<Rendering::Texture> texture = std::make_shared<Rendering::Texture>(this->owner_engine);
+		// texture->UpdateHeldLogger(this->logger);
 
 		texture->Init(std::move(texture_data));
 

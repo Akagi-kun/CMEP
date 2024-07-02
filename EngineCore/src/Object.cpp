@@ -10,7 +10,6 @@
 
 namespace Engine
 {
-	Object::Object() noexcept = default;
 	Object::~Object() noexcept
 	{
 		this->logger->SimpleLog(Logging::LogLevel::Debug3, LOGPFX_CURRENT "Destructor called");
@@ -23,8 +22,7 @@ namespace Engine
 		assert(this->owner_engine != nullptr);
 
 		this->renderer = with_renderer;
-		this->renderer->UpdateHeldLogger(this->logger);
-		this->renderer->UpdateOwnerEngine(this->owner_engine);
+		// this->renderer->UpdateHeldLogger(this->logger);
 	}
 
 	Rendering::IRenderer* Object::GetRenderer()
@@ -39,14 +37,14 @@ namespace Engine
 			this->renderer->UpdateTransform(this->transform, this->parent_transform, this->screen);
 		}
 	}
+	/*
+		void Object::UpdateHeldLogger(std::shared_ptr<Logging::Logger>& new_logger)
+		{
+			InternalEngineObject::UpdateHeldLogger(new_logger);
 
-	void Object::UpdateHeldLogger(std::shared_ptr<Logging::Logger>& new_logger)
-	{
-		InternalEngineObject::UpdateHeldLogger(new_logger);
-
-		this->renderer->UpdateHeldLogger(new_logger);
-	}
-
+			this->renderer->UpdateHeldLogger(new_logger);
+		}
+	 */
 	void Object::ScreenSizeInform(unsigned int with_screenx, unsigned int with_screeny) noexcept
 	{
 		this->screen.x = with_screenx;

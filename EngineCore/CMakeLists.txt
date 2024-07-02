@@ -3,6 +3,7 @@ project(EngineCore CXX)
 
 set(SRC_FILES
 	src/dllmain.cpp
+	src/InternalEngineObject.cpp
 	src/Engine.cpp
 	src/OpaqueEngine.cpp
 	src/Object.cpp

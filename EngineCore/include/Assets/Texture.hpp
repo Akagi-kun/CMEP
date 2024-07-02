@@ -35,7 +35,7 @@ namespace Engine::Rendering
 		std::unique_ptr<TextureData> data;
 
 	public:
-		Texture();
+		using InternalEngineObject::InternalEngineObject;
 		~Texture();
 
 		void Init(std::unique_ptr<TextureData> init_data);

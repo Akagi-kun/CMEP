@@ -15,21 +15,14 @@ namespace Engine
 		Engine* owner_engine = nullptr;
 
 	public:
-		InternalEngineObject() = default;
-		InternalEngineObject(Engine* engine) : owner_engine(engine)
-		{
-		}
-
-		void UpdateOwnerEngine(Engine* new_owner_engine)
-		{
-			this->owner_engine = new_owner_engine;
-		}
-
-		void UpdateHeldLogger(std::shared_ptr<Logging::Logger>& new_logger)
-		{
-			this->logger = new_logger;
-		}
-
+		InternalEngineObject() = delete;
+		InternalEngineObject(Engine* with_engine);
+		/*
+				void UpdateHeldLogger(std::shared_ptr<Logging::Logger>& new_logger)
+				{
+					this->logger = new_logger;
+				}
+		 */
 		// Const qualify this?
 		Engine* GetOwnerEngine()
 		{

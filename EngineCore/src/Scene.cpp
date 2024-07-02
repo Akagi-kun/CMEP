@@ -133,8 +133,7 @@ namespace Engine
 					with_renderer = new Rendering::SpriteRenderer(this->owner_engine, with_builder);
 					// with_renderer = new Rendering::TextRenderer(this->owner_engine, with_builder);
 					// object->UpdateHeldLogger(this->logger);
-					with_renderer->UpdateHeldLogger(this->logger);
-					with_renderer->UpdateOwnerEngine(this->owner_engine);
+					// with_renderer->UpdateHeldLogger(this->logger);
 
 					break;
 				}
@@ -147,8 +146,8 @@ namespace Engine
 
 			// Allocate Object since we already know
 			// that the renderer is valid
-			auto* object = new Object();
-			object->UpdateOwnerEngine(this->owner_engine);
+			auto* object = new Object(this->owner_engine);
+			// object->UpdateOwnerEngine(this->owner_engine);
 			object->SetRenderer(with_renderer);
 			// object->SetMeshBuilder(with_builder);
 
@@ -158,8 +157,7 @@ namespace Engine
 				with_renderer->SupplyData(supply);
 			}
 
-			object->UpdateHeldLogger(this->logger);
-			object->UpdateOwnerEngine(this->owner_engine);
+			// object->UpdateHeldLogger(this->logger);
 			this->AddObject(name, object);
 		}
 		else
@@ -176,7 +174,7 @@ namespace Engine
 
 			Rendering::GLFWwindowData data = this->owner_engine->GetRenderingEngine()->GetWindow();
 			ptr->ScreenSizeInform(data.window_x, data.window_y);
-			ptr->UpdateHeldLogger(this->logger);
+			// ptr->UpdateHeldLogger(this->logger);
 
 			this->objects.emplace(name, ptr);
 			this->was_scene_modified = true;

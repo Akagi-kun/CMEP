@@ -15,16 +15,16 @@ namespace Engine::Rendering
 		// Queues
 		QueueFamilyIndices graphics_queue_indices{};
 		VkQueue vk_graphics_queue = VK_NULL_HANDLE;
-		VkQueue vk_present_queue = VK_NULL_HANDLE;
+		VkQueue vk_present_queue  = VK_NULL_HANDLE;
 
 		// GLFW window
-		GLFWwindow* window = nullptr;
+		GLFWwindow* window	  = nullptr;
 		unsigned int window_x = 0, window_y = 0;
 		std::string window_title;
 
 		// Vulkan devices
 		VkPhysicalDevice vk_physical_device = VK_NULL_HANDLE;
-		VkDevice vk_logical_device = VK_NULL_HANDLE;
+		VkDevice vk_logical_device			= VK_NULL_HANDLE;
 
 		// Vulkan instance
 		VkInstance vk_instance = VK_NULL_HANDLE;
@@ -67,7 +67,7 @@ namespace Engine::Rendering
 		void CreateVulkanSurface();
 
 	public:
-		VulkanDeviceManager() = default;
+		using InternalEngineObject::InternalEngineObject;
 
 		void Init(GLFWwindow* new_window);
 

@@ -114,7 +114,8 @@ namespace Engine::Rendering
 		void CreateVulkanMemoryAllocator();
 
 	public:
-		VulkanRenderingEngine() = default;
+		// VulkanRenderingEngine() = delete;
+		using InternalEngineObject::InternalEngineObject;
 
 		// Signaling function for framebuffer resize
 		void SignalFramebufferResizeGLFW(ScreenSize with_size);

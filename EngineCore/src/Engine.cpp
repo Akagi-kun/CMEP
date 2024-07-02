@@ -225,11 +225,10 @@ namespace Engine
 	{
 		// TODO: Remove this!
 		// Create axis object
-		auto* object = new Object();
+		auto* object = new Object(this);
 
 		Rendering::IRenderer* with_renderer = new Rendering::AxisRenderer(this);
 
-		object->UpdateOwnerEngine(this);
 		object->SetRenderer(with_renderer);
 
 		object->SetPosition(glm::vec3(0, 0, 0));
@@ -396,26 +395,16 @@ namespace Engine
 		// return;
 		// Order matters here due to interdependency
 
-		this->script_executor = new Scripting::LuaScriptExecutor();
-		this->script_executor->UpdateOwnerEngine(this);
-		this->script_executor->UpdateHeldLogger(this->logger);
+		this->script_executor = new Scripting::LuaScriptExecutor(this);
 
-		this->asset_manager = std::make_shared<AssetManager>();
-		// this->asset_manager->current_load_path = this->config.lookup.scenes + std::string("/") +
-		// this->config.defaultScene + std::string("/");
-		this->asset_manager->UpdateOwnerEngine(this);
-		this->asset_manager->UpdateHeldLogger(this->logger);
+		this->asset_manager = std::make_shared<AssetManager>(this);
 
 		this->asset_manager->lua_executor = this->script_executor;
 
-		this->scene_manager = std::make_shared<SceneManager>(this->logger);
-		this->scene_manager->UpdateOwnerEngine(this);
-		this->scene_manager->UpdateHeldLogger(this->logger);
+		this->scene_manager = std::make_shared<SceneManager>(this);
 		this->scene_manager->SetSceneLoadPrefix(this->config->lookup.scenes);
 
-		this->rendering_engine = new Rendering::VulkanRenderingEngine();
-		this->rendering_engine->UpdateOwnerEngine(this);
-		this->rendering_engine->UpdateHeldLogger(this->logger);
+		this->rendering_engine = new Rendering::VulkanRenderingEngine(this);
 	}
 
 	void Engine::Run()
@@ -427,6 +416,7 @@ namespace Engine
 			->Init(this->config->window.size_x, this->config->window.size_y, this->config->window.title);
 
 		this->vulkan_image_factory = std::make_shared<Rendering::Factories::VulkanImageFactory>(
+			this,
 			this->rendering_engine->GetVMAAllocator(),
 			this->rendering_engine
 		);

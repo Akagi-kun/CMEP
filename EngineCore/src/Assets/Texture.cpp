@@ -16,7 +16,6 @@
 
 namespace Engine::Rendering
 {
-	Texture::Texture() = default;
 	Texture::~Texture()
 	{
 		this->logger->SimpleLog(Logging::LogLevel::Debug3, LOGPFX_CURRENT "Destructor called");

@@ -12,10 +12,6 @@
 
 namespace Engine::Rendering
 {
-	Mesh::Mesh()
-	{
-	}
-
 	Mesh::~Mesh()
 	{
 		this->diffuse_textures.clear();
@@ -44,14 +40,14 @@ namespace Engine::Rendering
 			this->logger->SimpleLog(Logging::LogLevel::Warning, "TinyObjReader: %s", reader.Warning().c_str());
 		}
 
-		auto& attrib = reader.GetAttrib();
-		auto& shapes = reader.GetShapes();
+		auto& attrib	= reader.GetAttrib();
+		auto& shapes	= reader.GetShapes();
 		auto& materials = reader.GetMaterials();
 
-		int diffuse_count = 0;
-		int bump_count = 0;
-		int roughness_count = 0;
-		int metallic_count = 0;
+		int diffuse_count	 = 0;
+		int bump_count		 = 0;
+		int roughness_count	 = 0;
+		int metallic_count	 = 0;
 		int reflection_count = 0;
 
 		VulkanRenderingEngine* renderer = this->owner_engine->GetRenderingEngine();
@@ -158,9 +154,9 @@ namespace Engine::Rendering
 				{
 					// access to vertex
 					tinyobj::index_t idx = current_shape_mesh.indices[index_offset + v];
-					tinyobj::real_t vx = attrib.vertices[3 * size_t(idx.vertex_index) + 0];
-					tinyobj::real_t vy = attrib.vertices[3 * size_t(idx.vertex_index) + 1];
-					tinyobj::real_t vz = attrib.vertices[3 * size_t(idx.vertex_index) + 2];
+					tinyobj::real_t vx	 = attrib.vertices[3 * size_t(idx.vertex_index) + 0];
+					tinyobj::real_t vy	 = attrib.vertices[3 * size_t(idx.vertex_index) + 1];
+					tinyobj::real_t vz	 = attrib.vertices[3 * size_t(idx.vertex_index) + 2];
 					this->mesh_vertices.push_back(glm::vec3(vx, vy, vz));
 
 					// Check if `normal_index` is zero or positive. negative = no normal data
@@ -189,10 +185,10 @@ namespace Engine::Rendering
 					{
 						const auto& current_material = materials[static_cast<size_t>(material_id)];
 
-						const tinyobj::real_t* face_ambient = current_material.ambient;
-						const tinyobj::real_t* face_diffuse = current_material.diffuse;
+						const tinyobj::real_t* face_ambient	 = current_material.ambient;
+						const tinyobj::real_t* face_diffuse	 = current_material.diffuse;
 						const tinyobj::real_t* face_specular = current_material.specular;
-						const tinyobj::real_t face_dissolve = current_material.dissolve;
+						const tinyobj::real_t face_dissolve	 = current_material.dissolve;
 						const tinyobj::real_t* face_emission = current_material.emission;
 
 						this->mesh_ambient.emplace_back(face_ambient[0], face_ambient[1], face_ambient[2]);
@@ -226,8 +222,8 @@ namespace Engine::Rendering
 			glm::vec2 delta_uv_1 = uv1 - uv0;
 			glm::vec2 delta_uv_2 = uv2 - uv0;
 
-			float r = 1.0f / (delta_uv_1.x * delta_uv_1.y - delta_uv_1.y * delta_uv_2.x);
-			glm::vec3 tangent = (delta_pos1 * delta_uv_2.y - delta_pos2 * delta_uv_1.y) * r;
+			float r				= 1.0f / (delta_uv_1.x * delta_uv_1.y - delta_uv_1.y * delta_uv_2.x);
+			glm::vec3 tangent	= (delta_pos1 * delta_uv_2.y - delta_pos2 * delta_uv_1.y) * r;
 			glm::vec3 bitangent = (delta_pos2 * delta_uv_1.x - delta_pos1 * delta_uv_2.x) * r;
 
 			this->mesh_tangents.push_back(tangent);
@@ -241,7 +237,9 @@ namespace Engine::Rendering
 		}
 
 		this->logger->SimpleLog(
-			Logging::LogLevel::Info, "Reading OBJ file: Successfully read and parsed file '%s", path.c_str()
+			Logging::LogLevel::Info,
+			"Reading OBJ file: Successfully read and parsed file '%s",
+			path.c_str()
 		);
 	}
 } // namespace Engine::Rendering

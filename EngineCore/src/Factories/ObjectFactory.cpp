@@ -20,35 +20,31 @@
 namespace Engine::ObjectFactory
 {
 	Object* CreateSpriteObject(
-		const std::weak_ptr<SceneManager>& scene_manager,
+		const std::shared_ptr<Scene>& scene,
 		const std::shared_ptr<::Engine::Rendering::Texture>& sprite
 	)
 	{
 		assert(sprite != nullptr);
-		if (auto locked_scene_manager = scene_manager.lock())
-		{
-			Engine* engine = locked_scene_manager->GetOwnerEngine();
+		// if (auto locked_scene_manager = scene_manager.lock())
+		//{
+		Engine* engine = scene->GetOwnerEngine(); // locked_scene_manager->GetOwnerEngine();
 
-			auto* object = new Object();
+		auto* object = new Object(engine);
 
-			Rendering::IMeshBuilder* with_builder = new Rendering::SpriteMeshBuilder(
-				engine,
-				engine->GetRenderingEngine()
-			);
+		Rendering::IMeshBuilder* with_builder = new Rendering::SpriteMeshBuilder(engine, engine->GetRenderingEngine());
 
-			Rendering::IRenderer* with_renderer = new Rendering::SpriteRenderer(engine, with_builder);
-			// with_renderer->scene_manager		= scene_manager;
+		Rendering::IRenderer* with_renderer = new Rendering::SpriteRenderer(engine, with_builder);
+		// with_renderer->scene_manager		= scene_manager;
 
-			// Rendering::RendererSupplyData texture_supply = {Rendering::RendererSupplyDataType::TEXTURE, sprite};
+		// Rendering::RendererSupplyData texture_supply = {Rendering::RendererSupplyDataType::TEXTURE, sprite};
 
-			with_renderer->SupplyData({Rendering::RendererSupplyDataType::TEXTURE, sprite});
+		with_renderer->SupplyData({Rendering::RendererSupplyDataType::TEXTURE, sprite});
 
-			object->UpdateOwnerEngine(engine);
-			object->SetRenderer(with_renderer);
+		object->SetRenderer(with_renderer);
 
-			return object;
-		}
-		return nullptr;
+		return object;
+		//}
+		// return nullptr;
 	}
 
 	Object* CreateTextObject(
@@ -62,7 +58,7 @@ namespace Engine::ObjectFactory
 		{
 			Engine* engine = locked_scene_manager->GetOwnerEngine();
 
-			auto* object = new Object();
+			auto* object = new Object(engine);
 
 			Rendering::IMeshBuilder* with_builder = new Rendering::TextMeshBuilder(
 				engine,
@@ -81,7 +77,6 @@ namespace Engine::ObjectFactory
 			// Rendering::RendererSupplyData text_supply = {Rendering::RendererSupplyDataType::TEXT, std::move(text)};
 			with_renderer->SupplyData({Rendering::RendererSupplyDataType::TEXT, std::move(text)});
 
-			object->UpdateOwnerEngine(engine);
 			object->SetRenderer(with_renderer);
 
 			return object;
@@ -98,7 +93,7 @@ namespace Engine::ObjectFactory
 		{
 			Engine* engine = locked_scene_manager->GetOwnerEngine();
 
-			auto* object = new Object();
+			auto* object = new Object(engine);
 
 			Rendering::IRenderer* with_renderer = new Rendering::MeshRenderer(locked_scene_manager->GetOwnerEngine());
 			// with_renderer->scene_manager		= scene_manager;
@@ -107,7 +102,6 @@ namespace Engine::ObjectFactory
 
 			with_renderer->SupplyData({Rendering::RendererSupplyDataType::MESH, mesh});
 
-			object->UpdateOwnerEngine(engine);
 			object->SetRenderer(with_renderer);
 
 			return object;

@@ -1,7 +1,5 @@
 #pragma once
 
-#include "Logging/Logging.hpp"
-
 #include "InternalEngineObject.hpp"
 #include "Object.hpp"
 #include "Scene.hpp"
@@ -31,7 +29,7 @@ namespace Engine
 		std::unique_ptr<SceneLoader> scene_loader;
 
 	public:
-		SceneManager(std::shared_ptr<Logging::Logger> logger);
+		SceneManager(Engine* with_engine);
 		~SceneManager();
 
 		void SetSceneLoadPrefix(const std::string& scene_prefix);

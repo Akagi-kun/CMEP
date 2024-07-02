@@ -9,7 +9,7 @@
 #include "SceneManager.hpp"
 #include "glm/trigonometric.hpp"
 
-#include <assert.h>
+#include <cassert>
 #include <cstring>
 #include <glm/gtc/quaternion.hpp>
 

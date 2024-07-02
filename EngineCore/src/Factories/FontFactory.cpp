@@ -2,7 +2,9 @@
 
 #include "Assets/AssetManager.hpp"
 
+#include "Engine.hpp"
 #include "PlatformIndependentUtils.hpp"
+
 #include <cstdint>
 
 // Prefixes for logging messages
@@ -14,15 +16,10 @@
 
 namespace Engine::Factories
 {
-	FontFactory::FontFactory(AssetManager* manager) : asset_manager(manager)
-	{
-	}
-
 	std::shared_ptr<Rendering::Font> FontFactory::InitBMFont(std::string fontPath)
 	{
-		std::shared_ptr<Rendering::Font> font = std::make_shared<Rendering::Font>();
-		font->UpdateOwnerEngine(this->owner_engine);
-		font->UpdateHeldLogger(this->logger);
+		std::shared_ptr<Rendering::Font> font = std::make_shared<Rendering::Font>(this->owner_engine);
+		// font->UpdateHeldLogger(this->logger);
 
 		std::unique_ptr<Rendering::FontData> font_data = std::make_unique<Rendering::FontData>();
 
@@ -31,7 +28,9 @@ namespace Engine::Factories
 		if (!font_file.is_open())
 		{
 			this->logger->SimpleLog(
-				Logging::LogLevel::Error, LOGPFX_CURRENT "FontFile %s unexpectedly not open", fontPath.c_str()
+				Logging::LogLevel::Error,
+				LOGPFX_CURRENT "FontFile %s unexpectedly not open",
+				fontPath.c_str()
 			);
 			return nullptr;
 		}
@@ -40,9 +39,8 @@ namespace Engine::Factories
 		// Evaluate it
 		this->EvalBmfont(font_data, font_file);
 
-		this->logger->SimpleLog(
-			Logging::LogLevel::Debug2, LOGPFX_CURRENT "File %s loaded successfully", fontPath.c_str()
-		);
+		this->logger
+			->SimpleLog(Logging::LogLevel::Debug2, LOGPFX_CURRENT "File %s loaded successfully", fontPath.c_str());
 
 		font_file.close();
 
@@ -54,15 +52,15 @@ namespace Engine::Factories
 	void FontFactory::EvalBmfont(std::unique_ptr<Rendering::FontData>& font, std::ifstream& fontFile)
 	{
 		static constexpr uint_fast16_t entry_buffer_limit = 16;
-		static const uint_fast16_t buffer_limit = 255;
+		static const uint_fast16_t buffer_limit			  = 255;
 
-		unsigned int cur_offset = 0;
+		unsigned int cur_offset			  = 0;
 		char cur_data[entry_buffer_limit] = {};
-		char* data = new char[buffer_limit + 1];
+		char* data						  = new char[buffer_limit + 1];
 
 		assert(data);
 
-		while (fontFile.eof() == 0)
+		while (!fontFile.eof())
 		{
 			memset(data, 0, buffer_limit);
 
@@ -85,11 +83,11 @@ namespace Engine::Factories
 
 			assert(0 < cur_offset && cur_offset < buffer_limit && "Current offset is outside limits!");
 
-			static constexpr char info_str[] = "info";
-			static constexpr char char_str[] = "char";
+			static constexpr char info_str[]   = "info";
+			static constexpr char char_str[]   = "char";
 			static constexpr char common_str[] = "common";
-			static constexpr char page_str[] = "page";
-			static constexpr char chars_str[] = "chars";
+			static constexpr char page_str[]   = "page";
+			static constexpr char chars_str[]  = "chars";
 
 			// Send EvalBmfontLine the correct type value
 			if (strncmp(info_str, cur_data, sizeof(info_str) - 1) == 0)
@@ -127,8 +125,8 @@ namespace Engine::Factories
 
 		// Temporary storage arrays
 		char cur_data[buffer_len_limit + 1] = {};
-		char key[buffer_len_limit + 1] = {};
-		char value[buffer_len_limit + 1] = {};
+		char key[buffer_len_limit + 1]		= {};
+		char value[buffer_len_limit + 1]	= {};
 
 		// Read single key=value pairs until end of line
 		int cur_offset = 0;
@@ -168,21 +166,21 @@ namespace Engine::Factories
 						assert(pairs.find("page") != pairs.end());
 						assert(pairs.find("chnl") != pairs.end());
 
-						Rendering::FontChar c = {};
-						int id = 0;
-						id = std::stoi(pairs.find("id")->second);
-						c.x = std::stoi(pairs.find("x")->second);
-						c.y = std::stoi(pairs.find("y")->second);
-						c.width = std::stoi(pairs.find("width")->second);
-						c.height = std::stoi(pairs.find("height")->second);
-						c.xoffset = std::stoi(pairs.find("xoffset")->second);
-						c.yoffset = std::stoi(pairs.find("yoffset")->second);
-						c.xadvance = std::stoi(pairs.find("xadvance")->second);
-						c.page = std::stoi(pairs.find("page")->second);
-						c.channel = std::stoi(pairs.find("chnl")->second);
+						Rendering::FontChar fchar = {};
+						int id					  = 0;
+						id						  = std::stoi(pairs.find("id")->second);
+						fchar.x					  = std::stoi(pairs.find("x")->second);
+						fchar.y					  = std::stoi(pairs.find("y")->second);
+						fchar.width				  = std::stoi(pairs.find("width")->second);
+						fchar.height			  = std::stoi(pairs.find("height")->second);
+						fchar.xoffset			  = std::stoi(pairs.find("xoffset")->second);
+						fchar.yoffset			  = std::stoi(pairs.find("yoffset")->second);
+						fchar.xadvance			  = std::stoi(pairs.find("xadvance")->second);
+						fchar.page				  = std::stoi(pairs.find("page")->second);
+						fchar.channel			  = std::stoi(pairs.find("chnl")->second);
 
 						// Place the character into unordered_map
-						font->chars.emplace(id, c);
+						font->chars.emplace(id, fchar);
 
 						// Clear the collector unordered_map
 						pairs.clear();
@@ -213,34 +211,16 @@ namespace Engine::Factories
 
 						try
 						{
-							if (this->asset_manager != nullptr)
-							{
-								texture = this->asset_manager->GetTexture(whole_filename);
+							auto asset_manager = this->owner_engine->GetAssetManager();
 
-								if (texture == nullptr)
-								{
-									throw std::runtime_error("Texture not found! Tried: '" + whole_filename + "'");
-								}
-								/* if (texture == nullptr)
-								{
-									this->asset_manager->AddTexture(whole_filename, whole_filename,
-								Rendering::Texture_InitFiletype::FILE_PNG); texture =
-								this->asset_manager->GetTexture(whole_filename);
-								} */
+							if (auto locked_asset_manager = asset_manager.lock())
+							{
+								texture = locked_asset_manager->GetTexture(whole_filename);
+								assert(texture != nullptr && "GetTexture resulted in nullptr!");
 							}
-							// The unlikely case
 							else
 							{
-								throw std::runtime_error("Factory has no AssetManager assigned!");
-								// this->logger->SimpleLog(Logging::LogLevel::Debug3, LOGPFX_CURRENT "A Font is not
-								// managed by a AssetManager, this may be unintentional"); texture =
-								// std::make_shared<Rendering::Texture>(); if
-								// (texture->InitFile(Rendering::Texture_InitFiletype::FILE_PNG, whole_filename.c_str())
-								// != 0)
-								//{
-								//	this->logger->SimpleLog(Logging::LogLevel::Exception, LOGPFX_CURRENT "Failed
-								// initializing texture"); 	throw std::runtime_error("Failed initializing texture!");
-								// }
+								throw std::runtime_error("AssetManager could not be locked!");
 							}
 						}
 						catch (std::exception& e)

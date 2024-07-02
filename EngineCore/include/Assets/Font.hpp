@@ -26,14 +26,14 @@ namespace Engine
 		class Font final : public InternalEngineObject
 		{
 		private:
-			AssetManager* asset_manager;
 			std::string fntfile;
 
 			// Data from fnt file
 			std::unique_ptr<FontData> data;
 
 		public:
-			Font(AssetManager* managed_by = nullptr);
+			using InternalEngineObject::InternalEngineObject;
+			// Font(AssetManager* managed_by = nullptr);
 			~Font();
 
 			void Init(std::unique_ptr<FontData> init_data);

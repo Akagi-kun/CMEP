@@ -49,47 +49,6 @@ namespace Engine::Scripting::Mappings
 		}
 
 #pragma endregion
-		/*
-		#pragma region TextRenderer
-
-				int TextRendererUpdateText(lua_State* state)
-				{
-					assert(lua_gettop(state) == 2);
-
-					lua_getfield(state, 1, "_pointer");
-					auto* renderer = static_cast<Rendering::IRenderer*>(lua_touserdata(state, -1));
-
-					const char* text = lua_tostring(state, 2);
-
-					Rendering::RendererSupplyData text_supply = {Rendering::RendererSupplyDataType::TEXT, text};
-					renderer->SupplyData(text_supply);
-
-					return 0;
-				}
-
-		#pragma endregion
-		 */
-		/*
-		#pragma region MeshRenderer
-				int MeshRendererUpdateTexture(lua_State* state)
-				{
-					assert(lua_gettop(state) == 2);
-
-					lua_getfield(state, 1, "_pointer");
-					auto* renderer = static_cast<Rendering::IRenderer*>(lua_touserdata(state, -1));
-
-					lua_getfield(state, 2, "_smart_ptr");
-					std::shared_ptr<Rendering::Texture> texture = *static_cast<std::shared_ptr<Rendering::Texture>*>(
-						lua_touserdata(state, -1)
-					);
-
-					Rendering::RendererSupplyData texture_supply = {Rendering::RendererSupplyDataType::TEXTURE,
-		texture}; renderer->SupplyData(texture_supply);
-
-					return 0;
-				}
-		#pragma endregion
-		*/
 
 #pragma region Renderer supply
 
@@ -143,15 +102,24 @@ namespace Engine::Scripting::Mappings
 			AssetManager* ptr_am	= *static_cast<AssetManager**>(lua_touserdata(state, -1));
 			std::string sprite_name = lua_tostring(state, 3);
 
-			Object* obj = ObjectFactory::CreateSpriteObject(scene_manager, ptr_am->GetTexture(sprite_name));
-
-			if (obj != nullptr)
+			if (auto locked_scene_manager = scene_manager.lock())
 			{
-				API::LuaObjectFactories::ObjectFactory(state, obj);
+				auto scene = locked_scene_manager->GetSceneCurrent();
+
+				Object* obj = ObjectFactory::CreateSpriteObject(scene, ptr_am->GetTexture(sprite_name));
+
+				if (obj != nullptr)
+				{
+					API::LuaObjectFactories::ObjectFactory(state, obj);
+				}
+				else
+				{
+					return luaL_error(state, "ObjectFactory returned nullptr");
+				}
 			}
 			else
 			{
-				return luaL_error(state, "ObjectFactory returned nullptr");
+				return luaL_error(state, "SceneManager could not be locked!");
 			}
 
 			return 1;
@@ -200,7 +168,12 @@ namespace Engine::Scripting::Mappings
 				lua_touserdata(state, -1)
 			);
 
-			std::shared_ptr<Rendering::Mesh> mesh = std::make_shared<Rendering::Mesh>();
+			std::shared_ptr<Rendering::Mesh> mesh;
+			if (auto locked_scene_manager = scene_manager.lock())
+			{
+				mesh = std::make_shared<Rendering::Mesh>(locked_scene_manager->GetOwnerEngine());
+			}
+
 			mesh->CreateMeshFromObj(std::string(lua_tostring(state, 2)));
 
 			Object* obj = ObjectFactory::CreateGeneric3DObject(scene_manager, mesh);

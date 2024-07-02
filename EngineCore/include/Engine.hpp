@@ -10,7 +10,6 @@
 
 #include <cstdint>
 #include <memory>
-#include <stdexcept>
 #include <string>
 
 namespace Engine
@@ -123,11 +122,15 @@ namespace Engine
 
 		[[nodiscard]] double GetLastDeltaTime() const;
 
-		std::weak_ptr<AssetManager> GetAssetManager() noexcept
+		[[nodiscard]] std::shared_ptr<Logging::Logger> GetLogger()
+		{
+			return this->logger;
+		}
+		[[nodiscard]] std::weak_ptr<AssetManager> GetAssetManager() noexcept
 		{
 			return this->asset_manager;
 		}
-		Rendering::VulkanRenderingEngine* GetRenderingEngine() noexcept
+		[[nodiscard]] Rendering::VulkanRenderingEngine* GetRenderingEngine() noexcept
 		{
 			return this->rendering_engine;
 		}
@@ -135,7 +138,7 @@ namespace Engine
 		{
 			return std::weak_ptr<SceneManager>(this->scene_manager);
 		}
-		std::weak_ptr<Rendering::Factories::VulkanImageFactory> GetVulkanImageFactory() noexcept
+		[[nodiscard]] std::weak_ptr<Rendering::Factories::VulkanImageFactory> GetVulkanImageFactory() noexcept
 		{
 			return this->vulkan_image_factory;
 		}

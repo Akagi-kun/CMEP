@@ -22,16 +22,14 @@ namespace Engine::Factories
 		);
 
 	public:
-		TextureFactory() = default;
+		TextureFactory(Engine* with_engine);
 
 		std::shared_ptr<Rendering::Texture> InitFile(
 			const std::string& path,
 			Rendering::VulkanBuffer* staging_buffer,
 			Rendering::Texture_InitFiletype filetype,
 			VkFilter filtering						  = VK_FILTER_LINEAR,
-			VkSamplerAddressMode sampler_address_mode = VK_SAMPLER_ADDRESS_MODE_REPEAT,
-			unsigned int sizex						  = 0,
-			unsigned int sizey						  = 0
+			VkSamplerAddressMode sampler_address_mode = VK_SAMPLER_ADDRESS_MODE_REPEAT
 		);
 	};
 } // namespace Engine::Factories

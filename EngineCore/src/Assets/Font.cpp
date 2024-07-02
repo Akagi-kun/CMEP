@@ -13,12 +13,12 @@
 #include "Logging/LoggingPrefix.hpp"
 
 namespace Engine::Rendering
-{
-	Font::Font(AssetManager* managed_by)
-	{
-		this->asset_manager = managed_by;
-	}
-
+{ /*
+	 Font::Font(AssetManager* managed_by)
+	 {
+		 this->asset_manager = managed_by;
+	 }
+  */
 	Font::~Font()
 	{
 		this->logger->SimpleLog(Logging::LogLevel::Debug3, LOGPFX_CURRENT "Destructor called");

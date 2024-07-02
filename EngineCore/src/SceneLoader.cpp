@@ -23,11 +23,6 @@
 
 namespace Engine
 {
-	SceneLoader::SceneLoader(std::shared_ptr<Logging::Logger>& with_logger)
-	{
-		this->logger = with_logger;
-	}
-
 	SceneLoader::~SceneLoader()
 	{
 		this->logger->SimpleLog(Logging::LogLevel::Debug2, LOGPFX_CURRENT "Destructor called");
@@ -35,15 +30,11 @@ namespace Engine
 
 	std::shared_ptr<Scene> SceneLoader::LoadScene(std::string scene_name)
 	{
-		std::shared_ptr<Scene> new_scene = std::make_shared<Scene>();
-		new_scene->UpdateHeldLogger(this->logger);
-		new_scene->UpdateOwnerEngine(this->owner_engine);
+		std::shared_ptr<Scene> new_scene = std::make_shared<Scene>(this->owner_engine);
 
 		this->logger->SimpleLog(Logging::LogLevel::Info, LOGPFX_CURRENT "Loading scene: '%s'", scene_name.c_str());
 
 		this->LoadSceneInternal(new_scene, scene_name);
-
-		new_scene->UpdateOwnerEngine(this->owner_engine);
 
 		return new_scene;
 	}
@@ -258,50 +249,33 @@ namespace Engine
 
 				if (RendererType::MIN_ENUM < use_renderer_type && use_renderer_type < RendererType::MAX_ENUM)
 				{
-					// Allocate new object when renderer type is known
-					object = new Object();
+					// Engine* engine = locked_asset_manager->GetOwnerEngine();
 
-					Engine* engine = locked_asset_manager->GetOwnerEngine();
+					// Allocate new object when renderer type is known
+					// object = new Object(engine);
 
 					switch (use_renderer_type)
 					{
 						case RendererType::SPRITE:
 						{
-							Rendering::IMeshBuilder* with_builder = new Rendering::SpriteMeshBuilder(
-								engine,
-								engine->GetRenderingEngine()
-							);
-							with_builder->UpdateHeldLogger(this->logger);
-							// with_builder->UpdateOwnerEngine(engine);
-
-							Rendering::IRenderer* with_renderer = new Rendering::SpriteRenderer(
-								this->GetOwnerEngine(),
-								with_builder
+							std::shared_ptr<Rendering::Texture> texture = locked_asset_manager->GetTexture(
+								scene_entry["renderer_supply_textures"][0].get<std::string>()
 							);
 
-							for (auto& supply_texture : scene_entry["renderer_supply_textures"])
-							{
-								std::shared_ptr<Rendering::Texture> texture = locked_asset_manager->GetTexture(
-									supply_texture.get<std::string>()
-								);
-
-								Rendering::RendererSupplyData texture_supply = {
-									Rendering::RendererSupplyDataType::TEXTURE,
-									texture
-								};
-
-								with_renderer->SupplyData(texture_supply);
-							}
-
-							object->UpdateOwnerEngine(engine);
-							object->SetRenderer(with_renderer);
+							object = ObjectFactory::CreateSpriteObject(scene, texture);
 
 							break;
 						}
 						default:
 						{
-							delete object; // TODO: Reorder this
-							object = nullptr;
+							// delete object; // TODO: Reorder this
+							// object = nullptr;
+							this->logger->SimpleLog(
+								Logging::LogLevel::Warning,
+								"Unknown renderer type '%s' (matched '%u')",
+								scene_entry["renderer"].get<std::string>().c_str(),
+								static_cast<unsigned int>(use_renderer_type)
+							);
 							break;
 						}
 					}

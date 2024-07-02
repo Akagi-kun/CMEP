@@ -3,6 +3,7 @@
 #include "Assets/Mesh.hpp"
 
 #include "Object.hpp"
+#include "Scene.hpp"
 #include "SceneManager.hpp"
 
 namespace Engine::Rendering
@@ -15,7 +16,7 @@ namespace Engine::Rendering
 namespace Engine::ObjectFactory
 {
 	Object* CreateSpriteObject(
-		const std::weak_ptr<SceneManager>& scene_manager,
+		const std::shared_ptr<Scene>& scene,
 		const std::shared_ptr<::Engine::Rendering::Texture>& sprite
 	);
 

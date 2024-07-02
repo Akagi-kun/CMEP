@@ -53,7 +53,8 @@ namespace Engine
 		std::multimap<EventHandling::EventType, std::pair<std::shared_ptr<Scripting::LuaScript>, std::string>>
 			lua_event_handlers;
 
-		Scene() = default;
+		using InternalEngineObject::InternalEngineObject;
+		// Scene() = default;
 		~Scene();
 
 		[[nodiscard]] const std::unordered_map<std::string, Object*>* GetAllObjects() noexcept;

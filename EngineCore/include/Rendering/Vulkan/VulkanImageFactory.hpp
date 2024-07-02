@@ -5,23 +5,6 @@
 
 namespace Engine::Rendering::Factories
 {
-	/* 	struct VulkanImage
-		{
-			VkImage image;
-			VmaAllocation allocation;
-			VmaAllocationInfo allocationInfo;
-			VkFormat imageFormat;
-			VkImageView imageView;
-		};
-
-		struct VulkanTextureImage
-		{
-			VulkanImage* image;
-			VkSampler textureSampler;
-			VkFilter useFilter;
-			VkSamplerAddressMode useAddressMode;
-		};
-	 */
 	class VulkanImageFactory : public InternalEngineObject
 	{
 	protected:
@@ -29,8 +12,8 @@ namespace Engine::Rendering::Factories
 		VulkanRenderingEngine* vulkan_rendering_engine;
 
 	public:
-		VulkanImageFactory(VmaAllocator with_allocator, VulkanRenderingEngine* with_vre)
-			: vma_allocator(with_allocator), vulkan_rendering_engine(with_vre)
+		VulkanImageFactory(Engine* with_engine, VmaAllocator with_allocator, VulkanRenderingEngine* with_vre)
+			: InternalEngineObject(with_engine), vma_allocator(with_allocator), vulkan_rendering_engine(with_vre)
 		{
 		}
 

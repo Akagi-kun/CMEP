@@ -10,7 +10,7 @@
 
 namespace Engine
 {
-	class Object final : public InternalEngineObject //, public ModuleMediator
+	class Object final : public InternalEngineObject
 	{
 	private:
 		Rendering::Transform transform;
@@ -23,21 +23,17 @@ namespace Engine
 
 		// std::function<void(Object*)> on_click = nullptr;
 
-		// IModule* renderer = nullptr;
-
 		Rendering::IRenderer* renderer		  = nullptr;
 		Rendering::IMeshBuilder* mesh_builder = nullptr;
-
-		// std::multimap<ModuleType, IModule*> modules;
 
 		void UpdateRenderer() noexcept;
 
 	public:
-		Object() noexcept;
+		using InternalEngineObject::InternalEngineObject;
 		~Object() noexcept; // override;
 
 		// Overrides InternalEngineObject::UpdateHeldLogger
-		void UpdateHeldLogger(std::shared_ptr<Logging::Logger>& new_logger);
+		// void UpdateHeldLogger(std::shared_ptr<Logging::Logger>& new_logger);
 
 		void ScreenSizeInform(unsigned int with_screenx, unsigned int with_screeny) noexcept;
 

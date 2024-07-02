@@ -25,7 +25,11 @@ namespace Engine::Scripting
 		void RegisterMeta(lua_State* state);
 
 	public:
-		LuaScriptExecutor()	 = default;
+		using InternalEngineObject::InternalEngineObject;
+		// LuaScriptExecutor() = delete;
+		// LuaScriptExecutor(Engine* with_engine) : InternalEngineObject(with_engine)
+		//{
+		// }
 		~LuaScriptExecutor() = default;
 
 		int CallIntoScript(

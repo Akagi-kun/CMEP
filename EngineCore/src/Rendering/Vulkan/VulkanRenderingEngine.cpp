@@ -286,9 +286,8 @@ namespace Engine::Rendering
 			->SimpleLog(Logging::LogLevel::Debug1, LOGPFX_CURRENT "%u vulkan extensions supported", extension_count);
 
 		// Set up our vulkan rendering stack
-		this->device_manager = std::make_unique<VulkanDeviceManager>();
-		this->device_manager->UpdateHeldLogger(this->logger);
-		this->device_manager->UpdateOwnerEngine(this->owner_engine);
+		this->device_manager = std::make_unique<VulkanDeviceManager>(this->owner_engine);
+		// this->device_manager->UpdateHeldLogger(this->logger);
 
 		this->device_manager->Init(this->window);
 

@@ -6,6 +6,7 @@
 #include "Logging/Logging.hpp"
 
 #include "Engine.hpp"
+#include "InternalEngineObject.hpp"
 #include "glm/ext/matrix_clip_space.hpp"
 #include "glm/ext/matrix_transform.hpp"
 
@@ -15,20 +16,20 @@
 
 namespace Engine
 {
-	SceneManager::SceneManager(std::shared_ptr<Logging::Logger> with_logger)
+	SceneManager::SceneManager(Engine* with_engine) : InternalEngineObject(with_engine)
 	{
 		// Reset transform and rotation
 		this->camera_transform	 = glm::vec3(0.0, 0.0, 0.0);
 		this->camera_hv_rotation = glm::vec2(0.0, 0.0);
-		this->logger			 = with_logger;
+		this->logger			 = this->owner_engine->GetLogger();
 
-		std::shared_ptr<Scene> default_scene = std::make_shared<Scene>();
-		default_scene->UpdateHeldLogger(this->logger);
-		default_scene->UpdateOwnerEngine(this->owner_engine);
+		std::shared_ptr<Scene> default_scene = std::make_shared<Scene>(with_engine);
+		// default_scene->UpdateHeldLogger(this->logger);
 
 		this->scenes.emplace("_default", default_scene);
 
-		this->scene_loader = std::make_unique<SceneLoader>(with_logger);
+		this->scene_loader = std::make_unique<SceneLoader>(with_engine);
+		// this->scene_loader->UpdateHeldLogger(this->logger);
 	}
 
 	SceneManager::~SceneManager()
@@ -65,7 +66,6 @@ namespace Engine
 	{
 		assert(this->owner_engine != nullptr);
 
-		this->scene_loader->UpdateOwnerEngine(this->owner_engine);
 		this->scenes.emplace(scene_name, this->scene_loader->LoadScene(scene_name));
 	}
 
@@ -81,7 +81,6 @@ namespace Engine
 
 	void SceneManager::AddObject(const std::string& name, Object* ptr)
 	{
-		this->scenes.at(this->current_scene)->UpdateOwnerEngine(this->owner_engine);
 		this->scenes.at(this->current_scene)->AddObject(name, ptr);
 	}
 
