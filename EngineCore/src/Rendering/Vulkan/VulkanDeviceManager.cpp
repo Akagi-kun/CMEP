@@ -1,8 +1,13 @@
 #include "Rendering/Vulkan/VulkanDeviceManager.hpp"
 
+#include "Rendering/Vulkan/VulkanCommandPool.hpp"
+
+#include "Logging/Logging.hpp"
+
 #include "vulkan/vulkan_core.h"
 
 #include <cstring>
+#include <memory>
 #include <set>
 #include <stdexcept>
 
@@ -22,13 +27,17 @@ namespace Engine::Rendering
 		void* pUserData
 	)
 	{
+		(void)(messageType);
+
 		if (auto locked_logger = (static_cast<InternalEngineObject*>(pUserData))->GetLogger().lock())
 		{
-			locked_logger->SimpleLog(
-				Logging::LogLevel::Warning,
-				LOGPFX_CURRENT "Vulkan validation layer reported: %s",
-				pCallbackData->pMessage
-			);
+			// Log as error only if error bit set
+			Logging::LogLevel log_level = (messageSeverity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT) != 0
+											  ? Logging::LogLevel::Error
+											  : Logging::LogLevel::Warning;
+
+			locked_logger
+				->SimpleLog(log_level, LOGPFX_CURRENT "Vulkan validation layer reported: %s", pCallbackData->pMessage);
 		}
 
 		return VK_FALSE;
@@ -44,14 +53,13 @@ namespace Engine::Rendering
 		auto func = reinterpret_cast<PFN_vkCreateDebugUtilsMessengerEXT>(
 			vkGetInstanceProcAddr(instance, "vkCreateDebugUtilsMessengerEXT")
 		);
+
 		if (func != nullptr)
 		{
 			return func(instance, pCreateInfo, pAllocator, pDebugMessenger);
 		}
-		else
-		{
-			return VK_ERROR_EXTENSION_NOT_PRESENT;
-		}
+
+		return VK_ERROR_EXTENSION_NOT_PRESENT;
 	}
 
 	static void DestroyDebugUtilsMessengerEXT(
@@ -63,6 +71,7 @@ namespace Engine::Rendering
 		auto func = reinterpret_cast<PFN_vkDestroyDebugUtilsMessengerEXT>(
 			vkGetInstanceProcAddr(instance, "vkDestroyDebugUtilsMessengerEXT")
 		);
+
 		if (func != nullptr)
 		{
 			func(instance, debugMessenger, pAllocator);
@@ -79,11 +88,15 @@ namespace Engine::Rendering
 		this->CreateVulkanSurface();
 		this->InitVulkanDevice();
 		this->CreateVulkanLogicalDevice();
+
+		this->vk_command_pool = new VulkanCommandPool(this);
 	}
 
 	void VulkanDeviceManager::Cleanup()
 	{
 		this->logger->SimpleLog(Logging::LogLevel::Info, LOGPFX_CURRENT "Cleaning up");
+
+		delete this->vk_command_pool;
 
 		vkDestroySurfaceKHR(this->vk_instance, this->vk_surface, nullptr);
 		vkDestroyDevice(this->vk_logical_device, nullptr);
@@ -464,10 +477,10 @@ namespace Engine::Rendering
 				indices.graphics_family = indice;
 			}
 
-			VkBool32 present_support = false;
+			VkBool32 present_support = 0u;
 			vkGetPhysicalDeviceSurfaceSupportKHR(device, indice, this->vk_surface, &present_support);
 
-			if (present_support != 0)
+			if (present_support != 0u)
 			{
 				indices.present_family = indice;
 			}
@@ -534,7 +547,7 @@ namespace Engine::Rendering
 			return 0;
 		}
 
-		if (!device_features.samplerAnisotropy)
+		if (device_features.samplerAnisotropy == 0u)
 		{
 			this->logger->SimpleLog(
 				Logging::LogLevel::Debug2,

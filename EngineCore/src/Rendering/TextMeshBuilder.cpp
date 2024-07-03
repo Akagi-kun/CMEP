@@ -4,8 +4,6 @@
 #include "Assets/Texture.hpp"
 #include "Rendering/Vulkan/VulkanStructDefs.hpp"
 
-#include "vulkan/vulkan_core.h"
-
 #include <cstdint>
 #include <cstdlib>
 #include <iterator>

@@ -1,15 +1,15 @@
-
 #include "Rendering/Vulkan/VulkanImage.hpp"
 
+#include "Rendering/Vulkan/HoldsVulkanDevice.hpp"
+#include "Rendering/Vulkan/VulkanCommandBuffer.hpp"
 #include "Rendering/Vulkan/VulkanDeviceManager.hpp"
-#include "Rendering/Vulkan/VulkanManagedBase.hpp"
 
 #include <stdexcept>
 
 namespace Engine::Rendering
 {
 	VulkanImage::VulkanImage(
-		const std::shared_ptr<VulkanDeviceManager>& with_device_manager,
+		VulkanDeviceManager* const with_device_manager,
 		VmaAllocator with_allocator,
 		VulkanImageSize size,
 		VkSampleCountFlagBits num_samples,
@@ -18,7 +18,7 @@ namespace Engine::Rendering
 		VkImageUsageFlags usage,
 		VkMemoryPropertyFlags properties
 	)
-		: VulkanManagedBase(with_device_manager, with_allocator), image_format(format)
+		: HoldsVulkanDevice(with_device_manager), HoldsVMA(with_allocator), image_format(format)
 	{
 
 		VkImageCreateInfo image_info{};
@@ -70,14 +70,8 @@ namespace Engine::Rendering
 		vmaFreeMemory(this->allocator, this->allocation);
 	}
 
-	void VulkanImage::TransitionImageLayout(
-		VkCommandBuffer with_command_buffer,
-		VkFormat format,
-		VkImageLayout new_layout
-	)
+	void VulkanImage::TransitionImageLayout(VulkanCommandPool* with_pool, VkFormat format, VkImageLayout new_layout)
 	{
-		// VkCommandBuffer command_buffer = this->vulkan_rendering_engine->BeginSingleTimeCommandBuffer();
-
 		VkImageMemoryBarrier barrier{};
 		barrier.sType							= VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
 		barrier.oldLayout						= this->current_layout;
@@ -113,25 +107,24 @@ namespace Engine::Rendering
 		}
 		else
 		{
-			// this->logger->SimpleLog(Logging::LogLevel::Error, LOGPFX_CURRENT "Unsupported layout transition
-			// requested");
 			throw std::invalid_argument("Unsupported layout transition!");
 		}
 
-		vkCmdPipelineBarrier(
-			with_command_buffer,
-			source_stage,
-			destination_stage,
-			0,
-			0,
-			nullptr,
-			0,
-			nullptr,
-			1,
-			&barrier
-		);
-
-		// this->vulkan_rendering_engine->EndSingleTimeCommandBuffer(command_buffer);
+		Rendering::VulkanCommandBuffer(this->device_manager, with_pool)
+			.RecordCmds([&](VulkanCommandBuffer* with_buffer) {
+				vkCmdPipelineBarrier(
+					with_buffer->GetNativeHandle(),
+					source_stage,
+					destination_stage,
+					0,
+					0,
+					nullptr,
+					0,
+					nullptr,
+					1,
+					&barrier
+				);
+			});
 
 		this->current_layout = new_layout;
 	}

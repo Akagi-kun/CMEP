@@ -362,41 +362,6 @@ namespace Engine::Rendering
 		}
 	}
 
-	void VulkanRenderingEngine::CreateVulkanCommandPools()
-	{
-		VkCommandPoolCreateInfo pool_info{};
-		pool_info.sType			   = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
-		pool_info.flags			   = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
-		pool_info.queueFamilyIndex = this->device_manager->GetQueueFamilies().graphics_family.value();
-
-		VkDevice logical_device = this->device_manager->GetLogicalDevice();
-
-		if (vkCreateCommandPool(logical_device, &pool_info, nullptr, &(this->vk_command_pool)) != VK_SUCCESS)
-		{
-			this->logger->SimpleLog(Logging::LogLevel::Error, LOGPFX_CURRENT "Vulkan failed creating command pools");
-			throw std::runtime_error("failed to create command pool!");
-		}
-	}
-
-	void VulkanRenderingEngine::CreateVulkanCommandBuffers()
-	{
-		// vk_command_buffers.resize(this->max_frames_in_flight);
-
-		VkCommandBufferAllocateInfo alloc_info{};
-		alloc_info.sType			  = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
-		alloc_info.commandPool		  = this->vk_command_pool;
-		alloc_info.level			  = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-		alloc_info.commandBufferCount = static_cast<uint32_t>(vk_command_buffers.size());
-
-		VkDevice logical_device = this->device_manager->GetLogicalDevice();
-
-		if (vkAllocateCommandBuffers(logical_device, &alloc_info, this->vk_command_buffers.data()) != VK_SUCCESS)
-		{
-			this->logger->SimpleLog(Logging::LogLevel::Error, LOGPFX_CURRENT "Vulkan failed creating command pools");
-			throw std::runtime_error("failed to allocate command buffers!");
-		}
-	}
-
 	void VulkanRenderingEngine::CreateVulkanSyncObjects()
 	{
 		VkSemaphoreCreateInfo semaphore_info{};
@@ -428,7 +393,7 @@ namespace Engine::Rendering
 		VkFormat depth_format = this->FindVulkanSupportedDepthFormat();
 
 		this->vk_depth_buffer = new VulkanImage(
-			this->device_manager,
+			this->device_manager.get(),
 			this->vma_allocator,
 			{this->vk_swap_chain_extent.width, this->vk_swap_chain_extent.height},
 			this->device_manager->GetMSAASampleCount(),
@@ -446,7 +411,7 @@ namespace Engine::Rendering
 		VkFormat color_format = this->vk_swap_chain_image_format;
 
 		this->multisampled_color_image = new VulkanImage(
-			this->device_manager,
+			this->device_manager.get(),
 			this->vma_allocator,
 			{this->vk_swap_chain_extent.width, this->vk_swap_chain_extent.height},
 			this->device_manager->GetMSAASampleCount(),

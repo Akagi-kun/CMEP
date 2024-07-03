@@ -31,13 +31,15 @@ set(SRC_FILES
 	src/Rendering/SpriteMeshBuilder.cpp
 	src/Rendering/TextMeshBuilder.cpp
 	
-	src/Rendering/Vulkan/VMA_Impl.cpp
+	src/Rendering/Vulkan/VmaImplementation.cpp
 
 	src/Rendering/Vulkan/VulkanDeviceManager.cpp
 	src/Rendering/Vulkan/VulkanRenderingEngine.cpp
 	src/Rendering/Vulkan/VulkanRenderingEngine_Init.cpp
 	src/Rendering/Vulkan/VulkanImage.cpp
 	src/Rendering/Vulkan/VulkanTextureImage.cpp
+	src/Rendering/Vulkan/VulkanCommandPool.cpp
+	src/Rendering/Vulkan/VulkanCommandBuffer.cpp
 	
 	src/Scripting/LuaScript.cpp
 	src/Scripting/LuaScriptExecutor.cpp

@@ -1,11 +1,14 @@
 #pragma once
 
 #include "Rendering/Transform.hpp"
+#include "Rendering/Vulkan/VulkanTextureImage.hpp"
 
 #include "IMeshBuilder.hpp"
 
 namespace Engine::Rendering
 {
+	class VulkanTextureImage;
+
 	class TextMeshBuilder final : public IMeshBuilder
 	{
 		ScreenSize screen_size{};

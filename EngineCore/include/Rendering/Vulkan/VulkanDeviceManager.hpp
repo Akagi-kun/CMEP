@@ -1,12 +1,15 @@
 #pragma once
 
-#include "ImportVulkan.hpp"
 #include "InternalEngineObject.hpp"
 #include "VulkanStructDefs.hpp"
 
+#include <memory>
+
 namespace Engine::Rendering
 {
-	class VulkanDeviceManager final : public InternalEngineObject
+	class VulkanCommandPool;
+
+	class VulkanDeviceManager final : public InternalEngineObject, std::enable_shared_from_this<VulkanDeviceManager>
 	{
 	private:
 		// Defaults
@@ -28,6 +31,9 @@ namespace Engine::Rendering
 
 		// Vulkan instance
 		VkInstance vk_instance = VK_NULL_HANDLE;
+
+		// Command buffer pool
+		VulkanCommandPool* vk_command_pool = nullptr;
 
 		// Surfaces
 		VkSurfaceKHR vk_surface = VK_NULL_HANDLE;
@@ -73,47 +79,47 @@ namespace Engine::Rendering
 
 		void Cleanup();
 
-		[[nodiscard]] inline const VkPhysicalDevice& GetPhysicalDevice() const noexcept
+		[[nodiscard]] const VkPhysicalDevice& GetPhysicalDevice() const noexcept
 		{
 			return this->vk_physical_device;
 		}
 
-		[[nodiscard]] inline const VkDevice& GetLogicalDevice() const noexcept
+		[[nodiscard]] const VkDevice& GetLogicalDevice() const noexcept
 		{
 			return this->vk_logical_device;
 		}
 
-		[[nodiscard]] inline const VkInstance& GetInstance() const noexcept
+		[[nodiscard]] const VkInstance& GetInstance() const noexcept
 		{
 			return this->vk_instance;
 		}
 
-		[[nodiscard]] inline const QueueFamilyIndices& GetQueueFamilies() const noexcept
+		[[nodiscard]] const QueueFamilyIndices& GetQueueFamilies() const noexcept
 		{
 			return this->graphics_queue_indices;
 		}
 
-		[[nodiscard]] inline const VkSurfaceKHR& GetSurface() const noexcept
+		[[nodiscard]] const VkSurfaceKHR& GetSurface() const noexcept
 		{
 			return this->vk_surface;
 		}
 
-		[[nodiscard]] inline const VkSampleCountFlagBits& GetMSAASampleCount() const noexcept
+		[[nodiscard]] const VkSampleCountFlagBits& GetMSAASampleCount() const noexcept
 		{
 			return this->msaa_samples;
 		}
 
-		[[nodiscard]] inline const VkQueue& GetGraphicsQueue() const noexcept
+		[[nodiscard]] const VkQueue& GetGraphicsQueue() const noexcept
 		{
 			return this->vk_graphics_queue;
 		}
 
-		[[nodiscard]] inline const VkQueue& GetPresentQueue() const noexcept
+		[[nodiscard]] const VkQueue& GetPresentQueue() const noexcept
 		{
 			return this->vk_present_queue;
 		}
 
-		[[nodiscard]] inline const SwapChainSupportDetails QuerySwapChainSupport()
+		[[nodiscard]] SwapChainSupportDetails QuerySwapChainSupport()
 		{
 			return this->QueryVulkanSwapChainSupport(this->vk_physical_device);
 		}

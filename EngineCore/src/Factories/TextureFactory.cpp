@@ -156,74 +156,50 @@ namespace Engine::Factories
 
 			memcpy(used_staging_buffer->mapped_data, raw_data.data(), static_cast<size_t>(memory_size));
 
-			auto* rendering_engine = this->owner_engine->GetRenderingEngine();
+			texture_data->texture_image = new Rendering::VulkanTextureImage(
+				locked_device_manager.get(),
+				renderer->GetVMAAllocator(),
+				{xsize, ysize},
+				VK_SAMPLE_COUNT_1_BIT,
+				VK_FORMAT_R8G8B8A8_UNORM,
+				VK_IMAGE_TILING_OPTIMAL,
+				VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
+				VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
+				filtering,			 // Filter for both mag and min
+				sampler_address_mode // sampler address mode
+			);
 
-			if (const auto& locked_device_manager = rendering_engine->GetDeviceManager().lock())
+			// Transfer image layout to compatible with transfers
+			texture_data->texture_image->TransitionImageLayout(
+				renderer->GetCommandPool(),
+				VK_FORMAT_R8G8B8A8_UNORM,
+				VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL
+			);
+
+			renderer->CopyVulkanBufferToImage(
+				used_staging_buffer->buffer,
+				texture_data->texture_image->image,
+				static_cast<uint32_t>(xsize),
+				static_cast<uint32_t>(ysize)
+			);
+
+			// Transfer image layout to compatible with rendering
+			texture_data->texture_image->TransitionImageLayout(
+				renderer->GetCommandPool(),
+				VK_FORMAT_R8G8B8A8_UNORM,
+				VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL
+			);
+
+			// Unmap staging memory and cleanup buffer if we created it here
+			vkUnmapMemory(locked_device_manager->GetLogicalDevice(), used_staging_buffer->allocation_info.deviceMemory);
+			if (staging_buffer == nullptr)
 			{
-				texture_data->texture_image = new Rendering::VulkanTextureImage(
-					locked_device_manager,
-					rendering_engine->GetVMAAllocator(),
-					{xsize, ysize},
-					VK_SAMPLE_COUNT_1_BIT,
-					VK_FORMAT_R8G8B8A8_UNORM,
-					VK_IMAGE_TILING_OPTIMAL,
-					VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
-					VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
-					filtering,			 // Filter for both mag and min
-					sampler_address_mode // sampler address mode
-				);
-
-				// Transfer image layout to one that is compatible with transfers
-				{
-					auto* tmp_command_buffer = rendering_engine->BeginSingleTimeCommandBuffer();
-					texture_data->texture_image->TransitionImageLayout(
-						tmp_command_buffer,
-						// texture_data->texture_image->image,
-						VK_FORMAT_R8G8B8A8_UNORM,
-						VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL
-					);
-					rendering_engine->EndSingleTimeCommandBuffer(tmp_command_buffer);
-				}
-
-				renderer->CopyVulkanBufferToImage(
-					used_staging_buffer->buffer,
-					texture_data->texture_image->image,
-					static_cast<uint32_t>(xsize),
-					static_cast<uint32_t>(ysize)
-				);
-
-				// Transfer image layout to one that is compatible with rendering
-				{
-					auto* tmp_command_buffer = rendering_engine->BeginSingleTimeCommandBuffer();
-					texture_data->texture_image->TransitionImageLayout(
-						tmp_command_buffer,
-						// texture_data->texture_image->image,
-						VK_FORMAT_R8G8B8A8_UNORM,
-						VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL
-					);
-					rendering_engine->EndSingleTimeCommandBuffer(tmp_command_buffer);
-				}
-
-				// VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL
-
-				// Unmap staging memory and cleanup buffer if we created it here
-				vkUnmapMemory(
-					locked_device_manager->GetLogicalDevice(),
-					used_staging_buffer->allocation_info.deviceMemory
-				);
-				if (staging_buffer == nullptr)
-				{
-					renderer->CleanupVulkanBuffer(used_staging_buffer);
-				}
-
-				texture_data->texture_image->AddImageView();
-
-				// renderer->AppendVulkanSamplerToVulkanTextureImage(texture_data->texture_image);
+				renderer->CleanupVulkanBuffer(used_staging_buffer);
 			}
-			else
-			{
-				return 1;
-			}
+
+			texture_data->texture_image->AddImageView();
+
+			// renderer->AppendVulkanSamplerToVulkanTextureImage(texture_data->texture_image);
 		}
 		return 0;
 	}

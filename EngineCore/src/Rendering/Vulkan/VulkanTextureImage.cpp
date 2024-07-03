@@ -5,7 +5,7 @@
 namespace Engine::Rendering
 {
 	VulkanTextureImage::VulkanTextureImage(
-		const std::shared_ptr<VulkanDeviceManager>& with_device_manager,
+		VulkanDeviceManager* const with_device_manager,
 		VmaAllocator with_allocator,
 		VulkanImageSize size,
 		VkSampleCountFlagBits num_samples,

@@ -4,9 +4,10 @@
 #include "Rendering/Vulkan/ImportVulkan.hpp"
 #include "Rendering/Vulkan/VulkanDeviceManager.hpp"
 #include "Rendering/Vulkan/VulkanStructDefs.hpp"
-#include "Rendering/Vulkan/VulkanTextureImage.hpp"
 
 #include "InternalEngineObject.hpp"
+#include "VulkanCommandBuffer.hpp"
+#include "VulkanCommandPool.hpp"
 
 #include <cstdint>
 #include <functional>
@@ -56,8 +57,10 @@ namespace Engine::Rendering
 		std::vector<VkFramebuffer> vk_swap_chain_framebuffers;
 
 		// Command pools and buffers
-		VkCommandPool vk_command_pool = VK_NULL_HANDLE;
-		std::array<VkCommandBuffer, max_frames_in_flight> vk_command_buffers;
+		VulkanCommandPool* vk_command_pool;
+		// VkCommandPool vk_command_pool = VK_NULL_HANDLE;
+		std::array<VulkanCommandBuffer*, max_frames_in_flight> vk_command_buffers;
+		// std::array<VkCommandBuffer, max_frames_in_flight> vk_command_buffers;
 
 		// Synchronisation
 		// std::vector<VkSemaphore> image_available_semaphores;
@@ -108,8 +111,8 @@ namespace Engine::Rendering
 		void CreateVulkanDefaultGraphicsPipeline();
 		void CreateVulkanRenderPass();
 		void CreateVulkanFramebuffers();
-		void CreateVulkanCommandPools();
-		void CreateVulkanCommandBuffers();
+		// void CreateVulkanCommandPools();
+		// void CreateVulkanCommandBuffers();
 		void CreateVulkanSyncObjects();
 		void CreateVulkanDepthResources();
 		void CreateMultisampledColorResources();
@@ -152,8 +155,8 @@ namespace Engine::Rendering
 		void CopyVulkanBufferToImage(VkBuffer buffer, VkImage image, uint32_t width, uint32_t height);
 
 		// Command buffer functions
-		VkCommandBuffer BeginSingleTimeCommandBuffer();
-		void EndSingleTimeCommandBuffer(VkCommandBuffer commandBuffer);
+		VulkanCommandBuffer* BeginSingleTimeCommandBuffer();
+		void EndSingleTimeCommandBuffer(VulkanCommandBuffer* commandBuffer);
 
 		// Pipeline functions
 		VulkanPipelineSettings GetVulkanDefaultPipelineSettings();
@@ -178,6 +181,7 @@ namespace Engine::Rendering
 		[[nodiscard]] GLFWwindowData GetWindow() const;
 		[[nodiscard]] static uint32_t GetMaxFramesInFlight();
 		VmaAllocator GetVMAAllocator();
+		VulkanCommandPool* GetCommandPool();
 
 		void SyncDeviceWaitIdle();
 
