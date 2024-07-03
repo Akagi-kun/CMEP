@@ -46,23 +46,6 @@ namespace Engine::Rendering
 		void* mapped_data;
 	};
 
-	struct VulkanImage
-	{
-		VkImage image;
-		VmaAllocation allocation;
-		VmaAllocationInfo allocation_info;
-		VkFormat image_format;
-		VkImageView image_view;
-	};
-
-	struct VulkanTextureImage
-	{
-		VulkanImage* image;
-		VkSampler texture_sampler;
-		VkFilter use_filter;
-		VkSamplerAddressMode use_address_mode;
-	};
-
 	struct VulkanDescriptorLayoutSettings
 	{
 		uint32_t binding;

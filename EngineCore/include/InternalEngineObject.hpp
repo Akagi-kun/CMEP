@@ -17,12 +17,7 @@ namespace Engine
 	public:
 		InternalEngineObject() = delete;
 		InternalEngineObject(Engine* with_engine);
-		/*
-				void UpdateHeldLogger(std::shared_ptr<Logging::Logger>& new_logger)
-				{
-					this->logger = new_logger;
-				}
-		 */
+
 		// Const qualify this?
 		Engine* GetOwnerEngine()
 		{

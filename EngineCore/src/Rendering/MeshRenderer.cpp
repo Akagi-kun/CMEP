@@ -1,6 +1,7 @@
 #include "Rendering/MeshRenderer.hpp"
 
 #include "Assets/Texture.hpp"
+#include "Rendering/Vulkan/VulkanImage.hpp"
 #include "Rendering/Vulkan/VulkanUtilities.hpp"
 
 #include "Logging/Logging.hpp"
@@ -195,7 +196,7 @@ namespace Engine::Rendering
 						{
 							VkDescriptorImageInfo diffuse_image_buffer_info{};
 							diffuse_image_buffer_info.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-							diffuse_image_buffer_info.imageView	  = current_diffuse_texture_image->image->image_view;
+							diffuse_image_buffer_info.imageView	  = current_diffuse_texture_image->image_view;
 							diffuse_image_buffer_info.sampler	  = current_diffuse_texture_image->texture_sampler;
 							diffuse_image_buffer_infos[diffuse_texture_index] = diffuse_image_buffer_info;
 						}

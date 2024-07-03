@@ -1,12 +1,12 @@
 #pragma once
 
 #include "Rendering/Transform.hpp"
+#include "Rendering/Vulkan/ImportVulkan.hpp"
 #include "Rendering/Vulkan/VulkanDeviceManager.hpp"
+#include "Rendering/Vulkan/VulkanStructDefs.hpp"
+#include "Rendering/Vulkan/VulkanTextureImage.hpp"
 
-#include "ImportVulkan.hpp"
 #include "InternalEngineObject.hpp"
-#include "VulkanDeviceManager.hpp"
-#include "VulkanStructDefs.hpp"
 
 #include <cstdint>
 #include <functional>
@@ -20,6 +20,8 @@ namespace Engine
 
 namespace Engine::Rendering
 {
+	class VulkanImage;
+
 	enum class VulkanTopologySelection : uint8_t
 	{
 		VULKAN_RENDERING_ENGINE_TOPOLOGY_TRIANGLE_LIST,
@@ -123,9 +125,9 @@ namespace Engine::Rendering
 		// Cleanup functions
 		void Cleanup();
 		void CleanupVulkanBuffer(VulkanBuffer* buffer);
-		void CleanupVulkanTextureImage(VulkanTextureImage* image);
+		// void CleanupVulkanTextureImage(VulkanTextureImage* image);
 		void CleanupVulkanPipeline(VulkanPipeline* pipeline);
-		void CleanupVulkanImage(VulkanImage* image);
+		// void CleanupVulkanImage(VulkanImage* image);
 
 		// Init
 		void Init(unsigned int xsize, unsigned int ysize, std::string title);
@@ -148,7 +150,6 @@ namespace Engine::Rendering
 
 		// Image functions
 		void CopyVulkanBufferToImage(VkBuffer buffer, VkImage image, uint32_t width, uint32_t height);
-		void AppendVulkanSamplerToVulkanTextureImage(VulkanTextureImage* teximage);
 
 		// Command buffer functions
 		VkCommandBuffer BeginSingleTimeCommandBuffer();

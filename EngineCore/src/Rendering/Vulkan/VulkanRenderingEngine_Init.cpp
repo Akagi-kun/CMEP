@@ -1,10 +1,10 @@
+#include "Rendering/Vulkan/VulkanImage.hpp"
 #include "Rendering/Vulkan/VulkanRenderingEngine.hpp"
 #include "Rendering/Vulkan/VulkanStructDefs.hpp"
 #include "Rendering/Vulkan/VulkanUtilities.hpp"
 
 #include "Logging/Logging.hpp"
 
-#include "Engine.hpp"
 #include "vulkan/vulkan_core.h"
 
 // Prefixes for logging messages
@@ -156,8 +156,10 @@ namespace Engine::Rendering
 
 		// Clean up old swap chain
 		this->CleanupVulkanSwapChain();
-		this->CleanupVulkanImage(this->vk_depth_buffer);
-		this->CleanupVulkanImage(this->multisampled_color_image);
+		delete this->multisampled_color_image;
+		delete this->vk_depth_buffer;
+		// this->CleanupVulkanImage(this->vk_depth_buffer);
+		// this->CleanupVulkanImage(this->multisampled_color_image);
 
 		// Create a new swap chain
 		this->CreateVulkanSwapChain();
@@ -188,15 +190,27 @@ namespace Engine::Rendering
 	{
 		this->vk_swap_chain_image_views.resize(this->vk_swap_chain_images.size());
 
-		if (const auto& vulkan_image_factory = this->owner_engine->GetVulkanImageFactory().lock())
+		for (size_t i = 0; i < this->vk_swap_chain_images.size(); i++)
 		{
-			for (size_t i = 0; i < this->vk_swap_chain_images.size(); i++)
+			VkImageViewCreateInfo view_info{};
+			view_info.sType							  = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
+			view_info.image							  = this->vk_swap_chain_images[i];
+			view_info.viewType						  = VK_IMAGE_VIEW_TYPE_2D;
+			view_info.format						  = VK_FORMAT_B8G8R8A8_UNORM;
+			view_info.subresourceRange.aspectMask	  = VK_IMAGE_ASPECT_COLOR_BIT;
+			view_info.subresourceRange.baseMipLevel	  = 0;
+			view_info.subresourceRange.levelCount	  = 1;
+			view_info.subresourceRange.baseArrayLayer = 0;
+			view_info.subresourceRange.layerCount	  = 1;
+
+			if (vkCreateImageView(
+					this->device_manager->GetLogicalDevice(),
+					&view_info,
+					nullptr,
+					&this->vk_swap_chain_image_views[i]
+				) != VK_SUCCESS)
 			{
-				this->vk_swap_chain_image_views[i] = vulkan_image_factory->CreateImageView(
-					this->vk_swap_chain_images[i],
-					VK_FORMAT_B8G8R8A8_UNORM,
-					VK_IMAGE_ASPECT_COLOR_BIT
-				);
+				throw std::runtime_error("failed to create texture image view!");
 			}
 		}
 	}
@@ -385,10 +399,6 @@ namespace Engine::Rendering
 
 	void VulkanRenderingEngine::CreateVulkanSyncObjects()
 	{
-		// this->image_available_semaphores.resize(this->max_frames_in_flight);
-		// this->render_finished_semaphores.resize(this->max_frames_in_flight);
-		// this->in_flight_fences.resize(this->max_frames_in_flight);
-
 		VkSemaphoreCreateInfo semaphore_info{};
 		semaphore_info.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
 
@@ -398,7 +408,7 @@ namespace Engine::Rendering
 
 		VkDevice logical_device = this->device_manager->GetLogicalDevice();
 
-		for (size_t i = 0; i < this->max_frames_in_flight; i++)
+		for (size_t i = 0; i < VulkanRenderingEngine::max_frames_in_flight; i++)
 		{
 			if (vkCreateSemaphore(logical_device, &semaphore_info, nullptr, &(this->image_available_semaphores[i])) !=
 					VK_SUCCESS ||
@@ -417,48 +427,36 @@ namespace Engine::Rendering
 	{
 		VkFormat depth_format = this->FindVulkanSupportedDepthFormat();
 
-		if (const auto& vulkan_image_factory = this->owner_engine->GetVulkanImageFactory().lock())
-		{
-			this->vk_depth_buffer = vulkan_image_factory->CreateImage(
-				this->vk_swap_chain_extent.width,
-				this->vk_swap_chain_extent.height,
-				this->device_manager->GetMSAASampleCount(),
-				depth_format,
-				VK_IMAGE_TILING_OPTIMAL,
-				VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT,
-				VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT
-			);
+		this->vk_depth_buffer = new VulkanImage(
+			this->device_manager,
+			this->vma_allocator,
+			{this->vk_swap_chain_extent.width, this->vk_swap_chain_extent.height},
+			this->device_manager->GetMSAASampleCount(),
+			depth_format,
+			VK_IMAGE_TILING_OPTIMAL,
+			VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT,
+			VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT
+		);
 
-			this->vk_depth_buffer->image_view = vulkan_image_factory->CreateImageView(
-				this->vk_depth_buffer->image,
-				depth_format,
-				VK_IMAGE_ASPECT_DEPTH_BIT
-			);
-		}
+		this->vk_depth_buffer->AddImageView(VK_IMAGE_ASPECT_DEPTH_BIT);
 	}
 
 	void VulkanRenderingEngine::CreateMultisampledColorResources()
 	{
 		VkFormat color_format = this->vk_swap_chain_image_format;
 
-		if (const auto& vulkan_image_factory = this->owner_engine->GetVulkanImageFactory().lock())
-		{
-			this->multisampled_color_image = vulkan_image_factory->CreateImage(
-				this->vk_swap_chain_extent.width,
-				this->vk_swap_chain_extent.height,
-				this->device_manager->GetMSAASampleCount(),
-				color_format,
-				VK_IMAGE_TILING_OPTIMAL,
-				VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT,
-				VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT
-			);
+		this->multisampled_color_image = new VulkanImage(
+			this->device_manager,
+			this->vma_allocator,
+			{this->vk_swap_chain_extent.width, this->vk_swap_chain_extent.height},
+			this->device_manager->GetMSAASampleCount(),
+			color_format,
+			VK_IMAGE_TILING_OPTIMAL,
+			VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT,
+			VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT
+		);
 
-			this->multisampled_color_image->image_view = vulkan_image_factory->CreateImageView(
-				this->multisampled_color_image->image,
-				this->multisampled_color_image->image_format,
-				VK_IMAGE_ASPECT_COLOR_BIT
-			);
-		}
+		this->multisampled_color_image->AddImageView(VK_IMAGE_ASPECT_COLOR_BIT);
 	}
 
 	void VulkanRenderingEngine::CreateVulkanMemoryAllocator()

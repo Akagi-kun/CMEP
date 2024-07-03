@@ -1,6 +1,5 @@
 #pragma once
 
-#include "Rendering/Vulkan/VulkanImageFactory.hpp"
 #include "Rendering/Vulkan/VulkanRenderingEngine.hpp"
 
 #include "Logging/Logging.hpp"
@@ -70,7 +69,6 @@ namespace Engine
 		std::shared_ptr<AssetManager> asset_manager;
 		Scripting::LuaScriptExecutor* script_executor	   = nullptr;
 		Rendering::VulkanRenderingEngine* rendering_engine = nullptr;
-		std::shared_ptr<Rendering::Factories::VulkanImageFactory> vulkan_image_factory;
 
 		// Event handler storage
 		// std::multimap<EventHandling::EventType, std::function<int(EventHandling::Event&)>> event_handlers;
@@ -137,10 +135,6 @@ namespace Engine
 		[[nodiscard]] std::weak_ptr<SceneManager> GetSceneManager() const noexcept
 		{
 			return std::weak_ptr<SceneManager>(this->scene_manager);
-		}
-		[[nodiscard]] std::weak_ptr<Rendering::Factories::VulkanImageFactory> GetVulkanImageFactory() noexcept
-		{
-			return this->vulkan_image_factory;
 		}
 	};
 } // namespace Engine

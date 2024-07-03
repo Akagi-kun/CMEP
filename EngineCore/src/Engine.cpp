@@ -13,7 +13,6 @@
 #include "Logging/Logging.hpp"
 
 #include "GLFW/glfw3.h"
-// #include "IModule.hpp"
 #include "Object.hpp"
 #include "buildinfo.hpp"
 #include "nlohmann/json.hpp"
@@ -130,16 +129,16 @@ namespace Engine
 
 	void Engine::OnWindowFocusCallback(GLFWwindow* window, int focused)
 	{
-		auto* engine = static_cast<Rendering::VulkanRenderingEngine*>(glfwGetWindowUserPointer(window))
-						   ->GetOwnerEngine();
+		auto* engine =
+			static_cast<Rendering::VulkanRenderingEngine*>(glfwGetWindowUserPointer(window))->GetOwnerEngine();
 
 		engine->state_is_window_in_focus = (focused != 0);
 	}
 
 	void Engine::CursorPositionCallback(GLFWwindow* window, double xpos, double ypos)
 	{
-		auto* engine = static_cast<Rendering::VulkanRenderingEngine*>(glfwGetWindowUserPointer(window))
-						   ->GetOwnerEngine();
+		auto* engine =
+			static_cast<Rendering::VulkanRenderingEngine*>(glfwGetWindowUserPointer(window))->GetOwnerEngine();
 
 		if (engine->state_is_window_in_focus)
 		{
@@ -157,8 +156,8 @@ namespace Engine
 	{
 		bool b_entered = (entered != 0);
 
-		auto* engine = static_cast<Rendering::VulkanRenderingEngine*>(glfwGetWindowUserPointer(window))
-						   ->GetOwnerEngine();
+		auto* engine =
+			static_cast<Rendering::VulkanRenderingEngine*>(glfwGetWindowUserPointer(window))->GetOwnerEngine();
 
 		if (engine->state_is_window_in_focus)
 		{
@@ -414,12 +413,6 @@ namespace Engine
 		// Initialize rendering engine
 		this->rendering_engine
 			->Init(this->config->window.size_x, this->config->window.size_y, this->config->window.title);
-
-		this->vulkan_image_factory = std::make_shared<Rendering::Factories::VulkanImageFactory>(
-			this,
-			this->rendering_engine->GetVMAAllocator(),
-			this->rendering_engine
-		);
 
 		// Prepare rendering engine to run (framebuffers etc.)
 		this->rendering_engine->PrepRun();

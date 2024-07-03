@@ -24,7 +24,6 @@ namespace Engine::Rendering
 
 		VulkanPipelineSettings pipeline_settings  = renderer->GetVulkanDefaultPipelineSettings();
 		pipeline_settings.input_assembly.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
-		// pipeline_settings.rasterizer.cullMode = VK_CULL_MODE_BACK_BIT;
 
 		pipeline_settings.shader = {"game/shaders/vulkan/sprite_vert.spv", "game/shaders/vulkan/sprite_frag.spv"};
 
@@ -139,7 +138,7 @@ namespace Engine::Rendering
 
 				VkDescriptorImageInfo image_info{};
 				image_info.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-				image_info.imageView   = texture_image->image->image_view;
+				image_info.imageView   = texture_image->image_view;
 				image_info.sampler	   = texture_image->texture_sampler;
 
 				std::array<VkWriteDescriptorSet, 2> descriptor_writes{};

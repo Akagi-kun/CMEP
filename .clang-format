@@ -28,7 +28,7 @@ BraceWrapping:
   AfterCaseLabel: true
   AfterControlStatement: Always
 BreakBeforeBraces: Custom
-PenaltyBreakAssignment: 200
+PenaltyBreakAssignment: 100
 PenaltyBreakComment: 2000000
 # Indent
 IndentCaseLabels: true

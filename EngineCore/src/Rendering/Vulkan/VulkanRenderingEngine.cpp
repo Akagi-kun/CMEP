@@ -1,5 +1,3 @@
-#include "vulkan/vulkan_core.h"
-
 #include <algorithm>
 #include <cstdint>
 
@@ -11,7 +9,6 @@
 		printf("\n");                                                                                                  \
 	} while (false)
  */
-#define VMA_IMPLEMENTATION
 #include "Rendering/Vulkan/ImportVulkan.hpp"
 #include "Rendering/Vulkan/VulkanDeviceManager.hpp"
 #include "Rendering/Vulkan/VulkanRenderingEngine.hpp"
@@ -123,16 +120,10 @@ namespace Engine::Rendering
 
 		VkExtent2D actual_extent = {static_cast<uint32_t>(width), static_cast<uint32_t>(height)};
 
-		actual_extent.width = std::clamp(
-			actual_extent.width,
-			capabilities.minImageExtent.width,
-			capabilities.maxImageExtent.width
-		);
-		actual_extent.height = std::clamp(
-			actual_extent.height,
-			capabilities.minImageExtent.height,
-			capabilities.maxImageExtent.height
-		);
+		actual_extent.width =
+			std::clamp(actual_extent.width, capabilities.minImageExtent.width, capabilities.maxImageExtent.width);
+		actual_extent.height =
+			std::clamp(actual_extent.height, capabilities.minImageExtent.height, capabilities.maxImageExtent.height);
 
 		return actual_extent;
 	}
@@ -211,8 +202,10 @@ namespace Engine::Rendering
 
 		this->CleanupVulkanSwapChain();
 
-		this->CleanupVulkanImage(this->multisampled_color_image);
-		this->CleanupVulkanImage(this->vk_depth_buffer);
+		delete this->multisampled_color_image;
+		delete this->vk_depth_buffer;
+		// this->CleanupVulkanImage(this->multisampled_color_image);
+		// this->CleanupVulkanImage(this->vk_depth_buffer);
 
 		for (size_t i = 0; i < VulkanRenderingEngine::max_frames_in_flight; i++)
 		{
@@ -1025,68 +1018,4 @@ namespace Engine::Rendering
 
 		this->EndSingleTimeCommandBuffer(command_buffer);
 	}
-
-	void VulkanRenderingEngine::AppendVulkanSamplerToVulkanTextureImage(VulkanTextureImage* teximage)
-	{
-		VkSamplerCreateInfo sampler_info{};
-		sampler_info.sType	   = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
-		sampler_info.magFilter = teximage->use_filter;
-		sampler_info.minFilter = teximage->use_filter; // VK_FILTER_LINEAR;
-
-		sampler_info.addressModeU = teximage->use_address_mode; // VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
-		sampler_info.addressModeV = teximage->use_address_mode;
-		sampler_info.addressModeW = teximage->use_address_mode;
-
-		VkPhysicalDeviceProperties properties{};
-		vkGetPhysicalDeviceProperties(this->device_manager->GetPhysicalDevice(), &properties);
-
-		sampler_info.anisotropyEnable = VK_TRUE;
-		sampler_info.maxAnisotropy	  = properties.limits.maxSamplerAnisotropy;
-
-		sampler_info.borderColor = VK_BORDER_COLOR_INT_OPAQUE_BLACK;
-
-		sampler_info.unnormalizedCoordinates = VK_FALSE;
-
-		sampler_info.compareEnable = VK_FALSE;
-		sampler_info.compareOp	   = VK_COMPARE_OP_ALWAYS;
-
-		sampler_info.mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR;
-		sampler_info.mipLodBias = 0.0f;
-		sampler_info.minLod		= 0.0f;
-		sampler_info.maxLod		= 0.0f;
-
-		if (vkCreateSampler(
-				this->device_manager->GetLogicalDevice(),
-				&sampler_info,
-				nullptr,
-				&(teximage->texture_sampler)
-			) != VK_SUCCESS)
-		{
-			this->logger->SimpleLog(Logging::LogLevel::Error, LOGPFX_CURRENT "Failed to create texture sampler");
-			throw std::runtime_error("failed to create texture sampler!");
-		}
-	}
-
-	void VulkanRenderingEngine::CleanupVulkanImage(VulkanImage* image)
-	{
-		vkDestroyImageView(this->device_manager->GetLogicalDevice(), image->image_view, nullptr);
-		vkDestroyImage(this->device_manager->GetLogicalDevice(), image->image, nullptr);
-		vmaFreeMemory(this->vma_allocator, image->allocation);
-
-		// Also delete as we use pointers
-		delete image;
-	}
-
-	void VulkanRenderingEngine::CleanupVulkanTextureImage(VulkanTextureImage* image)
-	{
-		this->logger->SimpleLog(Logging::LogLevel::Debug3, LOGPFX_CURRENT "Cleaning up Vulkan texture image");
-
-		vkDestroySampler(this->device_manager->GetLogicalDevice(), image->texture_sampler, nullptr);
-
-		this->CleanupVulkanImage(image->image);
-
-		// Also delete as we use pointers
-		delete image;
-	}
-
 } // namespace Engine::Rendering

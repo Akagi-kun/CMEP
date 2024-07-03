@@ -5,9 +5,6 @@
 #pragma warning(push, 2)
 #include "lodepng.h"
 #pragma warning(pop)
-
-#include "Rendering/Vulkan/VulkanImageFactory.hpp"
-
 #include "Factories/TextureFactory.hpp"
 
 #include "Engine.hpp"
@@ -159,11 +156,15 @@ namespace Engine::Factories
 
 			memcpy(used_staging_buffer->mapped_data, raw_data.data(), static_cast<size_t>(memory_size));
 
-			if (const auto& vulkan_image_factory = this->owner_engine->GetVulkanImageFactory().lock())
+			auto* rendering_engine = this->owner_engine->GetRenderingEngine();
+
+			if (const auto& locked_device_manager = rendering_engine->GetDeviceManager().lock())
 			{
-				texture_data->texture_image = vulkan_image_factory->CreateTextureImage(
-					xsize,
-					ysize,
+				texture_data->texture_image = new Rendering::VulkanTextureImage(
+					locked_device_manager,
+					rendering_engine->GetVMAAllocator(),
+					{xsize, ysize},
+					VK_SAMPLE_COUNT_1_BIT,
 					VK_FORMAT_R8G8B8A8_UNORM,
 					VK_IMAGE_TILING_OPTIMAL,
 					VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
@@ -172,26 +173,38 @@ namespace Engine::Factories
 					sampler_address_mode // sampler address mode
 				);
 
-				// Transfer image layout to one usable by the shader
-				// TODO: Create utility function for image transfers
-				vulkan_image_factory->TransitionImageLayout(
-					texture_data->texture_image->image->image,
-					VK_FORMAT_R8G8B8A8_UNORM,
-					VK_IMAGE_LAYOUT_UNDEFINED,
-					VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL
-				);
+				// Transfer image layout to one that is compatible with transfers
+				{
+					auto* tmp_command_buffer = rendering_engine->BeginSingleTimeCommandBuffer();
+					texture_data->texture_image->TransitionImageLayout(
+						tmp_command_buffer,
+						// texture_data->texture_image->image,
+						VK_FORMAT_R8G8B8A8_UNORM,
+						VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL
+					);
+					rendering_engine->EndSingleTimeCommandBuffer(tmp_command_buffer);
+				}
+
 				renderer->CopyVulkanBufferToImage(
 					used_staging_buffer->buffer,
-					texture_data->texture_image->image->image,
+					texture_data->texture_image->image,
 					static_cast<uint32_t>(xsize),
 					static_cast<uint32_t>(ysize)
 				);
-				vulkan_image_factory->TransitionImageLayout(
-					texture_data->texture_image->image->image,
-					VK_FORMAT_R8G8B8A8_SRGB,
-					VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
-					VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL
-				);
+
+				// Transfer image layout to one that is compatible with rendering
+				{
+					auto* tmp_command_buffer = rendering_engine->BeginSingleTimeCommandBuffer();
+					texture_data->texture_image->TransitionImageLayout(
+						tmp_command_buffer,
+						// texture_data->texture_image->image,
+						VK_FORMAT_R8G8B8A8_UNORM,
+						VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL
+					);
+					rendering_engine->EndSingleTimeCommandBuffer(tmp_command_buffer);
+				}
+
+				// VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL
 
 				// Unmap staging memory and cleanup buffer if we created it here
 				vkUnmapMemory(
@@ -203,8 +216,9 @@ namespace Engine::Factories
 					renderer->CleanupVulkanBuffer(used_staging_buffer);
 				}
 
-				vulkan_image_factory->AppendImageViewToTextureImage(texture_data->texture_image);
-				renderer->AppendVulkanSamplerToVulkanTextureImage(texture_data->texture_image);
+				texture_data->texture_image->AddImageView();
+
+				// renderer->AppendVulkanSamplerToVulkanTextureImage(texture_data->texture_image);
 			}
 			else
 			{
