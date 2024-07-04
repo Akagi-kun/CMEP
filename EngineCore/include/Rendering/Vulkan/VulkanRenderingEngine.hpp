@@ -8,6 +8,7 @@
 #include "InternalEngineObject.hpp"
 #include "VulkanCommandBuffer.hpp"
 #include "VulkanCommandPool.hpp"
+#include "VulkanSwapchain.hpp"
 
 #include <cstdint>
 #include <functional>
@@ -43,27 +44,20 @@ namespace Engine::Rendering
 		uint32_t current_frame	 = 0;
 		bool framebuffer_resized = false;
 
-		// Swap chains
-		VkSwapchainKHR vk_swap_chain = VK_NULL_HANDLE;
-		std::vector<VkImage> vk_swap_chain_images;
-		VkFormat vk_swap_chain_image_format{};
+		// Swap chain data
+		VulkanSwapchain* swapchain = nullptr;
 		VkExtent2D vk_swap_chain_extent{};
-		std::vector<VkImageView> vk_swap_chain_image_views;
-
-		// Multisampling
-		VulkanImage* multisampled_color_image{};
 
 		// Framebuffers
 		std::vector<VkFramebuffer> vk_swap_chain_framebuffers;
+		// Multisampling
+		VulkanImage* multisampled_color_image{};
 
 		// Command pools and buffers
-		VulkanCommandPool* vk_command_pool;
-		// VkCommandPool vk_command_pool = VK_NULL_HANDLE;
 		std::array<VulkanCommandBuffer*, max_frames_in_flight> vk_command_buffers;
 		// std::array<VkCommandBuffer, max_frames_in_flight> vk_command_buffers;
 
 		// Synchronisation
-		// std::vector<VkSemaphore> image_available_semaphores;
 		std::array<VkSemaphore, max_frames_in_flight> image_available_semaphores;
 		std::array<VkSemaphore, max_frames_in_flight> present_ready_semaphores; // render_finished_semaphores
 		std::array<VkFence, max_frames_in_flight> acquire_ready_fences;			// maybe useless?
@@ -96,7 +90,6 @@ namespace Engine::Rendering
 
 		// Swap chain functions
 		VkExtent2D ChooseVulkanSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities);
-		void CreateVulkanSwapChainViews();
 		void RecreateVulkanSwapChain();
 		void CleanupVulkanSwapChain();
 
@@ -111,8 +104,6 @@ namespace Engine::Rendering
 		void CreateVulkanDefaultGraphicsPipeline();
 		void CreateVulkanRenderPass();
 		void CreateVulkanFramebuffers();
-		// void CreateVulkanCommandPools();
-		// void CreateVulkanCommandBuffers();
 		void CreateVulkanSyncObjects();
 		void CreateVulkanDepthResources();
 		void CreateMultisampledColorResources();
@@ -128,9 +119,7 @@ namespace Engine::Rendering
 		// Cleanup functions
 		void Cleanup();
 		void CleanupVulkanBuffer(VulkanBuffer* buffer);
-		// void CleanupVulkanTextureImage(VulkanTextureImage* image);
 		void CleanupVulkanPipeline(VulkanPipeline* pipeline);
-		// void CleanupVulkanImage(VulkanImage* image);
 
 		// Init
 		void Init(unsigned int xsize, unsigned int ysize, std::string title);
@@ -153,10 +142,6 @@ namespace Engine::Rendering
 
 		// Image functions
 		void CopyVulkanBufferToImage(VkBuffer buffer, VkImage image, uint32_t width, uint32_t height);
-
-		// Command buffer functions
-		VulkanCommandBuffer* BeginSingleTimeCommandBuffer();
-		void EndSingleTimeCommandBuffer(VulkanCommandBuffer* commandBuffer);
 
 		// Pipeline functions
 		VulkanPipelineSettings GetVulkanDefaultPipelineSettings();

@@ -36,15 +36,17 @@ set(SRC_FILES
 	src/Rendering/Vulkan/VulkanDeviceManager.cpp
 	src/Rendering/Vulkan/VulkanRenderingEngine.cpp
 	src/Rendering/Vulkan/VulkanRenderingEngine_Init.cpp
+	
 	src/Rendering/Vulkan/VulkanImage.cpp
 	src/Rendering/Vulkan/VulkanTextureImage.cpp
+	src/Rendering/Vulkan/VulkanSwapchain.cpp
 	src/Rendering/Vulkan/VulkanCommandPool.cpp
 	src/Rendering/Vulkan/VulkanCommandBuffer.cpp
 	
 	src/Scripting/LuaScript.cpp
 	src/Scripting/LuaScriptExecutor.cpp
-	src/Scripting/Mappings.cpp
 	
+	src/Scripting/Mappings.cpp
 	src/Scripting/API/LuaFactories.cpp
 	src/Scripting/API/Engine_API.cpp
 	src/Scripting/API/Object_API.cpp

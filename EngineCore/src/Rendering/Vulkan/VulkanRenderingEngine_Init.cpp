@@ -1,7 +1,7 @@
 #include "Rendering/Vulkan/VulkanImage.hpp"
 #include "Rendering/Vulkan/VulkanRenderingEngine.hpp"
 #include "Rendering/Vulkan/VulkanStructDefs.hpp"
-#include "Rendering/Vulkan/VulkanUtilities.hpp"
+#include "Rendering/Vulkan/VulkanSwapchain.hpp"
 
 #include "Logging/Logging.hpp"
 
@@ -23,29 +23,7 @@ namespace Engine::Rendering
 		// Get device and surface Swap Chain capabilities
 		SwapChainSupportDetails swap_chain_support = this->device_manager->QuerySwapChainSupport();
 
-		// Get the info out of the capabilities
-		VkSurfaceFormatKHR surface_format = VulkanUtils::ChooseVulkanSwapSurfaceFormat(swap_chain_support.formats);
-		VkPresentModeKHR present_mode	  = VulkanUtils::ChooseVulkanSwapPresentMode(swap_chain_support.present_modes);
-		VkExtent2D extent				  = this->ChooseVulkanSwapExtent(swap_chain_support.capabilities);
-
-		if (present_mode == VK_PRESENT_MODE_MAILBOX_KHR)
-		{
-			this->logger->SimpleLog(
-				Logging::LogLevel::Debug1,
-				LOGPFX_CURRENT "Present mode is VK_PRESENT_MODE_MAILBOX_KHR"
-			);
-		}
-		else if (present_mode == VK_PRESENT_MODE_FIFO_KHR)
-		{
-			this->logger->SimpleLog(
-				Logging::LogLevel::Debug1,
-				LOGPFX_CURRENT "Present mode is VK_PRESENT_MODE_FIFO_KHR"
-			);
-		}
-		else
-		{
-			this->logger->SimpleLog(Logging::LogLevel::Debug1, LOGPFX_CURRENT "Present mode is other");
-		}
+		VkExtent2D extent = this->ChooseVulkanSwapExtent(swap_chain_support.capabilities);
 
 		// Request one image more than is the required minimum
 		// uint32_t swapchain_image_count = swap_chain_support.capabilities.minImageCount + 1;
@@ -66,72 +44,10 @@ namespace Engine::Rendering
 			);
 		}
 
-		// Save this value to be used later
-		// this->max_frames_in_flight = swapchain_image_count;
+		this->swapchain = new VulkanSwapchain(this->device_manager.get(), extent, swapchain_image_count);
 
-		VkSwapchainCreateInfoKHR create_info{};
-		create_info.sType	= VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
-		create_info.surface = this->device_manager->GetSurface();
-
-		this->logger->SimpleLog(
-			Logging::LogLevel::Debug1,
-			LOGPFX_CURRENT "Creating Vulkan swap chain with %u images (max supported: %u)",
-			swapchain_image_count,
-			swap_chain_support.capabilities.maxImageCount
-		);
-
-		create_info.minImageCount	 = swapchain_image_count;
-		create_info.imageFormat		 = VK_FORMAT_B8G8R8A8_UNORM;
-		create_info.imageColorSpace	 = surface_format.colorSpace;
-		create_info.imageExtent		 = extent;
-		create_info.imageArrayLayers = 1;
-		create_info.imageUsage		 = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
-
-		QueueFamilyIndices queue_indices = this->device_manager->GetQueueFamilies();
-
-		uint32_t queue_family_indices[] = {queue_indices.graphics_family.value(), queue_indices.present_family.value()};
-
-		if (queue_indices.graphics_family != queue_indices.present_family)
-		{
-			create_info.imageSharingMode	  = VK_SHARING_MODE_CONCURRENT;
-			create_info.queueFamilyIndexCount = 2;
-			create_info.pQueueFamilyIndices	  = queue_family_indices;
-
-			this->logger->SimpleLog(Logging::LogLevel::Debug1, LOGPFX_CURRENT "Using concurrent sharing mode");
-		}
-		else
-		{
-			create_info.imageSharingMode = VK_SHARING_MODE_EXCLUSIVE;
-
-			this->logger->SimpleLog(Logging::LogLevel::Debug1, LOGPFX_CURRENT "Using exclusive sharing mode");
-		}
-
-		create_info.preTransform   = swap_chain_support.capabilities.currentTransform;
-		create_info.compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR;
-		create_info.presentMode	   = present_mode;
-		create_info.clipped		   = VK_TRUE;
-
-		create_info.oldSwapchain = VK_NULL_HANDLE;
-
-		VkDevice logical_device = this->device_manager->GetLogicalDevice();
-
-		if (vkCreateSwapchainKHR(logical_device, &create_info, nullptr, &(this->vk_swap_chain)) != VK_SUCCESS)
-		{
-			this->logger->SimpleLog(Logging::LogLevel::Error, LOGPFX_CURRENT "Vulkan swap chain creation failed");
-			throw std::runtime_error("failed to create swap chain!");
-		}
-
-		vkGetSwapchainImagesKHR(logical_device, this->vk_swap_chain, &swapchain_image_count, nullptr);
-		this->vk_swap_chain_images.resize(swapchain_image_count);
-		vkGetSwapchainImagesKHR(
-			logical_device,
-			this->vk_swap_chain,
-			&swapchain_image_count,
-			this->vk_swap_chain_images.data()
-		);
-
-		this->vk_swap_chain_image_format = VK_FORMAT_B8G8R8A8_UNORM;
-		this->vk_swap_chain_extent		 = extent;
+		// this->vk_swap_chain_image_format = VK_FORMAT_B8G8R8A8_UNORM;
+		this->vk_swap_chain_extent = extent;
 
 		this->logger->SimpleLog(Logging::LogLevel::Debug3, LOGPFX_CURRENT "Vulkan swap chain created");
 	}
@@ -156,14 +72,16 @@ namespace Engine::Rendering
 
 		// Clean up old swap chain
 		this->CleanupVulkanSwapChain();
+
 		delete this->multisampled_color_image;
 		delete this->vk_depth_buffer;
+
 		// this->CleanupVulkanImage(this->vk_depth_buffer);
 		// this->CleanupVulkanImage(this->multisampled_color_image);
 
 		// Create a new swap chain
 		this->CreateVulkanSwapChain();
-		this->CreateVulkanSwapChainViews();
+		// this->CreateVulkanSwapChainViews();
 		this->CreateVulkanDepthResources();
 		this->CreateMultisampledColorResources();
 		this->CreateVulkanFramebuffers();
@@ -178,41 +96,8 @@ namespace Engine::Rendering
 			vkDestroyFramebuffer(logical_device, framebuffer, nullptr);
 		}
 
-		for (auto* image_view : this->vk_swap_chain_image_views)
-		{
-			vkDestroyImageView(logical_device, image_view, nullptr);
-		}
-
-		vkDestroySwapchainKHR(logical_device, this->vk_swap_chain, nullptr);
-	}
-
-	void VulkanRenderingEngine::CreateVulkanSwapChainViews()
-	{
-		this->vk_swap_chain_image_views.resize(this->vk_swap_chain_images.size());
-
-		for (size_t i = 0; i < this->vk_swap_chain_images.size(); i++)
-		{
-			VkImageViewCreateInfo view_info{};
-			view_info.sType							  = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
-			view_info.image							  = this->vk_swap_chain_images[i];
-			view_info.viewType						  = VK_IMAGE_VIEW_TYPE_2D;
-			view_info.format						  = VK_FORMAT_B8G8R8A8_UNORM;
-			view_info.subresourceRange.aspectMask	  = VK_IMAGE_ASPECT_COLOR_BIT;
-			view_info.subresourceRange.baseMipLevel	  = 0;
-			view_info.subresourceRange.levelCount	  = 1;
-			view_info.subresourceRange.baseArrayLayer = 0;
-			view_info.subresourceRange.layerCount	  = 1;
-
-			if (vkCreateImageView(
-					this->device_manager->GetLogicalDevice(),
-					&view_info,
-					nullptr,
-					&this->vk_swap_chain_image_views[i]
-				) != VK_SUCCESS)
-			{
-				throw std::runtime_error("failed to create texture image view!");
-			}
-		}
+		delete this->swapchain;
+		this->swapchain = nullptr;
 	}
 
 	VkShaderModule VulkanRenderingEngine::CreateVulkanShaderModule(const std::vector<char>& code)
@@ -251,7 +136,7 @@ namespace Engine::Rendering
 	void VulkanRenderingEngine::CreateVulkanRenderPass()
 	{
 		VkAttachmentDescription color_attachment{};
-		color_attachment.format			= this->vk_swap_chain_image_format;
+		color_attachment.format			= this->swapchain->GetImageFormat();
 		color_attachment.samples		= this->device_manager->GetMSAASampleCount();
 		color_attachment.loadOp			= VK_ATTACHMENT_LOAD_OP_CLEAR;
 		color_attachment.storeOp		= VK_ATTACHMENT_STORE_OP_STORE;
@@ -271,7 +156,7 @@ namespace Engine::Rendering
 		depth_attachment.finalLayout	= VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
 
 		VkAttachmentDescription color_attachment_resolve{};
-		color_attachment_resolve.format			= this->vk_swap_chain_image_format;
+		color_attachment_resolve.format			= this->swapchain->GetImageFormat();
 		color_attachment_resolve.samples		= VK_SAMPLE_COUNT_1_BIT;
 		color_attachment_resolve.loadOp			= VK_ATTACHMENT_LOAD_OP_DONT_CARE;
 		color_attachment_resolve.storeOp		= VK_ATTACHMENT_STORE_OP_STORE;
@@ -332,15 +217,14 @@ namespace Engine::Rendering
 
 	void VulkanRenderingEngine::CreateVulkanFramebuffers()
 	{
-		this->vk_swap_chain_framebuffers.resize(this->vk_swap_chain_image_views.size());
+		auto& image_view_handles = this->swapchain->GetImageViewHandles();
 
-		for (size_t i = 0; i < vk_swap_chain_image_views.size(); i++)
+		this->vk_swap_chain_framebuffers.resize(image_view_handles.size());
+
+		for (size_t i = 0; i < image_view_handles.size(); i++)
 		{
-			std::array<VkImageView, 3> attachments = {
-				this->multisampled_color_image->image_view,
-				this->vk_depth_buffer->image_view,
-				this->vk_swap_chain_image_views[i]
-			};
+			std::array<VkImageView, 3> attachments =
+				{this->multisampled_color_image->image_view, this->vk_depth_buffer->image_view, image_view_handles[i]};
 
 			VkFramebufferCreateInfo framebuffer_info{};
 			framebuffer_info.sType			 = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
@@ -408,7 +292,7 @@ namespace Engine::Rendering
 
 	void VulkanRenderingEngine::CreateMultisampledColorResources()
 	{
-		VkFormat color_format = this->vk_swap_chain_image_format;
+		VkFormat color_format = this->swapchain->GetImageFormat();
 
 		this->multisampled_color_image = new VulkanImage(
 			this->device_manager.get(),

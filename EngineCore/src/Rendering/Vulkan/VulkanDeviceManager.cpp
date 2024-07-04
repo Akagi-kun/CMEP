@@ -4,6 +4,7 @@
 
 #include "Logging/Logging.hpp"
 
+#include "InternalEngineObject.hpp"
 #include "vulkan/vulkan_core.h"
 
 #include <cstring>
@@ -18,6 +19,19 @@
 namespace Engine::Rendering
 {
 
+	VulkanDeviceManager::VulkanDeviceManager(Engine* with_engine, GLFWwindow* new_window)
+		: InternalEngineObject(with_engine)
+	{
+		this->window = new_window;
+
+		this->InitVulkanInstance();
+		this->CreateVulkanSurface();
+		this->InitVulkanDevice();
+		this->CreateVulkanLogicalDevice();
+
+		this->vk_command_pool = new VulkanCommandPool(this);
+	}
+
 #pragma region Debugging callbacks
 
 	VKAPI_ATTR static VkBool32 VKAPI_CALL VulkanDebugCallback(
@@ -27,6 +41,7 @@ namespace Engine::Rendering
 		void* pUserData
 	)
 	{
+		// Unused
 		(void)(messageType);
 
 		if (auto locked_logger = (static_cast<InternalEngineObject*>(pUserData))->GetLogger().lock())
@@ -80,18 +95,6 @@ namespace Engine::Rendering
 
 #pragma endregion
 
-	void VulkanDeviceManager::Init(GLFWwindow* new_window)
-	{
-		this->window = new_window;
-
-		this->InitVulkanInstance();
-		this->CreateVulkanSurface();
-		this->InitVulkanDevice();
-		this->CreateVulkanLogicalDevice();
-
-		this->vk_command_pool = new VulkanCommandPool(this);
-	}
-
 	void VulkanDeviceManager::Cleanup()
 	{
 		this->logger->SimpleLog(Logging::LogLevel::Info, LOGPFX_CURRENT "Cleaning up");
@@ -123,12 +126,6 @@ namespace Engine::Rendering
 		// Check validation layer support
 		if (this->enable_vk_validation_layers && !this->CheckVulkanValidationLayers())
 		{
-			// TODO: Remove?
-			this->logger->SimpleLog(
-				Logging::LogLevel::Error,
-				LOGPFX_CURRENT "Validation layer support requested but not allowed!"
-			);
-
 			throw std::runtime_error("Validation layers requested but unsupported!");
 		}
 
@@ -169,8 +166,6 @@ namespace Engine::Rendering
 		// Create an instance
 		if (vkCreateInstance(&create_info, nullptr, &(this->vk_instance)) != VK_SUCCESS)
 		{
-			// TODO: Remove?
-			this->logger->SimpleLog(Logging::LogLevel::Error, LOGPFX_CURRENT "Could not create Vulkan instance");
 			throw std::runtime_error("Could not create Vulkan instance");
 		}
 		this->logger->SimpleLog(Logging::LogLevel::Info, LOGPFX_CURRENT "Created a Vulkan instance");
@@ -197,10 +192,9 @@ namespace Engine::Rendering
 					&(this->vk_debug_messenger)
 				) != VK_SUCCESS)
 			{
-				// TODO: Remove?
-				this->logger->SimpleLog(Logging::LogLevel::Error, LOGPFX_CURRENT "Could not create a debug messenger");
 				throw std::runtime_error("Could not create debug messenger!");
 			}
+
 			this->logger->SimpleLog(Logging::LogLevel::Debug2, LOGPFX_CURRENT "Created debug messenger");
 		}
 	}
@@ -215,12 +209,6 @@ namespace Engine::Rendering
 		// Check if there are any Vulkan-supporting devices
 		if (device_count == 0)
 		{
-			// TODO: Remove?
-			this->logger->SimpleLog(
-				Logging::LogLevel::Error,
-				LOGPFX_CURRENT "Found no device supporting the Vulkan API"
-			);
-
 			throw std::runtime_error("Found no device supporting the Vulkan API");
 		}
 
@@ -246,11 +234,6 @@ namespace Engine::Rendering
 
 		if (this->vk_physical_device == VK_NULL_HANDLE)
 		{
-			// TODO: Remove?
-			this->logger->SimpleLog(
-				Logging::LogLevel::Error,
-				LOGPFX_CURRENT "No suitable physical device found, fatal error"
-			);
 			throw std::runtime_error("No physical device found!");
 		}
 
@@ -301,10 +284,9 @@ namespace Engine::Rendering
 	{
 		if (glfwCreateWindowSurface(this->vk_instance, this->window, nullptr, &this->vk_surface) != VK_SUCCESS)
 		{
-			// TODO: Remove?
-			this->logger->SimpleLog(Logging::LogLevel::Error, LOGPFX_CURRENT "Vulkan surface creation failed");
 			throw std::runtime_error("failed to create window surface!");
 		}
+
 		this->logger->SimpleLog(Logging::LogLevel::Debug3, LOGPFX_CURRENT "Created glfw window surface");
 	}
 
@@ -375,12 +357,6 @@ namespace Engine::Rendering
 		VkResult result = vkCreateDevice(this->vk_physical_device, &create_info, nullptr, &this->vk_logical_device);
 		if (result != VK_SUCCESS)
 		{
-			// TODO: Remove?
-			this->logger->SimpleLog(
-				Logging::LogLevel::Error,
-				LOGPFX_CURRENT "Vulkan logical device creation failed with %u code",
-				result
-			);
 			throw std::runtime_error("Vulkan: failed to create logical device!");
 		}
 

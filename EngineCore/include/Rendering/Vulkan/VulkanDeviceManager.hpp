@@ -3,13 +3,11 @@
 #include "InternalEngineObject.hpp"
 #include "VulkanStructDefs.hpp"
 
-#include <memory>
-
 namespace Engine::Rendering
 {
 	class VulkanCommandPool;
 
-	class VulkanDeviceManager final : public InternalEngineObject, std::enable_shared_from_this<VulkanDeviceManager>
+	class VulkanDeviceManager final : public InternalEngineObject
 	{
 	private:
 		// Defaults
@@ -73,9 +71,10 @@ namespace Engine::Rendering
 		void CreateVulkanSurface();
 
 	public:
-		using InternalEngineObject::InternalEngineObject;
+		// using InternalEngineObject::InternalEngineObject;
+		VulkanDeviceManager(Engine* with_engine, GLFWwindow* new_window);
 
-		void Init(GLFWwindow* new_window);
+		// void Init(GLFWwindow* new_window);
 
 		void Cleanup();
 
@@ -117,6 +116,11 @@ namespace Engine::Rendering
 		[[nodiscard]] const VkQueue& GetPresentQueue() const noexcept
 		{
 			return this->vk_present_queue;
+		}
+
+		[[nodiscard]] VulkanCommandPool* GetCommandPool() const noexcept
+		{
+			return this->vk_command_pool;
 		}
 
 		[[nodiscard]] SwapChainSupportDetails QuerySwapChainSupport()

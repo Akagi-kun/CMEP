@@ -10,6 +10,7 @@
 	} while (false)
  */
 #include "Rendering/Vulkan/ImportVulkan.hpp"
+#include "Rendering/Vulkan/VulkanCommandBuffer.hpp"
 #include "Rendering/Vulkan/VulkanCommandPool.hpp"
 #include "Rendering/Vulkan/VulkanDeviceManager.hpp"
 #include "Rendering/Vulkan/VulkanImage.hpp"
@@ -207,8 +208,6 @@ namespace Engine::Rendering
 
 		delete this->multisampled_color_image;
 		delete this->vk_depth_buffer;
-		// this->CleanupVulkanImage(this->multisampled_color_image);
-		// this->CleanupVulkanImage(this->vk_depth_buffer);
 
 		for (size_t i = 0; i < VulkanRenderingEngine::max_frames_in_flight; i++)
 		{
@@ -224,9 +223,6 @@ namespace Engine::Rendering
 		{
 			delete this->vk_command_buffers[i];
 		}
-
-		delete this->vk_command_pool;
-		// vkDestroyCommandPool(logical_device, this->vk_command_pool, nullptr);
 
 		this->logger->SimpleLog(Logging::LogLevel::Debug3, LOGPFX_CURRENT "Cleaning up default vulkan pipeline");
 		this->CleanupVulkanPipeline(this->graphics_pipeline_default);
@@ -287,11 +283,7 @@ namespace Engine::Rendering
 		this->logger
 			->SimpleLog(Logging::LogLevel::Debug1, LOGPFX_CURRENT "%u vulkan extensions supported", extension_count);
 
-		// Set up our vulkan rendering stack
-		this->device_manager = std::make_shared<VulkanDeviceManager>(this->owner_engine);
-		// this->device_manager->UpdateHeldLogger(this->logger);
-
-		this->device_manager->Init(this->window);
+		this->device_manager = std::make_shared<VulkanDeviceManager>(this->owner_engine, this->window);
 
 		this->CreateVulkanMemoryAllocator();
 	}
@@ -299,19 +291,16 @@ namespace Engine::Rendering
 	void VulkanRenderingEngine::PrepRun()
 	{
 		this->CreateVulkanSwapChain();
-		this->CreateVulkanSwapChainViews();
 		this->CreateVulkanRenderPass();
 		this->CreateVulkanDefaultGraphicsPipeline();
 
-		this->vk_command_pool = new VulkanCommandPool(this->device_manager.get());
-		// this->CreateVulkanCommandPools();
-
+		// Create command buffers
 		for (size_t i = 0; i < this->vk_command_buffers.size(); i++)
 		{
-			this->vk_command_buffers[i] = new VulkanCommandBuffer(this->device_manager.get(), this->vk_command_pool);
+			this->vk_command_buffers[i] =
+				new VulkanCommandBuffer(this->device_manager.get(), this->device_manager->GetCommandPool());
 		}
 
-		// this->CreateVulkanCommandBuffers();
 		this->CreateMultisampledColorResources();
 		this->CreateVulkanDepthResources();
 		this->CreateVulkanFramebuffers();
@@ -337,7 +326,7 @@ namespace Engine::Rendering
 		// the render target is an image in the swap chain
 		VkResult acquire_result = vkAcquireNextImageKHR(
 			logical_device,
-			this->vk_swap_chain,
+			this->swapchain->GetNativeHandle(),
 			UINT64_MAX,
 			this->image_available_semaphores[current_frame],
 			this->acquire_ready_fences[current_frame],
@@ -416,7 +405,7 @@ namespace Engine::Rendering
 		present_info.waitSemaphoreCount = 1;
 		present_info.pWaitSemaphores	= signal_semaphores;
 
-		VkSwapchainKHR swap_chains[] = {this->vk_swap_chain};
+		VkSwapchainKHR swap_chains[] = {this->swapchain->GetNativeHandle()};
 		present_info.swapchainCount	 = 1;
 		present_info.pSwapchains	 = swap_chains;
 		present_info.pImageIndices	 = &image_index;
@@ -454,7 +443,8 @@ namespace Engine::Rendering
 
 	VulkanCommandPool* VulkanRenderingEngine::GetCommandPool()
 	{
-		return this->vk_command_pool;
+		return this->device_manager->GetCommandPool();
+		// return this->vk_command_pool;
 	}
 
 	void VulkanRenderingEngine::SetRenderCallback(std::function<void(VkCommandBuffer, uint32_t, Engine*)> callback)
@@ -471,26 +461,6 @@ namespace Engine::Rendering
 	{
 		this->framebuffer_resized = true;
 		this->window_size		  = with_size;
-	}
-
-	VulkanCommandBuffer* VulkanRenderingEngine::BeginSingleTimeCommandBuffer()
-	{
-		auto* command_buffer = new VulkanCommandBuffer(this->device_manager.get(), this->vk_command_pool);
-
-		command_buffer->BeginCmdBuffer(VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT);
-
-		return command_buffer;
-	}
-
-	void VulkanRenderingEngine::EndSingleTimeCommandBuffer(VulkanCommandBuffer* commandBuffer)
-	{
-		commandBuffer->EndCmdBuffer();
-
-		commandBuffer->GraphicsQueueSubmit();
-
-		vkQueueWaitIdle(this->device_manager->GetGraphicsQueue());
-
-		delete commandBuffer;
 	}
 
 	// Pipelines
@@ -863,15 +833,15 @@ namespace Engine::Rendering
 
 	void VulkanRenderingEngine::BufferVulkanTransferCopy(VulkanBuffer* src, VulkanBuffer* dest, VkDeviceSize size)
 	{
-		VulkanCommandBuffer* command_buffer = this->BeginSingleTimeCommandBuffer();
+		VulkanCommandBuffer command_buffer(this->device_manager.get(), this->device_manager->GetCommandPool());
 
-		VkBufferCopy copy_region{};
-		copy_region.srcOffset = 0; // Optional
-		copy_region.dstOffset = 0; // Optional
-		copy_region.size	  = size;
-		vkCmdCopyBuffer(command_buffer->GetNativeHandle(), src->buffer, dest->buffer, 1, &copy_region);
-
-		this->EndSingleTimeCommandBuffer(command_buffer);
+		command_buffer.RecordCmds([&](VulkanCommandBuffer* with_buf) {
+			VkBufferCopy copy_region{};
+			copy_region.srcOffset = 0; // Optional
+			copy_region.dstOffset = 0; // Optional
+			copy_region.size	  = size;
+			vkCmdCopyBuffer(with_buf->GetNativeHandle(), src->buffer, dest->buffer, 1, &copy_region);
+		});
 	}
 
 	void VulkanRenderingEngine::CleanupVulkanBuffer(VulkanBuffer* buffer)
@@ -1006,7 +976,7 @@ namespace Engine::Rendering
 
 	void VulkanRenderingEngine::CopyVulkanBufferToImage(VkBuffer buffer, VkImage image, uint32_t width, uint32_t height)
 	{
-		VulkanCommandBuffer* command_buffer = this->BeginSingleTimeCommandBuffer();
+		VulkanCommandBuffer command_buffer(this->device_manager.get(), this->device_manager->GetCommandPool());
 
 		VkBufferImageCopy region{};
 		region.bufferOffset		 = 0;
@@ -1021,15 +991,17 @@ namespace Engine::Rendering
 		region.imageOffset = {0, 0, 0};
 		region.imageExtent = {width, height, 1};
 
-		vkCmdCopyBufferToImage(
-			command_buffer->GetNativeHandle(),
-			buffer,
-			image,
-			VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
-			1,
-			&region
-		);
+		command_buffer.RecordCmds([&](VulkanCommandBuffer* with_buf) {
+			vkCmdCopyBufferToImage(
+				with_buf->GetNativeHandle(),
+				buffer,
+				image,
+				VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+				1,
+				&region
+			);
+		});
 
-		this->EndSingleTimeCommandBuffer(command_buffer);
+		// this->EndSingleTimeCommandBuffer(command_buffer);
 	}
 } // namespace Engine::Rendering
