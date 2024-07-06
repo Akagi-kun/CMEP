@@ -1,5 +1,6 @@
 #include "Rendering/AxisRenderer.hpp"
 
+#include "Rendering/Vulkan/VulkanDeviceManager.hpp"
 #include "Rendering/Vulkan/VulkanRenderingEngine.hpp"
 #include "Rendering/Vulkan/VulkanUtilities.hpp"
 
@@ -16,7 +17,7 @@ namespace Engine::Rendering
 {
 	AxisRenderer::AxisRenderer(Engine* engine) : IRenderer(engine, nullptr)
 	{
-		VulkanRenderingEngine* renderer = this->owner_engine->GetRenderingEngine();
+		Vulkan::VulkanRenderingEngine* renderer = this->owner_engine->GetRenderingEngine();
 
 		VulkanPipelineSettings pipeline_settings  = renderer->GetVulkanDefaultPipelineSettings();
 		pipeline_settings.input_assembly.topology = VK_PRIMITIVE_TOPOLOGY_LINE_LIST;
@@ -34,7 +35,7 @@ namespace Engine::Rendering
 	{
 		this->logger->SimpleLog(Logging::LogLevel::Debug3, "Cleaning up axis renderer");
 
-		Rendering::VulkanRenderingEngine* renderer = this->owner_engine->GetRenderingEngine();
+		Vulkan::VulkanRenderingEngine* renderer = this->owner_engine->GetRenderingEngine();
 		renderer->SyncDeviceWaitIdle();
 		// vkDeviceWaitIdle(renderer->GetLogicalDevice());
 		renderer->CleanupVulkanBuffer(this->vbo);
@@ -70,7 +71,7 @@ namespace Engine::Rendering
 
 		this->mat_mvp = projection * view * model;
 
-		VulkanRenderingEngine* renderer = this->owner_engine->GetRenderingEngine();
+		Vulkan::VulkanRenderingEngine* renderer = this->owner_engine->GetRenderingEngine();
 
 		if (this->vbo == nullptr)
 		{
@@ -79,7 +80,7 @@ namespace Engine::Rendering
 
 		if (auto locked_device_manager = renderer->GetDeviceManager().lock())
 		{
-			for (size_t i = 0; i < VulkanRenderingEngine::GetMaxFramesInFlight(); i++)
+			for (size_t i = 0; i < Vulkan::VulkanRenderingEngine::GetMaxFramesInFlight(); i++)
 			{
 				VkDescriptorBufferInfo buffer_info{};
 				buffer_info.buffer = pipeline->uniform_buffers[i]->buffer;
@@ -115,29 +116,15 @@ namespace Engine::Rendering
 			this->UpdateMesh();
 		}
 
-		VulkanRenderingEngine* renderer = this->owner_engine->GetRenderingEngine();
-		VulkanUtils::VulkanUniformBufferTransfer(
+		Vulkan::VulkanRenderingEngine* renderer = this->owner_engine->GetRenderingEngine();
+		Vulkan::Utils::VulkanUniformBufferTransfer(
 			renderer,
 			this->pipeline,
 			currentFrame,
 			&this->mat_mvp,
 			sizeof(glm::mat4)
-		); /*
-vkMapMemory(
-renderer->GetLogicalDevice(),
-pipeline->uniform_buffers[currentFrame]->allocation_info.deviceMemory,
-pipeline->uniform_buffers[currentFrame]->allocation_info.offset,
-pipeline->uniform_buffers[currentFrame]->allocation_info.size,
-0,
-&(pipeline->uniform_buffers[currentFrame]->mapped_data)
-);
+		);
 
-memcpy(this->pipeline->uniform_buffers[currentFrame]->mapped_data, &this->mat_mvp, sizeof(glm::mat4));
-vkUnmapMemory(
-renderer->GetLogicalDevice(),
-pipeline->uniform_buffers[currentFrame]->allocation_info.deviceMemory
-);
-*/
 		vkCmdBindDescriptorSets(
 			commandBuffer,
 			VK_PIPELINE_BIND_POINT_GRAPHICS,

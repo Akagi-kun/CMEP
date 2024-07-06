@@ -8,7 +8,7 @@
 #include <fstream>
 #include <vector>
 
-namespace Engine::Rendering::VulkanUtils
+namespace Engine::Rendering::Vulkan::Utils
 {
 	inline VkSurfaceFormatKHR ChooseVulkanSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableFormats)
 	{
@@ -94,4 +94,4 @@ namespace Engine::Rendering::VulkanUtils
 			);
 		}
 	}
-} // namespace Engine::Rendering::VulkanUtils
+} // namespace Engine::Rendering::Vulkan::Utils

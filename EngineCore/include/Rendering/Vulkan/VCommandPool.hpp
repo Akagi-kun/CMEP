@@ -1,19 +1,22 @@
 #pragma once
 
 #include "HoldsVulkanDevice.hpp"
+#include "framework.hpp"
 #include "vulkan/vulkan_core.h"
 
-namespace Engine::Rendering
+#include <cassert>
+
+namespace Engine::Rendering::Vulkan
 {
-	class VulkanCommandPool : public HoldsVulkanDevice
+	class VCommandPool : public HoldsVulkanDevice
 	{
 	protected:
 		VkCommandPool native_handle = VK_NULL_HANDLE;
 
 	public:
-		VulkanCommandPool(VulkanDeviceManager* with_device_manager);
+		VCommandPool(VulkanDeviceManager* with_device_manager);
 
-		~VulkanCommandPool();
+		~VCommandPool();
 
 		[[nodiscard]] VkCommandPool GetNativeHandle()
 		{
@@ -22,4 +25,4 @@ namespace Engine::Rendering
 			return this->native_handle;
 		}
 	};
-} // namespace Engine::Rendering
+} // namespace Engine::Rendering::Vulkan

@@ -1,20 +1,11 @@
-#include <algorithm>
-#include <cstdint>
-
-/*
-#define VMA_DEBUG_LOG_FORMAT(format, ...)                                                                              \
-	do                                                                                                                 \
-	{                                                                                                                  \
-		printf((format), __VA_ARGS__);                                                                                 \
-		printf("\n");                                                                                                  \
-	} while (false)
- */
-#include "Rendering/Vulkan/ImportVulkan.hpp"
-#include "Rendering/Vulkan/VulkanCommandBuffer.hpp"
-#include "Rendering/Vulkan/VulkanCommandPool.hpp"
-#include "Rendering/Vulkan/VulkanDeviceManager.hpp"
-#include "Rendering/Vulkan/VulkanImage.hpp"
 #include "Rendering/Vulkan/VulkanRenderingEngine.hpp"
+
+#include "Rendering/Vulkan/ImportVulkan.hpp"
+#include "Rendering/Vulkan/VCommandBuffer.hpp"
+#include "Rendering/Vulkan/VCommandPool.hpp"
+#include "Rendering/Vulkan/VImage.hpp"
+#include "Rendering/Vulkan/VulkanDeviceManager.hpp"
+#include "Rendering/Vulkan/VulkanSwapchain.hpp"
 #include "Rendering/Vulkan/VulkanUtilities.hpp"
 
 #include "Logging/Logging.hpp"
@@ -22,11 +13,14 @@
 #include "Engine.hpp"
 #include "vulkan/vulkan_core.h"
 
+#include <algorithm>
+#include <cstdint>
+
 // Prefixes for logging messages
 #define LOGPFX_CURRENT LOGPFX_CLASS_VULKAN_RENDERING_ENGINE
 #include "Logging/LoggingPrefix.hpp"
 
-namespace Engine::Rendering
+namespace Engine::Rendering::Vulkan
 {
 	static void FramebufferResizeCallback(GLFWwindow* window, int width, int height)
 	{
@@ -298,7 +292,7 @@ namespace Engine::Rendering
 		for (size_t i = 0; i < this->vk_command_buffers.size(); i++)
 		{
 			this->vk_command_buffers[i] =
-				new VulkanCommandBuffer(this->device_manager.get(), this->device_manager->GetCommandPool());
+				new VCommandBuffer(this->device_manager.get(), this->device_manager->GetCommandPool());
 		}
 
 		this->CreateMultisampledColorResources();
@@ -441,10 +435,9 @@ namespace Engine::Rendering
 		return this->vma_allocator;
 	}
 
-	VulkanCommandPool* VulkanRenderingEngine::GetCommandPool()
+	VCommandPool* VulkanRenderingEngine::GetCommandPool()
 	{
 		return this->device_manager->GetCommandPool();
-		// return this->vk_command_pool;
 	}
 
 	void VulkanRenderingEngine::SetRenderCallback(std::function<void(VkCommandBuffer, uint32_t, Engine*)> callback)
@@ -573,7 +566,7 @@ namespace Engine::Rendering
 
 		// Vertex stage
 		assert(settings.shader.vertex_stage != nullptr && "A valid shader for this stage is required!");
-		auto vert_shader_code			  = VulkanUtils::ReadShaderFile(settings.shader.vertex_stage);
+		auto vert_shader_code			  = Vulkan::Utils::ReadShaderFile(settings.shader.vertex_stage);
 		VkShaderModule vert_shader_module = this->CreateVulkanShaderModule(vert_shader_code);
 
 		VkPipelineShaderStageCreateInfo vert_shader_stage_info{};
@@ -584,7 +577,7 @@ namespace Engine::Rendering
 
 		// Fragment stage
 		assert(settings.shader.fragment_stage != nullptr && "A valid shader for this stage is required!");
-		auto frag_shader_code			  = VulkanUtils::ReadShaderFile(settings.shader.fragment_stage);
+		auto frag_shader_code			  = Vulkan::Utils::ReadShaderFile(settings.shader.fragment_stage);
 		VkShaderModule frag_shader_module = this->CreateVulkanShaderModule(frag_shader_code);
 
 		VkPipelineShaderStageCreateInfo frag_shader_stage_info{};
@@ -833,9 +826,9 @@ namespace Engine::Rendering
 
 	void VulkanRenderingEngine::BufferVulkanTransferCopy(VulkanBuffer* src, VulkanBuffer* dest, VkDeviceSize size)
 	{
-		VulkanCommandBuffer command_buffer(this->device_manager.get(), this->device_manager->GetCommandPool());
+		VCommandBuffer command_buffer(this->device_manager.get(), this->device_manager->GetCommandPool());
 
-		command_buffer.RecordCmds([&](VulkanCommandBuffer* with_buf) {
+		command_buffer.RecordCmds([&](VCommandBuffer* with_buf) {
 			VkBufferCopy copy_region{};
 			copy_region.srcOffset = 0; // Optional
 			copy_region.dstOffset = 0; // Optional
@@ -956,12 +949,14 @@ namespace Engine::Rendering
 		alloc_info.pSetLayouts		  = layouts.data();
 
 		pipeline->vk_descriptor_sets.resize(VulkanRenderingEngine::max_frames_in_flight);
-		VkResult create_result{};
-		if ((create_result = vkAllocateDescriptorSets(
-				 this->device_manager->GetLogicalDevice(),
-				 &alloc_info,
-				 pipeline->vk_descriptor_sets.data()
-			 )) != VK_SUCCESS)
+
+		VkResult create_result = vkAllocateDescriptorSets(
+			this->device_manager->GetLogicalDevice(),
+			&alloc_info,
+			pipeline->vk_descriptor_sets.data()
+		);
+
+		if (create_result != VK_SUCCESS)
 		{
 			this->logger->SimpleLog(
 				Logging::LogLevel::Exception,
@@ -976,7 +971,7 @@ namespace Engine::Rendering
 
 	void VulkanRenderingEngine::CopyVulkanBufferToImage(VkBuffer buffer, VkImage image, uint32_t width, uint32_t height)
 	{
-		VulkanCommandBuffer command_buffer(this->device_manager.get(), this->device_manager->GetCommandPool());
+		VCommandBuffer command_buffer(this->device_manager.get(), this->device_manager->GetCommandPool());
 
 		VkBufferImageCopy region{};
 		region.bufferOffset		 = 0;
@@ -991,7 +986,7 @@ namespace Engine::Rendering
 		region.imageOffset = {0, 0, 0};
 		region.imageExtent = {width, height, 1};
 
-		command_buffer.RecordCmds([&](VulkanCommandBuffer* with_buf) {
+		command_buffer.RecordCmds([&](VCommandBuffer* with_buf) {
 			vkCmdCopyBufferToImage(
 				with_buf->GetNativeHandle(),
 				buffer,
@@ -1004,4 +999,4 @@ namespace Engine::Rendering
 
 		// this->EndSingleTimeCommandBuffer(command_buffer);
 	}
-} // namespace Engine::Rendering
+} // namespace Engine::Rendering::Vulkan

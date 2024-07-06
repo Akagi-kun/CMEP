@@ -63,17 +63,7 @@ namespace Engine
 
 				this->has_updated_mesh = false;
 			}
-			/*
-			void UpdateHeldLogger(std::shared_ptr<Logging::Logger>& new_logger)
-			{
-				InternalEngineObject::UpdateHeldLogger(new_logger);
 
-				if (this->mesh_builder != nullptr)
-				{
-					this->mesh_builder->UpdateHeldLogger(new_logger);
-				}
-			}
-			 */
 			virtual void UpdateMesh() = 0;
 
 			virtual void Render(VkCommandBuffer commandBuffer, uint32_t currentFrame) = 0;

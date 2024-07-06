@@ -4,19 +4,11 @@
 
 #include "HoldsVMA.hpp"
 #include "HoldsVulkanDevice.hpp"
-#include "vulkan/vulkan_core.h"
+#include "framework.hpp"
 
-namespace Engine::Rendering
+namespace Engine::Rendering::Vulkan
 {
-	struct VulkanImageSize
-	{
-		uint32_t x;
-		uint32_t y;
-	};
-
-	class VulkanCommandBuffer;
-
-	class VulkanImage : public HoldsVulkanDevice, public HoldsVMA
+	class VImage : public HoldsVulkanDevice, public HoldsVMA
 	{
 	protected:
 		VmaAllocationInfo allocation_info;
@@ -30,7 +22,7 @@ namespace Engine::Rendering
 
 		VkImageView image_view = VK_NULL_HANDLE;
 
-		VulkanImage(
+		VImage(
 			VulkanDeviceManager* with_device_manager,
 			VmaAllocator with_allocator,
 			VulkanImageSize size,
@@ -40,10 +32,10 @@ namespace Engine::Rendering
 			VkImageUsageFlags usage,
 			VkMemoryPropertyFlags properties
 		);
-		~VulkanImage();
+		~VImage();
 
-		void TransitionImageLayout(VulkanCommandPool* with_pool, VkFormat format, VkImageLayout new_layout);
+		void TransitionImageLayout(VCommandPool* with_pool, VkFormat format, VkImageLayout new_layout);
 
 		void AddImageView(VkImageAspectFlags with_aspect_flags = VK_IMAGE_ASPECT_COLOR_BIT);
 	};
-} // namespace Engine::Rendering
+} // namespace Engine::Rendering::Vulkan

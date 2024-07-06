@@ -37,11 +37,11 @@ set(SRC_FILES
 	src/Rendering/Vulkan/VulkanRenderingEngine.cpp
 	src/Rendering/Vulkan/VulkanRenderingEngine_Init.cpp
 	
-	src/Rendering/Vulkan/VulkanImage.cpp
-	src/Rendering/Vulkan/VulkanTextureImage.cpp
-	src/Rendering/Vulkan/VulkanSwapchain.cpp
-	src/Rendering/Vulkan/VulkanCommandPool.cpp
-	src/Rendering/Vulkan/VulkanCommandBuffer.cpp
+	src/Rendering/Vulkan/VImage.cpp
+	src/Rendering/Vulkan/VSampledImage.cpp
+	src/Rendering/Vulkan/VSwapchain.cpp
+	src/Rendering/Vulkan/VCommandPool.cpp
+	src/Rendering/Vulkan/VCommandBuffer.cpp
 	
 	src/Scripting/LuaScript.cpp
 	src/Scripting/LuaScriptExecutor.cpp

@@ -11,14 +11,15 @@ namespace Engine::Rendering
 	{
 	protected:
 		MeshBuildContext context = {};
-		VulkanRenderingEngine* renderer;
+		Vulkan::VulkanRenderingEngine* renderer;
 
 	public:
 		IMeshBuilder() = delete;
-		IMeshBuilder(Engine* engine, VulkanRenderingEngine* with_renderer)
+		IMeshBuilder(Engine* engine, Vulkan::VulkanRenderingEngine* with_renderer)
 			: InternalEngineObject(engine), renderer(with_renderer)
 		{
 		}
+
 		virtual ~IMeshBuilder()
 		{
 			this->logger->SimpleLog(Logging::LogLevel::Debug3, "Cleaning up MeshBuilder");

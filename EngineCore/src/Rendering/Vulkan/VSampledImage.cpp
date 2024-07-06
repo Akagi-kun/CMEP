@@ -1,10 +1,10 @@
-#include "Rendering/Vulkan/VulkanTextureImage.hpp"
+#include "Rendering/Vulkan/VSampledImage.hpp"
 
 #include "Rendering/Vulkan/VulkanDeviceManager.hpp"
 
-namespace Engine::Rendering
+namespace Engine::Rendering::Vulkan
 {
-	VulkanTextureImage::VulkanTextureImage(
+	VSampledImage::VSampledImage(
 		VulkanDeviceManager* const with_device_manager,
 		VmaAllocator with_allocator,
 		VulkanImageSize size,
@@ -16,7 +16,7 @@ namespace Engine::Rendering
 		VkFilter with_filter,
 		VkSamplerAddressMode with_address_mode
 	)
-		: VulkanImage(with_device_manager, with_allocator, size, num_samples, format, tiling, usage, properties),
+		: VImage(with_device_manager, with_allocator, size, num_samples, format, tiling, usage, properties),
 		  use_filter(with_filter), use_address_mode(with_address_mode)
 	{
 		VkSamplerCreateInfo sampler_info{};
@@ -58,8 +58,8 @@ namespace Engine::Rendering
 		}
 	}
 
-	VulkanTextureImage::~VulkanTextureImage()
+	VSampledImage::~VSampledImage()
 	{
 		vkDestroySampler(this->device_manager->GetLogicalDevice(), this->texture_sampler, nullptr);
 	}
-} // namespace Engine::Rendering
+} // namespace Engine::Rendering::Vulkan

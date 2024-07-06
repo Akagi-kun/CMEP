@@ -40,9 +40,9 @@ namespace Engine::Rendering
 			this->logger->SimpleLog(Logging::LogLevel::Warning, "TinyObjReader: %s", reader.Warning().c_str());
 		}
 
-		auto& attrib	= reader.GetAttrib();
-		auto& shapes	= reader.GetShapes();
-		auto& materials = reader.GetMaterials();
+		const auto& attrib	  = reader.GetAttrib();
+		const auto& shapes	  = reader.GetShapes();
+		const auto& materials = reader.GetMaterials();
 
 		int diffuse_count	 = 0;
 		int bump_count		 = 0;
@@ -50,7 +50,7 @@ namespace Engine::Rendering
 		int metallic_count	 = 0;
 		int reflection_count = 0;
 
-		VulkanRenderingEngine* renderer = this->owner_engine->GetRenderingEngine();
+		Vulkan::VulkanRenderingEngine* renderer = this->owner_engine->GetRenderingEngine();
 
 		VulkanBuffer* premade_staging_buffer = renderer->CreateVulkanBuffer(
 			5120 * 5120 * 4,

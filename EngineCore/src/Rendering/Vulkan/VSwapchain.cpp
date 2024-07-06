@@ -1,9 +1,10 @@
 #include "Rendering/Vulkan/VulkanSwapchain.hpp"
 
 #include "Rendering/Vulkan/HoldsVulkanDevice.hpp"
+#include "Rendering/Vulkan/VulkanDeviceManager.hpp"
 #include "Rendering/Vulkan/VulkanUtilities.hpp"
 
-namespace Engine::Rendering
+namespace Engine::Rendering::Vulkan
 {
 	VulkanSwapchain::VulkanSwapchain(
 		VulkanDeviceManager* const with_device_manager,
@@ -14,10 +15,10 @@ namespace Engine::Rendering
 	{
 		// Query details for support of swapchains
 		SwapChainSupportDetails swap_chain_support = this->device_manager->QuerySwapChainSupport();
-		VkSurfaceFormatKHR surface_format = VulkanUtils::ChooseVulkanSwapSurfaceFormat(swap_chain_support.formats);
+		VkSurfaceFormatKHR surface_format = Vulkan::Utils::ChooseVulkanSwapSurfaceFormat(swap_chain_support.formats);
 
 		// present_mode is currently guaranteed to be VK_PRESENT_MODE_FIFO_KHR
-		VkPresentModeKHR present_mode = VulkanUtils::ChooseVulkanSwapPresentMode(swap_chain_support.present_modes);
+		VkPresentModeKHR present_mode = Vulkan::Utils::ChooseVulkanSwapPresentMode(swap_chain_support.present_modes);
 
 		VkSwapchainCreateInfoKHR create_info{};
 		create_info.sType			 = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
@@ -119,4 +120,4 @@ namespace Engine::Rendering
 
 		vkDestroySwapchainKHR(this->device_manager->GetLogicalDevice(), this->native_handle, nullptr);
 	}
-} // namespace Engine::Rendering
+} // namespace Engine::Rendering::Vulkan

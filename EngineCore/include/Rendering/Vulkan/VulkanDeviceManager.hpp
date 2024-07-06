@@ -2,11 +2,10 @@
 
 #include "InternalEngineObject.hpp"
 #include "VulkanStructDefs.hpp"
+#include "framework.hpp"
 
-namespace Engine::Rendering
+namespace Engine::Rendering::Vulkan
 {
-	class VulkanCommandPool;
-
 	class VulkanDeviceManager final : public InternalEngineObject
 	{
 	private:
@@ -31,7 +30,7 @@ namespace Engine::Rendering
 		VkInstance vk_instance = VK_NULL_HANDLE;
 
 		// Command buffer pool
-		VulkanCommandPool* vk_command_pool = nullptr;
+		VCommandPool* vk_command_pool = nullptr;
 
 		// Surfaces
 		VkSurfaceKHR vk_surface = VK_NULL_HANDLE;
@@ -118,7 +117,7 @@ namespace Engine::Rendering
 			return this->vk_present_queue;
 		}
 
-		[[nodiscard]] VulkanCommandPool* GetCommandPool() const noexcept
+		[[nodiscard]] VCommandPool* GetCommandPool() const noexcept
 		{
 			return this->vk_command_pool;
 		}
@@ -130,4 +129,4 @@ namespace Engine::Rendering
 
 		// SwapChainSupportDetails QuerySwapChainSupport();
 	};
-} // namespace Engine::Rendering
+} // namespace Engine::Rendering::Vulkan

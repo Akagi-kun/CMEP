@@ -67,8 +67,8 @@ namespace Engine
 		// Engine parts
 		std::shared_ptr<Logging::Logger> logger;
 		std::shared_ptr<AssetManager> asset_manager;
-		Scripting::LuaScriptExecutor* script_executor	   = nullptr;
-		Rendering::VulkanRenderingEngine* rendering_engine = nullptr;
+		Scripting::LuaScriptExecutor* script_executor			   = nullptr;
+		Rendering::Vulkan::VulkanRenderingEngine* rendering_engine = nullptr;
 
 		// Event handler storage
 		// std::multimap<EventHandling::EventType, std::function<int(EventHandling::Event&)>> event_handlers;
@@ -109,7 +109,7 @@ namespace Engine
 
 		void Stop();
 
-		[[noreturn]] void ThrowTest();
+		[[noreturn]] static void ThrowTest();
 
 		int FireEvent(EventHandling::Event& event);
 
@@ -128,7 +128,7 @@ namespace Engine
 		{
 			return this->asset_manager;
 		}
-		[[nodiscard]] Rendering::VulkanRenderingEngine* GetRenderingEngine() noexcept
+		[[nodiscard]] Rendering::Vulkan::VulkanRenderingEngine* GetRenderingEngine() noexcept
 		{
 			return this->rendering_engine;
 		}

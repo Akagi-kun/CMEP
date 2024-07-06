@@ -2,13 +2,10 @@
 
 #include "Rendering/Transform.hpp"
 #include "Rendering/Vulkan/ImportVulkan.hpp"
-#include "Rendering/Vulkan/VulkanDeviceManager.hpp"
 #include "Rendering/Vulkan/VulkanStructDefs.hpp"
 
 #include "InternalEngineObject.hpp"
-#include "VulkanCommandBuffer.hpp"
-#include "VulkanCommandPool.hpp"
-#include "VulkanSwapchain.hpp"
+#include "framework.hpp"
 
 #include <cstdint>
 #include <functional>
@@ -20,10 +17,8 @@ namespace Engine
 	class Engine;
 }
 
-namespace Engine::Rendering
+namespace Engine::Rendering::Vulkan
 {
-	class VulkanImage;
-
 	enum class VulkanTopologySelection : uint8_t
 	{
 		VULKAN_RENDERING_ENGINE_TOPOLOGY_TRIANGLE_LIST,
@@ -38,7 +33,6 @@ namespace Engine::Rendering
 
 		GLFWwindow* window = nullptr;
 		ScreenSize window_size;
-		// int_fast16_t window_x = 0, window_y = 0;
 		std::string window_title;
 
 		uint32_t current_frame	 = 0;
@@ -51,10 +45,10 @@ namespace Engine::Rendering
 		// Framebuffers
 		std::vector<VkFramebuffer> vk_swap_chain_framebuffers;
 		// Multisampling
-		VulkanImage* multisampled_color_image{};
+		VImage* multisampled_color_image{};
 
 		// Command pools and buffers
-		std::array<VulkanCommandBuffer*, max_frames_in_flight> vk_command_buffers;
+		std::array<VCommandBuffer*, max_frames_in_flight> vk_command_buffers;
 		// std::array<VkCommandBuffer, max_frames_in_flight> vk_command_buffers;
 
 		// Synchronisation
@@ -68,7 +62,7 @@ namespace Engine::Rendering
 		VkRenderPass vk_render_pass				  = VK_NULL_HANDLE;
 
 		// Depth buffers
-		VulkanImage* vk_depth_buffer = nullptr;
+		VImage* vk_depth_buffer = nullptr;
 
 		// Device manager
 		std::shared_ptr<VulkanDeviceManager> device_manager;
@@ -166,11 +160,11 @@ namespace Engine::Rendering
 		[[nodiscard]] GLFWwindowData GetWindow() const;
 		[[nodiscard]] static uint32_t GetMaxFramesInFlight();
 		VmaAllocator GetVMAAllocator();
-		VulkanCommandPool* GetCommandPool();
+		VCommandPool* GetCommandPool();
 
 		void SyncDeviceWaitIdle();
 
 		// Utility functions
 		uint32_t FindVulkanMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties);
 	};
-} // namespace Engine::Rendering
+} // namespace Engine::Rendering::Vulkan

@@ -1,14 +1,14 @@
-#include "Rendering/Vulkan/VulkanImage.hpp"
+#include "Rendering/Vulkan/VImage.hpp"
 
 #include "Rendering/Vulkan/HoldsVulkanDevice.hpp"
-#include "Rendering/Vulkan/VulkanCommandBuffer.hpp"
+#include "Rendering/Vulkan/VCommandBuffer.hpp"
 #include "Rendering/Vulkan/VulkanDeviceManager.hpp"
 
 #include <stdexcept>
 
-namespace Engine::Rendering
+namespace Engine::Rendering::Vulkan
 {
-	VulkanImage::VulkanImage(
+	VImage::VImage(
 		VulkanDeviceManager* const with_device_manager,
 		VmaAllocator with_allocator,
 		VulkanImageSize size,
@@ -58,7 +58,7 @@ namespace Engine::Rendering
 		vmaSetAllocationName(this->allocator, this->allocation, "VulkanImage");
 	}
 
-	VulkanImage::~VulkanImage()
+	VImage::~VImage()
 	{
 		if (this->image_view != nullptr)
 		{
@@ -70,7 +70,7 @@ namespace Engine::Rendering
 		vmaFreeMemory(this->allocator, this->allocation);
 	}
 
-	void VulkanImage::TransitionImageLayout(VulkanCommandPool* with_pool, VkFormat format, VkImageLayout new_layout)
+	void VImage::TransitionImageLayout(VCommandPool* with_pool, VkFormat format, VkImageLayout new_layout)
 	{
 		VkImageMemoryBarrier barrier{};
 		barrier.sType							= VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
@@ -110,26 +110,25 @@ namespace Engine::Rendering
 			throw std::invalid_argument("Unsupported layout transition!");
 		}
 
-		Rendering::VulkanCommandBuffer(this->device_manager, with_pool)
-			.RecordCmds([&](VulkanCommandBuffer* with_buffer) {
-				vkCmdPipelineBarrier(
-					with_buffer->GetNativeHandle(),
-					source_stage,
-					destination_stage,
-					0,
-					0,
-					nullptr,
-					0,
-					nullptr,
-					1,
-					&barrier
-				);
-			});
+		VCommandBuffer(this->device_manager, with_pool).RecordCmds([&](VCommandBuffer* with_buffer) {
+			vkCmdPipelineBarrier(
+				with_buffer->GetNativeHandle(),
+				source_stage,
+				destination_stage,
+				0,
+				0,
+				nullptr,
+				0,
+				nullptr,
+				1,
+				&barrier
+			);
+		});
 
 		this->current_layout = new_layout;
 	}
 
-	void VulkanImage::AddImageView(VkImageAspectFlags with_aspect_flags)
+	void VImage::AddImageView(VkImageAspectFlags with_aspect_flags)
 	{
 		VkImageViewCreateInfo view_info{};
 		view_info.sType							  = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
@@ -148,4 +147,4 @@ namespace Engine::Rendering
 			throw std::runtime_error("failed to create texture image view!");
 		}
 	}
-} // namespace Engine::Rendering
+} // namespace Engine::Rendering::Vulkan

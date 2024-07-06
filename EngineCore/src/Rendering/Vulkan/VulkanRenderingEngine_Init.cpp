@@ -1,4 +1,5 @@
-#include "Rendering/Vulkan/VulkanImage.hpp"
+#include "Rendering/Vulkan/VImage.hpp"
+#include "Rendering/Vulkan/VulkanDeviceManager.hpp"
 #include "Rendering/Vulkan/VulkanRenderingEngine.hpp"
 #include "Rendering/Vulkan/VulkanStructDefs.hpp"
 #include "Rendering/Vulkan/VulkanSwapchain.hpp"
@@ -11,9 +12,8 @@
 #define LOGPFX_CURRENT LOGPFX_CLASS_VULKAN_RENDERING_ENGINE
 #include "Logging/LoggingPrefix.hpp"
 
-namespace Engine::Rendering
+namespace Engine::Rendering::Vulkan
 {
-
 	////////////////////////////////////////////////////////////////////////
 	////////////////////////    Init functions    //////////////////////////
 	////////////////////////////////////////////////////////////////////////
@@ -276,7 +276,7 @@ namespace Engine::Rendering
 	{
 		VkFormat depth_format = this->FindVulkanSupportedDepthFormat();
 
-		this->vk_depth_buffer = new VulkanImage(
+		this->vk_depth_buffer = new VImage(
 			this->device_manager.get(),
 			this->vma_allocator,
 			{this->vk_swap_chain_extent.width, this->vk_swap_chain_extent.height},
@@ -294,7 +294,7 @@ namespace Engine::Rendering
 	{
 		VkFormat color_format = this->swapchain->GetImageFormat();
 
-		this->multisampled_color_image = new VulkanImage(
+		this->multisampled_color_image = new VImage(
 			this->device_manager.get(),
 			this->vma_allocator,
 			{this->vk_swap_chain_extent.width, this->vk_swap_chain_extent.height},
@@ -320,4 +320,4 @@ namespace Engine::Rendering
 
 		this->logger->SimpleLog(Logging::LogLevel::Debug1, LOGPFX_CURRENT "VMA created");
 	}
-} // namespace Engine::Rendering
+} // namespace Engine::Rendering::Vulkan

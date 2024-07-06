@@ -2,7 +2,7 @@
 
 #include "Assets/Font.hpp"
 #include "Assets/Texture.hpp"
-#include "Rendering/Vulkan/VulkanImage.hpp"
+#include "Rendering/Vulkan/VulkanDeviceManager.hpp"
 #include "Rendering/Vulkan/VulkanUtilities.hpp"
 
 #include "Logging/Logging.hpp"
@@ -21,7 +21,7 @@ namespace Engine::Rendering
 {
 	TextRenderer::TextRenderer(Engine* engine, IMeshBuilder* with_builder) : IRenderer(engine, with_builder)
 	{
-		VulkanRenderingEngine* renderer = this->owner_engine->GetRenderingEngine();
+		Vulkan::VulkanRenderingEngine* renderer = this->owner_engine->GetRenderingEngine();
 
 		VulkanPipelineSettings pipeline_settings  = renderer->GetVulkanDefaultPipelineSettings();
 		pipeline_settings.input_assembly.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
@@ -48,7 +48,7 @@ namespace Engine::Rendering
 
 		this->logger->SimpleLog(Logging::LogLevel::Debug3, "Cleaning up text renderer");
 
-		VulkanRenderingEngine* renderer = this->owner_engine->GetRenderingEngine();
+		Vulkan::VulkanRenderingEngine* renderer = this->owner_engine->GetRenderingEngine();
 		renderer->SyncDeviceWaitIdle();
 		renderer->CleanupVulkanPipeline(this->pipeline);
 	}
@@ -91,7 +91,7 @@ namespace Engine::Rendering
 	{
 		this->has_updated_mesh = true;
 
-		VulkanRenderingEngine* renderer = this->owner_engine->GetRenderingEngine();
+		Vulkan::VulkanRenderingEngine* renderer = this->owner_engine->GetRenderingEngine();
 
 		if (this->mesh_builder != nullptr)
 		{
@@ -132,7 +132,7 @@ namespace Engine::Rendering
 
 		if (auto locked_device_manager = renderer->GetDeviceManager().lock())
 		{
-			for (size_t i = 0; i < VulkanRenderingEngine::GetMaxFramesInFlight(); i++)
+			for (size_t i = 0; i < Vulkan::VulkanRenderingEngine::GetMaxFramesInFlight(); i++)
 			{
 				VkDescriptorBufferInfo buffer_info{};
 				buffer_info.buffer = pipeline->uniform_buffers[i]->buffer;
@@ -186,8 +186,8 @@ namespace Engine::Rendering
 			return;
 		}
 
-		VulkanRenderingEngine* renderer = this->owner_engine->GetRenderingEngine();
-		VulkanUtils::VulkanUniformBufferTransfer(
+		Vulkan::VulkanRenderingEngine* renderer = this->owner_engine->GetRenderingEngine();
+		Vulkan::Utils::VulkanUniformBufferTransfer(
 			renderer,
 			this->pipeline,
 			currentFrame,

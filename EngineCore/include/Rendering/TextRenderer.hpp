@@ -16,7 +16,6 @@ namespace Engine::Rendering
 		std::string text;
 
 		std::shared_ptr<Rendering::Texture> texture = nullptr;
-		// std::shared_ptr<Rendering::Font> font		= nullptr;
 
 		glm::mat4 mat_mvp{};
 

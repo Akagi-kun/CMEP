@@ -95,7 +95,7 @@ namespace Engine
 
 		void LuaScriptExecutor::RegisterWrapper(lua_State* state)
 		{
-			lua_pushlightuserdata(state, (void*)LuajitExceptionWrap);
+			lua_pushlightuserdata(state, reinterpret_cast<void*>(LuajitExceptionWrap));
 			luaJIT_setmode(state, -1, LUAJIT_MODE_WRAPCFUNC | LUAJIT_MODE_ON);
 			lua_pop(state, 1);
 		}
@@ -183,6 +183,8 @@ namespace Engine
 					errcall,
 					errormsg
 				);
+
+				return 1;
 			}
 
 			lua_Integer ret = lua_tointeger(state, -1);

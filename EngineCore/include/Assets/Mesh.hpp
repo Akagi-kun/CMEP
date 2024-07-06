@@ -4,6 +4,7 @@
 #include "Rendering/tinyobjloader/tiny_obj_loader.h"
 
 #include "InternalEngineObject.hpp"
+#include "glm/glm.hpp"
 
 #include <cstdint>
 #include <string>

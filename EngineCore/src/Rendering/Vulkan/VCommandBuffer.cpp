@@ -1,13 +1,13 @@
-#include "Rendering/Vulkan/VulkanCommandBuffer.hpp"
+#include "Rendering/Vulkan/VCommandBuffer.hpp"
+
+#include "Rendering/Vulkan/VCommandPool.hpp"
+#include "Rendering/Vulkan/VulkanDeviceManager.hpp"
 
 #include "vulkan/vulkan_core.h"
 
-namespace Engine::Rendering
+namespace Engine::Rendering::Vulkan
 {
-	VulkanCommandBuffer::VulkanCommandBuffer(
-		VulkanDeviceManager* const with_device_manager,
-		VulkanCommandPool* from_pool
-	)
+	VCommandBuffer::VCommandBuffer(VulkanDeviceManager* const with_device_manager, VCommandPool* from_pool)
 		: HoldsVulkanDevice(with_device_manager), owning_pool(from_pool)
 	{
 		VkCommandBufferAllocateInfo alloc_info{};
@@ -24,7 +24,7 @@ namespace Engine::Rendering
 		}
 	}
 
-	VulkanCommandBuffer::~VulkanCommandBuffer()
+	VCommandBuffer::~VCommandBuffer()
 	{
 		vkFreeCommandBuffers(
 			this->device_manager->GetLogicalDevice(),
@@ -34,7 +34,7 @@ namespace Engine::Rendering
 		);
 	}
 
-	void VulkanCommandBuffer::BeginCmdBuffer(VkCommandBufferUsageFlags usage_flags)
+	void VCommandBuffer::BeginCmdBuffer(VkCommandBufferUsageFlags usage_flags)
 	{
 		VkCommandBufferBeginInfo begin_info{};
 		begin_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
@@ -43,12 +43,12 @@ namespace Engine::Rendering
 		vkBeginCommandBuffer(this->native_handle, &begin_info);
 	}
 
-	void VulkanCommandBuffer::EndCmdBuffer()
+	void VCommandBuffer::EndCmdBuffer()
 	{
 		vkEndCommandBuffer(this->native_handle);
 	}
 
-	void VulkanCommandBuffer::RecordCmds(std::function<void(VulkanCommandBuffer*)> const& lambda)
+	void VCommandBuffer::RecordCmds(std::function<void(VCommandBuffer*)> const& lambda)
 	{
 		this->BeginCmdBuffer(VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT);
 
@@ -62,7 +62,7 @@ namespace Engine::Rendering
 		vkResetCommandBuffer(this->native_handle, 0);
 	}
 
-	void VulkanCommandBuffer::GraphicsQueueSubmit()
+	void VCommandBuffer::GraphicsQueueSubmit()
 	{
 		VkSubmitInfo submit_info{};
 		submit_info.sType			   = VK_STRUCTURE_TYPE_SUBMIT_INFO;
@@ -72,4 +72,4 @@ namespace Engine::Rendering
 		vkQueueSubmit(this->device_manager->GetGraphicsQueue(), 1, &submit_info, VK_NULL_HANDLE);
 	}
 
-} // namespace Engine::Rendering
+} // namespace Engine::Rendering::Vulkan

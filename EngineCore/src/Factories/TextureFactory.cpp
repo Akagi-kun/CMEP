@@ -5,6 +5,8 @@
 #pragma warning(push, 2)
 #include "lodepng.h"
 #pragma warning(pop)
+#include "Rendering/Vulkan/VulkanDeviceManager.hpp"
+
 #include "Factories/TextureFactory.hpp"
 
 #include "Engine.hpp"
@@ -113,16 +115,16 @@ namespace Engine::Factories
 	{
 		uint_fast8_t channel_count = 4;
 
-		texture_data->data		   = raw_data;
-		texture_data->color_fmt	   = color_format;
-		texture_data->filtering	   = filtering;
-		texture_data->address_mode = sampler_address_mode;
-		texture_data->x			   = xsize;
-		texture_data->y			   = ysize;
+		texture_data->data		= raw_data;
+		texture_data->color_fmt = color_format;
+		// texture_data->filtering	   = filtering;
+		// texture_data->address_mode = sampler_address_mode;
+		texture_data->x			= xsize;
+		texture_data->y			= ysize;
 
 		auto memory_size = static_cast<VkDeviceSize>(xsize * ysize * channel_count);
 
-		Rendering::VulkanRenderingEngine* renderer = this->owner_engine->GetRenderingEngine();
+		Rendering::Vulkan::VulkanRenderingEngine* renderer = this->owner_engine->GetRenderingEngine();
 
 		Rendering::VulkanBuffer* used_staging_buffer;
 
@@ -156,7 +158,7 @@ namespace Engine::Factories
 
 			memcpy(used_staging_buffer->mapped_data, raw_data.data(), static_cast<size_t>(memory_size));
 
-			texture_data->texture_image = new Rendering::VulkanTextureImage(
+			texture_data->texture_image = new Rendering::Vulkan::VSampledImage(
 				locked_device_manager.get(),
 				renderer->GetVMAAllocator(),
 				{xsize, ysize},

@@ -1,7 +1,7 @@
 #include "Rendering/MeshRenderer.hpp"
 
 #include "Assets/Texture.hpp"
-#include "Rendering/Vulkan/VulkanImage.hpp"
+#include "Rendering/Vulkan/VulkanDeviceManager.hpp"
 #include "Rendering/Vulkan/VulkanUtilities.hpp"
 
 #include "Logging/Logging.hpp"
@@ -18,7 +18,7 @@ namespace Engine::Rendering
 {
 	MeshRenderer::MeshRenderer(Engine* engine) : IRenderer(engine, nullptr)
 	{
-		VulkanRenderingEngine* renderer = this->owner_engine->GetRenderingEngine();
+		Vulkan::VulkanRenderingEngine* renderer = this->owner_engine->GetRenderingEngine();
 
 		VulkanPipelineSettings pipeline_settings  = renderer->GetVulkanDefaultPipelineSettings();
 		pipeline_settings.input_assembly.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
@@ -46,7 +46,7 @@ namespace Engine::Rendering
 	{
 		this->logger->SimpleLog(Logging::LogLevel::Debug3, "Cleaning up mesh renderer");
 
-		VulkanRenderingEngine* renderer = this->owner_engine->GetRenderingEngine();
+		Vulkan::VulkanRenderingEngine* renderer = this->owner_engine->GetRenderingEngine();
 		renderer->SyncDeviceWaitIdle();
 		// vkDeviceWaitIdle(renderer->GetLogicalDevice());
 
@@ -91,7 +91,7 @@ namespace Engine::Rendering
 
 		this->has_updated_mesh = true;
 
-		VulkanRenderingEngine* renderer = this->owner_engine->GetRenderingEngine();
+		Vulkan::VulkanRenderingEngine* renderer = this->owner_engine->GetRenderingEngine();
 		/*
 				glm::mat4 projection = glm::perspective<float>(
 					glm::radians(45.0f),
@@ -186,7 +186,7 @@ namespace Engine::Rendering
 
 				if (this->mesh->diffuse_textures[diffuse_texture_index] != nullptr)
 				{
-					VulkanTextureImage* current_diffuse_texture_image =
+					Vulkan::VSampledImage* current_diffuse_texture_image =
 						this->mesh->diffuse_textures[diffuse_texture_index]->GetTextureImage();
 
 					if (current_diffuse_texture_image != nullptr)
@@ -206,7 +206,7 @@ namespace Engine::Rendering
 
 			if (auto locked_device_manager = renderer->GetDeviceManager().lock())
 			{
-				for (size_t i = 0; i < VulkanRenderingEngine::GetMaxFramesInFlight(); i++)
+				for (size_t i = 0; i < Vulkan::VulkanRenderingEngine::GetMaxFramesInFlight(); i++)
 				{
 					VkDescriptorBufferInfo uniform_buffer_info{};
 					uniform_buffer_info.buffer = pipeline->uniform_buffers[i]->buffer;
@@ -268,8 +268,8 @@ namespace Engine::Rendering
 			this->UpdateMesh();
 		}
 
-		VulkanRenderingEngine* renderer = this->owner_engine->GetRenderingEngine();
-		VulkanUtils::VulkanUniformBufferTransfer(
+		Vulkan::VulkanRenderingEngine* renderer = this->owner_engine->GetRenderingEngine();
+		Vulkan::Utils::VulkanUniformBufferTransfer(
 			renderer,
 			this->pipeline,
 			currentFrame,

@@ -1,26 +1,25 @@
 #pragma once
 
 #include "Rendering/Transform.hpp"
-#include "Rendering/Vulkan/VulkanTextureImage.hpp"
+#include "Rendering/Vulkan/VSampledImage.hpp"
 
 #include "IMeshBuilder.hpp"
 
 namespace Engine::Rendering
 {
-	class VulkanTextureImage;
-
 	class TextMeshBuilder final : public IMeshBuilder
 	{
 		ScreenSize screen_size{};
 
 		std::string text;
 
-		VulkanTextureImage* texture_image = nullptr;
+		Vulkan::VSampledImage* texture_image = nullptr;
 
 		std::shared_ptr<Rendering::Font> font = nullptr;
 
 	public:
-		TextMeshBuilder(Engine* engine, VulkanRenderingEngine* with_renderer) : IMeshBuilder(engine, with_renderer)
+		TextMeshBuilder(Engine* engine, Vulkan::VulkanRenderingEngine* with_renderer)
+			: IMeshBuilder(engine, with_renderer)
 		{
 		}
 

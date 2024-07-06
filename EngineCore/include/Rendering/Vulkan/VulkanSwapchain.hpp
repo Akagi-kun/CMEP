@@ -1,8 +1,12 @@
 #pragma once
 
 #include "HoldsVulkanDevice.hpp"
+#include "framework.hpp"
 #include "vulkan/vulkan_core.h"
-namespace Engine::Rendering
+
+#include <vector>
+
+namespace Engine::Rendering::Vulkan
 {
 	class VulkanSwapchain final : public HoldsVulkanDevice
 	{
@@ -35,4 +39,4 @@ namespace Engine::Rendering
 			return this->image_view_handles;
 		}
 	};
-} // namespace Engine::Rendering
+} // namespace Engine::Rendering::Vulkan

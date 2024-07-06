@@ -1,10 +1,10 @@
 #pragma once
 
-#include "Rendering/Vulkan/VulkanImage.hpp"
+#include "Rendering/Vulkan/VImage.hpp"
 
-namespace Engine::Rendering
+namespace Engine::Rendering::Vulkan
 {
-	class VulkanTextureImage : public VulkanImage
+	class VSampledImage : public VImage
 	{
 	private:
 		VkFilter use_filter;
@@ -13,7 +13,7 @@ namespace Engine::Rendering
 	public:
 		VkSampler texture_sampler;
 
-		VulkanTextureImage(
+		VSampledImage(
 			VulkanDeviceManager* with_device_manager,
 			VmaAllocator with_allocator,
 			VulkanImageSize size,
@@ -26,6 +26,6 @@ namespace Engine::Rendering
 			VkSamplerAddressMode with_address_mode
 		);
 
-		~VulkanTextureImage();
+		~VSampledImage();
 	};
-} // namespace Engine::Rendering
+} // namespace Engine::Rendering::Vulkan

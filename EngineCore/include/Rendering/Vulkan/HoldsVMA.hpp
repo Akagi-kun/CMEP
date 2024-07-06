@@ -2,7 +2,7 @@
 
 #include "Rendering/Vulkan/ImportVulkan.hpp"
 
-namespace Engine::Rendering
+namespace Engine::Rendering::Vulkan
 {
 	class HoldsVMA
 	{
@@ -15,4 +15,4 @@ namespace Engine::Rendering
 		{
 		}
 	};
-} // namespace Engine::Rendering
+} // namespace Engine::Rendering::Vulkan

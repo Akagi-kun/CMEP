@@ -1,6 +1,6 @@
 #include "Rendering/Vulkan/VulkanDeviceManager.hpp"
 
-#include "Rendering/Vulkan/VulkanCommandPool.hpp"
+#include "Rendering/Vulkan/VCommandPool.hpp"
 
 #include "Logging/Logging.hpp"
 
@@ -16,9 +16,8 @@
 #define LOGPFX_CURRENT LOGPFX_CLASS_VULKAN_DEVICE_MANAGER
 #include "Logging/LoggingPrefix.hpp"
 
-namespace Engine::Rendering
+namespace Engine::Rendering::Vulkan
 {
-
 	VulkanDeviceManager::VulkanDeviceManager(Engine* with_engine, GLFWwindow* new_window)
 		: InternalEngineObject(with_engine)
 	{
@@ -29,7 +28,7 @@ namespace Engine::Rendering
 		this->InitVulkanDevice();
 		this->CreateVulkanLogicalDevice();
 
-		this->vk_command_pool = new VulkanCommandPool(this);
+		this->vk_command_pool = new VCommandPool(this);
 	}
 
 #pragma region Debugging callbacks
@@ -594,4 +593,4 @@ namespace Engine::Rendering
 
 #pragma endregion
 
-} // namespace Engine::Rendering
+} // namespace Engine::Rendering::Vulkan

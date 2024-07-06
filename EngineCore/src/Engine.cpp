@@ -130,7 +130,7 @@ namespace Engine
 	void Engine::OnWindowFocusCallback(GLFWwindow* window, int focused)
 	{
 		auto* engine =
-			static_cast<Rendering::VulkanRenderingEngine*>(glfwGetWindowUserPointer(window))->GetOwnerEngine();
+			static_cast<Rendering::Vulkan::VulkanRenderingEngine*>(glfwGetWindowUserPointer(window))->GetOwnerEngine();
 
 		engine->state_is_window_in_focus = (focused != 0);
 	}
@@ -138,7 +138,7 @@ namespace Engine
 	void Engine::CursorPositionCallback(GLFWwindow* window, double xpos, double ypos)
 	{
 		auto* engine =
-			static_cast<Rendering::VulkanRenderingEngine*>(glfwGetWindowUserPointer(window))->GetOwnerEngine();
+			static_cast<Rendering::Vulkan::VulkanRenderingEngine*>(glfwGetWindowUserPointer(window))->GetOwnerEngine();
 
 		if (engine->state_is_window_in_focus)
 		{
@@ -157,7 +157,7 @@ namespace Engine
 		bool b_entered = (entered != 0);
 
 		auto* engine =
-			static_cast<Rendering::VulkanRenderingEngine*>(glfwGetWindowUserPointer(window))->GetOwnerEngine();
+			static_cast<Rendering::Vulkan::VulkanRenderingEngine*>(glfwGetWindowUserPointer(window))->GetOwnerEngine();
 
 		if (engine->state_is_window_in_focus)
 		{
@@ -179,19 +179,19 @@ namespace Engine
 
 		if (action == GLFW_PRESS)
 		{
-			auto* renderer	  = static_cast<Rendering::VulkanRenderingEngine*>(glfwGetWindowUserPointer(window));
-			auto event		  = EventHandling::Event(EventHandling::EventType::ON_KEYDOWN);
-			event.keycode	  = static_cast<uint16_t>(key);
-			event.delta_time  = renderer->GetOwnerEngine()->GetLastDeltaTime();
+			auto* renderer	 = static_cast<Rendering::Vulkan::VulkanRenderingEngine*>(glfwGetWindowUserPointer(window));
+			auto event		 = EventHandling::Event(EventHandling::EventType::ON_KEYDOWN);
+			event.keycode	 = static_cast<uint16_t>(key);
+			event.delta_time = renderer->GetOwnerEngine()->GetLastDeltaTime();
 			event.raised_from = renderer->GetOwnerEngine();
 			renderer->GetOwnerEngine()->FireEvent(event);
 		}
 		else if (action == GLFW_RELEASE)
 		{
-			auto* renderer	  = static_cast<Rendering::VulkanRenderingEngine*>(glfwGetWindowUserPointer(window));
-			auto event		  = EventHandling::Event(EventHandling::EventType::ON_KEYUP);
-			event.keycode	  = static_cast<uint16_t>(key);
-			event.delta_time  = renderer->GetOwnerEngine()->GetLastDeltaTime();
+			auto* renderer	 = static_cast<Rendering::Vulkan::VulkanRenderingEngine*>(glfwGetWindowUserPointer(window));
+			auto event		 = EventHandling::Event(EventHandling::EventType::ON_KEYUP);
+			event.keycode	 = static_cast<uint16_t>(key);
+			event.delta_time = renderer->GetOwnerEngine()->GetLastDeltaTime();
 			event.raised_from = renderer->GetOwnerEngine();
 			renderer->GetOwnerEngine()->FireEvent(event);
 		}
@@ -403,7 +403,7 @@ namespace Engine
 		this->scene_manager = std::make_shared<SceneManager>(this);
 		this->scene_manager->SetSceneLoadPrefix(this->config->lookup.scenes);
 
-		this->rendering_engine = new Rendering::VulkanRenderingEngine(this);
+		this->rendering_engine = new Rendering::Vulkan::VulkanRenderingEngine(this);
 	}
 
 	void Engine::Run()

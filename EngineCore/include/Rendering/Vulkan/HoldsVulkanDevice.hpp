@@ -1,8 +1,8 @@
 #pragma once
 
-#include "Rendering/Vulkan/VulkanDeviceManager.hpp"
+#include "framework.hpp"
 
-namespace Engine::Rendering
+namespace Engine::Rendering::Vulkan
 {
 	class HoldsVulkanDevice
 	{
@@ -15,4 +15,4 @@ namespace Engine::Rendering
 		{
 		}
 	};
-} // namespace Engine::Rendering
+} // namespace Engine::Rendering::Vulkan
