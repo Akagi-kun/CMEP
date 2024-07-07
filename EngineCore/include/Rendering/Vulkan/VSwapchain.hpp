@@ -8,7 +8,7 @@
 
 namespace Engine::Rendering::Vulkan
 {
-	class VulkanSwapchain final : public HoldsVulkanDevice
+	class VSwapchain final : public HoldsVulkanDevice
 	{
 	private:
 		VkSwapchainKHR native_handle = VK_NULL_HANDLE;
@@ -17,12 +17,12 @@ namespace Engine::Rendering::Vulkan
 		std::vector<VkImageView> image_view_handles;
 
 		VkFormat image_format{};
-		VkExtent2D extent{};
+		const VkExtent2D extent;
 
 	public:
-		VulkanSwapchain(VulkanDeviceManager* with_device_manager, VkExtent2D with_extent, uint32_t with_count);
+		VSwapchain(VulkanDeviceManager* with_device_manager, VkExtent2D with_extent, uint32_t with_count);
 
-		~VulkanSwapchain();
+		~VSwapchain();
 
 		[[nodiscard]] VkSwapchainKHR GetNativeHandle()
 		{
@@ -37,6 +37,11 @@ namespace Engine::Rendering::Vulkan
 		[[nodiscard]] std::vector<VkImageView>& GetImageViewHandles()
 		{
 			return this->image_view_handles;
+		}
+
+		[[nodiscard]] const VkExtent2D& GetExtent() const
+		{
+			return this->extent;
 		}
 	};
 } // namespace Engine::Rendering::Vulkan

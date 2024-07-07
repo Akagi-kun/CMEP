@@ -8,6 +8,7 @@
 #include "MeshBuildContext.hpp"
 #include "SupplyData.hpp"
 #include "Transform.hpp"
+#include "Vulkan/VBuffer.hpp"
 // #include "glm/glm.hpp"
 
 #include <cstdint>
@@ -29,7 +30,7 @@ namespace Engine
 			ScreenSize screen;
 
 			VulkanPipeline* pipeline = nullptr;
-			VulkanBuffer* vbo		 = nullptr;
+			Vulkan::VBuffer* vbo	 = nullptr;
 			size_t vbo_vert_count	 = 0;
 
 			IMeshBuilder* mesh_builder = nullptr;

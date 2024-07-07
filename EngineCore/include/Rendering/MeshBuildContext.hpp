@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Vulkan/VBuffer.hpp"
 #include "Vulkan/VulkanStructDefs.hpp"
 namespace Engine::Rendering
 {
@@ -9,7 +10,7 @@ namespace Engine::Rendering
 		std::vector<RenderingVertex> mesh;
 
 		// On build finish
-		VulkanBuffer* vbo;
+		Vulkan::VBuffer* vbo;
 		size_t vbo_vert_count;
 	};
 } // namespace Engine::Rendering

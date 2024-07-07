@@ -6,8 +6,6 @@
 
 #include "InternalEngineObject.hpp"
 
-// #include <functional>
-
 namespace Engine
 {
 	class Object final : public InternalEngineObject

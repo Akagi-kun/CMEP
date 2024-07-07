@@ -1,6 +1,7 @@
 #pragma once
 
 #include "ImportVulkan.hpp"
+#include "framework.hpp"
 #include "glm/vec2.hpp"
 #include "glm/vec3.hpp"
 
@@ -35,15 +36,6 @@ namespace Engine::Rendering
 		VkSurfaceCapabilitiesKHR capabilities;
 		std::vector<VkSurfaceFormatKHR> formats;
 		std::vector<VkPresentModeKHR> present_modes;
-	};
-
-	struct VulkanBuffer
-	{
-		VkBuffer buffer;
-		VkDeviceSize buffer_size;
-		VmaAllocation allocation;
-		VmaAllocationInfo allocation_info;
-		void* mapped_data;
 	};
 
 	struct VulkanDescriptorLayoutSettings
@@ -84,7 +76,7 @@ namespace Engine::Rendering
 		VkDescriptorPool vk_descriptor_pool;
 		VkDescriptorSetLayout vk_descriptor_set_layout;
 		std::vector<VkDescriptorSet> vk_descriptor_sets;
-		std::vector<VulkanBuffer*> uniform_buffers;
+		std::vector<Vulkan::VBuffer*> uniform_buffers;
 	};
 
 	struct RenderingVertex

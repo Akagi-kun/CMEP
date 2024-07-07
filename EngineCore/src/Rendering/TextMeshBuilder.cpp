@@ -40,7 +40,8 @@ namespace Engine::Rendering
 			this->renderer->SyncDeviceWaitIdle();
 			// vkDeviceWaitIdle(this->renderer->GetLogicalDevice());
 
-			this->renderer->CleanupVulkanBuffer(this->context.vbo);
+			delete this->context.vbo;
+			// this->renderer->CleanupVulkanBuffer(this->context.vbo);
 
 			this->context.vbo = nullptr;
 			this->context.mesh.clear();

@@ -22,7 +22,7 @@ local pipe_y_size = 450
 -- Pipe behavior
 local pipe_spacing_start = 200 -- Configurable pipe spacing (between top and bottom)
 local pipe_spacing = pipe_spacing_start
-local pipe_move_speed = 0.13 -- Configurable pipe move speed (/speed of flying)
+local pipe_move_speed = 0.135 -- Configurable pipe move speed (/speed of flying)
 
 -- Birb sprite size in pixels
 local birb_x_size = 72
@@ -30,8 +30,8 @@ local birb_y_size = 44
 
 -- Birb behavior
 local birb_jump_velocity = 0.46 -- Configurable velocity set on jump
-local birb_gravity = 0.78 -- Configurable gravity
-local birb_velocity = 0.105 -- Internal velocity value
+local birb_gravity = 0.89 -- Configurable gravity
+local birb_velocity = 0.25 -- Internal velocity value
 local birb_is_velociting = false -- Internal is-jumping check
 
 -- Game state

@@ -38,7 +38,10 @@ namespace Engine::Rendering
 		Vulkan::VulkanRenderingEngine* renderer = this->owner_engine->GetRenderingEngine();
 		renderer->SyncDeviceWaitIdle();
 		// vkDeviceWaitIdle(renderer->GetLogicalDevice());
-		renderer->CleanupVulkanBuffer(this->vbo);
+
+		delete this->vbo;
+		// renderer->CleanupVulkanBuffer(this->vbo);
+
 		renderer->CleanupVulkanPipeline(this->pipeline);
 	}
 
@@ -83,7 +86,7 @@ namespace Engine::Rendering
 			for (size_t i = 0; i < Vulkan::VulkanRenderingEngine::GetMaxFramesInFlight(); i++)
 			{
 				VkDescriptorBufferInfo buffer_info{};
-				buffer_info.buffer = pipeline->uniform_buffers[i]->buffer;
+				buffer_info.buffer = pipeline->uniform_buffers[i]->GetNativeHandle();
 				buffer_info.offset = 0;
 				buffer_info.range  = sizeof(glm::mat4);
 
@@ -137,7 +140,7 @@ namespace Engine::Rendering
 		);
 
 		vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, this->pipeline->pipeline);
-		VkBuffer vertex_buffers[] = {this->vbo->buffer};
+		VkBuffer vertex_buffers[] = {this->vbo->GetNativeHandle()};
 		VkDeviceSize offsets[]	  = {0};
 		vkCmdBindVertexBuffers(commandBuffer, 0, 1, vertex_buffers, offsets);
 

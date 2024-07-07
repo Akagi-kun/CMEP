@@ -40,6 +40,7 @@ set(SRC_FILES
 	src/Rendering/Vulkan/VImage.cpp
 	src/Rendering/Vulkan/VSampledImage.cpp
 	src/Rendering/Vulkan/VSwapchain.cpp
+	src/Rendering/Vulkan/VBuffer.cpp
 	src/Rendering/Vulkan/VCommandPool.cpp
 	src/Rendering/Vulkan/VCommandBuffer.cpp
 	

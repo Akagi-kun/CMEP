@@ -22,13 +22,16 @@ namespace Engine::Rendering::Vulkan
 	// Image related
 	class VImage;
 	class VSampledImage;
-
-	// Rendering stack related
-	class VulkanSwapchain;
-
 	struct VulkanImageSize
 	{
 		uint32_t x;
 		uint32_t y;
 	};
+
+	// Rendering stack related
+	class VSwapchain;
+
+	// Buffer related
+	class VBuffer;
+
 } // namespace Engine::Rendering::Vulkan

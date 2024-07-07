@@ -55,7 +55,7 @@ namespace Engine::Rendering::Vulkan
 			throw std::runtime_error("Failed to create VulkanImage!");
 		}
 
-		vmaSetAllocationName(this->allocator, this->allocation, "VulkanImage");
+		vmaSetAllocationName(this->allocator, this->allocation, "VImage");
 	}
 
 	VImage::~VImage()

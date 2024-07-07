@@ -135,7 +135,7 @@ namespace Engine::Rendering
 			for (size_t i = 0; i < Vulkan::VulkanRenderingEngine::GetMaxFramesInFlight(); i++)
 			{
 				VkDescriptorBufferInfo buffer_info{};
-				buffer_info.buffer = pipeline->uniform_buffers[i]->buffer;
+				buffer_info.buffer = pipeline->uniform_buffers[i]->GetNativeHandle();
 				buffer_info.offset = 0;
 				buffer_info.range  = sizeof(glm::mat4);
 
@@ -223,7 +223,7 @@ namespace Engine::Rendering
 		);
 
 		vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, this->pipeline->pipeline);
-		VkBuffer vertex_buffers[] = {this->mesh_context.vbo->buffer};
+		VkBuffer vertex_buffers[] = {this->mesh_context.vbo->GetNativeHandle()};
 		VkDeviceSize offsets[]	  = {0};
 		vkCmdBindVertexBuffers(commandBuffer, 0, 1, vertex_buffers, offsets);
 

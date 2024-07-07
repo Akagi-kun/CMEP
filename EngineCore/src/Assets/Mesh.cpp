@@ -1,5 +1,7 @@
 #include "Assets/Mesh.hpp"
 
+#include "Rendering/Vulkan/VBuffer.hpp"
+
 #include "Logging/Logging.hpp"
 
 #include <glm/ext/vector_float2.hpp>
@@ -52,7 +54,9 @@ namespace Engine::Rendering
 
 		Vulkan::VulkanRenderingEngine* renderer = this->owner_engine->GetRenderingEngine();
 
-		VulkanBuffer* premade_staging_buffer = renderer->CreateVulkanBuffer(
+		auto* premade_staging_buffer = new Vulkan::VBuffer(
+			renderer->GetDeviceManager().lock().get(),
+			renderer->GetVMAAllocator(),
 			5120 * 5120 * 4,
 			VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
 			VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
@@ -124,7 +128,8 @@ namespace Engine::Rendering
 			// }
 		}
 
-		renderer->CleanupVulkanBuffer(premade_staging_buffer);
+		delete premade_staging_buffer;
+		// renderer->CleanupVulkanBuffer(premade_staging_buffer);
 
 		this->logger->SimpleLog(
 			Logging::LogLevel::Info,

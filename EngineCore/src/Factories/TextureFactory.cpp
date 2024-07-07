@@ -1,11 +1,11 @@
 #include "InternalEngineObject.hpp"
 
+#include <cstddef>
 #include <cstdint>
 
 #pragma warning(push, 2)
 #include "lodepng.h"
 #pragma warning(pop)
-#include "Rendering/Vulkan/VulkanDeviceManager.hpp"
 
 #include "Factories/TextureFactory.hpp"
 
@@ -23,14 +23,14 @@ namespace Engine::Factories
 
 	std::shared_ptr<Rendering::Texture> TextureFactory::InitFile(
 		const std::string& path,
-		Rendering::VulkanBuffer* staging_buffer,
+		Rendering::Vulkan::VBuffer* staging_buffer,
 		Rendering::Texture_InitFiletype filetype,
 		VkFilter filtering,
 		VkSamplerAddressMode sampler_address_mode
 	)
 	{
-		FILE* file = nullptr;
-		if ((file = fopen(path.c_str(), "rb")) == NULL)
+		FILE* file = fopen(path.c_str(), "rb");
+		if (file == NULL)
 		{
 			this->logger->SimpleLog(
 				Logging::LogLevel::Exception,
@@ -104,7 +104,7 @@ namespace Engine::Factories
 
 	int TextureFactory::InitRaw(
 		std::unique_ptr<Rendering::TextureData>& texture_data,
-		Rendering::VulkanBuffer* staging_buffer,
+		Rendering::Vulkan::VBuffer* staging_buffer,
 		std::vector<unsigned char> raw_data,
 		int color_format,
 		VkFilter filtering,
@@ -126,12 +126,14 @@ namespace Engine::Factories
 
 		Rendering::Vulkan::VulkanRenderingEngine* renderer = this->owner_engine->GetRenderingEngine();
 
-		Rendering::VulkanBuffer* used_staging_buffer;
+		Rendering::Vulkan::VBuffer* used_staging_buffer = nullptr;
 
 		// If no valid buffer was passed then create one here
 		if (staging_buffer == nullptr)
 		{
-			used_staging_buffer = renderer->CreateVulkanBuffer(
+			used_staging_buffer = new Rendering::Vulkan::VBuffer(
+				renderer->GetDeviceManager().lock().get(),
+				renderer->GetVMAAllocator(),
 				static_cast<size_t>(memory_size),
 				VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
 				VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
@@ -147,14 +149,15 @@ namespace Engine::Factories
 
 		if (auto locked_device_manager = renderer->GetDeviceManager().lock())
 		{
-			vkMapMemory(
+			used_staging_buffer->MapMemory();
+			/* vkMapMemory(
 				locked_device_manager->GetLogicalDevice(),
 				used_staging_buffer->allocation_info.deviceMemory,
 				used_staging_buffer->allocation_info.offset,
 				used_staging_buffer->allocation_info.size,
 				0,
 				&used_staging_buffer->mapped_data
-			);
+			); */
 
 			memcpy(used_staging_buffer->mapped_data, raw_data.data(), static_cast<size_t>(memory_size));
 
@@ -179,7 +182,7 @@ namespace Engine::Factories
 			);
 
 			renderer->CopyVulkanBufferToImage(
-				used_staging_buffer->buffer,
+				used_staging_buffer->GetNativeHandle(),
 				texture_data->texture_image->image,
 				static_cast<uint32_t>(xsize),
 				static_cast<uint32_t>(ysize)
@@ -193,10 +196,14 @@ namespace Engine::Factories
 			);
 
 			// Unmap staging memory and cleanup buffer if we created it here
-			vkUnmapMemory(locked_device_manager->GetLogicalDevice(), used_staging_buffer->allocation_info.deviceMemory);
+			used_staging_buffer->UnmapMemory();
+			// vkUnmapMemory(locked_device_manager->GetLogicalDevice(),
+			// used_staging_buffer->allocation_info.deviceMemory);
+
 			if (staging_buffer == nullptr)
 			{
-				renderer->CleanupVulkanBuffer(used_staging_buffer);
+				delete used_staging_buffer;
+				// renderer->CleanupVulkanBuffer(used_staging_buffer);
 			}
 
 			texture_data->texture_image->AddImageView();

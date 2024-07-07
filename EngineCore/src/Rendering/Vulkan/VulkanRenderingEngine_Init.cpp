@@ -1,8 +1,8 @@
 #include "Rendering/Vulkan/VImage.hpp"
+#include "Rendering/Vulkan/VSwapchain.hpp"
 #include "Rendering/Vulkan/VulkanDeviceManager.hpp"
 #include "Rendering/Vulkan/VulkanRenderingEngine.hpp"
 #include "Rendering/Vulkan/VulkanStructDefs.hpp"
-#include "Rendering/Vulkan/VulkanSwapchain.hpp"
 
 #include "Logging/Logging.hpp"
 
@@ -44,10 +44,10 @@ namespace Engine::Rendering::Vulkan
 			);
 		}
 
-		this->swapchain = new VulkanSwapchain(this->device_manager.get(), extent, swapchain_image_count);
+		this->swapchain = new VSwapchain(this->device_manager.get(), extent, swapchain_image_count);
 
 		// this->vk_swap_chain_image_format = VK_FORMAT_B8G8R8A8_UNORM;
-		this->vk_swap_chain_extent = extent;
+		// this->vk_swap_chain_extent = extent;
 
 		this->logger->SimpleLog(Logging::LogLevel::Debug3, LOGPFX_CURRENT "Vulkan swap chain created");
 	}
@@ -231,8 +231,8 @@ namespace Engine::Rendering::Vulkan
 			framebuffer_info.renderPass		 = this->vk_render_pass;
 			framebuffer_info.attachmentCount = static_cast<uint32_t>(attachments.size());
 			framebuffer_info.pAttachments	 = attachments.data();
-			framebuffer_info.width			 = this->vk_swap_chain_extent.width;
-			framebuffer_info.height			 = this->vk_swap_chain_extent.height;
+			framebuffer_info.width			 = this->swapchain->GetExtent().width;
+			framebuffer_info.height			 = this->swapchain->GetExtent().height;
 			framebuffer_info.layers			 = 1;
 
 			VkDevice logical_device = this->device_manager->GetLogicalDevice();
@@ -279,7 +279,7 @@ namespace Engine::Rendering::Vulkan
 		this->vk_depth_buffer = new VImage(
 			this->device_manager.get(),
 			this->vma_allocator,
-			{this->vk_swap_chain_extent.width, this->vk_swap_chain_extent.height},
+			{this->swapchain->GetExtent().width, this->swapchain->GetExtent().height},
 			this->device_manager->GetMSAASampleCount(),
 			depth_format,
 			VK_IMAGE_TILING_OPTIMAL,
@@ -297,7 +297,7 @@ namespace Engine::Rendering::Vulkan
 		this->multisampled_color_image = new VImage(
 			this->device_manager.get(),
 			this->vma_allocator,
-			{this->vk_swap_chain_extent.width, this->vk_swap_chain_extent.height},
+			{this->swapchain->GetExtent().width, this->swapchain->GetExtent().height},
 			this->device_manager->GetMSAASampleCount(),
 			color_format,
 			VK_IMAGE_TILING_OPTIMAL,

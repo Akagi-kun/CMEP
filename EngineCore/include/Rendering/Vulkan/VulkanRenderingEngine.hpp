@@ -5,6 +5,7 @@
 #include "Rendering/Vulkan/VulkanStructDefs.hpp"
 
 #include "InternalEngineObject.hpp"
+#include "VBuffer.hpp"
 #include "framework.hpp"
 
 #include <cstdint>
@@ -29,7 +30,7 @@ namespace Engine::Rendering::Vulkan
 	{
 	private:
 		// Maximum number of frames in rotation/flight
-		static constexpr uint_fast16_t max_frames_in_flight = 2;
+		static constexpr uint16_t max_frames_in_flight = 2;
 
 		GLFWwindow* window = nullptr;
 		ScreenSize window_size;
@@ -39,19 +40,20 @@ namespace Engine::Rendering::Vulkan
 		bool framebuffer_resized = false;
 
 		// Swap chain data
-		VulkanSwapchain* swapchain = nullptr;
-		VkExtent2D vk_swap_chain_extent{};
+		VSwapchain* swapchain = nullptr;
 
 		// Framebuffers
 		std::vector<VkFramebuffer> vk_swap_chain_framebuffers;
 		// Multisampling
-		VImage* multisampled_color_image{};
+		VImage* multisampled_color_image = nullptr;
+		// Depth buffers
+		VImage* vk_depth_buffer			 = nullptr;
 
 		// Command pools and buffers
 		std::array<VCommandBuffer*, max_frames_in_flight> vk_command_buffers;
-		// std::array<VkCommandBuffer, max_frames_in_flight> vk_command_buffers;
 
 		// Synchronisation
+		// TODO: Struct SyncObjects together into single vector
 		std::array<VkSemaphore, max_frames_in_flight> image_available_semaphores;
 		std::array<VkSemaphore, max_frames_in_flight> present_ready_semaphores; // render_finished_semaphores
 		std::array<VkFence, max_frames_in_flight> acquire_ready_fences;			// maybe useless?
@@ -60,9 +62,6 @@ namespace Engine::Rendering::Vulkan
 		// Default pipeline
 		VulkanPipeline* graphics_pipeline_default = nullptr;
 		VkRenderPass vk_render_pass				  = VK_NULL_HANDLE;
-
-		// Depth buffers
-		VImage* vk_depth_buffer = nullptr;
 
 		// Device manager
 		std::shared_ptr<VulkanDeviceManager> device_manager;
@@ -112,7 +111,7 @@ namespace Engine::Rendering::Vulkan
 
 		// Cleanup functions
 		void Cleanup();
-		void CleanupVulkanBuffer(VulkanBuffer* buffer);
+		// void CleanupVulkanBuffer(VulkanBuffer* buffer);
 		void CleanupVulkanPipeline(VulkanPipeline* pipeline);
 
 		// Init
@@ -124,15 +123,8 @@ namespace Engine::Rendering::Vulkan
 		void SetRenderCallback(std::function<void(VkCommandBuffer, uint32_t, Engine*)> callback);
 
 		// Buffer functions
-		VulkanBuffer* CreateVulkanBuffer(
-			VkDeviceSize size,
-			VkBufferUsageFlags usage,
-			VkMemoryPropertyFlags properties,
-			VmaAllocationCreateFlags vmaAllocFlags
-		);
-		void BufferVulkanTransferCopy(VulkanBuffer* src, VulkanBuffer* dest, VkDeviceSize size);
-		VulkanBuffer* CreateVulkanVertexBufferFromData(std::vector<RenderingVertex> vertices);
-		VulkanBuffer* CreateVulkanStagingBufferWithData(void* data, VkDeviceSize dataSize);
+		VBuffer* CreateVulkanVertexBufferFromData(std::vector<RenderingVertex> vertices);
+		VBuffer* CreateVulkanStagingBufferWithData(void* data, VkDeviceSize dataSize);
 
 		// Image functions
 		void CopyVulkanBufferToImage(VkBuffer buffer, VkImage image, uint32_t width, uint32_t height);
@@ -155,12 +147,11 @@ namespace Engine::Rendering::Vulkan
 		void CreateVulkanDescriptorSets(VulkanPipeline* pipeline);
 
 		// Getters
-		// VkDevice GetLogicalDevice();
-		std::weak_ptr<VulkanDeviceManager> GetDeviceManager();
+		[[nodiscard]] std::weak_ptr<VulkanDeviceManager> GetDeviceManager();
 		[[nodiscard]] GLFWwindowData GetWindow() const;
 		[[nodiscard]] static uint32_t GetMaxFramesInFlight();
-		VmaAllocator GetVMAAllocator();
-		VCommandPool* GetCommandPool();
+		[[nodiscard]] VmaAllocator GetVMAAllocator();
+		[[nodiscard]] VCommandPool* GetCommandPool();
 
 		void SyncDeviceWaitIdle();
 

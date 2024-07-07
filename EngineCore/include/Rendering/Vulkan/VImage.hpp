@@ -17,10 +17,10 @@ namespace Engine::Rendering::Vulkan
 		VkImageLayout current_layout = VK_IMAGE_LAYOUT_UNDEFINED;
 
 	public:
-		VkImage image = VK_NULL_HANDLE;
+		// TODO: Make protected
 		VkFormat image_format;
-
 		VkImageView image_view = VK_NULL_HANDLE;
+		VkImage image		   = VK_NULL_HANDLE;
 
 		VImage(
 			VulkanDeviceManager* with_device_manager,
