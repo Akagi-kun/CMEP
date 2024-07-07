@@ -228,7 +228,8 @@ namespace Engine::Rendering::Vulkan
 		vmaDestroyAllocator(this->vma_allocator);
 
 		// Destroy device after VMA
-		this->device_manager->Cleanup();
+		this->device_manager.reset();
+		// this->device_manager->Cleanup();
 
 		// Clean up GLFW
 		glfwDestroyWindow(this->window);

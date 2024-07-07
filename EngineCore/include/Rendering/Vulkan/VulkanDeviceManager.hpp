@@ -72,10 +72,11 @@ namespace Engine::Rendering::Vulkan
 	public:
 		// using InternalEngineObject::InternalEngineObject;
 		VulkanDeviceManager(Engine* with_engine, GLFWwindow* new_window);
+		~VulkanDeviceManager();
 
 		// void Init(GLFWwindow* new_window);
 
-		void Cleanup();
+		// void Cleanup();
 
 		[[nodiscard]] const VkPhysicalDevice& GetPhysicalDevice() const noexcept
 		{

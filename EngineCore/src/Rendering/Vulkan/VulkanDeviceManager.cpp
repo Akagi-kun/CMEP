@@ -18,19 +18,6 @@
 
 namespace Engine::Rendering::Vulkan
 {
-	VulkanDeviceManager::VulkanDeviceManager(Engine* with_engine, GLFWwindow* new_window)
-		: InternalEngineObject(with_engine)
-	{
-		this->window = new_window;
-
-		this->InitVulkanInstance();
-		this->CreateVulkanSurface();
-		this->InitVulkanDevice();
-		this->CreateVulkanLogicalDevice();
-
-		this->vk_command_pool = new VCommandPool(this);
-	}
-
 #pragma region Debugging callbacks
 
 	VKAPI_ATTR static VkBool32 VKAPI_CALL VulkanDebugCallback(
@@ -94,6 +81,36 @@ namespace Engine::Rendering::Vulkan
 
 #pragma endregion
 
+	VulkanDeviceManager::VulkanDeviceManager(Engine* with_engine, GLFWwindow* new_window)
+		: InternalEngineObject(with_engine)
+	{
+		this->window = new_window;
+
+		this->InitVulkanInstance();
+		this->CreateVulkanSurface();
+		this->InitVulkanDevice();
+		this->CreateVulkanLogicalDevice();
+
+		this->vk_command_pool = new VCommandPool(this);
+	}
+
+	VulkanDeviceManager::~VulkanDeviceManager()
+	{
+		this->logger->SimpleLog(Logging::LogLevel::Info, LOGPFX_CURRENT "Cleaning up");
+
+		delete this->vk_command_pool;
+
+		vkDestroySurfaceKHR(this->vk_instance, this->vk_surface, nullptr);
+		vkDestroyDevice(this->vk_logical_device, nullptr);
+		if (this->enable_vk_validation_layers)
+		{
+			DestroyDebugUtilsMessengerEXT(this->vk_instance, this->vk_debug_messenger, nullptr);
+		}
+
+		vkDestroyInstance(this->vk_instance, nullptr);
+	}
+
+/*
 	void VulkanDeviceManager::Cleanup()
 	{
 		this->logger->SimpleLog(Logging::LogLevel::Info, LOGPFX_CURRENT "Cleaning up");
@@ -108,7 +125,7 @@ namespace Engine::Rendering::Vulkan
 		}
 		vkDestroyInstance(this->vk_instance, nullptr);
 	}
-
+ */
 #pragma region Internal init functions
 
 	void VulkanDeviceManager::InitVulkanInstance()
@@ -494,7 +511,7 @@ namespace Engine::Rendering::Vulkan
 				score += 100;
 				break;
 			default:
-				score += 5;
+				score += 10;
 				break;
 		}
 

@@ -238,11 +238,6 @@ namespace Engine
 
 				if (RendererType::MIN_ENUM < use_renderer_type && use_renderer_type < RendererType::MAX_ENUM)
 				{
-					// Engine* engine = locked_asset_manager->GetOwnerEngine();
-
-					// Allocate new object when renderer type is known
-					// object = new Object(engine);
-
 					switch (use_renderer_type)
 					{
 						case RendererType::SPRITE:
@@ -252,13 +247,10 @@ namespace Engine
 							);
 
 							object = ObjectFactory::CreateSpriteObject(scene, texture);
-
 							break;
 						}
 						default:
 						{
-							// delete object; // TODO: Reorder this
-							// object = nullptr;
 							this->logger->SimpleLog(
 								Logging::LogLevel::Warning,
 								"Unknown renderer type '%s' (matched '%u')",
