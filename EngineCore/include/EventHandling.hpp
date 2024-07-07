@@ -9,14 +9,17 @@ namespace Engine
 
 namespace Engine::EventHandling
 {
-	enum class EventType
+	enum class EventType : uint8_t
 	{
-		ON_INIT			= 0x1,
-		ON_UPDATE		= 0x2,
-		ON_KEYDOWN		= 0x4,
-		ON_KEYUP		= 0x8,
-		ON_MOUSEMOVED	= 0x10,
-		EVENT_UNDEFINED = 0xffff
+		MIN_ENUM = 0x00,
+
+		ON_INIT		  = 0x1,
+		ON_UPDATE	  = 0x2,
+		ON_KEYDOWN	  = 0x4,
+		ON_KEYUP	  = 0x8,
+		ON_MOUSEMOVED = 0x10,
+
+		MAX_ENUM = 0xFF,
 	};
 
 	// TODO: Make this a struct
@@ -25,8 +28,7 @@ namespace Engine::EventHandling
 	private:
 	public:
 		const EventType event_type;
-
-		Engine* raised_from;
+		Engine* const raised_from = nullptr;
 
 		double delta_time = 0.0;
 		union {
@@ -38,7 +40,7 @@ namespace Engine::EventHandling
 			} mouse; // ON_MOUSEMOVED event
 		};
 
-		Event(const EventType eventtype) : event_type(eventtype)
+		Event(Engine* const with_engine, const EventType eventtype) : event_type(eventtype), raised_from(with_engine)
 		{
 		}
 		~Event() = default;

@@ -47,7 +47,13 @@ namespace Engine
 				: InternalEngineObject(engine), mesh_builder(with_builder)
 			{
 			}
-			virtual ~IRenderer() = default;
+			virtual ~IRenderer()
+			{
+				// this->logger->SimpleLog(Logging::LogLevel::Debug2, "Cleaning up IRenderer");
+
+				delete this->mesh_builder;
+				this->mesh_builder = nullptr;
+			}
 
 			// Renderers shall implement this to get textures, fonts etc.
 			virtual void SupplyData(const RendererSupplyData& data) = 0;

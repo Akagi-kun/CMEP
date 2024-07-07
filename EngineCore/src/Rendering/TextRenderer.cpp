@@ -43,9 +43,6 @@ namespace Engine::Rendering
 
 	TextRenderer::~TextRenderer()
 	{
-		delete this->mesh_builder;
-		this->mesh_builder = nullptr;
-
 		this->logger->SimpleLog(Logging::LogLevel::Debug3, "Cleaning up text renderer");
 
 		Vulkan::VulkanRenderingEngine* renderer = this->owner_engine->GetRenderingEngine();

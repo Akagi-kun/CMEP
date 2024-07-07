@@ -201,13 +201,13 @@ onUpdate = function(event)
 	end
 
 	if (game_gameover_state == false and game_midgameover_state == false) then
+		-- Spawn new pipes
 		if spawn_pipe_since_last > spawn_pipe_every then
-			-- Spawn new pipes
-
-			-- We can use the math library in here!
+			-- Constant offset to center the pipes
 			local const_pipe_y_offset = -100
-			--local pipe_y_offset = const_pipe_y_offset
+			-- We can use the math library in here!
 			local pipe_y_offset = const_pipe_y_offset + math.random(-15, 15) * 10
+			--local pipe_y_offset = const_pipe_y_offset
 			
 			local pipe_id = tostring(spawn_pipe_last_idx + 1)
 
@@ -345,7 +345,7 @@ onInit = function(event)
 	-- uncomment this to set the desired framerate target
 	-- the engine will spinsleep until the target is reached
 	--
-	--event.engine:SetFramerateTarget(60)
+	--event.engine:SetFramerateTarget(30)
 
 	-- Get managers
 	local asset_manager = event.engine:GetAssetManager()

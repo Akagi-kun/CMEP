@@ -47,9 +47,6 @@ namespace Engine::Rendering
 
 	SpriteRenderer::~SpriteRenderer()
 	{
-		delete this->mesh_builder;
-		this->mesh_builder = nullptr;
-
 		this->logger->SimpleLog(Logging::LogLevel::Debug3, "Cleaning up sprite renderer");
 
 		this->texture.reset();

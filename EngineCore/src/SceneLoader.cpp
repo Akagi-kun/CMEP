@@ -2,10 +2,8 @@
 
 #include "Assets/AssetManager.hpp"
 #include "Rendering/AxisRenderer.hpp"
-#include "Rendering/IMeshBuilder.hpp"
 #include "Rendering/IRenderer.hpp"
 #include "Rendering/MeshRenderer.hpp"
-#include "Rendering/SpriteMeshBuilder.hpp"
 #include "Rendering/SpriteRenderer.hpp"
 #include "Rendering/TextRenderer.hpp"
 
@@ -43,12 +41,14 @@ namespace Engine
 	{
 		std::string scene_path = this->scene_prefix + "/" + scene_name + "/";
 
-		std::ifstream file(scene_path + "scene.json");
-
 		nlohmann::json data;
 		try
 		{
+			std::ifstream file(scene_path + "scene.json");
+
 			data = nlohmann::json::parse(file);
+
+			file.close();
 		}
 		catch (std::exception& e)
 		{
@@ -61,16 +61,11 @@ namespace Engine
 			throw;
 		}
 
-		file.close();
-
 		this->logger
 			->SimpleLog(Logging::LogLevel::Debug1, LOGPFX_CURRENT "Loading scene prefix is: %s", scene_path.c_str());
 
 		// Load Assets
 		this->LoadSceneAssets(data, scene_path);
-
-		// Get window config
-		const Rendering::GLFWwindowData window_config = this->owner_engine->GetRenderingEngine()->GetWindow();
 
 		// Load Event Handlers
 		this->LoadSceneEventHandlers(data, scene);
@@ -115,9 +110,9 @@ namespace Engine
 		if (auto locked_asset_manager = asset_manager.lock())
 		{
 			// Load scene event handlers
-			for (auto& event_handler_entry : data["eventHandlers"])
+			for (const auto& event_handler_entry : data["eventHandlers"])
 			{
-				EventHandling::EventType event_type = EventHandling::EventType::EVENT_UNDEFINED;
+				EventHandling::EventType event_type = EventHandling::EventType::MIN_ENUM;
 
 				std::string event_handler_type	   = event_handler_entry["type"].get<std::string>();
 				std::string event_handler_file	   = event_handler_entry["file"].get<std::string>();
@@ -155,10 +150,7 @@ namespace Engine
 					);
 				}
 
-				scene->lua_event_handlers.emplace(
-					event_type,
-					std::make_pair(event_handler, event_handler_entry["function"])
-				);
+				scene->lua_event_handlers.emplace(event_type, std::make_pair(event_handler, event_handler_function));
 			}
 
 			this->logger->SimpleLog(Logging::LogLevel::Debug2, LOGPFX_CURRENT "Done stage: Event Handlers");
@@ -222,11 +214,8 @@ namespace Engine
 				}
 
 				auto& scale_entry = scene_entry["scale"];
-				glm::vec3 scale	  = glm::vec3(
-					  scale_entry[0].get<float>(),
-					  scale_entry[1].get<float>(),
-					  scale_entry[2].get<float>()
-				  );
+				glm::vec3 scale =
+					glm::vec3(scale_entry[0].get<float>(), scale_entry[1].get<float>(), scale_entry[2].get<float>());
 
 				if (scene_entry["scale_aspixel"].is_array())
 				{

@@ -4,7 +4,7 @@
 #include "Rendering/Vulkan/VBuffer.hpp"
 #include "Rendering/Vulkan/VCommandBuffer.hpp"
 #include "Rendering/Vulkan/VCommandPool.hpp"
-#include "Rendering/Vulkan/VImage.hpp"
+#include "Rendering/Vulkan/VImage.hpp" // IWYU pragma: keep
 #include "Rendering/Vulkan/VSwapchain.hpp"
 #include "Rendering/Vulkan/VulkanDeviceManager.hpp"
 #include "Rendering/Vulkan/VulkanUtilities.hpp"
@@ -214,9 +214,9 @@ namespace Engine::Rendering::Vulkan
 			vkDestroyFence(logical_device, this->acquire_ready_fences[i], nullptr);
 		}
 
-		for (size_t i = 0; i < this->vk_command_buffers.size(); i++)
+		for (auto& vk_command_buffer : this->vk_command_buffers)
 		{
-			delete this->vk_command_buffers[i];
+			delete vk_command_buffer;
 		}
 
 		this->logger->SimpleLog(Logging::LogLevel::Debug3, LOGPFX_CURRENT "Cleaning up default vulkan pipeline");
@@ -290,10 +290,9 @@ namespace Engine::Rendering::Vulkan
 		this->CreateVulkanDefaultGraphicsPipeline();
 
 		// Create command buffers
-		for (size_t i = 0; i < this->vk_command_buffers.size(); i++)
+		for (auto& vk_command_buffer : this->vk_command_buffers)
 		{
-			this->vk_command_buffers[i] =
-				new VCommandBuffer(this->device_manager.get(), this->device_manager->GetCommandPool());
+			vk_command_buffer = new VCommandBuffer(this->device_manager.get(), this->device_manager->GetCommandPool());
 		}
 
 		this->CreateMultisampledColorResources();
@@ -788,14 +787,14 @@ namespace Engine::Rendering::Vulkan
 	{
 		std::vector<VkDescriptorSetLayoutBinding> bindings	= {};
 		std::vector<VkDescriptorBindingFlags> binding_flags = {};
-		// TODO: Range based for loop?
-		for (size_t i = 0; i < settings.size(); i++)
+
+		for (auto& setting : settings)
 		{
 			VkDescriptorSetLayoutBinding new_binding{};
-			new_binding.binding			   = settings[i].binding;
-			new_binding.descriptorCount	   = settings[i].descriptor_count;
-			new_binding.descriptorType	   = settings[i].types;
-			new_binding.stageFlags		   = settings[i].stage_flags;
+			new_binding.binding			   = setting.binding;
+			new_binding.descriptorCount	   = setting.descriptor_count;
+			new_binding.descriptorType	   = setting.types;
+			new_binding.stageFlags		   = setting.stage_flags;
 			new_binding.pImmutableSamplers = nullptr;
 
 			bindings.push_back(new_binding);

@@ -31,30 +31,39 @@
 namespace Engine
 {
 	// Utility sleep function
+	// algorithm I found somewhere on stackoverflow
 	void Engine::SpinSleep(double seconds)
 	{
 		static constexpr double nano_to_sec = 1e9;
 		static constexpr double spin_init	= 5e-3;
 
-		static double estimate = spin_init;
-		static double mean	   = spin_init;
-		static double m2	   = 0;
-		static int64_t count   = 1;
+		double estimate	  = spin_init;
+		double mean		  = spin_init;
+		double sumsquares = 0; // also known as m2
+		int64_t count	  = 1;
 
 		while (seconds > estimate)
 		{
+			// Perform measured sleep
 			const auto start = std::chrono::steady_clock::now();
 			std::this_thread::sleep_for(std::chrono::milliseconds(2));
 			const auto end = std::chrono::steady_clock::now();
 
+			// Observed passage of time (as was performed by sleep_for)
 			const double observed = static_cast<double>((end - start).count()) / nano_to_sec;
+			// Substract observed passage of time
+			// from total needed amount of sleep
 			seconds -= observed;
 
 			count++;
+			// change against mean average
 			const double delta = observed - mean;
+			// create new mean by adding current change to it
 			mean += delta / static_cast<double>(count);
-			m2 += delta * (observed - mean);
-			const double stddev = sqrt(m2 / static_cast<double>(count - 1));
+			// sum of squares accumulate
+			sumsquares += delta * (observed - mean);
+			// calculate standard deviation
+			const double stddev = sqrt(sumsquares / static_cast<double>(count - 1));
 			estimate			= mean + stddev;
 		}
 
@@ -76,11 +85,10 @@ namespace Engine
 		{
 			if ((this->state_mouse_x_pos - last_x) != 0.0 || (this->state_mouse_y_pos - last_y) != 0.0)
 			{
-				auto event		  = EventHandling::Event(EventHandling::EventType::ON_MOUSEMOVED);
-				event.mouse.x	  = this->state_mouse_x_pos - last_x;
-				event.mouse.y	  = this->state_mouse_y_pos - last_y;
-				event.delta_time  = deltaTime;
-				event.raised_from = this;
+				auto event		 = EventHandling::Event(this, EventHandling::EventType::ON_MOUSEMOVED);
+				event.mouse.x	 = this->state_mouse_x_pos - last_x;
+				event.mouse.y	 = this->state_mouse_y_pos - last_y;
+				event.delta_time = deltaTime;
 				this->FireEvent(event);
 
 				last_x = this->state_mouse_x_pos;
@@ -177,29 +185,30 @@ namespace Engine
 		(void)(scancode);
 		(void)(mods);
 
+		auto* renderer	   = static_cast<Rendering::Vulkan::VulkanRenderingEngine*>(glfwGetWindowUserPointer(window));
+		auto* owner_engine = renderer->GetOwnerEngine();
+
 		if (action == GLFW_PRESS)
 		{
-			auto* renderer	 = static_cast<Rendering::Vulkan::VulkanRenderingEngine*>(glfwGetWindowUserPointer(window));
-			auto event		 = EventHandling::Event(EventHandling::EventType::ON_KEYDOWN);
+			auto event		 = EventHandling::Event(owner_engine, EventHandling::EventType::ON_KEYDOWN);
 			event.keycode	 = static_cast<uint16_t>(key);
-			event.delta_time = renderer->GetOwnerEngine()->GetLastDeltaTime();
-			event.raised_from = renderer->GetOwnerEngine();
-			renderer->GetOwnerEngine()->FireEvent(event);
+			event.delta_time = owner_engine->GetLastDeltaTime();
+			owner_engine->FireEvent(event);
 		}
 		else if (action == GLFW_RELEASE)
 		{
-			auto* renderer	 = static_cast<Rendering::Vulkan::VulkanRenderingEngine*>(glfwGetWindowUserPointer(window));
-			auto event		 = EventHandling::Event(EventHandling::EventType::ON_KEYUP);
+			auto event		 = EventHandling::Event(owner_engine, EventHandling::EventType::ON_KEYUP);
 			event.keycode	 = static_cast<uint16_t>(key);
-			event.delta_time = renderer->GetOwnerEngine()->GetLastDeltaTime();
-			event.raised_from = renderer->GetOwnerEngine();
-			renderer->GetOwnerEngine()->FireEvent(event);
+			event.delta_time = owner_engine->GetLastDeltaTime();
+			owner_engine->FireEvent(event);
 		}
 	}
 
 	void Engine::RenderCallback(VkCommandBuffer commandBuffer, uint32_t currentFrame, Engine* engine)
 	{
 		const auto* objects = engine->scene_manager->GetSceneCurrent()->GetAllObjectsSorted();
+
+		// engine->logger->SimpleLog(Logging::LogLevel::Info, "Object count: %lu", objects->size());
 
 		for (const auto& [name, ptr] : *objects)
 		{
@@ -238,8 +247,7 @@ namespace Engine
 		this->scene_manager->AddObject("_axis", object);
 
 		// Pre-make ON_UPDATE event so we don't have to create it over and over again in hot loop
-		auto premade_on_update_event		= EventHandling::Event(EventHandling::EventType::ON_UPDATE);
-		premade_on_update_event.raised_from = this;
+		auto premade_on_update_event = EventHandling::Event(this, EventHandling::EventType::ON_UPDATE);
 
 		this->logger->SimpleLog(
 			Logging::LogLevel::Debug1,
@@ -432,9 +440,8 @@ namespace Engine
 		glfwSetErrorCallback(Engine::ErrorCallback);
 
 		// Fire ON_INIT event
-		auto on_init_event		  = EventHandling::Event(EventHandling::EventType::ON_INIT);
-		on_init_event.raised_from = this;
-		int on_init_event_ret	  = this->FireEvent(on_init_event);
+		auto on_init_event	  = EventHandling::Event(this, EventHandling::EventType::ON_INIT);
+		int on_init_event_ret = this->FireEvent(on_init_event);
 
 		// Measure and log ON_INIT time
 		static constexpr double nano_to_msec = 1.e6;

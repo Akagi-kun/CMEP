@@ -46,7 +46,7 @@ namespace Engine::Rendering::Vulkan
 				this->allocator,
 				&image_info,
 				&vma_alloc_info,
-				&(this->image),
+				&(this->native_handle),
 				&(this->allocation),
 				&(this->allocation_info)
 			) != VK_SUCCESS)
@@ -65,7 +65,7 @@ namespace Engine::Rendering::Vulkan
 			vkDestroyImageView(this->device_manager->GetLogicalDevice(), this->image_view, nullptr);
 		}
 
-		vkDestroyImage(this->device_manager->GetLogicalDevice(), this->image, nullptr);
+		vkDestroyImage(this->device_manager->GetLogicalDevice(), this->native_handle, nullptr);
 
 		vmaFreeMemory(this->allocator, this->allocation);
 	}
@@ -78,7 +78,7 @@ namespace Engine::Rendering::Vulkan
 		barrier.newLayout						= new_layout;
 		barrier.srcQueueFamilyIndex				= VK_QUEUE_FAMILY_IGNORED;
 		barrier.dstQueueFamilyIndex				= VK_QUEUE_FAMILY_IGNORED;
-		barrier.image							= this->image;
+		barrier.image							= this->native_handle;
 		barrier.subresourceRange.aspectMask		= VK_IMAGE_ASPECT_COLOR_BIT;
 		barrier.subresourceRange.baseMipLevel	= 0;
 		barrier.subresourceRange.levelCount		= 1;
@@ -132,7 +132,7 @@ namespace Engine::Rendering::Vulkan
 	{
 		VkImageViewCreateInfo view_info{};
 		view_info.sType							  = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
-		view_info.image							  = image;
+		view_info.image							  = this->native_handle;
 		view_info.viewType						  = VK_IMAGE_VIEW_TYPE_2D;
 		view_info.format						  = this->image_format;
 		view_info.subresourceRange.aspectMask	  = with_aspect_flags;

@@ -37,10 +37,8 @@ namespace Engine::Rendering
 
 		Vulkan::VulkanRenderingEngine* renderer = this->owner_engine->GetRenderingEngine();
 		renderer->SyncDeviceWaitIdle();
-		// vkDeviceWaitIdle(renderer->GetLogicalDevice());
 
 		delete this->vbo;
-		// renderer->CleanupVulkanBuffer(this->vbo);
 
 		renderer->CleanupVulkanPipeline(this->pipeline);
 	}

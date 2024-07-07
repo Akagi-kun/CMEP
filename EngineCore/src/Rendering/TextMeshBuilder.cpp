@@ -40,9 +40,8 @@ namespace Engine::Rendering
 
 			this->context.vbo = nullptr;
 			this->context.mesh.clear();
-
-			this->context.been_rebuilt = true;
 		}
+		this->context.been_rebuilt = true;
 
 		auto window_data  = this->renderer->GetWindow();
 		this->screen_size = {

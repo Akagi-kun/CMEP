@@ -183,7 +183,7 @@ namespace Engine::Factories
 
 			renderer->CopyVulkanBufferToImage(
 				used_staging_buffer->GetNativeHandle(),
-				texture_data->texture_image->image,
+				texture_data->texture_image->GetNativeHandle(),
 				static_cast<uint32_t>(xsize),
 				static_cast<uint32_t>(ysize)
 			);

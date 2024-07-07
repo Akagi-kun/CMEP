@@ -48,10 +48,8 @@ namespace Engine::Rendering
 
 		Vulkan::VulkanRenderingEngine* renderer = this->owner_engine->GetRenderingEngine();
 		renderer->SyncDeviceWaitIdle();
-		// vkDeviceWaitIdle(renderer->GetLogicalDevice());
 
 		delete this->vbo;
-		// renderer->CleanupVulkanBuffer(this->vbo);
 
 		renderer->CleanupVulkanPipeline(this->pipeline);
 	}
@@ -191,7 +189,7 @@ namespace Engine::Rendering
 
 					if (current_diffuse_texture_image != nullptr)
 					{
-						if (current_diffuse_texture_image->image != nullptr ||
+						if (current_diffuse_texture_image->GetNativeHandle() != nullptr ||
 							current_diffuse_texture_image->texture_sampler != VK_NULL_HANDLE)
 						{
 							VkDescriptorImageInfo diffuse_image_buffer_info{};
