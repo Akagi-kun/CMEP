@@ -7,6 +7,7 @@
 #include "InternalEngineObject.hpp"
 #include "vulkan/vulkan_core.h"
 
+#include <cstdint>
 #include <cstring>
 #include <memory>
 #include <set>
@@ -87,7 +88,12 @@ namespace Engine::Rendering::Vulkan
 		this->window = new_window;
 
 		this->InitVulkanInstance();
-		this->CreateVulkanSurface();
+
+		if (glfwCreateWindowSurface(this->vk_instance, this->window, nullptr, &this->vk_surface) != VK_SUCCESS)
+		{
+			throw std::runtime_error("glfw failed to create window surface!");
+		}
+
 		this->InitVulkanDevice();
 		this->CreateVulkanLogicalDevice();
 
@@ -110,22 +116,6 @@ namespace Engine::Rendering::Vulkan
 		vkDestroyInstance(this->vk_instance, nullptr);
 	}
 
-/*
-	void VulkanDeviceManager::Cleanup()
-	{
-		this->logger->SimpleLog(Logging::LogLevel::Info, LOGPFX_CURRENT "Cleaning up");
-
-		delete this->vk_command_pool;
-
-		vkDestroySurfaceKHR(this->vk_instance, this->vk_surface, nullptr);
-		vkDestroyDevice(this->vk_logical_device, nullptr);
-		if (this->enable_vk_validation_layers)
-		{
-			DestroyDebugUtilsMessengerEXT(this->vk_instance, this->vk_debug_messenger, nullptr);
-		}
-		vkDestroyInstance(this->vk_instance, nullptr);
-	}
- */
 #pragma region Internal init functions
 
 	void VulkanDeviceManager::InitVulkanInstance()
@@ -232,6 +222,7 @@ namespace Engine::Rendering::Vulkan
 		std::vector<VkPhysicalDevice> physical_devices(device_count);
 		vkEnumeratePhysicalDevices(this->vk_instance, &device_count, physical_devices.data());
 
+		// sorted map of scored devices
 		std::multimap<int, VkPhysicalDevice> candidates;
 
 		for (const auto& device : physical_devices)
@@ -243,6 +234,7 @@ namespace Engine::Rendering::Vulkan
 		// Check if the best candidate is suitable at all
 		if (candidates.rbegin()->first > 0)
 		{
+			// It is suitable
 			this->vk_physical_device = candidates.rbegin()->second;
 			this->msaa_samples		 = this->GetMaxUsableSampleCount();
 			this->logger->SimpleLog(Logging::LogLevel::Info, LOGPFX_CURRENT "Using MSAAx%u", this->msaa_samples);
@@ -255,6 +247,7 @@ namespace Engine::Rendering::Vulkan
 
 		VkPhysicalDeviceProperties device_properties;
 		vkGetPhysicalDeviceProperties(this->vk_physical_device, &device_properties);
+
 		this->logger->SimpleLog(
 			Logging::LogLevel::Info,
 			LOGPFX_CURRENT "Found a capable physical device: '%s'",
@@ -294,16 +287,6 @@ namespace Engine::Rendering::Vulkan
 		}
 
 		return true;
-	}
-
-	void VulkanDeviceManager::CreateVulkanSurface()
-	{
-		if (glfwCreateWindowSurface(this->vk_instance, this->window, nullptr, &this->vk_surface) != VK_SUCCESS)
-		{
-			throw std::runtime_error("failed to create window surface!");
-		}
-
-		this->logger->SimpleLog(Logging::LogLevel::Debug3, LOGPFX_CURRENT "Created glfw window surface");
 	}
 
 	void VulkanDeviceManager::CreateVulkanLogicalDevice()
@@ -483,7 +466,7 @@ namespace Engine::Rendering::Vulkan
 		return indices;
 	}
 
-	int VulkanDeviceManager::CheckVulkanPhysicalDeviceScore(VkPhysicalDevice device)
+	int16_t VulkanDeviceManager::CheckVulkanPhysicalDeviceScore(VkPhysicalDevice device)
 	{
 		// Physical device properties
 		VkPhysicalDeviceProperties device_properties;
@@ -493,25 +476,25 @@ namespace Engine::Rendering::Vulkan
 		VkPhysicalDeviceFeatures device_features;
 		vkGetPhysicalDeviceFeatures(device, &device_features);
 
-		int score = 0;
+		int16_t score = 0;
 
 		// Discrete GPUs have a significant performance advantage
 		switch (device_properties.deviceType)
 		{
 			case VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU:
-				score += 400;
+				score += 25;
 				break;
 			case VK_PHYSICAL_DEVICE_TYPE_INTEGRATED_GPU:
-				score += 300;
+				score += 20;
 				break;
 			case VK_PHYSICAL_DEVICE_TYPE_VIRTUAL_GPU:
-				score += 200;
+				score += 15;
 				break;
 			case VK_PHYSICAL_DEVICE_TYPE_CPU:
-				score += 100;
+				score += 10;
 				break;
 			default:
-				score += 10;
+				score += 5;
 				break;
 		}
 
@@ -578,31 +561,26 @@ namespace Engine::Rendering::Vulkan
 		VkPhysicalDeviceProperties physical_device_properties;
 		vkGetPhysicalDeviceProperties(this->vk_physical_device, &physical_device_properties);
 
+		// Check which sample counts are supported by the framebuffers
 		VkSampleCountFlags counts = physical_device_properties.limits.framebufferColorSampleCounts &
 									physical_device_properties.limits.framebufferDepthSampleCounts;
-		if ((counts & VK_SAMPLE_COUNT_64_BIT) != 0)
+
+		// VkSampleCountFlagBits is a binary value
+		// where each bit represents a choice.
+		// We can therefore iteratively right-shift it
+		// until the bit matches one enabled in VkSampleCountFlags
+		// (equal to a chain of if/else)
+		//
+		uint16_t bit_val = VK_SAMPLE_COUNT_64_BIT;
+		while (bit_val > 0)
 		{
-			return VK_SAMPLE_COUNT_64_BIT;
-		}
-		if ((counts & VK_SAMPLE_COUNT_32_BIT) != 0)
-		{
-			return VK_SAMPLE_COUNT_32_BIT;
-		}
-		if ((counts & VK_SAMPLE_COUNT_16_BIT) != 0)
-		{
-			return VK_SAMPLE_COUNT_16_BIT;
-		}
-		if ((counts & VK_SAMPLE_COUNT_8_BIT) != 0)
-		{
-			return VK_SAMPLE_COUNT_8_BIT;
-		}
-		if ((counts & VK_SAMPLE_COUNT_4_BIT) != 0)
-		{
-			return VK_SAMPLE_COUNT_4_BIT;
-		}
-		if ((counts & VK_SAMPLE_COUNT_2_BIT) != 0)
-		{
-			return VK_SAMPLE_COUNT_2_BIT;
+			// Try if this bit is enabled (count supported)
+			if ((counts & bit_val) != 0)
+			{
+				return static_cast<VkSampleCountFlagBits>(bit_val);
+			}
+
+			bit_val >>= 1;
 		}
 
 		return VK_SAMPLE_COUNT_1_BIT;

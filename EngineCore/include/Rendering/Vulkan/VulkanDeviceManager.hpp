@@ -57,7 +57,7 @@ namespace Engine::Rendering::Vulkan
 
 		// Internal device functions
 		VkSampleCountFlagBits GetMaxUsableSampleCount();
-		int CheckVulkanPhysicalDeviceScore(VkPhysicalDevice device);
+		int16_t CheckVulkanPhysicalDeviceScore(VkPhysicalDevice device);
 		bool CheckVulkanDeviceExtensionSupport(VkPhysicalDevice device);
 		QueueFamilyIndices FindVulkanQueueFamilies(VkPhysicalDevice device);
 		SwapChainSupportDetails QueryVulkanSwapChainSupport(VkPhysicalDevice device);
@@ -67,16 +67,10 @@ namespace Engine::Rendering::Vulkan
 		void InitVulkanInstance();
 		void InitVulkanDevice();
 		void CreateVulkanLogicalDevice();
-		void CreateVulkanSurface();
 
 	public:
-		// using InternalEngineObject::InternalEngineObject;
 		VulkanDeviceManager(Engine* with_engine, GLFWwindow* new_window);
 		~VulkanDeviceManager();
-
-		// void Init(GLFWwindow* new_window);
-
-		// void Cleanup();
 
 		[[nodiscard]] const VkPhysicalDevice& GetPhysicalDevice() const noexcept
 		{

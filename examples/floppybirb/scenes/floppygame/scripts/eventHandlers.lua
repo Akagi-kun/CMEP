@@ -58,12 +58,7 @@ local pxToScreenY = function(y)
 end
 
 local checkCollisions2DBox = function(x1, y1, w1, h1, x2, y2, w2, h2)
-	if (
-	 x1 < x2 + w2 and
-	 x1 + w1 > x2 and
-	 y1 < y2 + h2 and
-	 y1 + h1 > y2
-	) then
+	if ((x1 < x2 + w2) and (x1 + w1 > x2) and (y1 < y2 + h2) and (y1 + h1 > y2)) then
 		return true
 	else
 		return false
@@ -184,7 +179,7 @@ onUpdate = function(event)
 
 	local asset_manager = event.engine:GetAssetManager()
 	local scene_manager = event.engine:GetSceneManager()
-
+-- 
 	-- Updates frametime counter, recommend to leave this here for debugging purposes
 	if deltaTime_accum >= 1.0 then
 		local deltaTime_avg = deltaTime_accum / deltaTime_count
@@ -244,10 +239,8 @@ onUpdate = function(event)
 
 				-- Check collisions with both pipes
 				if checkCollisions2DBox(birbx, birby, pxToScreenX(birb_x_size), pxToScreenY(birb_y_size), x1, y1, pxToScreenX(pipe_x_size), pxToScreenY(pipe_y_size)) or -- pipe 1
-				   checkCollisions2DBox(birbx, birby, pxToScreenX(birb_x_size), pxToScreenY(birb_y_size), x2, y2, pxToScreenX(pipe_x_size), pxToScreenY(pipe_y_size))    -- pipe 2
+				   checkCollisions2DBox(birbx, birby, pxToScreenX(birb_x_size), pxToScreenY(birb_y_size), x2, y2, pxToScreenX(pipe_x_size), pxToScreenY(pipe_y_size))	 -- pipe 2
 				then
-					--game_gameover_state = true
-
 					gameOnGameOver(asset_manager, scene_manager)
 					return 0
 				end
@@ -278,8 +271,6 @@ onUpdate = function(event)
 		-- Check collisions with grounds
 		if checkCollisionsGrounds(birbx, birby)
 		then
-			--game_gameover_state = true
-
 			gameOnGameOver(asset_manager, scene_manager)
 			return 0
 		end
