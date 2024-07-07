@@ -5,7 +5,6 @@
 #include "Rendering/Vulkan/VulkanStructDefs.hpp"
 
 #include <cstdint>
-#include <cstdlib>
 #include <iterator>
 
 namespace Engine::Rendering
@@ -17,13 +16,11 @@ namespace Engine::Rendering
 			case RendererSupplyDataType::FONT:
 			{
 				this->font = std::static_pointer_cast<Font>(data.payload_ptr);
-				// this->has_updated_mesh = false;
 				break;
 			}
 			case RendererSupplyDataType::TEXT:
 			{
 				this->text.assign(data.payload_string);
-				// this->has_updated_mesh = false;
 				break;
 			}
 			default:
@@ -38,13 +35,13 @@ namespace Engine::Rendering
 		if (this->context.vbo != nullptr)
 		{
 			this->renderer->SyncDeviceWaitIdle();
-			// vkDeviceWaitIdle(this->renderer->GetLogicalDevice());
 
 			delete this->context.vbo;
-			// this->renderer->CleanupVulkanBuffer(this->context.vbo);
 
 			this->context.vbo = nullptr;
 			this->context.mesh.clear();
+
+			this->context.been_rebuilt = true;
 		}
 
 		auto window_data  = this->renderer->GetWindow();
@@ -63,7 +60,7 @@ namespace Engine::Rendering
 		float char_origin_y = 0.f;
 
 		// Iteratively generate a quad for each character based on font information
-		for (size_t i = 0; i < this->text.size(); i++)
+		for (char text_char : this->text)
 		{
 			// Following calculations assume that font sizes are specified in pixels
 			// Selected font size is assumed to be 1px in all calculations
@@ -76,7 +73,7 @@ namespace Engine::Rendering
 			// (as screen size increases, this value decreases)
 			const auto screen_size_ratio = (1.0f / static_cast<float>(this->screen_size.y));
 
-			if (this->text[i] == '\n')
+			if (text_char == '\n')
 			{
 				// Simulate a newline
 				char_origin_y += screen_size_ratio;
@@ -85,29 +82,45 @@ namespace Engine::Rendering
 			else
 			{
 				// Get character info
-				Rendering::FontChar* character = this->font->GetChar(this->text[i]);
+				Rendering::FontChar* chardata = this->font->GetChar(text_char);
 
 				// Check if font contains this character
-				if (character == nullptr)
+				if (chardata == nullptr)
 				{
-					this->logger
-						->SimpleLog(Logging::LogLevel::Error, "Char 0x%x is not found in set font", this->text[i]);
+					this->logger->SimpleLog(Logging::LogLevel::Error, "Char 0x%x is not found in set font", text_char);
 					continue;
 				}
 
 				// Get texture information
 				uint_fast32_t texture_width		 = 0;
 				uint_fast32_t texture_height	 = 0;
-				std::shared_ptr<Texture> texture = this->font->GetPageTexture(character->page);
+				std::shared_ptr<Texture> texture = this->font->GetPageTexture(chardata->page);
 				assert(texture != nullptr);
 				texture->GetSize(texture_width, texture_height);
 				assert(texture_width > 0 && texture_height > 0);
 
 				// Character parameters as specified in .fnt file
-				const auto char_x	   = static_cast<float>(character->x);
-				const auto char_y	   = static_cast<float>(character->y);
-				const auto char_width  = static_cast<float>(character->width);
-				const auto char_height = static_cast<float>(character->height);
+				const auto char_x	   = static_cast<float>(chardata->x);
+				const auto char_y	   = static_cast<float>(chardata->y);
+				const auto char_width  = static_cast<float>(chardata->width);
+				const auto char_height = static_cast<float>(chardata->height);
+
+				// Offset origin by xoffset (specified in .fnt file) of this char
+				const float position_x = char_origin_x + ((static_cast<float>(chardata->xoffset) * font_size_ratio) /
+														  static_cast<float>(this->screen_size.x));
+				const float position_y = char_origin_y;
+				const float position_z = 0.0f;
+
+				// position_x is already set so we can
+				// move origin to the next character using xadvance from font
+				char_origin_x += (static_cast<float>(chardata->xadvance) * font_size_ratio) /
+								 static_cast<float>(this->screen_size.x);
+
+				// If current character is space we can skip generating a mesh for it
+				if (text_char == ' ')
+				{
+					continue;
+				}
 
 				// Convert character size to screen-space coordinates
 				// in renderer, multiply with selected size
@@ -119,26 +132,10 @@ namespace Engine::Rendering
 				const float size_x			  = (char_width_ratio / static_cast<float>(this->screen_size.x));
 				const float size_y			  = (char_height_ratio / static_cast<float>(this->screen_size.y));
 
-				// Offset origin by xoffset (specified in .fnt file) of this char
-				const float position_x = char_origin_x + ((static_cast<float>(character->xoffset) * font_size_ratio) /
-														  static_cast<float>(this->screen_size.x));
-				const float position_y = char_origin_y;
-				const float position_z = 0.0f;
-
+				// Color data
 				const float color_r = 1.0f;
 				const float color_g = 1.0f;
 				const float color_b = 1.0f;
-
-				// position_x is already set so we can
-				// move origin to the next character using xadvance from font
-				char_origin_x += (static_cast<float>(character->xadvance) * font_size_ratio) /
-								 static_cast<float>(this->screen_size.x);
-
-				// If current character is space we can skip generating a mesh for it
-				if (this->text[i] == ' ')
-				{
-					continue;
-				}
 
 				const std::vector<RenderingVertex> vertices = {
 					RenderingVertex{

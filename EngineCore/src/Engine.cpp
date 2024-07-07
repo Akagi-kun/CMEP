@@ -69,8 +69,8 @@ namespace Engine
 	{
 		Rendering::GLFWwindowData windowdata = this->rendering_engine->GetWindow();
 
-		static double last_x = (windowdata.window_x / 2);
-		static double last_y = (windowdata.window_y / 2);
+		static double last_x = static_cast<double>(windowdata.window_x) / 2;
+		static double last_y = static_cast<double>(windowdata.window_y) / 2;
 
 		if (this->state_is_window_in_focus && this->state_is_window_in_content)
 		{

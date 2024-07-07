@@ -53,7 +53,6 @@ namespace Engine::Rendering::Vulkan
 				&(this->texture_sampler)
 			) != VK_SUCCESS)
 		{
-			// this->logger->SimpleLog(Logging::LogLevel::Error, LOGPFX_CURRENT "Failed to create texture sampler");
 			throw std::runtime_error("failed to create texture sampler!");
 		}
 	}

@@ -38,5 +38,16 @@ namespace Engine::Rendering
 		{
 			return this->context;
 		}
+
+		[[nodiscard]] const bool HasRebuilt()
+		{
+			if (this->context.been_rebuilt)
+			{
+				this->context.been_rebuilt = false;
+				return true;
+			}
+
+			return false;
+		}
 	};
 } // namespace Engine::Rendering

@@ -27,6 +27,8 @@ namespace Engine::Rendering
 
 			this->context.vbo			 = this->renderer->CreateVulkanVertexBufferFromData(generated_mesh);
 			this->context.vbo_vert_count = generated_mesh.size();
+
+			this->context.been_rebuilt = true;
 		}
 	}
 } // namespace Engine::Rendering

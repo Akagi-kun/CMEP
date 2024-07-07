@@ -96,7 +96,6 @@ namespace Engine::Rendering
 		if (this->mesh_builder != nullptr)
 		{
 			this->mesh_builder->Build();
-			this->mesh_context = this->mesh_builder->GetContext();
 		}
 
 		glm::mat4 projection{};
@@ -180,6 +179,11 @@ namespace Engine::Rendering
 			this->UpdateMesh();
 		}
 
+		if (this->mesh_builder->HasRebuilt())
+		{
+			this->mesh_context = this->mesh_builder->GetContext();
+		}
+
 		// Skip render if VBO empty
 		if (this->mesh_context.vbo_vert_count <= 0)
 		{
@@ -194,23 +198,7 @@ namespace Engine::Rendering
 			&this->mat_mvp,
 			sizeof(glm::mat4)
 		);
-		/*
-			vkMapMemory(
-				renderer->GetLogicalDevice(),
-				pipeline->uniform_buffers[currentFrame]->allocation_info.deviceMemory,
-				pipeline->uniform_buffers[currentFrame]->allocation_info.offset,
-				pipeline->uniform_buffers[currentFrame]->allocation_info.size,
-				0,
-				&(pipeline->uniform_buffers[currentFrame]->mapped_data)
-			);
 
-			memcpy(this->pipeline->uniform_buffers[currentFrame]->mapped_data, &this->mat_mvp, sizeof(glm::mat4));
-
-			vkUnmapMemory(
-				renderer->GetLogicalDevice(),
-				pipeline->uniform_buffers[currentFrame]->allocation_info.deviceMemory
-			);
-		 */
 		vkCmdBindDescriptorSets(
 			commandBuffer,
 			VK_PIPELINE_BIND_POINT_GRAPHICS,

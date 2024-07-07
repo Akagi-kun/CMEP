@@ -12,5 +12,7 @@ namespace Engine::Rendering
 		// On build finish
 		Vulkan::VBuffer* vbo;
 		size_t vbo_vert_count;
+
+		bool been_rebuilt;
 	};
 } // namespace Engine::Rendering
