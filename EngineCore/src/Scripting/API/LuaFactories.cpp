@@ -49,7 +49,6 @@ namespace Engine::Scripting::API::LuaObjectFactories
 
 		// Generate renderer table
 		lua_newtable(state);
-		// lua_pushlightuserdata(state, object_ptr->GetFirstModule(ModuleType::RENDERER));
 		lua_pushlightuserdata(state, object_ptr->GetRenderer());
 		lua_setfield(state, -2, "_pointer");
 		lua_setfield(state, -2, "renderer");
@@ -86,8 +85,6 @@ namespace Engine::Scripting::API::LuaObjectFactories
 		}
 
 		// Add Engine pointer
-		// auto** ptr_obj = static_cast<Engine**>(lua_newuserdata(state, sizeof(Engine*)));
-		//(*ptr_obj)	   = engine_ptr;
 		lua_pushlightuserdata(state, engine_ptr);
 		lua_setfield(state, -2, "_pointer");
 	}

@@ -319,8 +319,6 @@ onUpdate = function(event)
 		then
 			game_gameover_state = true
 		end
-		--birb_velocity = birb_velocity - birb_gravity * event.deltaTime
-		--spawn_pipe_since_last = spawn_pipe_since_last + event.deltaTime
 	end
 
 	return 0

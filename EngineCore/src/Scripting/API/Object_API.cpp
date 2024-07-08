@@ -13,6 +13,8 @@ namespace Engine::Scripting::API
 
 		static int AddChild(lua_State* state)
 		{
+			CMEP_CHECK_FN_ARGC(state, 2);
+
 			lua_getfield(state, 1, "_pointer");
 			auto* ptr_obj = static_cast<Object*>(lua_touserdata(state, -1));
 
@@ -26,6 +28,8 @@ namespace Engine::Scripting::API
 
 		static int GetRotation(lua_State* state)
 		{
+			CMEP_CHECK_FN_ARGC(state, 1);
+
 			lua_getfield(state, 1, "_pointer");
 			auto* ptr_obj = static_cast<Object*>(lua_touserdata(state, -1));
 
@@ -40,6 +44,8 @@ namespace Engine::Scripting::API
 
 		static int SetRotation(lua_State* state)
 		{
+			CMEP_CHECK_FN_ARGC(state, 4);
+
 			lua_getfield(state, 1, "_pointer");
 			auto* ptr_obj = static_cast<Object*>(lua_touserdata(state, -1));
 
@@ -55,6 +61,8 @@ namespace Engine::Scripting::API
 
 		static int GetSize(lua_State* state)
 		{
+			CMEP_CHECK_FN_ARGC(state, 1);
+
 			lua_getfield(state, 1, "_pointer");
 			auto* ptr_obj = static_cast<Object*>(lua_touserdata(state, -1));
 
@@ -69,6 +77,8 @@ namespace Engine::Scripting::API
 
 		static int SetSize(lua_State* state)
 		{
+			CMEP_CHECK_FN_ARGC(state, 4);
+
 			lua_getfield(state, 1, "_pointer");
 			auto* ptr_obj = static_cast<Object*>(lua_touserdata(state, -1));
 
@@ -84,6 +94,8 @@ namespace Engine::Scripting::API
 
 		static int GetPosition(lua_State* state)
 		{
+			CMEP_CHECK_FN_ARGC(state, 1);
+
 			lua_getfield(state, 1, "_pointer");
 			auto* ptr_obj = static_cast<Object*>(lua_touserdata(state, -1));
 
@@ -98,6 +110,8 @@ namespace Engine::Scripting::API
 
 		static int SetPosition(lua_State* state)
 		{
+			CMEP_CHECK_FN_ARGC(state, 4);
+
 			lua_getfield(state, 1, "_pointer");
 			auto* ptr_obj = static_cast<Object*>(lua_touserdata(state, -1));
 

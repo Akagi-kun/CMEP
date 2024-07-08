@@ -175,7 +175,7 @@ namespace Engine::Scripting
 			this->logger->SimpleLog(
 				Logging::LogLevel::Warning,
 				LOGPFX_CURRENT "Error when calling Lua\n\tscript '%s'\n\tfunction: "
-							   "'%s'\n\terrorcode: %i\n\terrormsg: %s",
+							   "'%s'\n\terrorcode: %i\n\terrormsg: '%s'",
 				script->path.c_str(),
 				function.c_str(),
 				errcall,

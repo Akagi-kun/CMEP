@@ -33,7 +33,7 @@ namespace Engine
 		{
 			unsigned int size_x = 0;
 			unsigned int size_y = 0;
-			std::string title	= "nil";
+			std::string title	= "unknown";
 		} window;
 
 		struct
@@ -41,15 +41,8 @@ namespace Engine
 			unsigned int framerate_target = 0;
 		} rendering;
 
-		struct
-		{
-			std::string textures;
-			std::string models;
-			std::string scripts;
-			std::string scenes;
-		} lookup;
-
-		std::string default_scene;
+		std::string scene_path	  = "game/scenes/";
+		std::string default_scene = "default";
 	} EngineConfig;
 
 	class Engine final

@@ -27,7 +27,7 @@ static void InitConsoleWin32()
 #	define DEFAULT_LOG_LEVEL Logging::LogLevel::Debug1
 #endif
 
-static void RunEngine(bool verbose)
+static int RunEngine(bool verbose)
 {
 	std::shared_ptr<Logging::Logger> my_logger = std::make_shared<Logging::Logger>();
 
@@ -79,7 +79,7 @@ static void RunEngine(bool verbose)
 	catch (std::exception& e)
 	{
 		my_logger->SimpleLog(Logging::LogLevel::Exception, "Exception loading config! e.what(): %s", e.what());
-		throw;
+		return 1;
 	}
 
 	// Start execution
@@ -90,10 +90,12 @@ static void RunEngine(bool verbose)
 	catch (std::exception& e)
 	{
 		my_logger->SimpleLog(Logging::LogLevel::Exception, "Exception running engine! e.what(): %s", e.what());
-		throw;
+		return 2;
 	}
 
 	my_logger->SimpleLog(Logging::LogLevel::Info, "Bye!");
+
+	return 0;
 }
 
 int main(int argc, char** argv)
@@ -113,7 +115,5 @@ int main(int argc, char** argv)
 	InitConsoleWin32();
 #endif
 
-	RunEngine(verbose);
-
-	return 0;
+	return RunEngine(verbose);
 }

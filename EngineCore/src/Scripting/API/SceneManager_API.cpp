@@ -4,6 +4,7 @@
 #include "Scripting/API/framework.hpp"
 
 #include "SceneManager.hpp"
+#include "lua.h"
 
 // Prefixes for logging messages
 #define LOGPFX_CURRENT LOGPFX_LUA_MAPPED
@@ -18,92 +19,60 @@ namespace Engine::Scripting::API
 
 		static int GetCameraHVRotation(lua_State* state)
 		{
+			CMEP_CHECK_FN_ARGC(state, 1);
+
 			lua_getfield(state, 1, "_smart_ptr");
 			std::weak_ptr<SceneManager> scene_manager = *static_cast<std::weak_ptr<SceneManager>*>(
 				lua_touserdata(state, -1)
 			);
 
-			glm::vec2 hvrot{};
 			if (auto locked_scene_manager = scene_manager.lock())
 			{
-				hvrot = locked_scene_manager->GetCameraHVRotation();
+				glm::vec2 hvrot = locked_scene_manager->GetCameraHVRotation();
+
+				lua_pushnumber(state, static_cast<double>(hvrot.x));
+				lua_pushnumber(state, static_cast<double>(hvrot.y));
+
+				return 2;
 			}
 
-			lua_pushnumber(state, static_cast<double>(hvrot.x));
-			lua_pushnumber(state, static_cast<double>(hvrot.y));
-
-			return 2;
+			return luaL_error(state, "Could not lock scene manager!");
 		}
 
 		static int SetCameraHVRotation(lua_State* state)
 		{
+			CMEP_CHECK_FN_ARGC(state, 3);
+
 			lua_getfield(state, 1, "_smart_ptr");
 			std::weak_ptr<SceneManager> scene_manager = *static_cast<std::weak_ptr<SceneManager>*>(
 				lua_touserdata(state, -1)
 			);
 
-			double h = lua_tonumber(state, 2);
-			double v = lua_tonumber(state, 3);
-
 			if (auto locked_scene_manager = scene_manager.lock())
 			{
-				locked_scene_manager->SetCameraHVRotation(glm::vec2(h, v));
+				double h_rot = lua_tonumber(state, 2);
+				double v_rot = lua_tonumber(state, 3);
+
+				locked_scene_manager->SetCameraHVRotation(glm::vec2(h_rot, v_rot));
+
+				return 0;
 			}
 
-			return 0;
+			return luaL_error(state, "Could not lock scene manager!");
 		}
 
 		static int GetCameraTransform(lua_State* state)
 		{
+			CMEP_CHECK_FN_ARGC(state, 1);
+
 			lua_getfield(state, 1, "_smart_ptr");
 			std::weak_ptr<SceneManager> scene_manager = *static_cast<std::weak_ptr<SceneManager>*>(
 				lua_touserdata(state, -1)
 			);
 
-			glm::vec3 transform{};
-
 			if (auto locked_scene_manager = scene_manager.lock())
 			{
-				locked_scene_manager->GetCameraTransform();
-			}
-
-			lua_pushnumber(state, static_cast<double>(transform.x));
-			lua_pushnumber(state, static_cast<double>(transform.y));
-			lua_pushnumber(state, static_cast<double>(transform.z));
-
-			return 3;
-		}
-
-		static int SetCameraTransform(lua_State* state)
-		{
-			lua_getfield(state, 1, "_smart_ptr");
-			std::weak_ptr<SceneManager> scene_manager = *static_cast<std::weak_ptr<SceneManager>*>(
-				lua_touserdata(state, -1)
-			);
-
-			double x = lua_tonumber(state, 2);
-			double y = lua_tonumber(state, 3);
-			double z = lua_tonumber(state, 4);
-
-			if (auto locked_scene_manager = scene_manager.lock())
-			{
-				locked_scene_manager->SetCameraTransform(glm::vec3(x, y, z));
-			}
-
-			return 0;
-		}
-
-		static int GetLightTransform(lua_State* state)
-		{
-			lua_getfield(state, 1, "_smart_ptr");
-			std::weak_ptr<SceneManager> scene_manager = *static_cast<std::weak_ptr<SceneManager>*>(
-				lua_touserdata(state, -1)
-			);
-
-			glm::vec3 transform{};
-			if (auto locked_scene_manager = scene_manager.lock())
-			{
-				transform = locked_scene_manager->GetLightTransform();
+				glm::vec3 transform = locked_scene_manager->GetCameraTransform();
 
 				lua_pushnumber(state, static_cast<double>(transform.x));
 				lua_pushnumber(state, static_cast<double>(transform.y));
@@ -111,37 +80,83 @@ namespace Engine::Scripting::API
 
 				return 3;
 			}
-			else
-			{
-				return 0;
-			}
+
+			return luaL_error(state, "Could not lock scene manager!");
 		}
 
-		static int SetLightTransform(lua_State* state)
+		static int SetCameraTransform(lua_State* state)
 		{
+			CMEP_CHECK_FN_ARGC(state, 4);
+
 			lua_getfield(state, 1, "_smart_ptr");
 			std::weak_ptr<SceneManager> scene_manager = *static_cast<std::weak_ptr<SceneManager>*>(
 				lua_touserdata(state, -1)
 			);
 
-			double x = lua_tonumber(state, 2);
-			double y = lua_tonumber(state, 3);
-			double z = lua_tonumber(state, 4);
-
 			if (auto locked_scene_manager = scene_manager.lock())
 			{
-				locked_scene_manager->SetLightTransform(glm::vec3(x, y, z));
-			}
-			else
-			{
+				double x_pos = lua_tonumber(state, 2);
+				double y_pos = lua_tonumber(state, 3);
+				double z_pos = lua_tonumber(state, 4);
+
+				locked_scene_manager->SetCameraTransform(glm::vec3(x_pos, y_pos, z_pos));
+
 				return 0;
 			}
 
-			return 0;
+			return luaL_error(state, "Could not lock scene manager!");
+		}
+
+		static int GetLightTransform(lua_State* state)
+		{
+			CMEP_CHECK_FN_ARGC(state, 1);
+
+			lua_getfield(state, 1, "_smart_ptr");
+			std::weak_ptr<SceneManager> scene_manager = *static_cast<std::weak_ptr<SceneManager>*>(
+				lua_touserdata(state, -1)
+			);
+
+			if (auto locked_scene_manager = scene_manager.lock())
+			{
+				glm::vec3 transform = locked_scene_manager->GetLightTransform();
+
+				lua_pushnumber(state, static_cast<double>(transform.x));
+				lua_pushnumber(state, static_cast<double>(transform.y));
+				lua_pushnumber(state, static_cast<double>(transform.z));
+
+				return 3;
+			}
+
+			return luaL_error(state, "Could not lock scene manager!");
+		}
+
+		static int SetLightTransform(lua_State* state)
+		{
+			CMEP_CHECK_FN_ARGC(state, 4);
+
+			lua_getfield(state, 1, "_smart_ptr");
+			std::weak_ptr<SceneManager> scene_manager = *static_cast<std::weak_ptr<SceneManager>*>(
+				lua_touserdata(state, -1)
+			);
+
+			if (auto locked_scene_manager = scene_manager.lock())
+			{
+				double x_pos = lua_tonumber(state, 2);
+				double y_pos = lua_tonumber(state, 3);
+				double z_pos = lua_tonumber(state, 4);
+
+				locked_scene_manager->SetLightTransform(glm::vec3(x_pos, y_pos, z_pos));
+
+				return 0;
+			}
+
+			return luaL_error(state, "Could not lock scene manager!");
 		}
 
 		static int AddObject(lua_State* state)
 		{
+			CMEP_CHECK_FN_ARGC(state, 3);
+
 			lua_getfield(state, 1, "_smart_ptr");
 			std::weak_ptr<SceneManager> scene_manager = *static_cast<std::weak_ptr<SceneManager>*>(
 				lua_touserdata(state, -1)
@@ -154,18 +169,18 @@ namespace Engine::Scripting::API
 
 			if (auto locked_scene_manager = scene_manager.lock())
 			{
-				locked_scene_manager->AddObject(std::move(name), ptr_obj);
-			}
-			else
-			{
+				locked_scene_manager->GetSceneCurrent()->AddObject(name, ptr_obj);
+
 				return 0;
 			}
 
-			return 0;
+			return luaL_error(state, "Could not lock scene manager!");
 		}
 
 		static int FindObject(lua_State* state)
 		{
+			CMEP_CHECK_FN_ARGC(state, 2);
+
 			lua_getfield(state, 1, "_smart_ptr");
 			std::weak_ptr<SceneManager> scene_manager = *static_cast<std::weak_ptr<SceneManager>*>(
 				lua_touserdata(state, -1)
@@ -173,41 +188,27 @@ namespace Engine::Scripting::API
 
 			std::string obj_name = lua_tostring(state, 2);
 
-			Object* obj;
 			if (auto locked_scene_manager = scene_manager.lock())
 			{
-				obj = locked_scene_manager->FindObject(obj_name);
-			}
-			else
-			{
-				return 0;
-			}
+				Object* obj = locked_scene_manager->FindObject(obj_name);
 
-			if (obj != nullptr)
-			{
-				API::LuaObjectFactories::ObjectFactory(state, obj);
-			}
-			else
-			{
-				std::weak_ptr<Logging::Logger> logger = API::LuaObjectFactories::MetaLoggerFactory(state);
-
-				if (auto locked_logger = logger.lock())
+				if (obj != nullptr)
 				{
-					locked_logger->SimpleLog(
-						Logging::LogLevel::Warning,
-						LOGPFX_CURRENT "Object %s requested but returned nullptr!",
-						obj_name.c_str()
-					);
+					API::LuaObjectFactories::ObjectFactory(state, obj);
+
+					return 1;
 				}
 
-				lua_pushnil(state);
+				return luaL_error(state, "Object %s requested but returned nullptr!", obj_name.c_str());
 			}
 
-			return 1;
+			return luaL_error(state, "Could not lock scene manager!");
 		}
 
 		static int RemoveObject(lua_State* state)
 		{
+			CMEP_CHECK_FN_ARGC(state, 2);
+
 			lua_getfield(state, 1, "_smart_ptr");
 			std::weak_ptr<SceneManager> scene_manager = *static_cast<std::weak_ptr<SceneManager>*>(
 				lua_touserdata(state, -1)
@@ -217,14 +218,18 @@ namespace Engine::Scripting::API
 
 			if (auto locked_scene_manager = scene_manager.lock())
 			{
-				locked_scene_manager->RemoveObject(std::move(name));
+				locked_scene_manager->RemoveObject(name);
+
+				return 0;
 			}
 
-			return 0;
+			return luaL_error(state, "Could not lock scene manager!");
 		}
 
 		static int AddTemplatedObject(lua_State* state)
 		{
+			CMEP_CHECK_FN_ARGC(state, 3);
+
 			lua_getfield(state, 1, "_smart_ptr");
 			std::weak_ptr<SceneManager> scene_manager = *static_cast<std::weak_ptr<SceneManager>*>(
 				lua_touserdata(state, -1)
@@ -235,46 +240,12 @@ namespace Engine::Scripting::API
 
 			if (auto locked_scene_manager = scene_manager.lock())
 			{
-				/*Object* object = */
 				locked_scene_manager->AddTemplatedObject(name, template_name);
-				/*
-				if (object != nullptr)
-				{
-					LuaObjectFactories::ObjectFactory(state, object.get());
 
-					return 1;
-				}
-				else
-				{
-					std::weak_ptr<Logging::Logger> logger =
-	API::LuaObjectFactories::MetaLoggerFactory(state);
-
-					if (auto locked_logger = logger.lock())
-					{
-						locked_logger->SimpleLog(
-							Logging::LogLevel::Warning,
-							LOGPFX_CURRENT "Templated Object '%s' could not be added! (check if
-	valid?)", name.c_str()
-						);
-					}
-				}
-				 */
-			}
-			else
-			{
-				std::weak_ptr<Logging::Logger> logger = API::LuaObjectFactories::MetaLoggerFactory(state);
-
-				if (auto locked_logger = logger.lock())
-				{
-					locked_logger->SimpleLog(
-						Logging::LogLevel::Error,
-						LOGPFX_CURRENT "Scene manager could not be locked!"
-					);
-				}
-				// TODO: Possible lua_error?
+				return 0;
 			}
 
-			return 0;
+			return luaL_error(state, "Could not lock scene manager!");
 		}
 #pragma endregion
 

@@ -7,8 +7,6 @@
     "rendering": {
         "framerateTarget": 0
     },
-    "lookup": {
-        "scenes": "game/scenes"
-    },
+    "scene_path": "game/scenes/",
     "defaultScene": "floppygame"
 }

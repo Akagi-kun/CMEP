@@ -4,8 +4,6 @@
 #include "Scripting/API/framework.hpp"
 
 #include "Engine.hpp"
-
-// #include "Scripting/lualib/lua.h"
 #include "lua.hpp"
 
 // Prefixes for logging messages
@@ -18,6 +16,8 @@ namespace Engine::Scripting::API
 	{
 		static int GetAssetManager(lua_State* state)
 		{
+			CMEP_CHECK_FN_ARGC(state, 1);
+
 			lua_getfield(state, 1, "_pointer");
 			auto* engine_ptr = static_cast<Engine*>(lua_touserdata(state, -1));
 
@@ -26,27 +26,17 @@ namespace Engine::Scripting::API
 			if (!asset_manager.expired())
 			{
 				API::LuaObjectFactories::AssetManagerFactory(state, asset_manager);
-			}
-			else
-			{
-				std::weak_ptr<Logging::Logger> logger = API::LuaObjectFactories::MetaLoggerFactory(state);
 
-				if (auto locked_logger = logger.lock())
-				{
-					locked_logger->SimpleLog(
-						Logging::LogLevel::Warning,
-						LOGPFX_CURRENT "AssetManager requested but is expired!"
-					);
-				}
-
-				return luaL_error(state, "AssetManager is expired");
+				return 1;
 			}
 
-			return 1;
+			return luaL_error(state, "AssetManager is expired");
 		}
 
 		static int GetSceneManager(lua_State* state)
 		{
+			CMEP_CHECK_FN_ARGC(state, 1);
+
 			lua_getfield(state, 1, "_pointer");
 			auto* engine_ptr = static_cast<Engine*>(lua_touserdata(state, -1));
 
@@ -55,27 +45,17 @@ namespace Engine::Scripting::API
 			if (!scene_manager.expired())
 			{
 				API::LuaObjectFactories::SceneManagerFactory(state, scene_manager);
-			}
-			else
-			{
-				std::weak_ptr<Logging::Logger> logger = API::LuaObjectFactories::MetaLoggerFactory(state);
 
-				if (auto locked_logger = logger.lock())
-				{
-					locked_logger->SimpleLog(
-						Logging::LogLevel::Warning,
-						LOGPFX_CURRENT "SceneManager requested but is expired!"
-					);
-				}
-
-				return luaL_error(state, "SceneManager is expired");
+				return 1;
 			}
 
-			return 1;
+			return luaL_error(state, "SceneManager is expired");
 		}
 
 		static int SetFramerateTarget(lua_State* state)
 		{
+			CMEP_CHECK_FN_ARGC(state, 2);
+
 			lua_getfield(state, 1, "_pointer");
 			auto* engine_ptr = static_cast<Engine*>(lua_touserdata(state, -1));
 
@@ -88,6 +68,8 @@ namespace Engine::Scripting::API
 
 		static int Stop(lua_State* state)
 		{
+			CMEP_CHECK_FN_ARGC(state, 1);
+
 			lua_getfield(state, 1, "_pointer");
 			auto* engine_ptr = static_cast<Engine*>(lua_touserdata(state, -1));
 

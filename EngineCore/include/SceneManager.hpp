@@ -21,8 +21,8 @@ namespace Engine
 
 		glm::vec3 light_position{};
 
-		static constexpr float base_fov = 45.0f;
-		float field_of_vision			= base_fov;
+		static constexpr float initial_fov = 45.0f;
+		float field_of_vision			   = initial_fov;
 
 		void OnCameraUpdated();
 
@@ -35,10 +35,10 @@ namespace Engine
 		void SetSceneLoadPrefix(const std::string& scene_prefix);
 		void LoadScene(std::string scene_name);
 		void SetScene(const std::string& scene_name);
-		std::shared_ptr<Scene> GetSceneCurrent();
+		std::shared_ptr<Scene>& GetSceneCurrent();
 
 		// TODO: Remove Scene functions from here
-		void AddObject(const std::string& name, Object* ptr);
+		// void AddObject(const std::string& name, Object* ptr);
 		Object* FindObject(const std::string& name);
 		void RemoveObject(const std::string& name) noexcept;
 		void AddTemplatedObject(const std::string& name, const std::string& template_name);

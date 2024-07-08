@@ -125,7 +125,8 @@ namespace Engine
 
 		this->config->rendering.framerate_target = data["rendering"]["framerateTarget"].get<uint16_t>();
 
-		this->config->lookup.scenes = data["lookup"]["scenes"].get<std::string>();
+		// this->config->lookup.scenes = data["lookup"]["scenes"].get<std::string>();
+		this->config->scene_path = data["scene_path"].get<std::string>();
 
 		this->config->default_scene = data["defaultScene"].get<std::string>();
 	}
@@ -244,7 +245,7 @@ namespace Engine
 		object->SetRotation(glm::vec3(0, 0, 0));
 		object->ScreenSizeInform(this->config->window.size_x, this->config->window.size_y);
 
-		this->scene_manager->AddObject("_axis", object);
+		this->scene_manager->GetSceneCurrent()->AddObject("_axis", object);
 
 		// Pre-make ON_UPDATE event so we don't have to create it over and over again in hot loop
 		auto premade_on_update_event = EventHandling::Event(this, EventHandling::EventType::ON_UPDATE);
@@ -409,7 +410,6 @@ namespace Engine
 		this->asset_manager->lua_executor = this->script_executor;
 
 		this->scene_manager = std::make_shared<SceneManager>(this);
-		this->scene_manager->SetSceneLoadPrefix(this->config->lookup.scenes);
 
 		this->rendering_engine = new Rendering::Vulkan::VulkanRenderingEngine(this);
 	}
@@ -428,6 +428,7 @@ namespace Engine
 
 		// return;
 
+		this->scene_manager->SetSceneLoadPrefix(this->config->scene_path);
 		this->scene_manager->LoadScene(this->config->default_scene);
 		this->scene_manager->SetScene(this->config->default_scene);
 

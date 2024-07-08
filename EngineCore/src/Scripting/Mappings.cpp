@@ -8,6 +8,7 @@
 // #include "Rendering/Transform.hpp"
 
 #include "Scripting/API/LuaFactories.hpp"
+#include "Scripting/API/framework.hpp"
 
 #include "Factories/ObjectFactory.hpp"
 
@@ -20,6 +21,7 @@
 #define LOGPFX_CURRENT LOGPFX_LUA_MAPPED
 #include "Logging/LoggingPrefix.hpp"
 
+#undef CMEP_LUAMAPPING_DEFINE
 #define CMEP_LUAMAPPING_DEFINE(mapping) {#mapping, Functions::mapping}
 
 namespace Engine::Scripting::Mappings
@@ -30,7 +32,8 @@ namespace Engine::Scripting::Mappings
 
 		int MetaLoggerSimpleLog(lua_State* state)
 		{
-			assert(lua_gettop(state) == 1);
+			CMEP_CHECK_FN_ARGC(state, 1);
+			// assert(lua_gettop(state) == 1);
 
 			const char* string = lua_tostring(state, 1);
 
@@ -54,7 +57,8 @@ namespace Engine::Scripting::Mappings
 
 		static int RendererSupplyText(lua_State* state)
 		{
-			assert(lua_gettop(state) == 2);
+			CMEP_CHECK_FN_ARGC(state, 2);
+			// assert(lua_gettop(state) == 2);
 
 			lua_getfield(state, 1, "_pointer");
 			auto* renderer = static_cast<Rendering::IRenderer*>(lua_touserdata(state, -1));
@@ -69,7 +73,7 @@ namespace Engine::Scripting::Mappings
 
 		static int RendererSupplyTexture(lua_State* state)
 		{
-			assert(lua_gettop(state) == 2);
+			CMEP_CHECK_FN_ARGC(state, 2);
 
 			lua_getfield(state, 1, "_pointer");
 			auto* renderer = static_cast<Rendering::IRenderer*>(lua_touserdata(state, -1));
@@ -91,7 +95,7 @@ namespace Engine::Scripting::Mappings
 
 		static int ObjectFactoryCreateSpriteObject(lua_State* state)
 		{
-			assert(lua_gettop(state) == 3);
+			CMEP_CHECK_FN_ARGC(state, 3);
 
 			lua_getfield(state, 1, "_smart_ptr");
 			std::weak_ptr<SceneManager> scene_manager = *static_cast<std::weak_ptr<SceneManager>*>(
@@ -127,7 +131,7 @@ namespace Engine::Scripting::Mappings
 
 		static int ObjectFactoryCreateTextObject(lua_State* state)
 		{
-			assert(lua_gettop(state) == 3);
+			CMEP_CHECK_FN_ARGC(state, 3);
 
 			lua_getfield(state, 1, "_smart_ptr");
 			std::weak_ptr<SceneManager> scene_manager = *static_cast<std::weak_ptr<SceneManager>*>(
@@ -161,7 +165,7 @@ namespace Engine::Scripting::Mappings
 
 		static int ObjectFactoryCreateGeneric3DObject(lua_State* state)
 		{
-			assert(lua_gettop(state) == 2);
+			CMEP_CHECK_FN_ARGC(state, 3);
 
 			lua_getfield(state, 1, "_smart_ptr");
 			std::weak_ptr<SceneManager> scene_manager = *static_cast<std::weak_ptr<SceneManager>*>(
@@ -194,10 +198,6 @@ namespace Engine::Scripting::Mappings
 	} // namespace Functions
 
 	std::unordered_map<std::string, lua_CFunction> mappings = {
-		// CMEP_LUAMAPPING_DEFINE(TextRendererUpdateText),
-
-		// CMEP_LUAMAPPING_DEFINE(MeshRendererUpdateTexture),
-
 		CMEP_LUAMAPPING_DEFINE(RendererSupplyText),
 		CMEP_LUAMAPPING_DEFINE(RendererSupplyTexture),
 

@@ -74,16 +74,16 @@ namespace Engine
 		this->current_scene = scene_name;
 	}
 
-	std::shared_ptr<Scene> SceneManager::GetSceneCurrent()
+	std::shared_ptr<Scene>& SceneManager::GetSceneCurrent()
 	{
 		return this->scenes.at(this->current_scene);
 	}
-
-	void SceneManager::AddObject(const std::string& name, Object* ptr)
-	{
-		this->scenes.at(this->current_scene)->AddObject(name, ptr);
-	}
-
+	/*
+		void SceneManager::AddObject(const std::string& name, Object* ptr)
+		{
+			this->scenes.at(this->current_scene)->AddObject(name, ptr);
+		}
+	 */
 	Object* SceneManager::FindObject(const std::string& name)
 	{
 		return this->scenes.at(this->current_scene)->FindObject(name);
@@ -121,11 +121,14 @@ namespace Engine
 
 	glm::mat4 SceneManager::GetProjectionMatrix(Rendering::ScreenSize screen) const
 	{
+		static constexpr float nearplane = 0.1f;
+		static constexpr float farplane	 = 100.0f;
+
 		return glm::perspective<float>(
 			glm::radians(this->field_of_vision),
-			static_cast<float>(screen.x / screen.y),
-			0.1f,
-			100.0f
+			static_cast<float>(screen.x) / static_cast<float>(screen.y),
+			nearplane,
+			farplane
 		);
 	}
 
