@@ -19,13 +19,7 @@ namespace Engine::Scripting::API::LuaFactories
 		// Generate SceneManager table
 		lua_createtable(state, 0, static_cast<int>(scene_manager_mappings.size() + 1));
 
-		// Push mappings
 		CMEP_LUAFACTORY_PUSH_MAPPINGS(state, scene_manager_mappings)
-		// for (const auto& mapping : scene_manager_mappings)
-		//{
-		//	lua_pushcfunction(state, mapping.second);
-		//	lua_setfield(state, -2, mapping.first.c_str());
-		// }
 
 		// Add SceneManager pointer
 		lua_pushlightuserdata(state, scene_manager_ptr);
@@ -37,13 +31,7 @@ namespace Engine::Scripting::API::LuaFactories
 		// Generate Scene table
 		lua_createtable(state, 0, 1);
 
-		// Push mappings
 		CMEP_LUAFACTORY_PUSH_MAPPINGS(state, scene_mappings)
-		// for (const auto& mapping : scene_mappings)
-		//{
-		//	lua_pushcfunction(state, mapping.second);
-		//	lua_setfield(state, -2, mapping.first.c_str());
-		// }
 
 		lua_pushlightuserdata(state, scene_ptr);
 		lua_setfield(state, -2, "_ptr");
@@ -54,13 +42,7 @@ namespace Engine::Scripting::API::LuaFactories
 		// Generate Object table
 		lua_createtable(state, 0, static_cast<int>(object_mappings.size() + 2));
 
-		// Push mappings
 		CMEP_LUAFACTORY_PUSH_MAPPINGS(state, object_mappings)
-		// for (const auto& mapping : object_mappings)
-		// {
-		//	lua_pushcfunction(state, mapping.second);
-		//	lua_setfield(state, -2, mapping.first.c_str());
-		// }
 
 		// Add Object pointer
 		lua_pushlightuserdata(state, object_ptr);
@@ -78,13 +60,7 @@ namespace Engine::Scripting::API::LuaFactories
 		// Generate AssetManager table
 		lua_createtable(state, 0, static_cast<int>(asset_manager_mappings.size() + 1));
 
-		// Push mappings
 		CMEP_LUAFACTORY_PUSH_MAPPINGS(state, asset_manager_mappings)
-		// for (const auto& mapping : asset_manager_mappings)
-		// {
-		//	lua_pushcfunction(state, mapping.second);
-		//	lua_setfield(state, -2, mapping.first.c_str());
-		// }
 
 		// Add AssetManager pointer
 		void* ptr_obj = lua_newuserdata(state, sizeof(std::weak_ptr<AssetManager>));
@@ -97,13 +73,7 @@ namespace Engine::Scripting::API::LuaFactories
 		// Generate Engine table
 		lua_createtable(state, 0, static_cast<int>(engine_mappings.size() + 1));
 
-		// Push mappings
 		CMEP_LUAFACTORY_PUSH_MAPPINGS(state, engine_mappings)
-		// for (const auto& mapping : engine_mappings)
-		// {
-		//	lua_pushcfunction(state, mapping.second);
-		//	lua_setfield(state, -2, mapping.first.c_str());
-		// }
 
 		// Add Engine pointer
 		lua_pushlightuserdata(state, engine_ptr);
