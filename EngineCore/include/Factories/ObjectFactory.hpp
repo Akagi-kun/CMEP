@@ -21,13 +21,13 @@ namespace Engine::ObjectFactory
 	);
 
 	Object* CreateTextObject(
-		const std::weak_ptr<SceneManager>& scene_manager,
+		const std::shared_ptr<Scene>& scene,
 		std::string text,
 		const std::shared_ptr<Rendering::Font>& font
 	);
 
 	Object* CreateGeneric3DObject(
-		const std::weak_ptr<SceneManager>& scene_manager,
+		const std::shared_ptr<Scene>& scene,
 		const std::shared_ptr<::Engine::Rendering::Mesh>& mesh
 	);
 } // namespace Engine::ObjectFactory

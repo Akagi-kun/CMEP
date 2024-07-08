@@ -39,7 +39,7 @@ namespace Engine
 
 	void SceneLoader::LoadSceneInternal(std::shared_ptr<Scene>& scene, std::string& scene_name)
 	{
-		std::string scene_path = this->scene_prefix + "/" + scene_name + "/";
+		std::string scene_path = this->scene_prefix + scene_name + "/";
 
 		nlohmann::json data;
 		try

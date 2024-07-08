@@ -48,64 +48,55 @@ namespace Engine::ObjectFactory
 	}
 
 	Object* CreateTextObject(
-		const std::weak_ptr<SceneManager>& scene_manager,
+		const std::shared_ptr<Scene>& scene,
 		std::string text,
 		const std::shared_ptr<Rendering::Font>& font
 	)
 	{
 		assert(font != nullptr);
-		if (auto locked_scene_manager = scene_manager.lock())
-		{
-			Engine* engine = locked_scene_manager->GetOwnerEngine();
+		// if (auto locked_scene_manager = scene_manager.lock())
+		//{
+		Engine* engine = scene->GetOwnerEngine();
 
-			auto* object = new Object(engine);
+		auto* object = new Object(engine);
 
-			Rendering::IMeshBuilder* with_builder = new Rendering::TextMeshBuilder(
-				engine,
-				engine->GetRenderingEngine()
-			);
+		Rendering::IMeshBuilder* with_builder = new Rendering::TextMeshBuilder(engine, engine->GetRenderingEngine());
 
-			Rendering::IRenderer* with_renderer = new Rendering::TextRenderer(
-				locked_scene_manager->GetOwnerEngine(),
-				with_builder
-			);
-			// with_renderer->scene_manager		= scene_manager;
+		Rendering::IRenderer* with_renderer = new Rendering::TextRenderer(engine, with_builder);
+		// with_renderer->scene_manager		= scene_manager;
 
-			// Rendering::RendererSupplyData font_supply = {Rendering::RendererSupplyDataType::FONT, font};
-			with_renderer->SupplyData({Rendering::RendererSupplyDataType::FONT, font});
+		// Rendering::RendererSupplyData font_supply = {Rendering::RendererSupplyDataType::FONT, font};
+		with_renderer->SupplyData({Rendering::RendererSupplyDataType::FONT, font});
 
-			// Rendering::RendererSupplyData text_supply = {Rendering::RendererSupplyDataType::TEXT, std::move(text)};
-			with_renderer->SupplyData({Rendering::RendererSupplyDataType::TEXT, std::move(text)});
+		// Rendering::RendererSupplyData text_supply = {Rendering::RendererSupplyDataType::TEXT, std::move(text)};
+		with_renderer->SupplyData({Rendering::RendererSupplyDataType::TEXT, std::move(text)});
 
-			object->SetRenderer(with_renderer);
+		object->SetRenderer(with_renderer);
 
-			return object;
-		}
-		return nullptr;
+		return object;
+		//}
+		// return nullptr;
 	}
 
-	Object* CreateGeneric3DObject(
-		const std::weak_ptr<SceneManager>& scene_manager,
-		const std::shared_ptr<Rendering::Mesh>& mesh
-	)
+	Object* CreateGeneric3DObject(const std::shared_ptr<Scene>& scene, const std::shared_ptr<Rendering::Mesh>& mesh)
 	{
-		if (auto locked_scene_manager = scene_manager.lock())
-		{
-			Engine* engine = locked_scene_manager->GetOwnerEngine();
+		// if (auto locked_scene_manager = scene_manager.lock())
+		//{
+		Engine* engine = scene->GetOwnerEngine();
 
-			auto* object = new Object(engine);
+		auto* object = new Object(engine);
 
-			Rendering::IRenderer* with_renderer = new Rendering::MeshRenderer(locked_scene_manager->GetOwnerEngine());
-			// with_renderer->scene_manager		= scene_manager;
+		Rendering::IRenderer* with_renderer = new Rendering::MeshRenderer(engine);
+		// with_renderer->scene_manager		= scene_manager;
 
-			// Rendering::RendererSupplyData mesh_supply = {Rendering::RendererSupplyDataType::MESH, mesh};
+		// Rendering::RendererSupplyData mesh_supply = {Rendering::RendererSupplyDataType::MESH, mesh};
 
-			with_renderer->SupplyData({Rendering::RendererSupplyDataType::MESH, mesh});
+		with_renderer->SupplyData({Rendering::RendererSupplyDataType::MESH, mesh});
 
-			object->SetRenderer(with_renderer);
+		object->SetRenderer(with_renderer);
 
-			return object;
-		}
-		return nullptr;
+		return object;
+		//}
+		// return nullptr;
 	}
 } // namespace Engine::ObjectFactory

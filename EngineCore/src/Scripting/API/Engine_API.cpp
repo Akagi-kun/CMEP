@@ -16,16 +16,14 @@ namespace Engine::Scripting::API
 	{
 		static int GetAssetManager(lua_State* state)
 		{
-			CMEP_CHECK_FN_ARGC(state, 1);
+			CMEP_LUACHECK_FN_ARGC(state, 1)
+			CMEP_LUAGET_PTR(state, Engine)
 
-			lua_getfield(state, 1, "_pointer");
-			auto* engine_ptr = static_cast<Engine*>(lua_touserdata(state, -1));
-
-			std::weak_ptr<AssetManager> asset_manager = engine_ptr->GetAssetManager();
+			std::weak_ptr<AssetManager> asset_manager = self->GetAssetManager();
 
 			if (!asset_manager.expired())
 			{
-				API::LuaObjectFactories::AssetManagerFactory(state, asset_manager);
+				API::LuaFactories::AssetManagerFactory(state, asset_manager);
 
 				return 1;
 			}
@@ -35,16 +33,14 @@ namespace Engine::Scripting::API
 
 		static int GetSceneManager(lua_State* state)
 		{
-			CMEP_CHECK_FN_ARGC(state, 1);
+			CMEP_LUACHECK_FN_ARGC(state, 1)
+			CMEP_LUAGET_PTR(state, Engine)
 
-			lua_getfield(state, 1, "_pointer");
-			auto* engine_ptr = static_cast<Engine*>(lua_touserdata(state, -1));
+			std::weak_ptr<SceneManager> scene_manager = self->GetSceneManager();
 
-			std::weak_ptr<SceneManager> scene_manager = engine_ptr->GetSceneManager();
-
-			if (!scene_manager.expired())
+			if (auto locked_scene_manager = scene_manager.lock())
 			{
-				API::LuaObjectFactories::SceneManagerFactory(state, scene_manager);
+				API::LuaFactories::SceneManagerFactory(state, locked_scene_manager.get());
 
 				return 1;
 			}
@@ -54,26 +50,22 @@ namespace Engine::Scripting::API
 
 		static int SetFramerateTarget(lua_State* state)
 		{
-			CMEP_CHECK_FN_ARGC(state, 2);
-
-			lua_getfield(state, 1, "_pointer");
-			auto* engine_ptr = static_cast<Engine*>(lua_touserdata(state, -1));
+			CMEP_LUACHECK_FN_ARGC(state, 2)
+			CMEP_LUAGET_PTR(state, Engine)
 
 			auto framerate_target = static_cast<uint_fast16_t>(lua_tointeger(state, 2));
 
-			engine_ptr->SetFramerateTarget(framerate_target);
+			self->SetFramerateTarget(framerate_target);
 
 			return 0;
 		}
 
 		static int Stop(lua_State* state)
 		{
-			CMEP_CHECK_FN_ARGC(state, 1);
+			CMEP_LUACHECK_FN_ARGC(state, 1)
+			CMEP_LUAGET_PTR(state, Engine)
 
-			lua_getfield(state, 1, "_pointer");
-			auto* engine_ptr = static_cast<Engine*>(lua_touserdata(state, -1));
-
-			engine_ptr->Stop();
+			self->Stop();
 
 			return 0;
 		}

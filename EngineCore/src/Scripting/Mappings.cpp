@@ -5,7 +5,6 @@
 #include "Rendering/MeshRenderer.hpp"
 #include "Rendering/SupplyData.hpp"
 #include "Rendering/TextRenderer.hpp"
-// #include "Rendering/Transform.hpp"
 
 #include "Scripting/API/LuaFactories.hpp"
 #include "Scripting/API/framework.hpp"
@@ -32,12 +31,11 @@ namespace Engine::Scripting::Mappings
 
 		int MetaLoggerSimpleLog(lua_State* state)
 		{
-			CMEP_CHECK_FN_ARGC(state, 1);
-			// assert(lua_gettop(state) == 1);
+			CMEP_LUACHECK_FN_ARGC(state, 1)
 
 			const char* string = lua_tostring(state, 1);
 
-			std::weak_ptr<Logging::Logger> logger = Scripting::API::LuaObjectFactories::MetaLoggerFactory(state);
+			std::weak_ptr<Logging::Logger> logger = Scripting::API::LuaFactories::MetaLoggerFactory(state);
 
 			if (auto locked_logger = logger.lock())
 			{
@@ -57,10 +55,9 @@ namespace Engine::Scripting::Mappings
 
 		static int RendererSupplyText(lua_State* state)
 		{
-			CMEP_CHECK_FN_ARGC(state, 2);
-			// assert(lua_gettop(state) == 2);
+			CMEP_LUACHECK_FN_ARGC(state, 2)
 
-			lua_getfield(state, 1, "_pointer");
+			lua_getfield(state, 1, "_ptr");
 			auto* renderer = static_cast<Rendering::IRenderer*>(lua_touserdata(state, -1));
 
 			const char* text = lua_tostring(state, 2);
@@ -73,9 +70,9 @@ namespace Engine::Scripting::Mappings
 
 		static int RendererSupplyTexture(lua_State* state)
 		{
-			CMEP_CHECK_FN_ARGC(state, 2);
+			CMEP_LUACHECK_FN_ARGC(state, 2)
 
-			lua_getfield(state, 1, "_pointer");
+			lua_getfield(state, 1, "_ptr");
 			auto* renderer = static_cast<Rendering::IRenderer*>(lua_touserdata(state, -1));
 
 			lua_getfield(state, 2, "_smart_ptr");
@@ -95,48 +92,34 @@ namespace Engine::Scripting::Mappings
 
 		static int ObjectFactoryCreateSpriteObject(lua_State* state)
 		{
-			CMEP_CHECK_FN_ARGC(state, 3);
+			CMEP_LUACHECK_FN_ARGC(state, 3)
 
-			lua_getfield(state, 1, "_smart_ptr");
-			std::weak_ptr<SceneManager> scene_manager = *static_cast<std::weak_ptr<SceneManager>*>(
-				lua_touserdata(state, -1)
-			);
+			lua_getfield(state, 1, "_ptr");
+			auto* scene_manager = static_cast<SceneManager*>(lua_touserdata(state, -1));
 
-			lua_getfield(state, 2, "_pointer");
+			lua_getfield(state, 2, "_ptr");
 			AssetManager* ptr_am	= *static_cast<AssetManager**>(lua_touserdata(state, -1));
 			std::string sprite_name = lua_tostring(state, 3);
 
-			if (auto locked_scene_manager = scene_manager.lock())
-			{
-				auto scene = locked_scene_manager->GetSceneCurrent();
+			auto& scene = scene_manager->GetSceneCurrent();
 
-				Object* obj = ObjectFactory::CreateSpriteObject(scene, ptr_am->GetTexture(sprite_name));
+			Object* obj = ObjectFactory::CreateSpriteObject(scene, ptr_am->GetTexture(sprite_name));
 
-				if (obj != nullptr)
-				{
-					API::LuaObjectFactories::ObjectFactory(state, obj);
-				}
-				else
-				{
-					return luaL_error(state, "ObjectFactory returned nullptr");
-				}
-			}
-			else
+			if (obj != nullptr)
 			{
-				return luaL_error(state, "SceneManager could not be locked!");
+				API::LuaFactories::ObjectFactory(state, obj);
+				return 1;
 			}
 
-			return 1;
+			return luaL_error(state, "ObjectFactory returned nullptr");
 		}
 
 		static int ObjectFactoryCreateTextObject(lua_State* state)
 		{
-			CMEP_CHECK_FN_ARGC(state, 3);
+			CMEP_LUACHECK_FN_ARGC(state, 3)
 
-			lua_getfield(state, 1, "_smart_ptr");
-			std::weak_ptr<SceneManager> scene_manager = *static_cast<std::weak_ptr<SceneManager>*>(
-				lua_touserdata(state, -1)
-			);
+			lua_getfield(state, 1, "_ptr");
+			auto* scene_manager = static_cast<SceneManager*>(lua_touserdata(state, -1));
 
 			std::string text = lua_tostring(state, 2);
 
@@ -148,50 +131,44 @@ namespace Engine::Scripting::Mappings
 			Object* obj = nullptr;
 			if (auto locked_font = font.lock())
 			{
-				obj = ObjectFactory::CreateTextObject(scene_manager, text, locked_font);
+				auto& scene = scene_manager->GetSceneCurrent();
+
+				obj = ObjectFactory::CreateTextObject(scene, text, locked_font);
 			}
 
 			if (obj != nullptr)
 			{
-				API::LuaObjectFactories::ObjectFactory(state, obj);
-			}
-			else
-			{
-				return luaL_error(state, "ObjectFactory returned nullptr");
+				API::LuaFactories::ObjectFactory(state, obj);
+
+				return 1;
 			}
 
-			return 1;
+			return luaL_error(state, "ObjectFactory returned nullptr");
 		}
 
 		static int ObjectFactoryCreateGeneric3DObject(lua_State* state)
 		{
-			CMEP_CHECK_FN_ARGC(state, 3);
+			CMEP_LUACHECK_FN_ARGC(state, 3)
 
-			lua_getfield(state, 1, "_smart_ptr");
-			std::weak_ptr<SceneManager> scene_manager = *static_cast<std::weak_ptr<SceneManager>*>(
-				lua_touserdata(state, -1)
-			);
+			lua_getfield(state, 1, "_ptr");
+			auto* scene_manager = static_cast<SceneManager*>(lua_touserdata(state, -1));
 
-			std::shared_ptr<Rendering::Mesh> mesh;
-			if (auto locked_scene_manager = scene_manager.lock())
-			{
-				mesh = std::make_shared<Rendering::Mesh>(locked_scene_manager->GetOwnerEngine());
-			}
+			std::shared_ptr<Rendering::Mesh> mesh = std::make_shared<Rendering::Mesh>(scene_manager->GetOwnerEngine());
 
 			mesh->CreateMeshFromObj(std::string(lua_tostring(state, 2)));
 
-			Object* obj = ObjectFactory::CreateGeneric3DObject(scene_manager, mesh);
+			auto& scene = scene_manager->GetSceneCurrent();
+
+			Object* obj = ObjectFactory::CreateGeneric3DObject(scene, mesh);
 
 			if (obj != nullptr)
 			{
-				API::LuaObjectFactories::ObjectFactory(state, obj);
-			}
-			else
-			{
-				return luaL_error(state, "ObjectFactory returned nullptr");
+				API::LuaFactories::ObjectFactory(state, obj);
+
+				return 1;
 			}
 
-			return 1;
+			return luaL_error(state, "ObjectFactory returned nullptr");
 		}
 #pragma endregion
 

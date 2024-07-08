@@ -282,7 +282,7 @@ namespace Engine
 			{
 				this->logger->SimpleLog(
 					Logging::LogLevel::Error,
-					LOGPFX_CURRENT "Fired event ON_UPDATE but it returned %u! Exiting event-loop",
+					LOGPFX_CURRENT "Firing event ON_UPDATE returned %u! Exiting event-loop",
 					ret
 				);
 				break;

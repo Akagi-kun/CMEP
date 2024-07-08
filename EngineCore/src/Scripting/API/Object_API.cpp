@@ -13,27 +13,23 @@ namespace Engine::Scripting::API
 
 		static int AddChild(lua_State* state)
 		{
-			CMEP_CHECK_FN_ARGC(state, 2);
+			CMEP_LUACHECK_FN_ARGC(state, 2)
+			CMEP_LUAGET_PTR(state, Object)
 
-			lua_getfield(state, 1, "_pointer");
-			auto* ptr_obj = static_cast<Object*>(lua_touserdata(state, -1));
-
-			lua_getfield(state, 2, "_pointer");
+			lua_getfield(state, 2, "_ptr");
 			auto* ptr_child = static_cast<Object*>(lua_touserdata(state, -1));
 
-			ptr_obj->AddChild(ptr_child);
+			self->AddChild(ptr_child);
 
 			return 0;
 		}
 
 		static int GetRotation(lua_State* state)
 		{
-			CMEP_CHECK_FN_ARGC(state, 1);
+			CMEP_LUACHECK_FN_ARGC(state, 1)
+			CMEP_LUAGET_PTR(state, Object)
 
-			lua_getfield(state, 1, "_pointer");
-			auto* ptr_obj = static_cast<Object*>(lua_touserdata(state, -1));
-
-			glm::vec3 rotation = ptr_obj->GetRotation();
+			glm::vec3 rotation = self->GetRotation();
 
 			lua_pushnumber(state, static_cast<double>(rotation.x));
 			lua_pushnumber(state, static_cast<double>(rotation.y));
@@ -44,29 +40,25 @@ namespace Engine::Scripting::API
 
 		static int SetRotation(lua_State* state)
 		{
-			CMEP_CHECK_FN_ARGC(state, 4);
-
-			lua_getfield(state, 1, "_pointer");
-			auto* ptr_obj = static_cast<Object*>(lua_touserdata(state, -1));
+			CMEP_LUACHECK_FN_ARGC(state, 4)
+			CMEP_LUAGET_PTR(state, Object)
 
 			glm::vec3 rotation;
 			rotation.x = static_cast<float>(lua_tonumber(state, 2));
 			rotation.y = static_cast<float>(lua_tonumber(state, 3));
 			rotation.z = static_cast<float>(lua_tonumber(state, 4));
 
-			ptr_obj->SetRotation(rotation);
+			self->SetRotation(rotation);
 
 			return 0;
 		}
 
 		static int GetSize(lua_State* state)
 		{
-			CMEP_CHECK_FN_ARGC(state, 1);
+			CMEP_LUACHECK_FN_ARGC(state, 1)
+			CMEP_LUAGET_PTR(state, Object)
 
-			lua_getfield(state, 1, "_pointer");
-			auto* ptr_obj = static_cast<Object*>(lua_touserdata(state, -1));
-
-			glm::vec3 size = ptr_obj->GetSize();
+			glm::vec3 size = self->GetSize();
 
 			lua_pushnumber(state, static_cast<double>(size.x));
 			lua_pushnumber(state, static_cast<double>(size.y));
@@ -77,29 +69,25 @@ namespace Engine::Scripting::API
 
 		static int SetSize(lua_State* state)
 		{
-			CMEP_CHECK_FN_ARGC(state, 4);
-
-			lua_getfield(state, 1, "_pointer");
-			auto* ptr_obj = static_cast<Object*>(lua_touserdata(state, -1));
+			CMEP_LUACHECK_FN_ARGC(state, 4)
+			CMEP_LUAGET_PTR(state, Object)
 
 			glm::vec3 size;
 			size.x = static_cast<float>(lua_tonumber(state, 2));
 			size.y = static_cast<float>(lua_tonumber(state, 3));
 			size.z = static_cast<float>(lua_tonumber(state, 4));
 
-			ptr_obj->SetSize(size);
+			self->SetSize(size);
 
 			return 0;
 		}
 
 		static int GetPosition(lua_State* state)
 		{
-			CMEP_CHECK_FN_ARGC(state, 1);
+			CMEP_LUACHECK_FN_ARGC(state, 1)
+			CMEP_LUAGET_PTR(state, Object)
 
-			lua_getfield(state, 1, "_pointer");
-			auto* ptr_obj = static_cast<Object*>(lua_touserdata(state, -1));
-
-			auto rotation = ptr_obj->GetPosition();
+			auto rotation = self->GetPosition();
 
 			lua_pushnumber(state, static_cast<double>(rotation.x));
 			lua_pushnumber(state, static_cast<double>(rotation.y));
@@ -110,17 +98,15 @@ namespace Engine::Scripting::API
 
 		static int SetPosition(lua_State* state)
 		{
-			CMEP_CHECK_FN_ARGC(state, 4);
-
-			lua_getfield(state, 1, "_pointer");
-			auto* ptr_obj = static_cast<Object*>(lua_touserdata(state, -1));
+			CMEP_LUACHECK_FN_ARGC(state, 4)
+			CMEP_LUAGET_PTR(state, Object)
 
 			glm::vec3 position;
 			position.x = static_cast<float>(lua_tonumber(state, 2));
 			position.y = static_cast<float>(lua_tonumber(state, 3));
 			position.z = static_cast<float>(lua_tonumber(state, 4));
 
-			ptr_obj->SetPosition(position);
+			self->SetPosition(position);
 
 			return 0;
 		}

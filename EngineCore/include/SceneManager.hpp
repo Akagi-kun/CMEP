@@ -1,7 +1,6 @@
 #pragma once
 
 #include "InternalEngineObject.hpp"
-#include "Object.hpp"
 #include "Scene.hpp"
 #include "SceneLoader.hpp"
 
@@ -37,12 +36,6 @@ namespace Engine
 		void SetScene(const std::string& scene_name);
 		std::shared_ptr<Scene>& GetSceneCurrent();
 
-		// TODO: Remove Scene functions from here
-		// void AddObject(const std::string& name, Object* ptr);
-		Object* FindObject(const std::string& name);
-		void RemoveObject(const std::string& name) noexcept;
-		void AddTemplatedObject(const std::string& name, const std::string& template_name);
-
 		glm::vec3 GetLightTransform();
 		void SetLightTransform(glm::vec3 newpos);
 
@@ -50,8 +43,8 @@ namespace Engine
 		glm::vec2 GetCameraHVRotation();
 		glm::mat4 GetCameraViewMatrix();
 
-		glm::mat4 GetProjectionMatrix(Rendering::ScreenSize screen) const;
-		static glm::mat4 GetProjectionMatrixOrtho();
+		[[nodiscard]] glm::mat4 GetProjectionMatrix(Rendering::ScreenSize screen) const;
+		[[nodiscard]] static glm::mat4 GetProjectionMatrixOrtho();
 
 		void SetCameraTransform(glm::vec3 transform);
 		void SetCameraHVRotation(glm::vec2 hvrotation);

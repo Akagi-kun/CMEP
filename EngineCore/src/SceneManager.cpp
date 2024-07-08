@@ -78,26 +78,6 @@ namespace Engine
 	{
 		return this->scenes.at(this->current_scene);
 	}
-	/*
-		void SceneManager::AddObject(const std::string& name, Object* ptr)
-		{
-			this->scenes.at(this->current_scene)->AddObject(name, ptr);
-		}
-	 */
-	Object* SceneManager::FindObject(const std::string& name)
-	{
-		return this->scenes.at(this->current_scene)->FindObject(name);
-	}
-
-	void SceneManager::RemoveObject(const std::string& name) noexcept
-	{
-		this->scenes.at(this->current_scene)->RemoveObject(name);
-	}
-
-	void SceneManager::AddTemplatedObject(const std::string& name, const std::string& template_name)
-	{
-		this->scenes.at(this->current_scene)->AddTemplatedObject(name, template_name);
-	}
 
 	glm::vec3 SceneManager::GetLightTransform()
 	{

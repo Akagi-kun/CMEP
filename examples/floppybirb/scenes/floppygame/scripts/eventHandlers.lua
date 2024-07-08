@@ -179,12 +179,13 @@ onUpdate = function(event)
 
 	local asset_manager = event.engine:GetAssetManager()
 	local scene_manager = event.engine:GetSceneManager()
--- 
+	local scene = scene_manager:GetSceneCurrent()
+
 	-- Updates frametime counter, recommend to leave this here for debugging purposes
 	if deltaTime_accum >= 1.0 then
 		local deltaTime_avg = deltaTime_accum / deltaTime_count
 		--cmepmeta.logger.SimpleLog(string.format("Frametime is: %f ms!", deltaTime_accum / deltaTime_count * 1000))
-		local object = scene_manager:FindObject("_debug_info")
+		local object = scene:FindObject("_debug_info")
 		--cmepapi.TextRendererUpdateText(object.renderer, string.format("avg: %fms\nmin: %fms\nmax: %fms", deltaTime_avg * 1000, deltaTime_min * 1000, deltaTime_max * 1000))
 		
 		cmepapi.RendererSupplyText(object.renderer, string.format("avg: %fms\nmin: %fms\nmax: %fms", deltaTime_avg * 1000, deltaTime_min * 1000, deltaTime_max * 1000))
@@ -206,13 +207,13 @@ onUpdate = function(event)
 			
 			local pipe_id = tostring(spawn_pipe_last_idx + 1)
 
-			scene_manager:AddTemplatedObject("sprite_pipe_down"..pipe_id, "pipe_down")
-			local pipe1 = scene_manager:FindObject("sprite_pipe_down"..pipe_id)
+			scene:AddTemplatedObject("sprite_pipe_down"..pipe_id, "pipe_down")
+			local pipe1 = scene:FindObject("sprite_pipe_down"..pipe_id)
 			pipe1:SetPosition(1.0, pxToScreenY(pipe_y_offset - (pipe_spacing / 2)), -0.15)
 			pipe1:SetSize(pxToScreenX(pipe_x_size), pxToScreenY(pipe_y_size), 1.0)
 
-			scene_manager:AddTemplatedObject("sprite_pipe_up"..pipe_id, "pipe_up")
-			local pipe2 = scene_manager:FindObject("sprite_pipe_up"..pipe_id)
+			scene:AddTemplatedObject("sprite_pipe_up"..pipe_id, "pipe_up")
+			local pipe2 = scene:FindObject("sprite_pipe_up"..pipe_id)
 			pipe2:SetPosition(1.0, pxToScreenY(pipe_y_size + (pipe_spacing / 2) + pipe_y_offset), -0.15)
 			pipe2:SetSize(pxToScreenX(pipe_x_size), pxToScreenY(pipe_y_size), 1.0)
 
@@ -222,14 +223,14 @@ onUpdate = function(event)
 		end
 
 		-- Get birb position
-		local birb = scene_manager:FindObject("birb")
+		local birb = scene:FindObject("birb")
 		local birbx, birby, birbz = birb:GetPosition()
 
 		if spawn_pipe_count >= 1 then
 			for pipeIdx = spawn_pipe_first_idx, spawn_pipe_last_idx, 1 do
 				-- Move pipes
-				local pipe1 = scene_manager:FindObject("sprite_pipe_down"..tostring(pipeIdx))
-				local pipe2 = scene_manager:FindObject("sprite_pipe_up"..tostring(pipeIdx))
+				local pipe1 = scene:FindObject("sprite_pipe_down"..tostring(pipeIdx))
+				local pipe2 = scene:FindObject("sprite_pipe_up"..tostring(pipeIdx))
 				local x1, y1, z1 = pipe1:GetPosition()
 				local x2, y2, z2 = pipe2:GetPosition()
 				x1 = x1 - pipe_move_speed * event.deltaTime
@@ -251,7 +252,7 @@ onUpdate = function(event)
 				then
 					game_score = game_score + 1
 					game_last_scored_pipe_idx = pipeIdx
-					local score_object = scene_manager:FindObject("text_score")
+					local score_object = scene:FindObject("text_score")
 					cmepapi.RendererSupplyText(score_object.renderer, tostring(game_score))
 
 					pipe_move_speed = pipe_move_speed * 1.005 -- Increase pipe move speed
@@ -261,8 +262,8 @@ onUpdate = function(event)
 
 				if x1 < (0.0 - pxToScreenX(pipe_x_size + 5)) then
 					-- Destroy objects
-					scene_manager:RemoveObject("sprite_pipe_down"..tostring(pipeIdx))
-					scene_manager:RemoveObject("sprite_pipe_up"..tostring(pipeIdx))
+					scene:RemoveObject("sprite_pipe_down"..tostring(pipeIdx))
+					scene:RemoveObject("sprite_pipe_up"..tostring(pipeIdx))
 					spawn_pipe_first_idx = spawn_pipe_first_idx + 1
 				end
 			end
@@ -280,8 +281,8 @@ onUpdate = function(event)
 		birby = birby - birb_velocity * event.deltaTime
 		birb:SetPosition(birbx, birby, birbz)
 
-		local ground1 = scene_manager:FindObject("ground_top")
-		local ground2 = scene_manager:FindObject("ground_bottom")
+		local ground1 = scene:FindObject("ground_top")
+		local ground2 = scene:FindObject("ground_bottom")
 		local g1_x, g1_y, g1_z = ground1:GetPosition()
 		local g2_x, g2_y, g2_z = ground2:GetPosition()
 		
@@ -308,7 +309,7 @@ onUpdate = function(event)
 
 	elseif (game_midgameover_state == true and game_gameover_state == false) then
 
-		local birb = scene_manager:FindObject("birb")
+		local birb = scene:FindObject("birb")
 		local birbx, birby, birbz = birb:GetPosition()
 
 		birby = birby - birb_velocity * event.deltaTime
@@ -339,19 +340,20 @@ onInit = function(event)
 	-- Get managers
 	local asset_manager = event.engine:GetAssetManager()
 	local scene_manager = event.engine:GetSceneManager()
+	local scene = scene_manager:GetSceneCurrent();
 
 	-- Create frametime counter and add it to scene
 	local font = asset_manager:GetFont("myfont")
 	local object = cmepapi.ObjectFactoryCreateTextObject(scene_manager, "avg: \nmin: \nmax: ", font)
 	object:SetPosition(0.0, 0.0, -0.01)
 	object:SetSize(24, 24, 1.0)
-	scene_manager:AddObject("_debug_info", object)
+	scene:AddObject("_debug_info", object)
 	
 	-- Add score
 	local object = cmepapi.ObjectFactoryCreateTextObject(scene_manager, "0", font)
 	object:SetPosition(0.5, 0.0, -0.01)
 	object:SetSize(64, 64, 1.0)
-	scene_manager:AddObject("text_score", object)
+	scene:AddObject("text_score", object)
 
 	-- Set-up camera
 	-- (this is essentially unnecessary for 2D-only scenes)

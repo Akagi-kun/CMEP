@@ -139,7 +139,7 @@ namespace Engine::Scripting
 				lua_pushinteger(state, event->keycode);
 				lua_setfield(state, -2, "keycode");
 
-				Scripting::API::LuaObjectFactories::EngineFactory(state, event->raised_from);
+				Scripting::API::LuaFactories::EngineFactory(state, event->raised_from);
 				lua_setfield(state, -2, "engine");
 
 				// Mouse table

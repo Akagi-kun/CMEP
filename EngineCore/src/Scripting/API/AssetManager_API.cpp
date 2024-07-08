@@ -12,6 +12,7 @@ namespace Engine::Scripting::API
 	{
 		static int GetFont(lua_State* state)
 		{
+			CMEP_LUACHECK_FN_ARGC(state, 2)
 			lua_getfield(state, 1, "_smart_ptr");
 			std::weak_ptr<AssetManager> asset_manager = *static_cast<std::weak_ptr<AssetManager>*>(
 				lua_touserdata(state, -1)
@@ -44,6 +45,7 @@ namespace Engine::Scripting::API
 
 		static int GetTexture(lua_State* state)
 		{
+			CMEP_LUACHECK_FN_ARGC(state, 2)
 			lua_getfield(state, 1, "_smart_ptr");
 			std::weak_ptr<AssetManager> asset_manager = *static_cast<std::weak_ptr<AssetManager>*>(
 				lua_touserdata(state, -1)
@@ -77,6 +79,7 @@ namespace Engine::Scripting::API
 
 		static int GetModel(lua_State* state)
 		{
+			CMEP_LUACHECK_FN_ARGC(state, 2)
 			lua_getfield(state, 1, "_smart_ptr");
 			std::weak_ptr<AssetManager> asset_manager = *static_cast<std::weak_ptr<AssetManager>*>(
 				lua_touserdata(state, -1)
@@ -109,6 +112,7 @@ namespace Engine::Scripting::API
 
 		static int AddTexture(lua_State* state)
 		{
+			CMEP_LUACHECK_FN_ARGC(state, 3)
 			lua_getfield(state, 1, "_smart_ptr");
 			std::weak_ptr<AssetManager> asset_manager = *static_cast<std::weak_ptr<AssetManager>*>(
 				lua_touserdata(state, -1)
