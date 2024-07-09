@@ -28,28 +28,6 @@
     ],
     "scene": [
         {
-            "name": "ground_bottom",
-            "position": [ 0.0, 60, -0.1 ],
-            "pos_sub_aspixel": [ false, true ],
-            "scale": [ 1260, 60, 1.0 ],
-            "scale_aspixel": [ true, true ],
-            "renderer": "sprite",
-            "renderer_supply_textures": [
-                "ground_bottom"
-            ]
-        },
-        {
-            "name": "ground_top",
-            "position": [ 0.0, 0.0, -0.1 ],
-            "pos_aspixel": [ false, true ],
-            "scale": [ 1260, 60, 1.0 ],
-            "scale_aspixel": [ true, true ],
-            "renderer": "sprite",
-            "renderer_supply_textures": [
-                "ground_top"
-            ]
-        },
-        {
             "name": "background",
             "position": [ 0.0, 0.0, -0.8 ],
             "scale": [ 1.0, 1.0, 1.0 ],
@@ -119,12 +97,12 @@
         {
             "type": "texture",
             "name": "ground_bottom",
-            "location": "textures/ground_bottom.png"
+            "location": "textures/ground_bottom_half.png"
         },
         {
             "type": "texture",
             "name": "ground_top",
-            "location": "textures/ground_top.png"
+            "location": "textures/ground_top_half.png"
         },
         {
             "type": "texture",

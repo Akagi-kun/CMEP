@@ -66,6 +66,9 @@ namespace Engine::Scripting::API::LuaFactories
 		void* ptr_obj = lua_newuserdata(state, sizeof(std::weak_ptr<AssetManager>));
 		new (ptr_obj) std::weak_ptr<AssetManager>(std::move(asset_manager_ptr));
 		lua_setfield(state, -2, "_smart_ptr");
+
+		// lua_pushlightuserdata(state, asset_manager_ptr.lock().get());
+		// lua_setfield(state, -2, "_ptr");
 	}
 
 	void EngineFactory(lua_State* state, Engine* engine_ptr)

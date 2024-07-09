@@ -260,12 +260,20 @@ namespace Engine::Rendering::Vulkan
 
 		for (size_t i = 0; i < VulkanRenderingEngine::max_frames_in_flight; i++)
 		{
-			if (vkCreateSemaphore(logical_device, &semaphore_info, nullptr, &(this->image_available_semaphores[i])) !=
+			// if (vkCreateSemaphore(logical_device, &semaphore_info, nullptr, &(this->image_available_semaphores[i]))
+			// != 		VK_SUCCESS || 	vkCreateSemaphore(logical_device, &semaphore_info, nullptr,
+			//&(this->present_ready_semaphores[i])) != 		VK_SUCCESS || 	vkCreateFence(logical_device, &fence_info,
+			// nullptr,
+			//&(this->acquire_ready_fences[i])) != VK_SUCCESS || 	vkCreateFence(logical_device, &fence_info, nullptr,
+			//&(this->in_flight_fences[i])) != VK_SUCCESS)
+
+			if (vkCreateSemaphore(logical_device, &semaphore_info, nullptr, &(this->sync_objects[i].image_available)) !=
 					VK_SUCCESS ||
-				vkCreateSemaphore(logical_device, &semaphore_info, nullptr, &(this->present_ready_semaphores[i])) !=
+				vkCreateSemaphore(logical_device, &semaphore_info, nullptr, &(this->sync_objects[i].present_ready)) !=
 					VK_SUCCESS ||
-				vkCreateFence(logical_device, &fence_info, nullptr, &(this->acquire_ready_fences[i])) != VK_SUCCESS ||
-				vkCreateFence(logical_device, &fence_info, nullptr, &(this->in_flight_fences[i])) != VK_SUCCESS)
+				vkCreateFence(logical_device, &fence_info, nullptr, &(this->sync_objects[i].acquire_ready)) !=
+					VK_SUCCESS ||
+				vkCreateFence(logical_device, &fence_info, nullptr, &(this->sync_objects[i].in_flight)) != VK_SUCCESS)
 			{
 				this->logger->SimpleLog(Logging::LogLevel::Error, LOGPFX_CURRENT "Vulkan failed creating sync objects");
 				throw std::runtime_error("failed to create sync objects!");

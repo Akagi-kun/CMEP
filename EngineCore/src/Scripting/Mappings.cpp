@@ -97,21 +97,27 @@ namespace Engine::Scripting::Mappings
 			lua_getfield(state, 1, "_ptr");
 			auto* scene_manager = static_cast<SceneManager*>(lua_touserdata(state, -1));
 
-			lua_getfield(state, 2, "_ptr");
-			AssetManager* ptr_am	= *static_cast<AssetManager**>(lua_touserdata(state, -1));
+			lua_getfield(state, 2, "_smart_ptr");
+			std::weak_ptr<AssetManager> asset_manager = *static_cast<std::weak_ptr<AssetManager>*>(
+				lua_touserdata(state, -1)
+			);
 			std::string sprite_name = lua_tostring(state, 3);
 
 			auto& scene = scene_manager->GetSceneCurrent();
 
-			Object* obj = ObjectFactory::CreateSpriteObject(scene, ptr_am->GetTexture(sprite_name));
-
-			if (obj != nullptr)
+			if (auto locked_am = asset_manager.lock())
 			{
-				API::LuaFactories::ObjectFactory(state, obj);
-				return 1;
+				Object* obj = ObjectFactory::CreateSpriteObject(scene, locked_am->GetTexture(sprite_name));
+
+				if (obj != nullptr)
+				{
+					API::LuaFactories::ObjectFactory(state, obj);
+					return 1;
+				}
+				return luaL_error(state, "ObjectFactory returned nullptr");
 			}
 
-			return luaL_error(state, "ObjectFactory returned nullptr");
+			return luaL_error(state, "Could not lock AssetManager");
 		}
 
 		static int ObjectFactoryCreateTextObject(lua_State* state)

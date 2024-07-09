@@ -1,3 +1,6 @@
+-- Include modules
+require("util")
+
 -----------------------
 ---->  Game data  <----
 
@@ -46,35 +49,64 @@ local game_score = 0 -- The score
 -----------------------
 --> Local functions <--
 
-local screen_size_x = 1100 -- 1100
-local screen_size_y = 720 -- 720
+--local checkCollisions2DBox = function(x1, y1, w1, h1, x2, y2, w2, h2)
+--	if ((x1 < x2 + w2) and (x1 + w1 > x2) and (y1 < y2 + h2) and (y1 + h1 > y2)) then
+--		return true
+--	else
+--		return false
+--	end
+--end
 
-local pxToScreenX = function(x)
-	return x / screen_size_x
-end
+-- Scrolls ground objects
+local handleGroundLayer = function(scene, event, layer)
+	local ground1 = scene:FindObject(layer.."1")
+	local ground2 = scene:FindObject(layer.."2")
+	local ground3 = scene:FindObject(layer.."3")
 
-local pxToScreenY = function(y)
-	return y / screen_size_y
-end
-
-local checkCollisions2DBox = function(x1, y1, w1, h1, x2, y2, w2, h2)
-	if ((x1 < x2 + w2) and (x1 + w1 > x2) and (y1 < y2 + h2) and (y1 + h1 > y2)) then
-		return true
+	local g1_x, g1_y, g1_z = ground1:GetPosition()
+	local g2_x, g2_y, g2_z = ground2:GetPosition()
+	local g3_x, g3_y, g3_z = ground3:GetPosition()
+	
+	-- Move ground (slightly faster than pipes)
+	g1_x = g1_x - (pipe_move_speed * 1.1) * event.deltaTime
+	g2_x = g2_x - (pipe_move_speed * 1.1) * event.deltaTime
+	g3_x = g3_x - (pipe_move_speed * 1.1) * event.deltaTime
+	
+	-- Check if ground is still on-screen
+	if	(g1_x > util.pxToScreenX(-630))
+	then
+	-- If yes just move it
+		ground1:SetPosition(g1_x, g1_y, g1_z)
+	-- If it's not, put it on the other side
 	else
-		return false
+		ground1:SetPosition(g3_x + util.pxToScreenX(630), g1_y, g1_z)
 	end
+
+	if (g2_x > util.pxToScreenX(-630))
+	then
+		ground2:SetPosition(g2_x, g2_y, g2_z)
+	else
+		ground2:SetPosition(g1_x + util.pxToScreenX(630), g2_y, g2_z)
+	end
+
+	if (g3_x > util.pxToScreenX(-630))
+	then
+		ground3:SetPosition(g3_x, g3_y, g3_z)
+	else
+		ground3:SetPosition(g2_x + util.pxToScreenX(630), g3_y, g3_z)
+	end
+end
+
+local gameOnHandleGrounds = function(scene, event)
+	handleGroundLayer(scene, event, "ground_top")
+	handleGroundLayer(scene, event, "ground_bottom")
 end
 
 local checkCollisionsGrounds = function(birbx, birby)
-	if 	(checkCollisions2DBox(birbx, 	birby,								pxToScreenX(birb_x_size),	pxToScreenY(birb_y_size),
-							 0.0,		 0.0,								1.0,						pxToScreenY(60)) or
-		checkCollisions2DBox(birbx, 	birby,								pxToScreenX(birb_x_size), 	pxToScreenY(birb_y_size),
-							  0.0,		pxToScreenY(screen_size_y - 60), 	1.0, 					 	pxToScreenY(60))
-	) then
-		return true
-	else
-		return false
-	end
+	return (util.checkCollisions2DBox(birbx, 	birby,								util.pxToScreenX(birb_x_size),	util.pxToScreenY(birb_y_size),
+									  0.0,		0.0,								1.0,						util.pxToScreenY(60)) or
+			util.checkCollisions2DBox(birbx, 	birby,								util.pxToScreenX(birb_x_size), 	util.pxToScreenY(birb_y_size),
+								 	  0.0,		util.pxToScreenY(util.screen_size_y - 60), 	1.0, 					 	util.pxToScreenY(60)))
 end
 
 local gameOnGameOver = function(asset_manager, scene_manager)
@@ -209,13 +241,13 @@ onUpdate = function(event)
 
 			scene:AddTemplatedObject("sprite_pipe_down"..pipe_id, "pipe_down")
 			local pipe1 = scene:FindObject("sprite_pipe_down"..pipe_id)
-			pipe1:SetPosition(1.0, pxToScreenY(pipe_y_offset - (pipe_spacing / 2)), -0.15)
-			pipe1:SetSize(pxToScreenX(pipe_x_size), pxToScreenY(pipe_y_size), 1.0)
+			pipe1:SetPosition(1.0, util.pxToScreenY(pipe_y_offset - (pipe_spacing / 2)), -0.15)
+			pipe1:SetSize(util.pxToScreenX(pipe_x_size), util.pxToScreenY(pipe_y_size), 1.0)
 
 			scene:AddTemplatedObject("sprite_pipe_up"..pipe_id, "pipe_up")
 			local pipe2 = scene:FindObject("sprite_pipe_up"..pipe_id)
-			pipe2:SetPosition(1.0, pxToScreenY(pipe_y_size + (pipe_spacing / 2) + pipe_y_offset), -0.15)
-			pipe2:SetSize(pxToScreenX(pipe_x_size), pxToScreenY(pipe_y_size), 1.0)
+			pipe2:SetPosition(1.0, util.pxToScreenY(pipe_y_size + (pipe_spacing / 2) + pipe_y_offset), -0.15)
+			pipe2:SetSize(util.pxToScreenX(pipe_x_size), util.pxToScreenY(pipe_y_size), 1.0)
 
 			spawn_pipe_last_idx = spawn_pipe_last_idx + 1
 			spawn_pipe_count = spawn_pipe_count + 1
@@ -239,15 +271,15 @@ onUpdate = function(event)
 				pipe2:SetPosition(x2, y2, z2)
 
 				-- Check collisions with both pipes
-				if checkCollisions2DBox(birbx, birby, pxToScreenX(birb_x_size), pxToScreenY(birb_y_size), x1, y1, pxToScreenX(pipe_x_size), pxToScreenY(pipe_y_size)) or -- pipe 1
-				   checkCollisions2DBox(birbx, birby, pxToScreenX(birb_x_size), pxToScreenY(birb_y_size), x2, y2, pxToScreenX(pipe_x_size), pxToScreenY(pipe_y_size))	 -- pipe 2
+				if util.checkCollisions2DBox(birbx, birby, util.pxToScreenX(birb_x_size), util.pxToScreenY(birb_y_size), x1, y1, util.pxToScreenX(pipe_x_size), util.pxToScreenY(pipe_y_size)) or -- pipe 1
+				   util.checkCollisions2DBox(birbx, birby, util.pxToScreenX(birb_x_size), util.pxToScreenY(birb_y_size), x2, y2, util.pxToScreenX(pipe_x_size), util.pxToScreenY(pipe_y_size))	 -- pipe 2
 				then
 					gameOnGameOver(asset_manager, scene_manager)
 					return 0
 				end
 
 				-- Add score by colliding with a wall after the pipes
-				if checkCollisions2DBox(birbx, birby, pxToScreenX(birb_x_size), pxToScreenY(birb_y_size), x2 + pxToScreenX(80), 0.0, pxToScreenX(80), 1.0) and
+				if util.checkCollisions2DBox(birbx, birby, util.pxToScreenX(birb_x_size), util.pxToScreenY(birb_y_size), x2 + util.pxToScreenX(80), 0.0, util.pxToScreenX(80), 1.0) and
 				   pipeIdx > game_last_scored_pipe_idx
 				then
 					game_score = game_score + 1
@@ -260,7 +292,7 @@ onUpdate = function(event)
 					spawn_pipe_every = spawn_pipe_every * 0.9950 -- Increase spawn rate (decrease timeout between spawns)
 				end
 
-				if x1 < (0.0 - pxToScreenX(pipe_x_size + 5)) then
+				if x1 < (0.0 - util.pxToScreenX(pipe_x_size + 5)) then
 					-- Destroy objects
 					scene:RemoveObject("sprite_pipe_down"..tostring(pipeIdx))
 					scene:RemoveObject("sprite_pipe_up"..tostring(pipeIdx))
@@ -281,27 +313,7 @@ onUpdate = function(event)
 		birby = birby - birb_velocity * event.deltaTime
 		birb:SetPosition(birbx, birby, birbz)
 
-		local ground1 = scene:FindObject("ground_top")
-		local ground2 = scene:FindObject("ground_bottom")
-		local g1_x, g1_y, g1_z = ground1:GetPosition()
-		local g2_x, g2_y, g2_z = ground2:GetPosition()
-		
-		-- Move ground on X axis (slightly faster than pipes)
-		g1_x = g1_x - (pipe_move_speed * 1.1) * event.deltaTime
-		g2_x = g2_x - (pipe_move_speed * 1.1) * event.deltaTime
-
-		-- Check whether ground is in a correct position
-		-- (the right end of sprite cannot be visible)
-		if	(g1_x > pxToScreenX(-120)) or
-			(g2_x > pxToScreenX(-120))
-		then
-			ground1:SetPosition(g1_x, g1_y, g1_z)
-			ground2:SetPosition(g2_x, g2_y, g2_z)
-		-- If it's not, reset back to 0
-		else
-			ground1:SetPosition(0.0, g1_y, g1_z)
-			ground2:SetPosition(0.0, g2_y, g2_z)
-		end
+		gameOnHandleGrounds(scene, event)
 
 		-- Add birb_gravity to birb velocity
 		birb_velocity = birb_velocity - birb_gravity * event.deltaTime
@@ -348,12 +360,46 @@ onInit = function(event)
 	object:SetPosition(0.0, 0.0, -0.01)
 	object:SetSize(24, 24, 1.0)
 	scene:AddObject("_debug_info", object)
-	
+
+	--cmepmeta.logger.SimpleLog(string.format("package returns %u", util.testfn()));
+
 	-- Add score
 	local object = cmepapi.ObjectFactoryCreateTextObject(scene_manager, "0", font)
 	object:SetPosition(0.5, 0.0, -0.01)
 	object:SetSize(64, 64, 1.0)
 	scene:AddObject("text_score", object)
+
+	-- Add top grounds
+	local ground_top1 = cmepapi.ObjectFactoryCreateSpriteObject(scene_manager, asset_manager, "ground_top")
+	ground_top1:SetPosition(0.0, 0.0, -0.1)
+	ground_top1:SetSize(util.pxToScreenX(630), util.pxToScreenY(60), 1)
+	scene:AddObject("ground_top1", ground_top1)
+	
+	local ground_top2 = cmepapi.ObjectFactoryCreateSpriteObject(scene_manager, asset_manager, "ground_top")
+	ground_top2:SetPosition(util.pxToScreenX(630), 0.0, -0.1)
+	ground_top2:SetSize(util.pxToScreenX(630), util.pxToScreenY(60), 1)
+	scene:AddObject("ground_top2", ground_top2)
+
+	local ground_top3 = cmepapi.ObjectFactoryCreateSpriteObject(scene_manager, asset_manager, "ground_top")
+	ground_top3:SetPosition(util.pxToScreenX(630) * 2, 0.0, -0.1)
+	ground_top3:SetSize(util.pxToScreenX(630), util.pxToScreenY(60), 1)
+	scene:AddObject("ground_top3", ground_top3)
+
+	-- Add bottom grounds
+	local ground_bottom1 = cmepapi.ObjectFactoryCreateSpriteObject(scene_manager, asset_manager, "ground_bottom")
+	ground_bottom1:SetPosition(0.0, util.pxToScreenY(util.screen_size_y - 60), -0.1)
+	ground_bottom1:SetSize(util.pxToScreenX(630), util.pxToScreenY(60), 1)
+	scene:AddObject("ground_bottom1", ground_bottom1)
+	
+	local ground_bottom2 = cmepapi.ObjectFactoryCreateSpriteObject(scene_manager, asset_manager, "ground_bottom")
+	ground_bottom2:SetPosition(util.pxToScreenX(630), util.pxToScreenY(util.screen_size_y - 60), -0.1)
+	ground_bottom2:SetSize(util.pxToScreenX(630), util.pxToScreenY(60), 1)
+	scene:AddObject("ground_bottom2", ground_bottom2)
+
+	local ground_bottom3 = cmepapi.ObjectFactoryCreateSpriteObject(scene_manager, asset_manager, "ground_bottom")
+	ground_bottom3:SetPosition(util.pxToScreenX(630) * 2, util.pxToScreenY(util.screen_size_y - 60), -0.1)
+	ground_bottom3:SetSize(util.pxToScreenX(630), util.pxToScreenY(60), 1)
+	scene:AddObject("ground_bottom3", ground_bottom3)
 
 	-- Set-up camera
 	-- (this is essentially unnecessary for 2D-only scenes)
@@ -361,7 +407,7 @@ onInit = function(event)
 	scene_manager:SetCameraHVRotation(0, 0)
 
 	-- Set-up light
-	-- (unnecessary for scenes that don't employ renderers which support lighting)
+	-- (unnecessary for scenes that don't employ renderers or shaders with lighting)
 	scene_manager:SetLightTransform(-1, 1, 0)
 
 	return 0

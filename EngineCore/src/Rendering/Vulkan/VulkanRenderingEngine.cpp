@@ -79,7 +79,7 @@ namespace Engine::Rendering::Vulkan
 		scissor.extent = this->swapchain->GetExtent();
 		vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
 
-		vkCmdBindDescriptorSets(
+		/* vkCmdBindDescriptorSets(
 			commandBuffer,
 			VK_PIPELINE_BIND_POINT_GRAPHICS,
 			this->graphics_pipeline_default->vk_pipeline_layout,
@@ -88,10 +88,10 @@ namespace Engine::Rendering::Vulkan
 			&this->graphics_pipeline_default->vk_descriptor_sets[current_frame],
 			0,
 			nullptr
-		);
+		); */
 
 		// Perform actual render
-		vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, this->graphics_pipeline_default->pipeline);
+		// vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, this->graphics_pipeline_default->pipeline);
 		if (this->external_callback)
 		{
 			this->external_callback(commandBuffer, current_frame, this->owner_engine);
@@ -206,12 +206,12 @@ namespace Engine::Rendering::Vulkan
 
 		for (size_t i = 0; i < VulkanRenderingEngine::max_frames_in_flight; i++)
 		{
-			vkDestroySemaphore(logical_device, this->present_ready_semaphores[i], nullptr);
-			vkDestroySemaphore(logical_device, this->image_available_semaphores[i], nullptr);
-			vkDestroyFence(logical_device, this->in_flight_fences[i], nullptr);
+			vkDestroySemaphore(logical_device, this->sync_objects[i].present_ready, nullptr);
+			vkDestroySemaphore(logical_device, this->sync_objects[i].image_available, nullptr);
+			vkDestroyFence(logical_device, this->sync_objects[i].in_flight, nullptr);
 
-			vkWaitForFences(logical_device, 1, &this->acquire_ready_fences[i], VK_TRUE, UINT64_MAX);
-			vkDestroyFence(logical_device, this->acquire_ready_fences[i], nullptr);
+			vkWaitForFences(logical_device, 1, &(this->sync_objects[i].acquire_ready), VK_TRUE, UINT64_MAX);
+			vkDestroyFence(logical_device, this->sync_objects[i].acquire_ready, nullptr);
 		}
 
 		for (auto& vk_command_buffer : this->vk_command_buffers)
@@ -306,14 +306,16 @@ namespace Engine::Rendering::Vulkan
 	{
 		VkDevice logical_device = this->device_manager->GetLogicalDevice();
 
+		auto& frame_sync_objects = this->sync_objects[current_frame];
+
 		// Wait for fence
-		vkWaitForFences(logical_device, 1, &this->in_flight_fences[current_frame], VK_TRUE, UINT64_MAX);
-		vkWaitForFences(logical_device, 1, &this->acquire_ready_fences[current_frame], VK_TRUE, UINT64_MAX);
+		vkWaitForFences(logical_device, 1, &frame_sync_objects.in_flight, VK_TRUE, UINT64_MAX);
+		vkWaitForFences(logical_device, 1, &frame_sync_objects.acquire_ready, VK_TRUE, UINT64_MAX);
 
 		// Reset fence after wait is over
 		// (fence has to be reset before being used again)
-		vkResetFences(logical_device, 1, &this->in_flight_fences[current_frame]);
-		vkResetFences(logical_device, 1, &this->acquire_ready_fences[current_frame]);
+		vkResetFences(logical_device, 1, &frame_sync_objects.in_flight);
+		vkResetFences(logical_device, 1, &frame_sync_objects.acquire_ready);
 
 		// Index of framebuffer in this->vk_swap_chain_framebuffers
 		uint32_t image_index;
@@ -323,8 +325,8 @@ namespace Engine::Rendering::Vulkan
 			logical_device,
 			this->swapchain->GetNativeHandle(),
 			UINT64_MAX,
-			this->image_available_semaphores[current_frame],
-			this->acquire_ready_fences[current_frame],
+			frame_sync_objects.image_available,
+			frame_sync_objects.acquire_ready,
 			&image_index
 		);
 
@@ -361,7 +363,7 @@ namespace Engine::Rendering::Vulkan
 		submit_info.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
 
 		// Wait semaphores
-		VkSemaphore wait_semaphores[]	   = {this->image_available_semaphores[current_frame]};
+		VkSemaphore wait_semaphores[]	   = {frame_sync_objects.image_available};
 		VkPipelineStageFlags wait_stages[] = {VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT};
 		submit_info.waitSemaphoreCount	   = 1;
 		submit_info.pWaitSemaphores		   = wait_semaphores;
@@ -372,26 +374,22 @@ namespace Engine::Rendering::Vulkan
 		// Signal semaphores to be signaled once
 		// all submit_info.pCommandBuffers finish executing
 		// present_ready_semaphores are used in the next step
-		VkSemaphore signal_semaphores[]	 = {this->present_ready_semaphores[current_frame]};
+		VkSemaphore signal_semaphores[]	 = {frame_sync_objects.present_ready};
 		submit_info.signalSemaphoreCount = 1;
 		submit_info.pSignalSemaphores	 = signal_semaphores;
 
 		// Submit to queue
 		// in_flight_fences[current_frame] will be signaled once
 		// all submit_info.pCommandBuffers finish executing
-		if (vkQueueSubmit(
-				this->device_manager->GetGraphicsQueue(),
-				1,
-				&submit_info,
-				this->in_flight_fences[current_frame]
-			) != VK_SUCCESS)
+		if (vkQueueSubmit(this->device_manager->GetGraphicsQueue(), 1, &submit_info, frame_sync_objects.in_flight) !=
+			VK_SUCCESS)
 		{
 			throw std::runtime_error("failed to submit draw command buffer!");
 		}
 
 		// Increment current frame
-		this->current_frame = 0;
-		// this->current_frame = (this->current_frame + 1) % this->max_frames_in_flight;
+		// this->current_frame = 0;
+		this->current_frame = (this->current_frame + 1) % Vulkan::VulkanRenderingEngine::max_frames_in_flight;
 
 		VkPresentInfoKHR present_info{};
 		present_info.sType				= VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;

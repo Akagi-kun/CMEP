@@ -7,6 +7,7 @@
 #include "InternalEngineObject.hpp"
 #include "VBuffer.hpp"
 #include "framework.hpp"
+#include "vulkan/vulkan_core.h"
 
 #include <cstdint>
 #include <functional>
@@ -26,11 +27,19 @@ namespace Engine::Rendering::Vulkan
 		VULKAN_RENDERING_ENGINE_TOPOLOGY_LINE_LIST
 	};
 
+	struct VSyncObjects
+	{
+		VkSemaphore image_available;
+		VkSemaphore present_ready; // render_finished_semaphores
+		VkFence acquire_ready;	   // maybe useless?
+		VkFence in_flight;
+	};
+
 	class VulkanRenderingEngine : public InternalEngineObject
 	{
 	private:
 		// Maximum number of frames in rotation/flight
-		static constexpr uint16_t max_frames_in_flight = 2;
+		static constexpr uint16_t max_frames_in_flight = 3;
 
 		GLFWwindow* window = nullptr;
 		ScreenSize window_size;
@@ -54,10 +63,12 @@ namespace Engine::Rendering::Vulkan
 
 		// Synchronisation
 		// TODO: Struct SyncObjects together into single vector
-		std::array<VkSemaphore, max_frames_in_flight> image_available_semaphores;
-		std::array<VkSemaphore, max_frames_in_flight> present_ready_semaphores; // render_finished_semaphores
-		std::array<VkFence, max_frames_in_flight> acquire_ready_fences;			// maybe useless?
-		std::array<VkFence, max_frames_in_flight> in_flight_fences;
+		// std::array<VkSemaphore, max_frames_in_flight> image_available_semaphores;
+		// std::array<VkSemaphore, max_frames_in_flight> present_ready_semaphores; // render_finished_semaphores
+		// std::array<VkFence, max_frames_in_flight> acquire_ready_fences;			// maybe useless?
+		// std::array<VkFence, max_frames_in_flight> in_flight_fences;
+
+		std::array<VSyncObjects, max_frames_in_flight> sync_objects;
 
 		// Default pipeline
 		VulkanPipeline* graphics_pipeline_default = nullptr;

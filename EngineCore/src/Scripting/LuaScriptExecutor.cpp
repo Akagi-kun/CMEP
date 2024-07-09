@@ -1,14 +1,17 @@
 #include "Scripting/LuaScriptExecutor.hpp"
 
 #include "Scripting/API/LuaFactories.hpp"
+#include "Scripting/LuaScript.hpp"
 #include "Scripting/Mappings.hpp"
 
 #include "Logging/Logging.hpp"
 
 #include "Engine.hpp"
-
-// #include "Scripting/lualib/lua.h"
 #include "lua.hpp"
+#include "luaconf.h"
+
+#include <stdexcept>
+#include <string>
 
 // Prefixes for logging messages
 #define LOGPFX_CURRENT LOGPFX_LUA_SCRIPT_EXECUTOR
@@ -51,7 +54,6 @@ namespace Engine::Scripting
 
 		lua_setfield(state, -2, "logger");
 		/*******************************/
-		/*******************************/
 
 		lua_setglobal(state, "cmepmeta");
 	}
@@ -89,6 +91,31 @@ namespace Engine::Scripting
 		{
 			return luaL_error(state, "Error caught");
 		}
+	}
+
+	void RegisterRequirePath(lua_State* state, LuaScript* with_script)
+	{
+		lua_getglobal(state, LUA_LOADLIBNAME);
+		if (!lua_istable(state, -1))
+		{
+			throw std::runtime_error("Lua Module 'package' is not loaded!");
+		}
+
+		std::string require_path_str;
+
+		std::filesystem::path testpath = with_script->path;
+		testpath.remove_filename();
+
+		testpath += "?.lua";
+		require_path_str = (testpath).string();
+
+		testpath.remove_filename();
+		testpath += "modules";
+		testpath += "?.lua";
+		require_path_str += ";" + testpath.string();
+
+		lua_pushstring(state, require_path_str.c_str());
+		lua_setfield(state, -2, "path");
 	}
 
 	void LuaScriptExecutor::RegisterWrapper(lua_State* state)
@@ -196,6 +223,40 @@ namespace Engine::Scripting
 		// Get script state
 		lua_State* state = script->GetState();
 
+		RegisterRequirePath(state, script);
+		/*
+				lua_getfield(state, -1, "preload");
+				if (!lua_istable(state, -1))
+				{
+					this->logger->SimpleLog(
+						Logging::LogLevel::Warning,
+						LOGPFX_CURRENT LUA_LOADLIBNAME ".preload is non-table type (is type %u)",
+						lua_type(state, -1)
+					);
+
+					if (lua_isnil(state, -1))
+					{
+						lua_pop(state, 1); // pop the nil
+						lua_newtable(state);
+					}
+					else
+					{
+						return 2;
+					}
+				}
+
+				lua_pushcfunction(state, TestFn);
+				lua_rawseti(state, -2, 1);
+				// lua_setfield(state, -2, "test.lua");
+				// lua_setfield(state, -2, "preload");
+				lua_setfield(state, -2, "searchers");
+				lua_setglobal(state, LUA_LOADLIBNAME);
+		 */
+		//  lua_pushvalue(state, -2);
+		//  lua_pushcclosure(state, TestFn, 1);
+		//  lua_rawseti(state, -2, 5);
+		//  lua_setfield(state, -2, "searchers");
+
 		// Load file and compile it
 		int errload			  = luaL_loadfile(state, script->path.c_str());
 		int errexec			  = lua_pcall(state, 0, LUA_MULTRET, 0);
@@ -224,7 +285,7 @@ namespace Engine::Scripting
 				errorexec
 			);
 
-			return 1;
+			return 3;
 		}
 
 		this->logger->SimpleLog(
