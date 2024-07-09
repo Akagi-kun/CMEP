@@ -46,7 +46,7 @@ namespace Engine::Scripting::API
 				return 1;
 			}
 
-			return luaL_error(state, "Object %s requested but returned nullptr!", obj_name.c_str());
+			return luaL_error(state, "Object '%s' requested but returned nullptr!", obj_name.c_str());
 		}
 
 		static int RemoveObject(lua_State* state)
@@ -74,8 +74,16 @@ namespace Engine::Scripting::API
 			std::string template_name = lua_tostring(state, 3);
 
 			scene->AddTemplatedObject(name, template_name);
+			Object* obj = scene->FindObject(name);
 
-			return 0;
+			if (obj != nullptr)
+			{
+				API::LuaFactories::ObjectFactory(state, obj);
+
+				return 1;
+			}
+
+			return luaL_error(state, "Object could not be added (FindObject on '%s' returned nullptr!)", name.c_str());
 		}
 	} // namespace Functions_Scene
 

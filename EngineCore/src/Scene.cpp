@@ -125,10 +125,8 @@ namespace Engine
 			{
 				case RendererType::SPRITE:
 				{
-					with_builder = new Rendering::SpriteMeshBuilder(
-						this->owner_engine,
-						this->owner_engine->GetRenderingEngine()
-					);
+					with_builder =
+						new Rendering::SpriteMeshBuilder(this->owner_engine, this->owner_engine->GetRenderingEngine());
 
 					with_renderer = new Rendering::SpriteRenderer(this->owner_engine, with_builder);
 					// with_renderer = new Rendering::TextRenderer(this->owner_engine, with_builder);

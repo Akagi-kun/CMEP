@@ -42,14 +42,14 @@ namespace Engine
 		std::unordered_map<std::string, Object*> objects;
 		std::unordered_map<std::string, ObjectTemplate> templates;
 
-		bool was_scene_modified = false;
-
 		static void InternalSort(
 			std::unordered_map<std::string, Object*>& from_map,
 			std::vector<std::pair<std::string, Object*>>& objects
 		);
 
 	public:
+		bool was_scene_modified = false;
+
 		std::multimap<EventHandling::EventType, std::pair<std::shared_ptr<Scripting::LuaScript>, std::string>>
 			lua_event_handlers;
 

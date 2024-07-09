@@ -12,6 +12,7 @@
 #include "Logging/Logging.hpp"
 
 #include "Engine.hpp"
+#include "GLFW/glfw3.h"
 #include "vulkan/vulkan_core.h"
 
 #include <algorithm>
@@ -265,11 +266,9 @@ namespace Engine::Rendering::Vulkan
 			static_cast<int>(this->window_size.x),
 			static_cast<int>(this->window_size.y),
 			this->window_title.c_str(),
-			nullptr,
+			nullptr, // glfwGetPrimaryMonitor(),
 			nullptr
 		);
-		glfwSetWindowTitle(this->window, this->window_title.c_str());
-		glfwSetWindowSize(this->window, static_cast<int>(this->window_size.x), static_cast<int>(this->window_size.y));
 		glfwSetWindowUserPointer(this->window, this);
 		glfwSetFramebufferSizeCallback(this->window, FramebufferResizeCallback);
 
@@ -350,7 +349,7 @@ namespace Engine::Rendering::Vulkan
 
 		if (acquire_result != VK_SUCCESS)
 		{
-			throw std::runtime_error("failed to acquire swap chain image!");
+			throw std::runtime_error("Failed to acquire swap chain image!");
 		}
 
 		// Reset command buffer to initial state
@@ -384,12 +383,12 @@ namespace Engine::Rendering::Vulkan
 		if (vkQueueSubmit(this->device_manager->GetGraphicsQueue(), 1, &submit_info, frame_sync_objects.in_flight) !=
 			VK_SUCCESS)
 		{
-			throw std::runtime_error("failed to submit draw command buffer!");
+			throw std::runtime_error("Failed to submit draw command buffer!");
 		}
 
 		// Increment current frame
 		// this->current_frame = 0;
-		this->current_frame = (this->current_frame + 1) % Vulkan::VulkanRenderingEngine::max_frames_in_flight;
+		this->current_frame = (this->current_frame + 1) % VulkanRenderingEngine::max_frames_in_flight;
 
 		VkPresentInfoKHR present_info{};
 		present_info.sType				= VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
@@ -405,7 +404,10 @@ namespace Engine::Rendering::Vulkan
 		present_info.pResults		 = nullptr; // Optional
 
 		// Present current image to the screen
-		vkQueuePresentKHR(this->device_manager->GetPresentQueue(), &present_info);
+		if (vkQueuePresentKHR(this->device_manager->GetPresentQueue(), &present_info) != VK_SUCCESS)
+		{
+			throw std::runtime_error("Failed to present queue!");
+		}
 	}
 
 	GLFWwindowData VulkanRenderingEngine::GetWindow() const

@@ -1,10 +1,8 @@
 #pragma once
 
-#include <map>
+#include <cstdio>
 #include <memory>
-#include <mutex>
-#include <stdio.h>
-#include <vector>
+#include <string>
 
 #define CMEP_ABI_IMPORT
 #include "PlatformSemantics.hpp"
@@ -22,29 +20,18 @@ namespace Logging
 		Exception = 6
 	};
 
-	// TODO: Remove this from common_include
-	struct LoggerInternalMapping
-	{
-		LogLevel min_level;
-		FILE* handle;
-		bool has_started_logging;
-		bool use_colors;
-	};
+	class LoggerInternalState;
 
 	class CMEP_EXPORT_CLASS Logger
 	{
 	private:
-		std::vector<LoggerInternalMapping> outputs;
-		std::map<uint16_t, std::string> threadid_name_map;
-		std::mutex thread_mutex;
+		LoggerInternalState* state;
 
 	public:
-		CMEP_EXPORT Logger() = default;
-		CMEP_EXPORT ~Logger()
-		{
-		}
+		CMEP_EXPORT Logger();
+		CMEP_EXPORT ~Logger();
 
-		void CMEP_EXPORT AddOutputHandle(LogLevel min_level, FILE* handle, bool useColors = false);
+		void CMEP_EXPORT AddOutputHandle(LogLevel min_level, FILE* handle, bool use_colors = false);
 		void CMEP_EXPORT MapCurrentThreadToName(std::string name);
 
 		void CMEP_EXPORT StartLog(LogLevel level);

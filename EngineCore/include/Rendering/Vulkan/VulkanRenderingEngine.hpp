@@ -62,12 +62,6 @@ namespace Engine::Rendering::Vulkan
 		std::array<VCommandBuffer*, max_frames_in_flight> vk_command_buffers;
 
 		// Synchronisation
-		// TODO: Struct SyncObjects together into single vector
-		// std::array<VkSemaphore, max_frames_in_flight> image_available_semaphores;
-		// std::array<VkSemaphore, max_frames_in_flight> present_ready_semaphores; // render_finished_semaphores
-		// std::array<VkFence, max_frames_in_flight> acquire_ready_fences;			// maybe useless?
-		// std::array<VkFence, max_frames_in_flight> in_flight_fences;
-
 		std::array<VSyncObjects, max_frames_in_flight> sync_objects;
 
 		// Default pipeline

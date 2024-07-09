@@ -8,7 +8,6 @@
 
 #include "Engine.hpp"
 #include "lua.hpp"
-#include "luaconf.h"
 
 #include <stdexcept>
 #include <string>
@@ -93,7 +92,7 @@ namespace Engine::Scripting
 		}
 	}
 
-	void RegisterRequirePath(lua_State* state, LuaScript* with_script)
+	static void RegisterRequirePath(lua_State* state, LuaScript* with_script)
 	{
 		lua_getglobal(state, LUA_LOADLIBNAME);
 		if (!lua_istable(state, -1))
@@ -224,38 +223,6 @@ namespace Engine::Scripting
 		lua_State* state = script->GetState();
 
 		RegisterRequirePath(state, script);
-		/*
-				lua_getfield(state, -1, "preload");
-				if (!lua_istable(state, -1))
-				{
-					this->logger->SimpleLog(
-						Logging::LogLevel::Warning,
-						LOGPFX_CURRENT LUA_LOADLIBNAME ".preload is non-table type (is type %u)",
-						lua_type(state, -1)
-					);
-
-					if (lua_isnil(state, -1))
-					{
-						lua_pop(state, 1); // pop the nil
-						lua_newtable(state);
-					}
-					else
-					{
-						return 2;
-					}
-				}
-
-				lua_pushcfunction(state, TestFn);
-				lua_rawseti(state, -2, 1);
-				// lua_setfield(state, -2, "test.lua");
-				// lua_setfield(state, -2, "preload");
-				lua_setfield(state, -2, "searchers");
-				lua_setglobal(state, LUA_LOADLIBNAME);
-		 */
-		//  lua_pushvalue(state, -2);
-		//  lua_pushcclosure(state, TestFn, 1);
-		//  lua_rawseti(state, -2, 5);
-		//  lua_setfield(state, -2, "searchers");
 
 		// Load file and compile it
 		int errload			  = luaL_loadfile(state, script->path.c_str());

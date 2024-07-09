@@ -38,8 +38,8 @@ local birb_velocity = 0.25 -- Internal velocity value
 local birb_is_velociting = false -- Internal is-jumping check
 
 -- Game state
-local game_gameover_state = false
-local game_midgameover_state = false
+local game_gameover_state = false -- After falling animation, complete game end
+local game_midgameover_state = false -- After collision but before end of falling animation
 local game_last_scored_pipe_idx = 0 -- Index of last scored pipe
 local game_score = 0 -- The score
 
@@ -49,51 +49,30 @@ local game_score = 0 -- The score
 -----------------------
 --> Local functions <--
 
---local checkCollisions2DBox = function(x1, y1, w1, h1, x2, y2, w2, h2)
---	if ((x1 < x2 + w2) and (x1 + w1 > x2) and (y1 < y2 + h2) and (y1 + h1 > y2)) then
---		return true
---	else
---		return false
---	end
---end
-
 -- Scrolls ground objects
 local handleGroundLayer = function(scene, event, layer)
-	local ground1 = scene:FindObject(layer.."1")
-	local ground2 = scene:FindObject(layer.."2")
-	local ground3 = scene:FindObject(layer.."3")
 
-	local g1_x, g1_y, g1_z = ground1:GetPosition()
-	local g2_x, g2_y, g2_z = ground2:GetPosition()
+	local ground3 = scene:FindObject(layer..2)
 	local g3_x, g3_y, g3_z = ground3:GetPosition()
-	
-	-- Move ground (slightly faster than pipes)
-	g1_x = g1_x - (pipe_move_speed * 1.1) * event.deltaTime
-	g2_x = g2_x - (pipe_move_speed * 1.1) * event.deltaTime
 	g3_x = g3_x - (pipe_move_speed * 1.1) * event.deltaTime
 	
-	-- Check if ground is still on-screen
-	if	(g1_x > util.pxToScreenX(-630))
-	then
-	-- If yes just move it
-		ground1:SetPosition(g1_x, g1_y, g1_z)
-	-- If it's not, put it on the other side
-	else
-		ground1:SetPosition(g3_x + util.pxToScreenX(630), g1_y, g1_z)
-	end
+	local last_x = g3_x;
 
-	if (g2_x > util.pxToScreenX(-630))
-	then
-		ground2:SetPosition(g2_x, g2_y, g2_z)
-	else
-		ground2:SetPosition(g1_x + util.pxToScreenX(630), g2_y, g2_z)
-	end
+	for i = 0, 2 do
+		local ground = scene:FindObject(layer..i)
+		local ground_x, ground_y, ground_z = ground:GetPosition()
 
-	if (g3_x > util.pxToScreenX(-630))
-	then
-		ground3:SetPosition(g3_x, g3_y, g3_z)
-	else
-		ground3:SetPosition(g2_x + util.pxToScreenX(630), g3_y, g3_z)
+		-- Move ground (slightly faster than pipes)
+		ground_x = ground_x - (pipe_move_speed * 1.1) * event.deltaTime
+	
+		if(ground_x > util.pxToScreenX(-630))
+		then
+			ground:SetPosition(ground_x, ground_y, ground_z)
+		else
+			ground:SetPosition(last_x + util.pxToScreenX(630), ground_y, ground_z)
+		end
+
+		last_x = ground_x
 	end
 end
 
@@ -232,20 +211,18 @@ onUpdate = function(event)
 		-- Spawn new pipes
 		if spawn_pipe_since_last > spawn_pipe_every then
 			-- Constant offset to center the pipes
-			local const_pipe_y_offset = -100
+			local const_pipe_y_offset = -80
 			-- We can use the math library in here!
-			local pipe_y_offset = const_pipe_y_offset + math.random(-15, 15) * 10
-			--local pipe_y_offset = const_pipe_y_offset
+			--local pipe_y_offset = const_pipe_y_offset + math.random(-15, 15) * 10
+			local pipe_y_offset = const_pipe_y_offset
 			
 			local pipe_id = tostring(spawn_pipe_last_idx + 1)
 
-			scene:AddTemplatedObject("sprite_pipe_down"..pipe_id, "pipe_down")
-			local pipe1 = scene:FindObject("sprite_pipe_down"..pipe_id)
+			local pipe1 = scene:AddTemplatedObject("sprite_pipe_down"..pipe_id, "pipe_down")
 			pipe1:SetPosition(1.0, util.pxToScreenY(pipe_y_offset - (pipe_spacing / 2)), -0.15)
 			pipe1:SetSize(util.pxToScreenX(pipe_x_size), util.pxToScreenY(pipe_y_size), 1.0)
 
-			scene:AddTemplatedObject("sprite_pipe_up"..pipe_id, "pipe_up")
-			local pipe2 = scene:FindObject("sprite_pipe_up"..pipe_id)
+			local pipe2 = scene:AddTemplatedObject("sprite_pipe_up"..pipe_id, "pipe_up")
 			pipe2:SetPosition(1.0, util.pxToScreenY(pipe_y_size + (pipe_spacing / 2) + pipe_y_offset), -0.15)
 			pipe2:SetSize(util.pxToScreenX(pipe_x_size), util.pxToScreenY(pipe_y_size), 1.0)
 
@@ -369,37 +346,18 @@ onInit = function(event)
 	object:SetSize(64, 64, 1.0)
 	scene:AddObject("text_score", object)
 
-	-- Add top grounds
-	local ground_top1 = cmepapi.ObjectFactoryCreateSpriteObject(scene_manager, asset_manager, "ground_top")
-	ground_top1:SetPosition(0.0, 0.0, -0.1)
-	ground_top1:SetSize(util.pxToScreenX(630), util.pxToScreenY(60), 1)
-	scene:AddObject("ground_top1", ground_top1)
-	
-	local ground_top2 = cmepapi.ObjectFactoryCreateSpriteObject(scene_manager, asset_manager, "ground_top")
-	ground_top2:SetPosition(util.pxToScreenX(630), 0.0, -0.1)
-	ground_top2:SetSize(util.pxToScreenX(630), util.pxToScreenY(60), 1)
-	scene:AddObject("ground_top2", ground_top2)
+	-- Add grounds
+	for i = 0, 2 do
+		local ground_top = cmepapi.ObjectFactoryCreateSpriteObject(scene_manager, asset_manager, "ground_top")
+		ground_top:SetPosition(util.pxToScreenX(630) * i, 0.0, -0.1)
+		ground_top:SetSize(util.pxToScreenX(630), util.pxToScreenY(60), 1)
+		scene:AddObject("ground_top"..i, ground_top)
 
-	local ground_top3 = cmepapi.ObjectFactoryCreateSpriteObject(scene_manager, asset_manager, "ground_top")
-	ground_top3:SetPosition(util.pxToScreenX(630) * 2, 0.0, -0.1)
-	ground_top3:SetSize(util.pxToScreenX(630), util.pxToScreenY(60), 1)
-	scene:AddObject("ground_top3", ground_top3)
-
-	-- Add bottom grounds
-	local ground_bottom1 = cmepapi.ObjectFactoryCreateSpriteObject(scene_manager, asset_manager, "ground_bottom")
-	ground_bottom1:SetPosition(0.0, util.pxToScreenY(util.screen_size_y - 60), -0.1)
-	ground_bottom1:SetSize(util.pxToScreenX(630), util.pxToScreenY(60), 1)
-	scene:AddObject("ground_bottom1", ground_bottom1)
-	
-	local ground_bottom2 = cmepapi.ObjectFactoryCreateSpriteObject(scene_manager, asset_manager, "ground_bottom")
-	ground_bottom2:SetPosition(util.pxToScreenX(630), util.pxToScreenY(util.screen_size_y - 60), -0.1)
-	ground_bottom2:SetSize(util.pxToScreenX(630), util.pxToScreenY(60), 1)
-	scene:AddObject("ground_bottom2", ground_bottom2)
-
-	local ground_bottom3 = cmepapi.ObjectFactoryCreateSpriteObject(scene_manager, asset_manager, "ground_bottom")
-	ground_bottom3:SetPosition(util.pxToScreenX(630) * 2, util.pxToScreenY(util.screen_size_y - 60), -0.1)
-	ground_bottom3:SetSize(util.pxToScreenX(630), util.pxToScreenY(60), 1)
-	scene:AddObject("ground_bottom3", ground_bottom3)
+		local ground_bottom = cmepapi.ObjectFactoryCreateSpriteObject(scene_manager, asset_manager, "ground_bottom")
+		ground_bottom:SetPosition(util.pxToScreenX(630) * i, util.pxToScreenY(util.screen_size_y - 60), -0.1)
+		ground_bottom:SetSize(util.pxToScreenX(630), util.pxToScreenY(60), 1)
+		scene:AddObject("ground_bottom"..i, ground_bottom)
+	end
 
 	-- Set-up camera
 	-- (this is essentially unnecessary for 2D-only scenes)

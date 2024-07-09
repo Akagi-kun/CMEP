@@ -39,7 +39,7 @@ namespace Engine::Rendering::Vulkan::Utils
 
 		// FIFO is guaranteed to be available by the spec
 		return VK_PRESENT_MODE_FIFO_KHR;
-		// return VK_PRESENT_MODE_MAILBOX_KHR;
+		// return VK_PRESENT_MODE_FIFO_RELAXED_KHR;
 	}
 
 	inline bool DoesVulkanFormatHaveStencilComponent(VkFormat format) noexcept

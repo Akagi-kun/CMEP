@@ -205,9 +205,18 @@ namespace Engine
 		}
 	}
 
+	static struct PerfState
+	{
+		bool did_sort : 1;
+	} performance_state;
+
 	void Engine::RenderCallback(VkCommandBuffer commandBuffer, uint32_t currentFrame, Engine* engine)
 	{
-		const auto* objects = engine->scene_manager->GetSceneCurrent()->GetAllObjectsSorted();
+		auto& current_scene = engine->scene_manager->GetSceneCurrent();
+
+		// If was_scene_modified is true here, the scene has to be sorted
+		performance_state.did_sort = current_scene->was_scene_modified;
+		const auto* objects		   = current_scene->GetAllObjectsSorted();
 
 		// engine->logger->SimpleLog(Logging::LogLevel::Info, "Object count: %lu", objects->size());
 
@@ -261,7 +270,7 @@ namespace Engine
 		Rendering::GLFWwindowData glfw_window = this->rendering_engine->GetWindow();
 		glfwShowWindow(glfw_window.window);
 
-		// static constexpr double nano_to_msec = 1.e6;
+		// static constexpr double nano_to_msec = 1e6;
 		static constexpr double nano_to_sec = 1e9;
 
 		auto prev_clock = std::chrono::steady_clock::now();
@@ -288,22 +297,48 @@ namespace Engine
 				break;
 			}
 
-			// this->logger->SimpleLog(Logging::LogLevel::Info, "FT %lf", 0.016666 / delta_time);
+			static constexpr double sec_to_msec = 1e3;
+
+			const auto event_clock = std::chrono::steady_clock::now();
 
 			// Render
 			this->rendering_engine->DrawFrame();
 
+			const auto draw_clock = std::chrono::steady_clock::now();
+
 			// Sync with glfw event loop
 			glfwPollEvents();
 
-			const auto frame_clock	= std::chrono::steady_clock::now();
+			const auto poll_clock = std::chrono::steady_clock::now();
+
+			const double event_time = static_cast<double>((event_clock - next_clock).count()) / nano_to_sec *
+									  sec_to_msec;
+			const double draw_time = static_cast<double>((draw_clock - event_clock).count()) / nano_to_sec *
+									 sec_to_msec;
+			const double poll_time = static_cast<double>((poll_clock - draw_clock).count()) / nano_to_sec * sec_to_msec;
+
+			if (event_time > 1.0 || (delta_time * sec_to_msec) > 18.0)
+			{
+				this->logger->SimpleLog(
+					Logging::LogLevel::Warning,
+					"delta %lf sum %lf (event %lf draw %lf poll %lf perf 0b%u)",
+					delta_time * sec_to_msec,
+					event_time + draw_time + poll_time,
+					event_time,
+					draw_time,
+					poll_time,
+					performance_state.did_sort
+				);
+			}
+
+			/* const auto frame_clock	= std::chrono::steady_clock::now();
 			const double sleep_secs = 1.0 / this->framerate_target -
 									  static_cast<double>((frame_clock - next_clock).count()) / nano_to_sec;
 			// spin sleep if sleep necessary and VSYNC disabled
 			if (sleep_secs > 0 && this->framerate_target != 0)
 			{
 				SpinSleep(sleep_secs);
-			}
+			} */
 
 			prev_clock = next_clock;
 		}

@@ -85,7 +85,6 @@ namespace Engine::Rendering
 		if (this->mesh_builder != nullptr)
 		{
 			this->mesh_builder->Build();
-			// this->mesh_context = this->mesh_builder->GetContext();
 		}
 
 		glm::mat4 projection{};
@@ -118,19 +117,20 @@ namespace Engine::Rendering
 
 		Vulkan::VSampledImage* texture_image = this->texture->GetTextureImage();
 
+		VkDescriptorImageInfo image_info{};
+		image_info.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+		image_info.imageView   = texture_image->image_view;
+		image_info.sampler	   = texture_image->texture_sampler;
+
+		VkDescriptorBufferInfo buffer_info{};
+		buffer_info.offset = 0;
+		buffer_info.range  = sizeof(glm::mat4);
+
 		if (auto locked_device_manager = renderer->GetDeviceManager().lock())
 		{
 			for (size_t i = 0; i < Vulkan::VulkanRenderingEngine::GetMaxFramesInFlight(); i++)
 			{
-				VkDescriptorBufferInfo buffer_info{};
 				buffer_info.buffer = pipeline->uniform_buffers[i]->GetNativeHandle();
-				buffer_info.offset = 0;
-				buffer_info.range  = sizeof(glm::mat4);
-
-				VkDescriptorImageInfo image_info{};
-				image_info.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-				image_info.imageView   = texture_image->image_view;
-				image_info.sampler	   = texture_image->texture_sampler;
 
 				std::array<VkWriteDescriptorSet, 2> descriptor_writes{};
 

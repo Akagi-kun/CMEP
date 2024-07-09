@@ -13,12 +13,12 @@ namespace Logging
 {
 	enum class LogLevel
 	{
-		Debug3 = 0,
-		Debug2 = 1,
-		Debug1 = 2,
-		Info = 3,
-		Warning = 4,
-		Error = 5,
+		Debug3	  = 0,
+		Debug2	  = 1,
+		Debug1	  = 2,
+		Info	  = 3,
+		Warning	  = 4,
+		Error	  = 5,
 		Exception = 6
 	};
 
@@ -30,18 +30,23 @@ namespace Logging
 		bool use_colors;
 	};
 
-	class CMEP_EXPORT_CLASS Logger
+	struct LoggerInternalState
 	{
-	private:
 		std::vector<LoggerInternalMapping> outputs;
 		std::map<uint16_t, std::string> threadid_name_map;
 		std::mutex thread_mutex;
+	};
+
+	class CMEP_EXPORT_CLASS Logger
+	{
+	private:
+		LoggerInternalState* state;
 
 	public:
-		CMEP_EXPORT Logger() = default;
+		CMEP_EXPORT Logger();
 		CMEP_EXPORT ~Logger();
 
-		void CMEP_EXPORT AddOutputHandle(LogLevel min_level, FILE* handle, bool useColors = false);
+		void CMEP_EXPORT AddOutputHandle(LogLevel min_level, FILE* handle, bool use_colors = false);
 		void CMEP_EXPORT MapCurrentThreadToName(std::string name);
 
 		void CMEP_EXPORT StartLog(LogLevel level);
