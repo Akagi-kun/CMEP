@@ -28,7 +28,8 @@ namespace Engine::Rendering::Vulkan
 		// Request one image more than is the required minimum
 		// uint32_t swapchain_image_count = swap_chain_support.capabilities.minImageCount + 1;
 		// Temporary fix for screen lag
-		uint32_t swapchain_image_count = 1;
+		// uint32_t swapchain_image_count = 1;
+		uint32_t swapchain_image_count = 3;
 
 		// Check if there is a defined maximum (maxImageCount > 0)
 		// where 0 is a special value meaning no maximum
@@ -139,7 +140,7 @@ namespace Engine::Rendering::Vulkan
 		color_attachment.format			= this->swapchain->GetImageFormat();
 		color_attachment.samples		= this->device_manager->GetMSAASampleCount();
 		color_attachment.loadOp			= VK_ATTACHMENT_LOAD_OP_CLEAR;
-		color_attachment.storeOp		= VK_ATTACHMENT_STORE_OP_STORE;
+		color_attachment.storeOp		= VK_ATTACHMENT_STORE_OP_DONT_CARE;
 		color_attachment.stencilLoadOp	= VK_ATTACHMENT_LOAD_OP_DONT_CARE;
 		color_attachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
 		color_attachment.initialLayout	= VK_IMAGE_LAYOUT_UNDEFINED;

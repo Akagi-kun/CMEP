@@ -87,7 +87,7 @@ local gameOnGameOver = function(asset_manager, scene_manager)
 	local object = cmepapi.ObjectFactoryCreateTextObject(scene_manager, "GAME OVER", font)
 	object:SetPosition(0.34, 0.45, -0.01)
 	object:SetSize(64, 64, 1.0)
-	scene_manager:AddObject("text_gameover", object)
+	scene_manager:GetSceneCurrent():AddObject("text_gameover", object)
 end
 
 --> Local functions <--

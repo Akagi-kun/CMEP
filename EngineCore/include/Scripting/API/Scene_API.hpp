@@ -2,6 +2,7 @@
 
 #include "lua.hpp"
 
+#include <string>
 #include <unordered_map>
 
 namespace Engine::Scripting::API

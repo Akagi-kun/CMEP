@@ -2,6 +2,7 @@
 
 #include "VulkanRenderingEngine.hpp"
 #include "VulkanStructDefs.hpp"
+#include "vulkan/vulkan_core.h"
 
 #include <cstring>
 #include <fstream>
@@ -28,17 +29,17 @@ namespace Engine::Rendering::Vulkan::Utils
 	{
 		(void)(availablePresentModes);
 		// Mailbox potentially worse?
-		/*for (const auto& available_present_mode : availablePresentModes)
+		// for (const auto& available_present_mode : availablePresentModes)
+		//{
+		/* if (available_present_mode == VK_PRESENT_MODE_MAILBOX_KHR)
 		{
-			if (available_present_mode == VK_PRESENT_MODE_MAILBOX_KHR)
-			{
-				return available_present_mode;
-			}
-		}*/
+			return available_present_mode;
+		} */
+		//}
 
-		// Return unpreferred present mode
 		// FIFO is guaranteed to be available by the spec
 		return VK_PRESENT_MODE_FIFO_KHR;
+		// return VK_PRESENT_MODE_MAILBOX_KHR;
 	}
 
 	inline bool DoesVulkanFormatHaveStencilComponent(VkFormat format) noexcept

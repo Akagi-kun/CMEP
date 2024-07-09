@@ -122,7 +122,7 @@ namespace Engine::Factories
 		texture_data->x			= xsize;
 		texture_data->y			= ysize;
 
-		auto memory_size = static_cast<VkDeviceSize>(xsize * ysize * channel_count);
+		auto memory_size = static_cast<VkDeviceSize>(xsize * ysize) * channel_count;
 
 		Rendering::Vulkan::VulkanRenderingEngine* renderer = this->owner_engine->GetRenderingEngine();
 
@@ -139,7 +139,6 @@ namespace Engine::Factories
 				VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
 				0
 			);
-			// this->staging_buffer = renderer->createVulkanStagingBufferPreMapped(memory_size);
 		}
 		else
 		{
@@ -150,14 +149,6 @@ namespace Engine::Factories
 		if (auto locked_device_manager = renderer->GetDeviceManager().lock())
 		{
 			used_staging_buffer->MapMemory();
-			/* vkMapMemory(
-				locked_device_manager->GetLogicalDevice(),
-				used_staging_buffer->allocation_info.deviceMemory,
-				used_staging_buffer->allocation_info.offset,
-				used_staging_buffer->allocation_info.size,
-				0,
-				&used_staging_buffer->mapped_data
-			); */
 
 			memcpy(used_staging_buffer->mapped_data, raw_data.data(), static_cast<size_t>(memory_size));
 

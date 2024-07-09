@@ -13,7 +13,6 @@ namespace Engine::Rendering::Vulkan
 		SwapChainSupportDetails swap_chain_support = this->device_manager->QuerySwapChainSupport();
 		VkSurfaceFormatKHR surface_format = Vulkan::Utils::ChooseVulkanSwapSurfaceFormat(swap_chain_support.formats);
 
-		// present_mode is currently guaranteed to be VK_PRESENT_MODE_FIFO_KHR
 		VkPresentModeKHR present_mode = Vulkan::Utils::ChooseVulkanSwapPresentMode(swap_chain_support.present_modes);
 
 		VkSwapchainCreateInfoKHR create_info{};
