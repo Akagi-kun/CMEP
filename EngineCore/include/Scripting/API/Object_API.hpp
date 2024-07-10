@@ -5,8 +5,7 @@
 #include <string>
 #include <unordered_map>
 
-
 namespace Engine::Scripting::API
 {
-	extern const std::unordered_map<std::string, lua_CFunction> object_mappings;
+	extern std::unordered_map<std::string, const lua_CFunction> object_mappings;
 }

@@ -26,6 +26,6 @@ namespace Engine
 		CMEP_EXPORT void Init();
 		CMEP_EXPORT void Run();
 
-		CMEP_EXPORT void ConfigFile(std::string path);
+		CMEP_EXPORT void ConfigFile(const std::string& path);
 	};
 } // namespace Engine

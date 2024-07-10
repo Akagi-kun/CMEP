@@ -132,7 +132,7 @@ namespace Engine::Scripting::API
 		}
 	} // namespace Functions_AssetManager
 
-	const std::unordered_map<std::string, lua_CFunction> asset_manager_mappings = {
+	std::unordered_map<std::string, const lua_CFunction> asset_manager_mappings = {
 		CMEP_LUAMAPPING_DEFINE(Functions_AssetManager, GetFont),
 		CMEP_LUAMAPPING_DEFINE(Functions_AssetManager, GetTexture),
 		CMEP_LUAMAPPING_DEFINE(Functions_AssetManager, GetModel),

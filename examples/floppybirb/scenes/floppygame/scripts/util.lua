@@ -18,5 +18,5 @@ util = {
 		else
 			return false
 		end
-	end
+	end,
 }

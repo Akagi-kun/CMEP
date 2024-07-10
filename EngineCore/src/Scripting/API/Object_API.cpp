@@ -112,7 +112,7 @@ namespace Engine::Scripting::API
 		}
 	} // namespace Functions_Object
 
-	const std::unordered_map<std::string, lua_CFunction> object_mappings = {
+	std::unordered_map<std::string, const lua_CFunction> object_mappings = {
 		CMEP_LUAMAPPING_DEFINE(Functions_Object, AddChild),
 		CMEP_LUAMAPPING_DEFINE(Functions_Object, GetSize),
 		CMEP_LUAMAPPING_DEFINE(Functions_Object, SetSize),

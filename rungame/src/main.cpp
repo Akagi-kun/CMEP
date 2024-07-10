@@ -70,6 +70,8 @@ static int RunEngine(bool verbose)
 		}
 	}
 
+	// return 0;
+
 	// Initialize engine, load config
 	try
 	{

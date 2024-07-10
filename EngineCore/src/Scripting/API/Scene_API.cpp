@@ -87,7 +87,7 @@ namespace Engine::Scripting::API
 		}
 	} // namespace Functions_Scene
 
-	const std::unordered_map<std::string, lua_CFunction> scene_mappings = {
+	std::unordered_map<std::string, const lua_CFunction> scene_mappings = {
 		CMEP_LUAMAPPING_DEFINE(Functions_Scene, AddObject),
 		CMEP_LUAMAPPING_DEFINE(Functions_Scene, FindObject),
 		CMEP_LUAMAPPING_DEFINE(Functions_Scene, RemoveObject),

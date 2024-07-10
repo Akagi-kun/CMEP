@@ -110,7 +110,7 @@ namespace Engine::Scripting::API
 
 	} // namespace Functions_SceneManager
 
-	const std::unordered_map<std::string, lua_CFunction> scene_manager_mappings = {
+	std::unordered_map<std::string, const lua_CFunction> scene_manager_mappings = {
 		CMEP_LUAMAPPING_DEFINE(Functions_SceneManager, GetCameraHVRotation),
 		CMEP_LUAMAPPING_DEFINE(Functions_SceneManager, SetCameraHVRotation),
 		CMEP_LUAMAPPING_DEFINE(Functions_SceneManager, GetCameraTransform),

@@ -12,7 +12,7 @@ local deltaTime_max = 0.0
 local deltaTime_min = 2000.0
 
 -- Related to spawning pipes
-local spawn_pipe_every = 3.0 -- 4.0 Configurable spawn rate
+local spawn_pipe_every = 4.0 -- Configurable spawn rate
 local spawn_pipe_last_idx = 0
 local spawn_pipe_first_idx = 1
 local spawn_pipe_count = 0
@@ -25,7 +25,7 @@ local pipe_y_size = 450
 -- Pipe behavior
 local pipe_spacing_start = 200 -- Configurable pipe spacing (between top and bottom)
 local pipe_spacing = pipe_spacing_start
-local pipe_move_speed = 0.185 -- 0.135 Configurable pipe move speed (/speed of flying)
+local pipe_move_speed = 0.135 -- 0.135 Configurable pipe move speed (/speed of flying)
 
 -- Birb sprite size in pixels
 local birb_x_size = 72
@@ -333,7 +333,7 @@ onInit = function(event)
 
 	-- Create frametime counter and add it to scene
 	local font = asset_manager:GetFont("myfont")
-	local object = cmepapi.ObjectFactoryCreateTextObject(scene_manager, "avg: \nmin: \nmax: ", font)
+	local object = Window.ObjectFactoryCreateTextObject(scene_manager, "avg: \nmin: \nmax: ", font)
 	object:SetPosition(0.0, 0.0, -0.01)
 	object:SetSize(24, 24, 1.0)
 	scene:AddObject("_debug_info", object)
