@@ -5,6 +5,8 @@
 
 #include "vulkan/vulkan_core.h"
 
+#include <stdexcept>
+
 namespace Engine::Rendering::Vulkan
 {
 	VCommandBuffer::VCommandBuffer(VulkanDeviceManager* const with_device_manager, VCommandPool* from_pool)

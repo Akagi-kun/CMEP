@@ -17,6 +17,7 @@
 
 #include <algorithm>
 #include <cstdint>
+#include <stdexcept>
 
 // Prefixes for logging messages
 #define LOGPFX_CURRENT LOGPFX_CLASS_VULKAN_RENDERING_ENGINE

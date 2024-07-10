@@ -2,6 +2,8 @@
 
 #include "Rendering/Vulkan/VulkanDeviceManager.hpp"
 
+#include <stdexcept>
+
 namespace Engine::Rendering::Vulkan
 {
 	VSampledImage::VSampledImage(

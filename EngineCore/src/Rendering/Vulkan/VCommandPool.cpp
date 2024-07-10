@@ -2,6 +2,8 @@
 
 #include "Rendering/Vulkan/VulkanDeviceManager.hpp"
 
+#include <stdexcept>
+
 namespace Engine::Rendering::Vulkan
 {
 	VCommandPool::VCommandPool(VulkanDeviceManager* const with_device_manager) : HoldsVulkanDevice(with_device_manager)

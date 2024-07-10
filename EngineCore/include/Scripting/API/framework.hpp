@@ -27,6 +27,7 @@
 #define CMEP_LUAFACTORY_PUSH_MAPPINGS(stateL, from_mappings)                                                           \
 	for (const auto& mapping : from_mappings)                                                                          \
 	{                                                                                                                  \
-		lua_pushcfunction(stateL, mapping.second);                                                                     \
-		lua_setfield(stateL, -2, mapping.first.c_str());                                                               \
-	}
+		lua_pushstring(stateL, mapping.first.c_str());						\
+		lua_pushcclosure(stateL, mapping.second, 0);\
+		lua_rawset(stateL, -3);}//lua_setfield(stateL, -2, mapping.first.c_str());                                                               \
+	//}

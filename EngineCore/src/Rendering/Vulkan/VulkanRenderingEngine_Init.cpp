@@ -8,6 +8,8 @@
 
 #include "vulkan/vulkan_core.h"
 
+#include <stdexcept>
+
 // Prefixes for logging messages
 #define LOGPFX_CURRENT LOGPFX_CLASS_VULKAN_RENDERING_ENGINE
 #include "Logging/LoggingPrefix.hpp"

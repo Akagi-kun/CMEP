@@ -317,7 +317,7 @@ namespace Engine
 									 sec_to_msec;
 			const double poll_time = static_cast<double>((poll_clock - draw_clock).count()) / nano_to_sec * sec_to_msec;
 
-			if (event_time > 1.0 || (delta_time * sec_to_msec) > 18.0)
+			/*if (event_time > 1.0 || (delta_time * sec_to_msec) > 18.0)
 			{
 				this->logger->SimpleLog(
 					Logging::LogLevel::Warning,
@@ -329,7 +329,7 @@ namespace Engine
 					poll_time,
 					performance_state.did_sort
 				);
-			}
+			}*/
 
 			/* const auto frame_clock	= std::chrono::steady_clock::now();
 			const double sleep_secs = 1.0 / this->framerate_target -
