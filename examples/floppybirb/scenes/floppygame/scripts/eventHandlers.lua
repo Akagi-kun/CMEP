@@ -188,6 +188,11 @@ onUpdate = function(event)
 
 	deltaTime_count = deltaTime_count + 1
 
+	-- For profiling only!
+	if (game_score >= 250) then
+		event.engine:Stop()
+	end
+
 	local asset_manager = event.engine:GetAssetManager()
 	local scene_manager = event.engine:GetSceneManager()
 	local scene = scene_manager:GetSceneCurrent()
