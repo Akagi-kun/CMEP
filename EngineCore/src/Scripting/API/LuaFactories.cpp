@@ -6,8 +6,8 @@
 #include "Scripting/API/SceneManager_API.hpp"
 #include "Scripting/API/Scene_API.hpp"
 
-// #define CMEP_USE_FACTORY_TRAMPOLINE
-// #define CMEP_USE_FACTORY_NEW_PUSH
+#define CMEP_USE_FACTORY_TRAMPOLINE
+//#define CMEP_USE_FACTORY_NEW_PUSH
 #include "Scripting/API/framework.hpp"
 
 #include "lua.h"
@@ -81,9 +81,9 @@ namespace Engine::Scripting::API::LuaFactories
 		// Generate Scene table
 		lua_createtable(state, 0, 1);
 
-		// CMEP_LUAFACTORY_PUSH_MAPPINGS(state, scene_mappings)
+		CMEP_LUAFACTORY_PUSH_MAPPINGS(state, scene_mappings)
 
-		CreateMappingTrampoline(state, &scene_mappings);
+		//CreateMappingTrampoline(state, &scene_mappings);
 
 		lua_pushlightuserdata(state, scene_ptr);
 		lua_setfield(state, -2, "_ptr");

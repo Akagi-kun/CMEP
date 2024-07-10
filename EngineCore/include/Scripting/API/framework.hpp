@@ -24,9 +24,9 @@
 		return luaL_error(stateL, "Function '%s' called on an invalid object (object is nullptr)", __FUNCTION__);      \
 	}
 
-#define CMEP_LUAFACTORY_PUSH_TRAMPOLINE(stateL)                                                                        \
+#define CMEP_LUAFACTORY_PUSH_TRAMPOLINE(stateL, from_mappings)                                                                        \
 	{                                                                                                                  \
-		CreateMappingTrampoline(state, &scene_mappings);                                                               \
+		CreateMappingTrampoline(state, &(from_mappings));                                                               \
 	}
 
 #if defined(CMEP_USE_FACTORY_NEW_PUSH)
