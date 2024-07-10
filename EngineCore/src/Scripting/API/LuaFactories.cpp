@@ -5,6 +5,9 @@
 #include "Scripting/API/Object_API.hpp"
 #include "Scripting/API/SceneManager_API.hpp"
 #include "Scripting/API/Scene_API.hpp"
+
+// #define CMEP_USE_FACTORY_TRAMPOLINE
+// #define CMEP_USE_FACTORY_NEW_PUSH
 #include "Scripting/API/framework.hpp"
 
 #include "lua.h"

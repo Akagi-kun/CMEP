@@ -333,7 +333,7 @@ onInit = function(event)
 
 	-- Create frametime counter and add it to scene
 	local font = asset_manager:GetFont("myfont")
-	local object = Window.ObjectFactoryCreateTextObject(scene_manager, "avg: \nmin: \nmax: ", font)
+	local object = cmepapi.ObjectFactoryCreateTextObject(scene_manager, "avg: \nmin: \nmax: ", font)
 	object:SetPosition(0.0, 0.0, -0.01)
 	object:SetSize(24, 24, 1.0)
 	scene:AddObject("_debug_info", object)
