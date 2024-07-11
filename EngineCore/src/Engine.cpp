@@ -272,6 +272,10 @@ namespace Engine
 
 		// static constexpr double nano_to_msec = 1e6;
 		static constexpr double nano_to_sec = 1e9;
+		static constexpr double sec_to_msec = 1e3;
+
+		double average_runtime_event = 0.00;
+		uint64_t average_idx		 = 0;
 
 		auto prev_clock = std::chrono::steady_clock::now();
 
@@ -297,8 +301,6 @@ namespace Engine
 				break;
 			}
 
-			static constexpr double sec_to_msec = 1e3;
-
 			const auto event_clock = std::chrono::steady_clock::now();
 
 			// Render
@@ -317,7 +319,10 @@ namespace Engine
 									 sec_to_msec;
 			const double poll_time = static_cast<double>((poll_clock - draw_clock).count()) / nano_to_sec * sec_to_msec;
 
-			/*if (event_time > 1.0 || (delta_time * sec_to_msec) > 18.0)
+			average_runtime_event += event_time;
+			average_idx++;
+
+			/*if (event_time > 1.0 || delta_time > 0.018 || delta_time < 0.008)
 			{
 				this->logger->SimpleLog(
 					Logging::LogLevel::Warning,
@@ -343,7 +348,11 @@ namespace Engine
 			prev_clock = next_clock;
 		}
 
-		this->logger->SimpleLog(Logging::LogLevel::Debug2, LOGPFX_CURRENT "Closing engine");
+		this->logger->SimpleLog(
+			Logging::LogLevel::Debug2,
+			LOGPFX_CURRENT "Closing engine (eventtime avg %lf)",
+			average_runtime_event / static_cast<double>(average_idx)
+		);
 	}
 
 	int Engine::FireEvent(EventHandling::Event& event)

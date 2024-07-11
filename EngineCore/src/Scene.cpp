@@ -4,6 +4,7 @@
 #include "Rendering/IRenderer.hpp"
 #include "Rendering/SpriteMeshBuilder.hpp"
 #include "Rendering/SpriteRenderer.hpp"
+#include "Rendering/TextMeshBuilder.hpp"
 #include "Rendering/TextRenderer.hpp"
 
 #include "Engine.hpp"
@@ -102,6 +103,7 @@ namespace Engine
 		std::sort(copy_vector.begin(), copy_vector.end(), InternalSortCmpFunction);
 
 		objects.clear();
+		objects.reserve(from_map.size());
 
 		for (auto& iter : copy_vector)
 		{
@@ -130,8 +132,15 @@ namespace Engine
 
 					with_renderer = new Rendering::SpriteRenderer(this->owner_engine, with_builder);
 					// with_renderer = new Rendering::TextRenderer(this->owner_engine, with_builder);
-					// object->UpdateHeldLogger(this->logger);
-					// with_renderer->UpdateHeldLogger(this->logger);
+
+					break;
+				}
+				case RendererType::TEXT:
+				{
+					with_builder =
+						new Rendering::TextMeshBuilder(this->owner_engine, this->owner_engine->GetRenderingEngine());
+
+					with_renderer = new Rendering::TextRenderer(this->owner_engine, with_builder);
 
 					break;
 				}
@@ -145,17 +154,13 @@ namespace Engine
 			// Allocate Object since we already know
 			// that the renderer is valid
 			auto* object = new Object(this->owner_engine);
-			// object->UpdateOwnerEngine(this->owner_engine);
 			object->SetRenderer(with_renderer);
-			// object->SetMeshBuilder(with_builder);
 
 			for (auto& supply : object_template.supply_list)
 			{
-				// with_renderer->Communicate(supply_message);
 				with_renderer->SupplyData(supply);
 			}
 
-			// object->UpdateHeldLogger(this->logger);
 			this->AddObject(name, object);
 		}
 		else
@@ -172,7 +177,6 @@ namespace Engine
 
 			Rendering::GLFWwindowData data = this->owner_engine->GetRenderingEngine()->GetWindow();
 			ptr->ScreenSizeInform(data.window_x, data.window_y);
-			// ptr->UpdateHeldLogger(this->logger);
 
 			this->objects.emplace(name, ptr);
 			this->was_scene_modified = true;

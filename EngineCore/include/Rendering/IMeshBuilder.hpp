@@ -27,7 +27,6 @@ namespace Engine::Rendering
 			this->renderer->SyncDeviceWaitIdle();
 
 			delete this->context.vbo;
-			// renderer->CleanupVulkanBuffer(this->context.vbo);
 		}
 
 		virtual void SupplyData(const RendererSupplyData& data) = 0;
@@ -39,7 +38,7 @@ namespace Engine::Rendering
 			return this->context;
 		}
 
-		[[nodiscard]] const bool HasRebuilt()
+		[[nodiscard]] bool HasRebuilt()
 		{
 			if (this->context.been_rebuilt)
 			{

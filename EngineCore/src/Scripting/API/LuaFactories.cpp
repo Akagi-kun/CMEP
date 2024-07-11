@@ -7,7 +7,8 @@
 #include "Scripting/API/Scene_API.hpp"
 
 #define CMEP_USE_FACTORY_TRAMPOLINE
-//#define CMEP_USE_FACTORY_NEW_PUSH
+// #define CMEP_USE_FACTORY_NEW_PUSH
+// #define CMEP_USE_FACTORY_OLD_PUSH
 #include "Scripting/API/framework.hpp"
 
 #include "lua.h"
@@ -22,7 +23,7 @@ namespace Engine::Scripting::API::LuaFactories
 		// arg1 = table
 		// arg2 = index
 
-		std::string index = lua_tostring(state, 2);
+		const char* index = lua_tostring(state, 2);
 
 		auto* mapping_upvalue = static_cast<std::unordered_map<std::string, const lua_CFunction>*>(
 			lua_touserdata(state, lua_upvalueindex(1))
@@ -37,16 +38,16 @@ namespace Engine::Scripting::API::LuaFactories
 			return 1;
 		}
 
-		return luaL_error(state, "Mapping '%s' not found by __index metafn!", index.c_str());
+		return luaL_error(state, "Mapping '%s' not found by __index metafn!", index);
 	}
 
 	static int CreateMappingTrampoline(lua_State* state, std::unordered_map<std::string, const lua_CFunction>* mapping)
 	{
-		// Create mapping table
-		// lua_newtable(state);
-		// +1 (1)
+		// Index -1 must contain a table
+		assert(lua_istable(state, -1) == true);
+		// (1)
 
-		lua_newtable(state);
+		lua_createtable(state, 0, 1);
 		// +1 (2)
 
 		lua_pushlightuserdata(state, mapping);
@@ -83,8 +84,6 @@ namespace Engine::Scripting::API::LuaFactories
 
 		CMEP_LUAFACTORY_PUSH_MAPPINGS(state, scene_mappings)
 
-		//CreateMappingTrampoline(state, &scene_mappings);
-
 		lua_pushlightuserdata(state, scene_ptr);
 		lua_setfield(state, -2, "_ptr");
 	}
@@ -101,9 +100,9 @@ namespace Engine::Scripting::API::LuaFactories
 		lua_setfield(state, -2, "_ptr");
 
 		// Generate renderer table
-		lua_newtable(state);
+		// lua_newtable(state);
 		lua_pushlightuserdata(state, object_ptr->GetRenderer());
-		lua_setfield(state, -2, "_ptr");
+		// lua_setfield(state, -2, "_ptr");
 		lua_setfield(state, -2, "renderer");
 	}
 

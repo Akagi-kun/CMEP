@@ -24,9 +24,9 @@
 		return luaL_error(stateL, "Function '%s' called on an invalid object (object is nullptr)", __FUNCTION__);      \
 	}
 
-#define CMEP_LUAFACTORY_PUSH_TRAMPOLINE(stateL, from_mappings)                                                                        \
+#define CMEP_LUAFACTORY_PUSH_TRAMPOLINE(stateL, from_mappings)                                                         \
 	{                                                                                                                  \
-		CreateMappingTrampoline(state, &(from_mappings));                                                               \
+		CreateMappingTrampoline(state, &(from_mappings));                                                              \
 	}
 
 #if defined(CMEP_USE_FACTORY_NEW_PUSH)
@@ -41,7 +41,7 @@
 #elif defined(CMEP_USE_FACTORY_TRAMPOLINE)
 #	pragma message("Using factory mappings trampoline")
 #	define CMEP_LUAFACTORY_PUSH_MAPPINGS CMEP_LUAFACTORY_PUSH_TRAMPOLINE
-#else
+#elif defined(CMEP_USE_FACTORY_OLD_PUSH)
 #	pragma message("Using old style factory mappings push")
 #	define CMEP_LUAFACTORY_PUSH_MAPPINGS(stateL, from_mappings)                                                       \
 		for (const auto& mapping : from_mappings)                                                                      \

@@ -57,8 +57,9 @@ namespace Engine::Scripting::Mappings
 		{
 			CMEP_LUACHECK_FN_ARGC(state, 2)
 
-			lua_getfield(state, 1, "_ptr");
-			auto* renderer = static_cast<Rendering::IRenderer*>(lua_touserdata(state, -1));
+			// lua_getfield(state, 1, "_ptr");
+			// auto* renderer = static_cast<Rendering::IRenderer*>(lua_touserdata(state, -1));
+			auto* renderer = static_cast<Rendering::IRenderer*>(lua_touserdata(state, 1));
 
 			const char* text = lua_tostring(state, 2);
 
@@ -72,8 +73,9 @@ namespace Engine::Scripting::Mappings
 		{
 			CMEP_LUACHECK_FN_ARGC(state, 2)
 
-			lua_getfield(state, 1, "_ptr");
-			auto* renderer = static_cast<Rendering::IRenderer*>(lua_touserdata(state, -1));
+			// lua_getfield(state, 1, "_ptr");
+			// auto* renderer = static_cast<Rendering::IRenderer*>(lua_touserdata(state, -1));
+			auto* renderer = static_cast<Rendering::IRenderer*>(lua_touserdata(state, 1));
 
 			lua_getfield(state, 2, "_smart_ptr");
 			std::shared_ptr<Rendering::Texture> texture = *static_cast<std::shared_ptr<Rendering::Texture>*>(
