@@ -16,10 +16,9 @@
 
 namespace Engine::Factories
 {
-	std::shared_ptr<Rendering::Font> FontFactory::InitBMFont(std::string fontPath)
+	std::shared_ptr<Rendering::Font> FontFactory::InitBMFont(const std::string& fontPath)
 	{
 		std::shared_ptr<Rendering::Font> font = std::make_shared<Rendering::Font>(this->owner_engine);
-		// font->UpdateHeldLogger(this->logger);
 
 		std::unique_ptr<Rendering::FontData> font_data = std::make_unique<Rendering::FontData>();
 
@@ -36,6 +35,7 @@ namespace Engine::Factories
 		}
 
 		this->logger->SimpleLog(Logging::LogLevel::Debug2, LOGPFX_CURRENT "Loading file %s", fontPath.c_str());
+
 		// Evaluate it
 		this->EvalBmfont(font_data, font_file);
 
@@ -167,8 +167,7 @@ namespace Engine::Factories
 						assert(pairs.find("chnl") != pairs.end());
 
 						Rendering::FontChar fchar = {};
-						int id					  = 0;
-						id						  = std::stoi(pairs.find("id")->second);
+						int fchar_id			  = std::stoi(pairs.find("id")->second);
 						fchar.x					  = std::stoi(pairs.find("x")->second);
 						fchar.y					  = std::stoi(pairs.find("y")->second);
 						fchar.width				  = std::stoi(pairs.find("width")->second);
@@ -180,7 +179,7 @@ namespace Engine::Factories
 						fchar.channel			  = std::stoi(pairs.find("chnl")->second);
 
 						// Place the character into unordered_map
-						font->chars.emplace(id, fchar);
+						font->chars.emplace(fchar_id, fchar);
 
 						// Clear the collector unordered_map
 						pairs.clear();
