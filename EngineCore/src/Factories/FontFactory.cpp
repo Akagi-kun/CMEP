@@ -2,45 +2,46 @@
 
 #include "Assets/AssetManager.hpp"
 
-#include "Engine.hpp"
-#include "PlatformIndependentUtils.hpp"
+#include "Logging/Logging.hpp"
 
-#include <cstdint>
+#include "Engine.hpp"
+
+#include <cstring>
+#include <filesystem>
+#include <fstream>
+#include <sstream>
+#include <stdexcept>
+#include <unordered_map>
 
 // Prefixes for logging messages
 #define LOGPFX_CURRENT LOGPFX_CLASS_FONT_FACTORY
 #include "Logging/LoggingPrefix.hpp"
 
-#include <cstring>
-#include <fstream>
-
 namespace Engine::Factories
 {
-	std::shared_ptr<Rendering::Font> FontFactory::InitBMFont(const std::string& fontPath)
+	std::shared_ptr<Rendering::Font> FontFactory::InitBMFont(const std::string& font_path)
 	{
 		std::shared_ptr<Rendering::Font> font = std::make_shared<Rendering::Font>(this->owner_engine);
 
-		std::unique_ptr<Rendering::FontData> font_data = std::make_unique<Rendering::FontData>();
-
-		std::ifstream font_file(fontPath);
+		std::ifstream font_file(font_path);
 
 		if (!font_file.is_open())
 		{
 			this->logger->SimpleLog(
 				Logging::LogLevel::Error,
 				LOGPFX_CURRENT "FontFile %s unexpectedly not open",
-				fontPath.c_str()
+				font_path.c_str()
 			);
 			return nullptr;
 		}
 
-		this->logger->SimpleLog(Logging::LogLevel::Debug2, LOGPFX_CURRENT "Loading file %s", fontPath.c_str());
+		this->logger->SimpleLog(Logging::LogLevel::Debug2, LOGPFX_CURRENT "Loading file %s", font_path.c_str());
 
-		// Evaluate it
-		this->EvalBmfont(font_data, font_file);
+		std::unique_ptr<Rendering::FontData> font_data = std::make_unique<Rendering::FontData>();
+		this->ParseBmfont(font_data, font_file);
 
 		this->logger
-			->SimpleLog(Logging::LogLevel::Debug2, LOGPFX_CURRENT "File %s loaded successfully", fontPath.c_str());
+			->SimpleLog(Logging::LogLevel::Debug1, LOGPFX_CURRENT "File %s loaded successfully", font_path.c_str());
 
 		font_file.close();
 
@@ -49,209 +50,228 @@ namespace Engine::Factories
 		return font;
 	}
 
-	void FontFactory::EvalBmfont(std::unique_ptr<Rendering::FontData>& font, std::ifstream& fontFile)
+	static std::string ExtractEntry(std::stringstream& from_sstream)
 	{
-		static constexpr uint_fast16_t entry_buffer_limit = 16;
-		static const uint_fast16_t buffer_limit			  = 255;
+		std::string entry;
 
-		unsigned int cur_offset			  = 0;
-		char cur_data[entry_buffer_limit] = {};
-		char* data						  = new char[buffer_limit + 1];
+		from_sstream >> entry;
 
-		assert(data);
+		return entry;
+	}
 
-		while (!fontFile.eof())
+	static std::tuple<std::string, std::string> ParseKeyValuePair(
+		const std::string& from_string,
+		const std::string& delimiter
+	)
+	{
+		// Get position of delimiter in entry
+		const size_t delimiter_begin = from_string.find(delimiter);
+		const size_t delimiter_end	 = delimiter_begin + delimiter.size();
+
+		// Get the key and value
+		std::string key	  = from_string.substr(0, delimiter_begin);
+		std::string value = from_string.substr(delimiter_end, from_string.size() - delimiter_end);
+
+		return {key, value};
+	}
+
+	void FontFactory::ParseBmfont(std::unique_ptr<Rendering::FontData>& font, std::ifstream& font_file)
+	{
+		static constexpr size_t buffer_size = 255;
+		std::array<char, buffer_size> data{};
+
+		while (!font_file.eof())
 		{
-			memset(data, 0, buffer_limit);
+			data.fill(0);
 
 			// Get a line from file
-			fontFile.getline(data, buffer_limit);
+			font_file.getline(data.data(), data.size());
 
-			// Remove trailing newline
-			data[strcspn(data, "\n")] = 0;
+			std::stringstream line_data(data.data());
 
-			// Consume one entry at a time
-			// entries separated by a space character
-			// entry size limited
-			memset(cur_data, 0, entry_buffer_limit);
-			(void)sscanf(data, "%s %n", cur_data, &cur_offset);
+			// parse line
+			while (!line_data.eof())
+			{
+				std::string line_type_str;
+				line_data >> line_type_str;
 
-			if (strnlen(cur_data, ARRAY_SIZEOF(cur_data)) == 0)
-			{
-				break;
-			}
+				static const std::unordered_map<std::string, BmFontLineType> entry_type_val = {
+					{"info", BmFontLineType::INFO},
+					{"char", BmFontLineType::CHAR},
+					{"common", BmFontLineType::COMMON},
+					{"page", BmFontLineType::PAGE},
+					{"chars", BmFontLineType::CHARS},
+				};
 
-			assert(0 < cur_offset && cur_offset < buffer_limit && "Current offset is outside limits!");
+				auto result = entry_type_val.find(line_type_str);
 
-			static constexpr char info_str[]   = "info";
-			static constexpr char char_str[]   = "char";
-			static constexpr char common_str[] = "common";
-			static constexpr char page_str[]   = "page";
-			static constexpr char chars_str[]  = "chars";
+				if (result != entry_type_val.end())
+				{
+					// Read in the rest of the line
+					std::stringstream line_remainder;
+					line_data >> line_remainder.rdbuf();
 
-			// Send EvalBmfontLine the correct type value
-			if (strncmp(info_str, cur_data, sizeof(info_str) - 1) == 0)
-			{
-				this->EvalBmfontLine(font, 0, &data[cur_offset]);
+					this->ParseBmfontLine(font, result->second, line_remainder);
+				}
 			}
-			else if (strncmp(char_str, cur_data, sizeof(char_str) - 1) == 0)
+		}
+	}
+
+	static void HandleBmfontEntryChar(std::unique_ptr<Rendering::FontData>& font, std::stringstream& data)
+	{
+		// When reading the code in this function,
+		// take care to not die from pain as you see the horrible code I have written here.
+		// It seemed like a good idea at first but now I realize the mistakes of my old self.
+
+		std::unordered_map<std::string, size_t> struct_offsets = {
+			{"x", offsetof(Rendering::FontChar, x)},
+			{"y", offsetof(Rendering::FontChar, y)},
+			{"width", offsetof(Rendering::FontChar, width)},
+			{"height", offsetof(Rendering::FontChar, height)},
+			{"xoffset", offsetof(Rendering::FontChar, xoffset)},
+			{"yoffset", offsetof(Rendering::FontChar, yoffset)},
+			{"xadvance", offsetof(Rendering::FontChar, xadvance)},
+			{"page", offsetof(Rendering::FontChar, page)},
+			{"channel", offsetof(Rendering::FontChar, channel)},
+		};
+
+		int fchar_id = -1;
+
+		// Abuse a union to stuff data into FontChar without reinterpret_cast
+		union InternalFontChar {
+			Rendering::FontChar formatted_data;
+			int internal_data[sizeof(formatted_data) / sizeof(int)];
+		} fchar;
+
+		while (!data.eof())
+		{
+			// Get next key and value pair
+			auto [key, value] = ParseKeyValuePair(ExtractEntry(data), "=");
+
+			// First try finding the key in the offset table
+			auto result_offset = struct_offsets.find(key);
+			if (result_offset != struct_offsets.end())
 			{
-				this->EvalBmfontLine(font, 1, &data[cur_offset]);
+				// Get array index from struct offset
+				size_t array_index = result_offset->second / sizeof(int);
+
+				fchar.internal_data[array_index] = std::stoi(value);
 			}
-			else if (strncmp(common_str, cur_data, sizeof(common_str) - 1) == 0)
+			else if (key == "id")
 			{
-				this->EvalBmfontLine(font, 2, &data[cur_offset]);
-			}
-			else if (strncmp(page_str, cur_data, sizeof(page_str) - 1) == 0)
-			{
-				this->EvalBmfontLine(font, 3, &data[cur_offset]);
-			}
-			else if (strncmp(chars_str, cur_data, sizeof(chars_str) - 1) == 0)
-			{
-				this->EvalBmfontLine(font, 4, &data[cur_offset]);
-			}
-			else
-			{
-				this->logger->SimpleLog(Logging::LogLevel::Warning, LOGPFX_CURRENT "unknown: \"%s\"\n", cur_data);
+				fchar_id = std::stoi(value);
 			}
 		}
 
-		delete[] data;
+		font->chars.emplace(fchar_id, fchar.formatted_data);
 	}
 
-	void FontFactory::EvalBmfontLine(std::unique_ptr<Rendering::FontData>& font, int type, char* data)
+	void FontFactory::ParseBmfontLine(
+		std::unique_ptr<Rendering::FontData>& font,
+		BmFontLineType type,
+		std::stringstream& data
+	)
 	{
-		static constexpr uint_fast16_t buffer_len_limit = 63;
+		std::string key;
+		std::string value;
 
-		// Temporary storage arrays
-		char cur_data[buffer_len_limit + 1] = {};
-		char key[buffer_len_limit + 1]		= {};
-		char value[buffer_len_limit + 1]	= {};
-
-		// Read single key=value pairs until end of line
-		int cur_offset = 0;
-		while (sscanf(data, "%s %n", cur_data, &cur_offset) == 1)
+		switch (type)
 		{
-			data += cur_offset;
-			cur_offset = 0;
-
-			// Get the key and value
-			(void)sscanf(cur_data, "%[^=]=%63s", &key[0], &value[0]);
-
-			switch (type)
+			case BmFontLineType::INFO:
+			case BmFontLineType::COMMON:
 			{
-				case 0: // info
-				case 2: // common
+				// Add every entry of the line
+				while (!data.eof())
 				{
+					tie(key, value) = ParseKeyValuePair(ExtractEntry(data), "=");
 					font->info.emplace(key, value);
-					break;
 				}
-				case 1: // char
+
+				break;
+			}
+			case BmFontLineType::CHARS:
+			{
+				// chars has only a single entry (the count of chars), no loop required
+				tie(key, value)	 = ParseKeyValuePair(ExtractEntry(data), "=");
+				font->char_count = static_cast<unsigned int>(std::stoi(value));
+
+				break;
+			}
+			case BmFontLineType::CHAR:
+			{
+				HandleBmfontEntryChar(font, data);
+				break;
+			}
+			case BmFontLineType::PAGE:
+			{
+				int page_idx = -1;
+				std::filesystem::path page_path;
+
+				do
 				{
-					// Collect keys and values
-					static std::unordered_map<std::string, std::string> pairs;
-					pairs.emplace(key, value);
+					// Get next key and value pair
+					tie(key, value) = ParseKeyValuePair(ExtractEntry(data), "=");
 
-					// Last key should always be chnl
-					if (strncmp("chnl", key, 4) == 0)
+					if (key == "file")
 					{
-						assert(pairs.find("id") != pairs.end());
-						assert(pairs.find("x") != pairs.end());
-						assert(pairs.find("y") != pairs.end());
-						assert(pairs.find("width") != pairs.end());
-						assert(pairs.find("height") != pairs.end());
-						assert(pairs.find("xoffset") != pairs.end());
-						assert(pairs.find("yoffset") != pairs.end());
-						assert(pairs.find("xadvance") != pairs.end());
-						assert(pairs.find("page") != pairs.end());
-						assert(pairs.find("chnl") != pairs.end());
+						// Remove quotes around filename
+						assert(value.size() > 2);
+						value = value.substr(1, value.size() - 2);
 
-						Rendering::FontChar fchar = {};
-						int fchar_id			  = std::stoi(pairs.find("id")->second);
-						fchar.x					  = std::stoi(pairs.find("x")->second);
-						fchar.y					  = std::stoi(pairs.find("y")->second);
-						fchar.width				  = std::stoi(pairs.find("width")->second);
-						fchar.height			  = std::stoi(pairs.find("height")->second);
-						fchar.xoffset			  = std::stoi(pairs.find("xoffset")->second);
-						fchar.yoffset			  = std::stoi(pairs.find("yoffset")->second);
-						fchar.xadvance			  = std::stoi(pairs.find("xadvance")->second);
-						fchar.page				  = std::stoi(pairs.find("page")->second);
-						fchar.channel			  = std::stoi(pairs.find("chnl")->second);
-
-						// Place the character into unordered_map
-						font->chars.emplace(fchar_id, fchar);
-
-						// Clear the collector unordered_map
-						pairs.clear();
+						// TODO: Generate a proper path and potentially load the page here
+						page_path = value;
 					}
-					break;
-				}
-				case 3: // page
-				{
-					static int page_idx = 0;
-					if (strncmp("file", key, 4) == 0)
+					else if (key == "id")
 					{
-						// Remove leading and trailing "
-						if (value[0] == '"')
-						{
-							value[strcspn(&value[1], "\"") + 1] = 0;
-						}
+						page_idx = std::stoi(value);
+					}
+				} while ((page_idx == -1) || page_path.empty());
 
-						std::string whole_filename = std::string(&value[1]);
+				assert(page_idx != -1);
+				assert(!page_path.empty());
 
-						this->logger->SimpleLog(
-							Logging::LogLevel::Debug3,
-							LOGPFX_CURRENT "Font page index %u is %s",
-							page_idx,
-							whole_filename.c_str()
-						);
+				this->logger->SimpleLog(
+					Logging::LogLevel::Debug3,
+					LOGPFX_CURRENT "Font page index %u is %s",
+					page_idx,
+					page_path.c_str()
+				);
 
-						std::shared_ptr<Rendering::Texture> texture{};
+				std::shared_ptr<Rendering::Texture> texture{};
 
-						try
-						{
-							auto asset_manager = this->owner_engine->GetAssetManager();
+				try
+				{
+					auto asset_manager = this->owner_engine->GetAssetManager();
 
-							if (auto locked_asset_manager = asset_manager.lock())
-							{
-								texture = locked_asset_manager->GetTexture(whole_filename);
-								assert(texture != nullptr && "GetTexture resulted in nullptr!");
-							}
-							else
-							{
-								throw std::runtime_error("AssetManager could not be locked!");
-							}
-						}
-						catch (std::exception& e)
-						{
-							this->logger->SimpleLog(
-								Logging::LogLevel::Exception,
-								LOGPFX_CURRENT "Could not initialize a Font page texture! e.what(): %s",
-								e.what()
-							);
-							throw;
-						}
+					if (auto locked_asset_manager = asset_manager.lock())
+					{
+						texture = locked_asset_manager->GetTexture(page_path.string());
+						assert(texture != nullptr && "GetTexture resulted in nullptr!");
 
 						// Add page and it's texture to map
 						font->pages.insert(
 							std::pair<int, std::shared_ptr<Rendering::Texture>>(page_idx, std::move(texture))
 						);
 						page_idx++;
+						return; // break;
 					}
-					break;
+
+					throw std::runtime_error("AssetManager could not be locked!");
 				}
-				case 4: // chars
+				catch (std::exception& e)
 				{
-					(void)sscanf(value, "%u", &font->char_count);
-					break;
-				}
-				default:
-				{
-					break;
+					this->logger->SimpleLog(
+						Logging::LogLevel::Exception,
+						LOGPFX_CURRENT "Could not initialize a Font page texture! e.what(): %s",
+						e.what()
+					);
+					throw;
 				}
 			}
-
-			memset(cur_data, 0, buffer_len_limit);
+			default:
+			{
+				break;
+			}
 		}
 	}
 } // namespace Engine::Factories

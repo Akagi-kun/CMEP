@@ -10,10 +10,21 @@ namespace Engine
 	namespace Rendering
 	{
 		class Texture;
+
+#pragma pack(1)
 		struct FontChar
 		{
-			int x, y, width, height, xoffset, yoffset, xadvance, page, channel;
+			int x;
+			int y;
+			int width;
+			int height;
+			int xoffset;
+			int yoffset;
+			int xadvance;
+			int page;
+			int channel;
 		};
+#pragma pack()
 
 		struct FontData
 		{

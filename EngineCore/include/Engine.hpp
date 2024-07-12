@@ -68,7 +68,7 @@ namespace Engine
 
 		static void SpinSleep(double seconds);
 
-		static void RenderCallback(VkCommandBuffer commandBuffer, uint32_t currentFrame, Engine* engine);
+		static void RenderCallback(VkCommandBuffer command_buffer, uint32_t current_frame, Engine* engine);
 
 		static void ErrorCallback(int code, const char* message);
 		static void OnWindowFocusCallback(GLFWwindow* window, int focused);
@@ -76,7 +76,7 @@ namespace Engine
 		static void CursorEnterLeaveCallback(GLFWwindow* window, int entered);
 		static void OnKeyEventCallback(GLFWwindow* window, int key, int scancode, int action, int mods);
 
-		void HandleInput(double deltaTime) noexcept;
+		void HandleInput(double delta_time) noexcept;
 
 		void EngineLoop();
 

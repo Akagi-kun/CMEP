@@ -74,7 +74,7 @@ namespace Engine
 		}
 	}
 
-	void Engine::HandleInput(const double deltaTime) noexcept
+	void Engine::HandleInput(const double delta_time) noexcept
 	{
 		Rendering::GLFWwindowData windowdata = this->rendering_engine->GetWindow();
 
@@ -88,7 +88,7 @@ namespace Engine
 				auto event		 = EventHandling::Event(this, EventHandling::EventType::ON_MOUSEMOVED);
 				event.mouse.x	 = this->state_mouse_x_pos - last_x;
 				event.mouse.y	 = this->state_mouse_y_pos - last_y;
-				event.delta_time = deltaTime;
+				event.delta_time = delta_time;
 				this->FireEvent(event);
 
 				last_x = this->state_mouse_x_pos;
@@ -210,7 +210,7 @@ namespace Engine
 		bool did_sort : 1;
 	} performance_state;
 
-	void Engine::RenderCallback(VkCommandBuffer commandBuffer, uint32_t currentFrame, Engine* engine)
+	void Engine::RenderCallback(VkCommandBuffer command_buffer, uint32_t current_frame, Engine* engine)
 	{
 		auto& current_scene = engine->scene_manager->GetSceneCurrent();
 
@@ -224,7 +224,7 @@ namespace Engine
 		{
 			try
 			{
-				ptr->GetRenderer()->Render(commandBuffer, currentFrame);
+				ptr->GetRenderer()->Render(command_buffer, current_frame);
 			}
 			catch (const std::exception& e)
 			{
