@@ -1,15 +1,17 @@
 #include "Scene.hpp"
 
-#include "Rendering/IMeshBuilder.hpp"
 #include "Rendering/IRenderer.hpp"
 #include "Rendering/SpriteMeshBuilder.hpp"
 #include "Rendering/SpriteRenderer.hpp"
 #include "Rendering/TextMeshBuilder.hpp"
 #include "Rendering/TextRenderer.hpp"
 
+#include "Factories/ObjectFactory.hpp"
+
+#include "Logging/Logging.hpp"
+
 #include "Engine.hpp"
 
-// #include <exception>
 #include <memory>
 #include <stdexcept>
 
@@ -61,9 +63,6 @@ namespace Engine
 			throw std::runtime_error("Could not sort scene, object is nullptr!");
 		}
 
-		// auto* a_renderer = static_cast<Rendering::IRenderer*>(pair_a.second->GetFirstModule(ModuleType::RENDERER));
-		// auto* b_renderer = static_cast<Rendering::IRenderer*>(pair_b.second->GetFirstModule(ModuleType::RENDERER));
-
 		auto* a_renderer = static_cast<Rendering::IRenderer*>(pair_a.second->GetRenderer());
 		auto* b_renderer = static_cast<Rendering::IRenderer*>(pair_b.second->GetRenderer());
 
@@ -81,7 +80,7 @@ namespace Engine
 			const float a_z = pair_a.second->GetPosition().z + positive_offset;
 			const float b_z = pair_b.second->GetPosition().z + positive_offset;
 
-			return a_z < b_z;
+			return std::less<float>{}(a_z, b_z);
 		}
 
 		return std::less<std::pair<std::string, Object*>>{}(pair_a, pair_b);
@@ -117,30 +116,27 @@ namespace Engine
 
 		if (templated_object != this->templates.end())
 		{
-			// Object* object = nullptr;
-			Rendering::IRenderer* with_renderer	  = nullptr;
-			Rendering::IMeshBuilder* with_builder = nullptr;
-
 			ObjectTemplate object_template = templated_object->second;
+
+			Object* obj = nullptr;
 
 			switch (object_template.with_renderer)
 			{
 				case RendererType::SPRITE:
 				{
-					with_builder =
-						new Rendering::SpriteMeshBuilder(this->owner_engine, this->owner_engine->GetRenderingEngine());
-
-					with_renderer = new Rendering::SpriteRenderer(this->owner_engine, with_builder);
-					// with_renderer = new Rendering::TextRenderer(this->owner_engine, with_builder);
+					obj = ObjectFactory::CreateSceneObject<Rendering::SpriteRenderer, Rendering::SpriteMeshBuilder>(
+						this->GetOwnerEngine(),
+						object_template.supply_list
+					);
 
 					break;
 				}
 				case RendererType::TEXT:
 				{
-					with_builder =
-						new Rendering::TextMeshBuilder(this->owner_engine, this->owner_engine->GetRenderingEngine());
-
-					with_renderer = new Rendering::TextRenderer(this->owner_engine, with_builder);
+					obj = ObjectFactory::CreateSceneObject<Rendering::TextRenderer, Rendering::TextMeshBuilder>(
+						this->GetOwnerEngine(),
+						object_template.supply_list
+					);
 
 					break;
 				}
@@ -151,21 +147,11 @@ namespace Engine
 				}
 			}
 
-			// Allocate Object since we already know
-			// that the renderer is valid
-			auto* object = new Object(this->owner_engine);
-			object->SetRenderer(with_renderer);
-
-			for (auto& supply : object_template.supply_list)
-			{
-				with_renderer->SupplyData(supply);
-			}
-
-			this->AddObject(name, object);
+			this->AddObject(name, obj);
 		}
 		else
 		{
-			throw std::runtime_error("Template with name '" + template_name + "' could not be found!");
+			throw std::invalid_argument("Template with name '" + template_name + "' could not be found!");
 		}
 	}
 
@@ -183,7 +169,7 @@ namespace Engine
 		}
 		else
 		{
-			throw std::runtime_error("Cannot add object'" + name + "', it is nullptr!");
+			throw std::invalid_argument("Called AddObject with nullptr!");
 		}
 	}
 
@@ -203,16 +189,19 @@ namespace Engine
 
 		if (object != nullptr)
 		{
-			// this->logger->SimpleLog(Logging::LogLevel::Debug2, LOGPFX_CURRENT "Removing object '%s'", name.c_str());
 			this->objects.erase(name);
 			delete object;
+
+			this->was_scene_modified = true;
 		}
 		else
 		{
-			throw std::runtime_error("Cannot add object'" + name + "', object is nullptr!");
+			this->logger->SimpleLog(
+				Logging::LogLevel::Warning,
+				LOGPFX_CURRENT "Tried to remove scene object '%s'! No such object exists!",
+				name.c_str()
+			);
 		}
-
-		this->was_scene_modified = true;
 	}
 
 	void Scene::LoadTemplatedObject(std::string name, ObjectTemplate object)

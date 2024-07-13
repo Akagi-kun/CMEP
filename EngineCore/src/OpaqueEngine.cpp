@@ -2,6 +2,8 @@
 
 #include "Engine.hpp"
 
+#include <utility>
+
 namespace Engine
 {
 	OpaqueEngine::OpaqueEngine(std::shared_ptr<Logging::Logger>& logger) noexcept
@@ -29,8 +31,8 @@ namespace Engine
 		this->d_engine->Run();
 	}
 
-	void OpaqueEngine::ConfigFile(const std::string& path)
+	void OpaqueEngine::ConfigFile(std::string path)
 	{
-		this->d_engine->ConfigFile(path);
+		this->d_engine->ConfigFile(std::move(path));
 	}
 } // namespace Engine

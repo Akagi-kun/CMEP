@@ -92,44 +92,22 @@ namespace Engine::Scripting
 			lua_setfield(state, -2, mapping.first.c_str());
 		}
 
-		lua_setglobal(state, "cmepapi");
-
-		lua_settop(state, 0);
-
-		/*******************************/
-		// lua_newtable(state); // Window
-		//{
-		//	lua_newtable(state); // Window.prototype
-		//	lua_setfield(state, -2, "prototype");
-		// }
-
-		// CreateMappingTrampoline(state);
-		// lua_setglobal(state, "Window");
-	}
-
-	// Register meta information (logger etc)
-	// this information can be used in C callbacks
-	void LuaScriptExecutor::RegisterMeta(lua_State* state)
-	{
-		// cmepmeta table (not an actual Lua metatable !!!)
-		lua_newtable(state);
-
 		/*******************************/
 		// Logger table
 		lua_newtable(state);
 
 		void* ptr_obj = lua_newuserdata(state, sizeof(std::weak_ptr<Logging::Logger>));
 		new (ptr_obj) std::weak_ptr<Logging::Logger>(this->logger);
-
 		lua_setfield(state, -2, "_smart_ptr");
 
 		lua_pushcfunction(state, Mappings::Functions::MetaLoggerSimpleLog);
 		lua_setfield(state, -2, "SimpleLog");
-
 		lua_setfield(state, -2, "logger");
 		/*******************************/
 
-		lua_setglobal(state, "cmepmeta");
+		lua_setglobal(state, "cmepapi");
+
+		lua_settop(state, 0);
 	}
 
 	static int LuaErrorHandler(lua_State* state)
@@ -163,7 +141,7 @@ namespace Engine::Scripting
 		}
 		catch (...)
 		{
-			return luaL_error(state, "Error caught");
+			return luaL_error(state, "Unknown error caught");
 		}
 	}
 
@@ -180,12 +158,15 @@ namespace Engine::Scripting
 		std::filesystem::path testpath = with_script->path;
 		testpath.remove_filename();
 
+		// path_to_scene_scripts/*.lua
 		testpath += "?.lua";
-		require_path_str = (testpath).string();
+		require_path_str = testpath.string();
 
+		// path_to_scene_scripts/modules/*.lua
 		testpath.remove_filename();
 		testpath += "modules";
 		testpath += "?.lua";
+
 		require_path_str += ";" + testpath.string();
 
 		lua_pushstring(state, require_path_str.c_str());
@@ -233,7 +214,7 @@ namespace Engine::Scripting
 				auto* event = static_cast<EventHandling::Event*>(data);
 
 				// Event table
-				lua_newtable(state);
+				lua_createtable(state, 0, 4);
 				lua_pushnumber(state, event->delta_time);
 				lua_setfield(state, -2, "deltaTime");
 
@@ -309,7 +290,6 @@ namespace Engine::Scripting
 
 		// Register c callback functions
 		LuaScriptExecutor::RegisterCallbacks(state);
-		this->RegisterMeta(state);
 
 		// Register exception-handling wrapper
 		LuaScriptExecutor::RegisterWrapper(state);

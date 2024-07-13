@@ -11,7 +11,6 @@ namespace Engine
 	{
 		class Texture;
 
-#pragma pack(1)
 		struct FontChar
 		{
 			int x;
@@ -24,7 +23,6 @@ namespace Engine
 			int page;
 			int channel;
 		};
-#pragma pack()
 
 		struct FontData
 		{

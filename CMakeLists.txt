@@ -15,7 +15,7 @@ add_subdirectory(external/glfw)
 # Global compile options
 if(MSVC)
 	add_compile_options(/std:c++17 /MP /EHs /Zi)
-	add_link_options(/DEBUG:FULL)
+	add_link_options(/DEBUG:FULL /INCREMENTAL:NO /OPT:REF)
 
 	# Debug only
 	add_compile_definitions($<$<CONFIG:Debug>:DEBUG=1>)

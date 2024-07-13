@@ -3,7 +3,10 @@
 #include "Assets/AssetManager.hpp"
 #include "Assets/Texture.hpp"
 #include "Rendering/MeshRenderer.hpp"
+#include "Rendering/SpriteMeshBuilder.hpp"
+#include "Rendering/SpriteRenderer.hpp"
 #include "Rendering/SupplyData.hpp"
+#include "Rendering/TextMeshBuilder.hpp"
 #include "Rendering/TextRenderer.hpp"
 
 #include "Scripting/API/LuaFactories.hpp"
@@ -109,13 +112,20 @@ namespace Engine::Scripting::Mappings
 
 			if (auto locked_am = asset_manager.lock())
 			{
-				Object* obj = ObjectFactory::CreateSpriteObject(scene, locked_am->GetTexture(sprite_name));
+				auto sprite = locked_am->GetTexture(sprite_name);
+
+				Object* obj = ObjectFactory::CreateSceneObject<Rendering::SpriteRenderer, Rendering::SpriteMeshBuilder>(
+					scene->GetOwnerEngine(),
+					{{Rendering::RendererSupplyDataType::TEXTURE, sprite}}
+				);
 
 				if (obj != nullptr)
 				{
 					API::LuaFactories::ObjectFactory(state, obj);
+
 					return 1;
 				}
+
 				return luaL_error(state, "ObjectFactory returned nullptr");
 			}
 
@@ -139,9 +149,13 @@ namespace Engine::Scripting::Mappings
 			Object* obj = nullptr;
 			if (auto locked_font = font.lock())
 			{
-				auto& scene = scene_manager->GetSceneCurrent();
-
-				obj = ObjectFactory::CreateTextObject(scene, text, locked_font);
+				obj = ObjectFactory::CreateSceneObject<Rendering::TextRenderer, Rendering::TextMeshBuilder>(
+					scene_manager->GetOwnerEngine(),
+					{
+						{Rendering::RendererSupplyDataType::TEXT, text},
+						{Rendering::RendererSupplyDataType::FONT, locked_font},
+					}
+				);
 			}
 
 			if (obj != nullptr)

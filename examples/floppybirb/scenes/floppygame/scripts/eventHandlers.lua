@@ -343,8 +343,6 @@ onInit = function(event)
 	object:SetSize(24, 24, 1.0)
 	scene:AddObject("_debug_info", object)
 
-	--cmepmeta.logger.SimpleLog(string.format("package returns %u", util.testfn()));
-
 	-- Add score
 	local object = cmepapi.ObjectFactoryCreateTextObject(scene_manager, "0", font)
 	object:SetPosition(0.5, 0.0, -0.01)

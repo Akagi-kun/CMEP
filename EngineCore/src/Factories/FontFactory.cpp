@@ -50,7 +50,7 @@ namespace Engine::Factories
 		return font;
 	}
 
-	static std::string ExtractEntry(std::stringstream& from_sstream)
+	static std::string StreamGetNextToken(std::stringstream& from_sstream)
 	{
 		std::string entry;
 
@@ -59,7 +59,7 @@ namespace Engine::Factories
 		return entry;
 	}
 
-	static std::tuple<std::string, std::string> ParseKeyValuePair(
+	static std::tuple<std::string, std::string> SplitKVPair(
 		const std::string& from_string,
 		const std::string& delimiter
 	)
@@ -73,6 +73,11 @@ namespace Engine::Factories
 		std::string value = from_string.substr(delimiter_end, from_string.size() - delimiter_end);
 
 		return {key, value};
+	}
+
+	static std::tuple<std::string, std::string> GetNextKVPair(std::stringstream& from_stream)
+	{
+		return SplitKVPair(StreamGetNextToken(from_stream), "=");
 	}
 
 	void FontFactory::ParseBmfont(std::unique_ptr<Rendering::FontData>& font, std::ifstream& font_file)
@@ -117,11 +122,11 @@ namespace Engine::Factories
 		}
 	}
 
-	static void HandleBmfontEntryChar(std::unique_ptr<Rendering::FontData>& font, std::stringstream& data)
+	static void ParseBmfontEntryChar(std::unique_ptr<Rendering::FontData>& font, std::stringstream& line_stream)
 	{
 		// When reading the code in this function,
 		// take care to not die from pain as you see the horrible code I have written here.
-		// It seemed like a good idea at first but now I realize the mistakes of my old self.
+		// It is designed to be extensible and reduce performance penalty at runtime
 
 		std::unordered_map<std::string, size_t> struct_offsets = {
 			{"x", offsetof(Rendering::FontChar, x)},
@@ -136,26 +141,27 @@ namespace Engine::Factories
 		};
 
 		int fchar_id = -1;
+		Rendering::FontChar fchar{};
 
-		// Abuse a union to stuff data into FontChar without reinterpret_cast
-		union InternalFontChar {
-			Rendering::FontChar formatted_data;
-			int internal_data[sizeof(formatted_data) / sizeof(int)];
-		} fchar;
+		// Using bytes instead of int is safer here
+		// because the struct may have padding
+		//
+		// Treat fchar as bytes in memory
+		auto* fchar_memory = reinterpret_cast<char*>(&fchar);
 
-		while (!data.eof())
+		while (!line_stream.eof())
 		{
-			// Get next key and value pair
-			auto [key, value] = ParseKeyValuePair(ExtractEntry(data), "=");
+			auto [key, value] = GetNextKVPair(line_stream);
 
 			// First try finding the key in the offset table
 			auto result_offset = struct_offsets.find(key);
 			if (result_offset != struct_offsets.end())
 			{
-				// Get array index from struct offset
-				size_t array_index = result_offset->second / sizeof(int);
+				// Offset in memory (pointing to the member of struct)
+				int* fchar_entry_ptr = reinterpret_cast<int*>(&fchar_memory[result_offset->second]);
 
-				fchar.internal_data[array_index] = std::stoi(value);
+				// Finally fill the member of the struct
+				(*fchar_entry_ptr) = std::stoi(value);
 			}
 			else if (key == "id")
 			{
@@ -163,27 +169,81 @@ namespace Engine::Factories
 			}
 		}
 
-		font->chars.emplace(fchar_id, fchar.formatted_data);
+		font->chars.emplace(fchar_id, fchar);
+	}
+
+	void FontFactory::ParseBmfontEntryPage(std::unique_ptr<Rendering::FontData>& font, std::stringstream& line_stream)
+	{
+		int page_idx = -1;
+		std::filesystem::path page_path;
+
+		std::string key;
+		std::string value;
+
+		do
+		{
+			tie(key, value) = GetNextKVPair(line_stream);
+
+			if (key == "file")
+			{
+				// Remove quotes around filename
+				assert(value.size() > 2);
+				value = value.substr(1, value.size() - 2);
+
+				// TODO: Generate a proper path and potentially load the page here
+				page_path = value;
+			}
+			else if (key == "id")
+			{
+				page_idx = std::stoi(value);
+			}
+		} while ((page_idx == -1) || page_path.empty());
+
+		this->logger->SimpleLog(
+			Logging::LogLevel::Debug3,
+			LOGPFX_CURRENT "Font page index %u is '%s'",
+			page_idx,
+			page_path.c_str()
+		);
+
+		auto asset_manager = this->owner_engine->GetAssetManager();
+
+		if (auto locked_asset_manager = asset_manager.lock())
+		{
+			std::shared_ptr<Rendering::Texture> texture = locked_asset_manager->GetTexture(page_path.string());
+
+			if (texture != nullptr)
+			{
+				// Add page and it's texture to map
+				font->pages.insert(std::pair<int, std::shared_ptr<Rendering::Texture>>(page_idx, std::move(texture)));
+
+				return;
+			}
+
+			throw std::runtime_error("Texture could not be found!");
+		}
+
+		throw std::runtime_error("AssetManager could not be locked!");
 	}
 
 	void FontFactory::ParseBmfontLine(
 		std::unique_ptr<Rendering::FontData>& font,
-		BmFontLineType type,
-		std::stringstream& data
+		const BmFontLineType line_type,
+		std::stringstream& line_stream
 	)
 	{
 		std::string key;
 		std::string value;
 
-		switch (type)
+		switch (line_type)
 		{
 			case BmFontLineType::INFO:
 			case BmFontLineType::COMMON:
 			{
 				// Add every entry of the line
-				while (!data.eof())
+				while (!line_stream.eof())
 				{
-					tie(key, value) = ParseKeyValuePair(ExtractEntry(data), "=");
+					tie(key, value) = SplitKVPair(StreamGetNextToken(line_stream), "=");
 					font->info.emplace(key, value);
 				}
 
@@ -192,71 +252,22 @@ namespace Engine::Factories
 			case BmFontLineType::CHARS:
 			{
 				// chars has only a single entry (the count of chars), no loop required
-				tie(key, value)	 = ParseKeyValuePair(ExtractEntry(data), "=");
+				tie(key, value)	 = SplitKVPair(StreamGetNextToken(line_stream), "=");
 				font->char_count = static_cast<unsigned int>(std::stoi(value));
 
 				break;
 			}
 			case BmFontLineType::CHAR:
 			{
-				HandleBmfontEntryChar(font, data);
+				ParseBmfontEntryChar(font, line_stream);
 				break;
 			}
 			case BmFontLineType::PAGE:
 			{
-				int page_idx = -1;
-				std::filesystem::path page_path;
-
-				do
-				{
-					// Get next key and value pair
-					tie(key, value) = ParseKeyValuePair(ExtractEntry(data), "=");
-
-					if (key == "file")
-					{
-						// Remove quotes around filename
-						assert(value.size() > 2);
-						value = value.substr(1, value.size() - 2);
-
-						// TODO: Generate a proper path and potentially load the page here
-						page_path = value;
-					}
-					else if (key == "id")
-					{
-						page_idx = std::stoi(value);
-					}
-				} while ((page_idx == -1) || page_path.empty());
-
-				assert(page_idx != -1);
-				assert(!page_path.empty());
-
-				this->logger->SimpleLog(
-					Logging::LogLevel::Debug3,
-					LOGPFX_CURRENT "Font page index %u is %s",
-					page_idx,
-					page_path.c_str()
-				);
-
-				std::shared_ptr<Rendering::Texture> texture{};
-
 				try
 				{
-					auto asset_manager = this->owner_engine->GetAssetManager();
-
-					if (auto locked_asset_manager = asset_manager.lock())
-					{
-						texture = locked_asset_manager->GetTexture(page_path.string());
-						assert(texture != nullptr && "GetTexture resulted in nullptr!");
-
-						// Add page and it's texture to map
-						font->pages.insert(
-							std::pair<int, std::shared_ptr<Rendering::Texture>>(page_idx, std::move(texture))
-						);
-						page_idx++;
-						return; // break;
-					}
-
-					throw std::runtime_error("AssetManager could not be locked!");
+					this->ParseBmfontEntryPage(font, line_stream);
+					return;
 				}
 				catch (std::exception& e)
 				{

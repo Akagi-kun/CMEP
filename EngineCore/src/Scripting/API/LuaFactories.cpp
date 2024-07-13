@@ -133,7 +133,7 @@ namespace Engine::Scripting::API::LuaFactories
 
 	std::weak_ptr<Logging::Logger> MetaLoggerFactory(lua_State* state)
 	{
-		lua_getglobal(state, "cmepmeta");
+		lua_getglobal(state, "cmepapi");
 		lua_getfield(state, -1, "logger");
 		lua_getfield(state, -1, "_smart_ptr");
 		std::weak_ptr<Logging::Logger> logger = *static_cast<std::weak_ptr<Logging::Logger>*>(lua_touserdata(state, -1)

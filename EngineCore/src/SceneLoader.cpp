@@ -4,6 +4,7 @@
 #include "Rendering/AxisRenderer.hpp"
 #include "Rendering/IRenderer.hpp"
 #include "Rendering/MeshRenderer.hpp"
+#include "Rendering/SpriteMeshBuilder.hpp"
 #include "Rendering/SpriteRenderer.hpp"
 #include "Rendering/TextRenderer.hpp"
 
@@ -246,7 +247,12 @@ namespace Engine
 								scene_entry["renderer_supply_textures"][0].get<std::string>()
 							);
 
-							object = ObjectFactory::CreateSpriteObject(scene, texture);
+							object = ObjectFactory::
+								CreateSceneObject<Rendering::SpriteRenderer, Rendering::SpriteMeshBuilder>(
+									scene->GetOwnerEngine(),
+									{{Rendering::RendererSupplyDataType::TEXTURE, texture}}
+								);
+
 							break;
 						}
 						default:

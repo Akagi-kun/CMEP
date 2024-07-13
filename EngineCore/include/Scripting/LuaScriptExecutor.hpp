@@ -3,11 +3,12 @@
 #include "InternalEngineObject.hpp"
 #include "LuaScript.hpp"
 #include "lua.hpp"
-// #include "lualib/lua.hpp"
+
+#include <cstdint>
 
 namespace Engine::Scripting
 {
-	enum class ExecuteType
+	enum class ExecuteType : uint8_t
 	{
 		MIN_ENUM = 0x00,
 
@@ -19,17 +20,13 @@ namespace Engine::Scripting
 	class LuaScriptExecutor : public InternalEngineObject
 	{
 	protected:
-		static void RegisterCallbacks(lua_State* state);
+		void RegisterCallbacks(lua_State* state);
 		static void RegisterWrapper(lua_State* state);
 
-		void RegisterMeta(lua_State* state);
+		// void RegisterMeta(lua_State* state);
 
 	public:
 		using InternalEngineObject::InternalEngineObject;
-		// LuaScriptExecutor() = delete;
-		// LuaScriptExecutor(Engine* with_engine) : InternalEngineObject(with_engine)
-		//{
-		// }
 		~LuaScriptExecutor() = default;
 
 		int CallIntoScript(

@@ -21,7 +21,12 @@ namespace Engine::Factories
 	{
 	private:
 		void ParseBmfont(std::unique_ptr<Rendering::FontData>& font, std::ifstream& font_file);
-		void ParseBmfontLine(std::unique_ptr<Rendering::FontData>& font, BmFontLineType type, std::stringstream& data);
+		void ParseBmfontLine(
+			std::unique_ptr<Rendering::FontData>& font,
+			BmFontLineType line_type,
+			std::stringstream& line_stream
+		);
+		void ParseBmfontEntryPage(std::unique_ptr<Rendering::FontData>& font, std::stringstream& line_stream);
 
 	public:
 		using InternalEngineObject::InternalEngineObject;
