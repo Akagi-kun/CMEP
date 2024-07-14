@@ -15,7 +15,7 @@ namespace Engine::Rendering
 		glm::mat4 mat_mvp{};
 
 	public:
-		AxisRenderer(Engine* engine);
+		AxisRenderer(Engine* engine, IMeshBuilder* with_builder);
 		~AxisRenderer() override;
 
 		void SupplyData(const RendererSupplyData& data) override

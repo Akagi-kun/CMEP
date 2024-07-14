@@ -48,8 +48,8 @@ namespace Engine::Rendering
 
 	struct ShaderDefinition
 	{
-		const char* vertex_stage;
-		const char* fragment_stage;
+		std::string vertex_stage;
+		std::string fragment_stage;
 	};
 
 	struct VulkanPipelineSettings

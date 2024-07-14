@@ -31,6 +31,7 @@ set(SRC_FILES
 	src/Rendering/IMeshBuilder.cpp
 	src/Rendering/SpriteMeshBuilder.cpp
 	src/Rendering/TextMeshBuilder.cpp
+	src/Rendering/AxisMeshBuilder.cpp
 	
 	src/Rendering/Vulkan/VmaImplementation.cpp
 

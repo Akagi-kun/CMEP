@@ -2,6 +2,7 @@
 #include "Engine.hpp"
 
 #include "Assets/AssetManager.hpp"
+#include "Rendering/AxisMeshBuilder.hpp"
 #include "Rendering/AxisRenderer.hpp"
 #include "Rendering/IRenderer.hpp"
 #include "Rendering/Vulkan/VulkanRenderingEngine.hpp"
@@ -9,6 +10,8 @@
 
 #include "Scripting/LuaScript.hpp"
 #include "Scripting/LuaScriptExecutor.hpp"
+
+#include "Factories/ObjectFactory.hpp"
 
 #include "Logging/Logging.hpp"
 
@@ -125,10 +128,10 @@ namespace Engine
 
 		this->config->rendering.framerate_target = data["rendering"]["framerateTarget"].get<uint16_t>();
 
-		// this->config->lookup.scenes = data["lookup"]["scenes"].get<std::string>();
-		this->config->scene_path = data["scene_path"].get<std::string>();
+		this->config->scene_path	= data["scene_path"].get<std::string>();
+		this->config->default_scene = data["default_scene"].get<std::string>();
 
-		this->config->default_scene = data["defaultScene"].get<std::string>();
+		this->config->shader_path = data["shader_path"].get<std::string>();
 	}
 
 	void Engine::ErrorCallback(int code, const char* message)
@@ -243,9 +246,11 @@ namespace Engine
 	{
 		// TODO: Remove this!
 		// Create axis object
-		auto* object = new Object(this);
+		// auto* object = new Object(this);
 
-		Rendering::IRenderer* with_renderer = new Rendering::AxisRenderer(this);
+		auto* object = ObjectFactory::CreateSceneObject<Rendering::AxisRenderer, Rendering::AxisMeshBuilder>(this, {});
+
+		/*Rendering::IRenderer* with_renderer = new Rendering::AxisRenderer(this);
 
 		object->SetRenderer(with_renderer);
 
@@ -253,7 +258,7 @@ namespace Engine
 		object->SetSize(glm::vec3(1, 1, 1));
 		object->SetRotation(glm::vec3(0, 0, 0));
 		object->ScreenSizeInform(this->config->window.size_x, this->config->window.size_y);
-
+ */
 		this->scene_manager->GetSceneCurrent()->AddObject("_axis", object);
 
 		// Pre-make ON_UPDATE event so we don't have to create it over and over again in hot loop

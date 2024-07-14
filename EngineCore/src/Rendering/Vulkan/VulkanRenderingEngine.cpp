@@ -519,9 +519,11 @@ namespace Engine::Rendering::Vulkan
 
 		settings.color_blending.pAttachments = &settings.color_blend_attachment;
 
+		std::string shader_path = this->owner_engine->GetShaderPath();
+
 		// Vertex stage
-		assert(settings.shader.vertex_stage != nullptr && "A valid shader for this stage is required!");
-		auto vert_shader_code			  = Vulkan::Utils::ReadShaderFile(settings.shader.vertex_stage);
+		assert(!settings.shader.vertex_stage.empty() && "A valid shader for this stage is required!");
+		auto vert_shader_code			  = Vulkan::Utils::ReadShaderFile(shader_path + settings.shader.vertex_stage);
 		VkShaderModule vert_shader_module = this->CreateVulkanShaderModule(vert_shader_code);
 
 		VkPipelineShaderStageCreateInfo vert_shader_stage_info{};
@@ -531,8 +533,8 @@ namespace Engine::Rendering::Vulkan
 		vert_shader_stage_info.pName  = "main";
 
 		// Fragment stage
-		assert(settings.shader.fragment_stage != nullptr && "A valid shader for this stage is required!");
-		auto frag_shader_code			  = Vulkan::Utils::ReadShaderFile(settings.shader.fragment_stage);
+		assert(!settings.shader.fragment_stage.empty() && "A valid shader for this stage is required!");
+		auto frag_shader_code			  = Vulkan::Utils::ReadShaderFile(shader_path + settings.shader.fragment_stage);
 		VkShaderModule frag_shader_module = this->CreateVulkanShaderModule(frag_shader_code);
 
 		VkPipelineShaderStageCreateInfo frag_shader_stage_info{};

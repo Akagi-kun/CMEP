@@ -1,5 +1,6 @@
 #include "Rendering/AxisRenderer.hpp"
 
+#include "Rendering/IMeshBuilder.hpp"
 #include "Rendering/Vulkan/VDeviceManager.hpp"
 #include "Rendering/Vulkan/VulkanRenderingEngine.hpp"
 #include "Rendering/Vulkan/VulkanUtilities.hpp"
@@ -8,21 +9,25 @@
 
 #include "Engine.hpp"
 #include "SceneManager.hpp"
-#include "glm/ext/matrix_clip_space.hpp"
 
 #include <cassert>
 #include <cstring>
+#include <string>
 
 namespace Engine::Rendering
 {
-	AxisRenderer::AxisRenderer(Engine* engine) : IRenderer(engine, nullptr)
+	AxisRenderer::AxisRenderer(Engine* engine, IMeshBuilder* with_builder) : IRenderer(engine, with_builder)
 	{
 		Vulkan::VulkanRenderingEngine* renderer = this->owner_engine->GetRenderingEngine();
 
 		VulkanPipelineSettings pipeline_settings  = renderer->GetVulkanDefaultPipelineSettings();
 		pipeline_settings.input_assembly.topology = VK_PRIMITIVE_TOPOLOGY_LINE_LIST;
 
-		pipeline_settings.shader = {"game/shaders/vulkan/axis_vert.spv", "game/shaders/vulkan/axis_frag.spv"};
+		std::string with_program_name = "axis";
+		pipeline_settings.shader	  = {
+			 with_program_name + "_vert.spv",
+			 with_program_name + "_frag.spv",
+		 };
 
 		pipeline_settings.descriptor_layout_settings.push_back(
 			VulkanDescriptorLayoutSettings{0, 1, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT}
@@ -47,16 +52,11 @@ namespace Engine::Rendering
 	{
 		this->has_updated_mesh = true;
 
-		const std::vector<RenderingVertex> vertices = {
-			{{0.0, 0.0, 0.0}, {0.0f, 1.0f, 0.0f}},
-			{{1.0, 0.0, 0.0}, {0.0f, 1.0f, 0.0f}},
-			{{0.0, 0.0, 0.0}, {0.0f, 0.0f, 1.0f}},
-			{{0.0, 1.0, 0.0}, {0.0f, 0.0f, 1.0f}},
-			{{0.0, 0.0, 0.0}, {1.0f, 0.0f, 0.0f}},
-			{{0.0, 0.0, 1.0}, {1.0f, 0.0f, 0.0f}}
-		};
-
-		this->vbo_vert_count = vertices.size();
+		Vulkan::VulkanRenderingEngine* renderer = this->owner_engine->GetRenderingEngine();
+		if (this->mesh_builder != nullptr)
+		{
+			this->mesh_builder->Build();
+		}
 
 		glm::mat4 projection;
 		glm::mat4 view;
@@ -71,13 +71,6 @@ namespace Engine::Rendering
 
 		this->mat_mvp = projection * view; // * model;
 
-		Vulkan::VulkanRenderingEngine* renderer = this->owner_engine->GetRenderingEngine();
-
-		if (this->vbo == nullptr)
-		{
-			this->vbo = renderer->CreateVulkanVertexBufferFromData(vertices);
-		}
-
 		if (auto locked_device_manager = renderer->GetDeviceManager().lock())
 		{
 			for (size_t i = 0; i < Vulkan::VulkanRenderingEngine::GetMaxFramesInFlight(); i++)
@@ -91,7 +84,7 @@ namespace Engine::Rendering
 				descriptor_writes.resize(1);
 
 				descriptor_writes[0].sType			 = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-				descriptor_writes[0].dstSet			 = pipeline->vk_descriptor_sets[i];
+				descriptor_writes[0].dstSet			 = this->pipeline->vk_descriptor_sets[i];
 				descriptor_writes[0].dstBinding		 = 0;
 				descriptor_writes[0].dstArrayElement = 0;
 				descriptor_writes[0].descriptorType	 = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
@@ -116,6 +109,17 @@ namespace Engine::Rendering
 			this->UpdateMesh();
 		}
 
+		if (this->mesh_builder->HasRebuilt())
+		{
+			this->mesh_context = this->mesh_builder->GetContext();
+		}
+
+		// Skip render if VBO empty
+		if (this->mesh_context.vbo_vert_count <= 0)
+		{
+			return;
+		}
+
 		Vulkan::VulkanRenderingEngine* renderer = this->owner_engine->GetRenderingEngine();
 		Vulkan::Utils::VulkanUniformBufferTransfer(
 			renderer,
@@ -137,10 +141,10 @@ namespace Engine::Rendering
 		);
 
 		vkCmdBindPipeline(command_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, this->pipeline->pipeline);
-		VkBuffer vertex_buffers[] = {this->vbo->GetNativeHandle()};
+		VkBuffer vertex_buffers[] = {this->mesh_context.vbo->GetNativeHandle()};
 		VkDeviceSize offsets[]	  = {0};
 		vkCmdBindVertexBuffers(command_buffer, 0, 1, vertex_buffers, offsets);
 
-		vkCmdDraw(command_buffer, static_cast<uint32_t>(this->vbo_vert_count), 1, 0, 0);
+		vkCmdDraw(command_buffer, static_cast<uint32_t>(this->mesh_context.vbo_vert_count), 1, 0, 0);
 	}
 } // namespace Engine::Rendering

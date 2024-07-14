@@ -3,12 +3,12 @@
 #include "Assets/Texture.hpp"
 #include "Rendering/Vulkan/VDeviceManager.hpp"
 #include "Rendering/Vulkan/VulkanUtilities.hpp"
+#include "Rendering/framework.hpp"
 
 #include "Logging/Logging.hpp"
 
 #include "Engine.hpp"
 #include "SceneManager.hpp"
-#include "glm/trigonometric.hpp"
 
 #include <cassert>
 #include <cstring>
@@ -23,7 +23,11 @@ namespace Engine::Rendering
 		VulkanPipelineSettings pipeline_settings  = renderer->GetVulkanDefaultPipelineSettings();
 		pipeline_settings.input_assembly.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
 
-		pipeline_settings.shader = {"game/shaders/vulkan/mesh_vert.spv", "game/shaders/vulkan/mesh_frag.spv"};
+		std::string with_program_name = "mesh";
+		pipeline_settings.shader	  = {
+			 with_program_name + "_vert.spv",
+			 with_program_name + "_frag.spv",
+		 };
 
 		pipeline_settings.descriptor_layout_settings.push_back(
 			VulkanDescriptorLayoutSettings{0, 1, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT}
@@ -58,13 +62,13 @@ namespace Engine::Rendering
 	{
 		switch (data.type)
 		{
-			case RendererSupplyDataType::TEXTURE:
+			/* case RendererSupplyDataType::TEXTURE:
 			{
 				this->texture			   = std::static_pointer_cast<Texture>(data.payload_ptr);
 				this->has_updated_mesh	   = false;
 				this->has_updated_meshdata = false;
 				return;
-			}
+			} */
 			case RendererSupplyDataType::MESH:
 			{
 				this->mesh				   = std::static_pointer_cast<Mesh>(data.payload_ptr);
@@ -89,13 +93,6 @@ namespace Engine::Rendering
 		this->has_updated_mesh = true;
 
 		Vulkan::VulkanRenderingEngine* renderer = this->owner_engine->GetRenderingEngine();
-		/*
-				glm::mat4 projection = glm::perspective<float>(
-					glm::radians(45.0f),
-					static_cast<float>(this->screen.x / this->screen.y),
-					0.1f,
-					100.0f
-				); */
 
 		glm::mat4 projection;
 		glm::mat4 view;
@@ -112,7 +109,7 @@ namespace Engine::Rendering
 			this->parent_transform.size = glm::vec3(1, 1, 1);
 		}
 
-		glm::quat model_rotation  = glm::quat(glm::radians(this->transform.rotation));
+		/* glm::quat model_rotation  = glm::quat(glm::radians(this->transform.rotation));
 		glm::quat parent_rotation = glm::quat(glm::radians(this->parent_transform.rotation));
 		glm::mat4 model			  = glm::scale(
 			  glm::translate(
@@ -123,12 +120,10 @@ namespace Engine::Rendering
 				  this->transform.pos
 			  ) * glm::mat4_cast(model_rotation),
 			  this->transform.size
-		  );
+		  ); */
 
-		// this->mat_m		 = model;
-		// this->mat_v		 = view;
-		// this->mat_mv	 = view * model;
-		// this->mat_mv_3x3 = glm::mat3(view * model);
+		glm::mat4 model = CalculateModelMatrix(this->transform, this->parent_transform);
+
 		this->mat_mvp = projection * view * model;
 
 		if (!this->has_updated_meshdata)
@@ -138,9 +133,7 @@ namespace Engine::Rendering
 			if (this->vbo != nullptr)
 			{
 				renderer->SyncDeviceWaitIdle();
-				// vkDeviceWaitIdle(renderer->GetLogicalDevice());
 				delete this->vbo;
-				// renderer->CleanupVulkanBuffer(this->vbo);
 				this->vbo = nullptr;
 			}
 
@@ -174,7 +167,7 @@ namespace Engine::Rendering
 
 			this->vbo_vert_count = generated_mesh.size();
 
-			std::vector<VkDescriptorImageInfo> diffuse_image_buffer_infos{};
+			/* std::vector<VkDescriptorImageInfo> diffuse_image_buffer_infos{};
 			diffuse_image_buffer_infos.resize(this->mesh->diffuse_textures.size());
 			for (size_t diffuse_texture_index = 0; diffuse_texture_index < this->mesh->diffuse_textures.size();
 				 diffuse_texture_index++)
@@ -200,7 +193,7 @@ namespace Engine::Rendering
 						}
 					}
 				}
-			}
+			} */
 
 			if (auto locked_device_manager = renderer->GetDeviceManager().lock())
 			{
@@ -222,7 +215,7 @@ namespace Engine::Rendering
 					descriptor_writes[0].descriptorCount = 1;
 					descriptor_writes[0].pBufferInfo	 = &uniform_buffer_info;
 
-					if (diffuse_image_buffer_infos.empty())
+					/* if (diffuse_image_buffer_infos.empty())
 					{
 						this->logger->SimpleLog(
 							Logging::LogLevel::Debug3,
@@ -246,7 +239,7 @@ namespace Engine::Rendering
 						descriptor_writes[1].dstBinding,
 						static_cast<unsigned int>(descriptor_writes.size())
 					);
-
+ */
 					vkUpdateDescriptorSets(
 						locked_device_manager->GetLogicalDevice(),
 						static_cast<uint32_t>(descriptor_writes.size()),

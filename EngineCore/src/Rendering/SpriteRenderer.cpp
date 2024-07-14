@@ -5,6 +5,7 @@
 #include "Rendering/Vulkan/VDeviceManager.hpp"
 #include "Rendering/Vulkan/VulkanStructDefs.hpp"
 #include "Rendering/Vulkan/VulkanUtilities.hpp"
+#include "Rendering/framework.hpp"
 
 #include "Logging/Logging.hpp"
 
@@ -26,7 +27,11 @@ namespace Engine::Rendering
 		VulkanPipelineSettings pipeline_settings  = renderer->GetVulkanDefaultPipelineSettings();
 		pipeline_settings.input_assembly.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
 
-		pipeline_settings.shader = {"game/shaders/vulkan/sprite_vert.spv", "game/shaders/vulkan/sprite_frag.spv"};
+		std::string with_program_name = "sprite";
+		pipeline_settings.shader	  = ShaderDefinition{
+			 with_program_name + "_vert.spv",
+			 with_program_name + "_frag.spv",
+		 };
 
 		pipeline_settings.descriptor_layout_settings.push_back(VulkanDescriptorLayoutSettings{
 			0,
@@ -99,19 +104,20 @@ namespace Engine::Rendering
 			this->parent_transform.size = glm::vec3(1, 1, 1);
 		}
 
-		glm::quat model_rotation  = glm::quat(glm::radians(this->transform.rotation));
+		/* glm::quat model_rotation  = glm::quat(glm::radians(this->transform.rotation));
 		glm::quat parent_rotation = glm::quat(glm::radians(this->parent_transform.rotation));
+		glm::mat4 model			  = glm::scale(
+			  glm::translate(
+				  glm::scale(
+					  glm::translate(glm::mat4(1.0f), this->parent_transform.pos) * glm::mat4_cast(parent_rotation),
+					  this->parent_transform.size
+				  ),
+				  this->transform.pos
+			  ) * glm::mat4_cast(model_rotation),
+			  this->transform.size
+		  ); */
 
-		glm::mat4 model = glm::scale(
-			glm::translate(
-				glm::scale(
-					glm::translate(glm::mat4(1.0f), this->parent_transform.pos) * glm::mat4_cast(parent_rotation),
-					this->parent_transform.size
-				),
-				this->transform.pos
-			) * glm::mat4_cast(model_rotation),
-			this->transform.size
-		);
+		glm::mat4 model = CalculateModelMatrix(this->transform, this->parent_transform);
 
 		this->mat_mvp = projection * model;
 

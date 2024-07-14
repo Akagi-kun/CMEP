@@ -43,6 +43,8 @@ namespace Engine
 
 		std::string scene_path	  = "game/scenes/";
 		std::string default_scene = "default";
+
+		std::string shader_path = "game/shaders/vulkan/";
 	} EngineConfig;
 
 	class Engine final
@@ -97,8 +99,8 @@ namespace Engine
 		void Run();
 
 		void ConfigFile(std::string path);
-		// void RegisterEventHandler(EventHandling::EventType event_type,
-		// std::function<int(EventHandling::Event&)> function);
+		// void RegisterEventHandler(EventHandling::EventType event_type, std::function<int(EventHandling::Event&)>
+		// function);
 
 		void Stop();
 
@@ -111,9 +113,14 @@ namespace Engine
 			this->framerate_target = framerate;
 		}
 
+		[[nodiscard]] const std::string& GetShaderPath() const
+		{
+			return this->config->shader_path;
+		}
+
 		[[nodiscard]] double GetLastDeltaTime() const;
 
-		[[nodiscard]] std::shared_ptr<Logging::Logger> GetLogger()
+		[[nodiscard]] std::shared_ptr<Logging::Logger> GetLogger() const noexcept
 		{
 			return this->logger;
 		}
@@ -125,9 +132,9 @@ namespace Engine
 		{
 			return this->rendering_engine;
 		}
-		[[nodiscard]] std::weak_ptr<SceneManager> GetSceneManager() const noexcept
+		[[nodiscard]] std::weak_ptr<SceneManager> GetSceneManager() noexcept
 		{
-			return std::weak_ptr<SceneManager>(this->scene_manager);
+			return this->scene_manager;
 		}
 	};
 } // namespace Engine

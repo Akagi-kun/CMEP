@@ -10,9 +10,9 @@
 
 namespace Engine::Rendering::Vulkan::Utils
 {
-	inline VkSurfaceFormatKHR ChooseVulkanSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableFormats)
+	inline VkSurfaceFormatKHR ChooseVulkanSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& available_formats)
 	{
-		for (const auto& available_format : availableFormats)
+		for (const auto& available_format : available_formats)
 		{
 			if (available_format.format == VK_FORMAT_B8G8R8A8_SRGB &&
 				available_format.colorSpace == VK_COLOR_SPACE_SRGB_NONLINEAR_KHR)
@@ -22,12 +22,12 @@ namespace Engine::Rendering::Vulkan::Utils
 		}
 
 		// Return first format found
-		return availableFormats[0];
+		return available_formats[0];
 	}
 
-	inline VkPresentModeKHR ChooseVulkanSwapPresentMode(const std::vector<VkPresentModeKHR>& availablePresentModes)
+	inline VkPresentModeKHR ChooseVulkanSwapPresentMode(const std::vector<VkPresentModeKHR>& available_present_modes)
 	{
-		(void)(availablePresentModes);
+		(void)(available_present_modes);
 		// Mailbox potentially worse?
 		// for (const auto& available_present_mode : availablePresentModes)
 		//{
@@ -53,7 +53,7 @@ namespace Engine::Rendering::Vulkan::Utils
 
 		if (!file.is_open())
 		{
-			throw std::runtime_error("failed to open file!");
+			throw std::runtime_error("failed to open shader file!");
 		}
 
 		size_t file_size = static_cast<size_t>(file.tellg());

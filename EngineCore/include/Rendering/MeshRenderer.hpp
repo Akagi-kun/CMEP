@@ -13,13 +13,9 @@ namespace Engine::Rendering
 	class MeshRenderer final : public IRenderer
 	{
 	private:
-		// glm::mat4 mat_m{};
-		// glm::mat4 mat_v{};
-		// glm::mat4 mat_mv{};
-		// glm::mat3 mat_mv_3x3{};
 		glm::mat4 mat_mvp{};
 
-		std::shared_ptr<Rendering::Texture> texture;
+		// std::shared_ptr<Rendering::Texture> texture;
 		std::shared_ptr<Mesh> mesh;
 
 		bool has_updated_meshdata = false;

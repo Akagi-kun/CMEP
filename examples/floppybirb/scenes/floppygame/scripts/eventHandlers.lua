@@ -12,7 +12,7 @@ local deltaTime_max = 0.0
 local deltaTime_min = 2000.0
 
 -- Related to spawning pipes
-local spawn_pipe_every = 4.0 -- Configurable spawn rate
+local spawn_pipe_every = 3.2 -- Configurable spawn rate
 local spawn_pipe_last_idx = 0
 local spawn_pipe_first_idx = 1
 local spawn_pipe_count = 0
@@ -25,7 +25,7 @@ local pipe_y_size = 450
 -- Pipe behavior
 local pipe_spacing_start = 200 -- Configurable pipe spacing (between top and bottom)
 local pipe_spacing = pipe_spacing_start
-local pipe_move_speed = 0.135 -- 0.135 Configurable pipe move speed (/speed of flying)
+local pipe_move_speed = 0.155 -- 0.135 Configurable pipe move speed (/speed of flying)
 
 -- Birb sprite size in pixels
 local birb_x_size = 72
@@ -34,7 +34,7 @@ local birb_y_size = 44
 -- Birb behavior
 local birb_jump_velocity = 0.46 -- Configurable velocity set on jump
 local birb_gravity = 0.89 -- Configurable gravity
-local birb_velocity = 0.25 -- Internal velocity value
+local birb_velocity = 0.25 -- Internal (vertical) velocity value
 local birb_is_velociting = false -- Internal is-jumping check
 
 -- Game state
@@ -236,6 +236,8 @@ onUpdate = function(event)
 			spawn_pipe_since_last = 0.0
 		end
 
+		spawn_pipe_since_last = spawn_pipe_since_last + event.deltaTime
+
 		-- Get birb position
 		local birb = scene:FindObject("birb")
 		local birbx, birby, birbz = birb:GetPosition()
@@ -294,12 +296,9 @@ onUpdate = function(event)
 		-- we already have birbx/y/z from before
 		--birby = birby - birb_velocity * event.deltaTime
 		birb:SetPosition(birbx, birby, birbz)
+		--birb_velocity = birb_velocity - birb_gravity * event.deltaTime
 
 		gameOnHandleGrounds(scene, event)
-
-		-- Add birb_gravity to birb velocity
-		--birb_velocity = birb_velocity - birb_gravity * event.deltaTime
-		spawn_pipe_since_last = spawn_pipe_since_last + event.deltaTime
 
 	elseif (game_midgameover_state == true and game_gameover_state == false) then
 
