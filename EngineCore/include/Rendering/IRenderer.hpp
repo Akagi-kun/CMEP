@@ -40,17 +40,12 @@ namespace Engine
 			bool has_updated_mesh = false;
 
 		public:
-			// std::weak_ptr<::Engine::SceneManager> scene_manager;
-
-			IRenderer() = delete;
 			IRenderer(Engine* engine, IMeshBuilder* with_builder)
 				: InternalEngineObject(engine), mesh_builder(with_builder)
 			{
 			}
 			virtual ~IRenderer()
 			{
-				// this->logger->SimpleLog(Logging::LogLevel::Debug2, "Cleaning up IRenderer");
-
 				delete this->mesh_builder;
 				this->mesh_builder = nullptr;
 			}
@@ -73,7 +68,7 @@ namespace Engine
 
 			virtual void UpdateMesh() = 0;
 
-			virtual void Render(VkCommandBuffer commandBuffer, uint32_t currentFrame) = 0;
+			virtual void Render(VkCommandBuffer command_buffer, uint32_t current_frame) = 0;
 
 			[[nodiscard]] virtual bool GetIsUI() const = 0;
 		};

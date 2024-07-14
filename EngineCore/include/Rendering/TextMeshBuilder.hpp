@@ -18,10 +18,7 @@ namespace Engine::Rendering
 		std::shared_ptr<Rendering::Font> font = nullptr;
 
 	public:
-		TextMeshBuilder(Engine* engine, Vulkan::VulkanRenderingEngine* with_renderer)
-			: IMeshBuilder(engine, with_renderer)
-		{
-		}
+		using IMeshBuilder::IMeshBuilder;
 
 		void SupplyData(const RendererSupplyData& data) override;
 

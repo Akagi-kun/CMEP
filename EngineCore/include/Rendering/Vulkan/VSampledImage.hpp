@@ -14,7 +14,7 @@ namespace Engine::Rendering::Vulkan
 		VkSampler texture_sampler;
 
 		VSampledImage(
-			VulkanDeviceManager* with_device_manager,
+			VDeviceManager* with_device_manager,
 			VmaAllocator with_allocator,
 			VulkanImageSize size,
 			VkSampleCountFlagBits num_samples,

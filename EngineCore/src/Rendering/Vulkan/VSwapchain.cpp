@@ -1,12 +1,12 @@
 #include "Rendering/Vulkan/VSwapchain.hpp"
 
 #include "Rendering/Vulkan/HoldsVulkanDevice.hpp"
-#include "Rendering/Vulkan/VulkanDeviceManager.hpp"
+#include "Rendering/Vulkan/VDeviceManager.hpp"
 #include "Rendering/Vulkan/VulkanUtilities.hpp"
 
 namespace Engine::Rendering::Vulkan
 {
-	VSwapchain::VSwapchain(VulkanDeviceManager* const with_device_manager, VkExtent2D with_extent, uint32_t with_count)
+	VSwapchain::VSwapchain(VDeviceManager* const with_device_manager, VkExtent2D with_extent, uint32_t with_count)
 		: HoldsVulkanDevice(with_device_manager), image_format(VK_FORMAT_B8G8R8A8_UNORM), extent(with_extent)
 	{
 		// Query details for support of swapchains

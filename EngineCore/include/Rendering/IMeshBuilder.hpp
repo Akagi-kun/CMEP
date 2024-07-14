@@ -15,10 +15,7 @@ namespace Engine::Rendering
 
 	public:
 		IMeshBuilder() = delete;
-		IMeshBuilder(Engine* engine, Vulkan::VulkanRenderingEngine* with_renderer)
-			: InternalEngineObject(engine), renderer(with_renderer)
-		{
-		}
+		IMeshBuilder(Engine* engine);
 
 		virtual ~IMeshBuilder()
 		{

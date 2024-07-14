@@ -1,6 +1,5 @@
-#include "Rendering/Vulkan/VulkanDeviceManager.hpp"
-
 #include "Rendering/Vulkan/VCommandPool.hpp"
+#include "Rendering/Vulkan/VDeviceManager.hpp"
 
 #include "Logging/Logging.hpp"
 
@@ -82,8 +81,7 @@ namespace Engine::Rendering::Vulkan
 
 #pragma endregion
 
-	VulkanDeviceManager::VulkanDeviceManager(Engine* with_engine, GLFWwindow* new_window)
-		: InternalEngineObject(with_engine)
+	VDeviceManager::VDeviceManager(Engine* with_engine, GLFWwindow* new_window) : InternalEngineObject(with_engine)
 	{
 		this->window = new_window;
 
@@ -100,7 +98,7 @@ namespace Engine::Rendering::Vulkan
 		this->vk_command_pool = new VCommandPool(this);
 	}
 
-	VulkanDeviceManager::~VulkanDeviceManager()
+	VDeviceManager::~VDeviceManager()
 	{
 		this->logger->SimpleLog(Logging::LogLevel::Info, LOGPFX_CURRENT "Cleaning up");
 
@@ -118,7 +116,7 @@ namespace Engine::Rendering::Vulkan
 
 #pragma region Internal init functions
 
-	void VulkanDeviceManager::InitVulkanInstance()
+	void VDeviceManager::InitVulkanInstance()
 	{
 		// Application information
 		VkApplicationInfo app_info{};
@@ -205,7 +203,7 @@ namespace Engine::Rendering::Vulkan
 		}
 	}
 
-	void VulkanDeviceManager::InitVulkanDevice()
+	void VDeviceManager::InitVulkanDevice()
 	{
 		this->logger->SimpleLog(Logging::LogLevel::Debug2, LOGPFX_CURRENT "Initializing vulkan device");
 		// Get physical device count
@@ -255,7 +253,7 @@ namespace Engine::Rendering::Vulkan
 		);
 	}
 
-	bool VulkanDeviceManager::CheckVulkanValidationLayers()
+	bool VDeviceManager::CheckVulkanValidationLayers()
 	{
 		// Get supported validation layer count
 		uint32_t layer_count;
@@ -289,7 +287,7 @@ namespace Engine::Rendering::Vulkan
 		return true;
 	}
 
-	void VulkanDeviceManager::CreateVulkanLogicalDevice()
+	void VDeviceManager::CreateVulkanLogicalDevice()
 	{
 		this->graphics_queue_indices = this->FindVulkanQueueFamilies(this->vk_physical_device);
 
@@ -378,7 +376,7 @@ namespace Engine::Rendering::Vulkan
 
 #pragma region Internal device functions
 
-	SwapChainSupportDetails VulkanDeviceManager::QueryVulkanSwapChainSupport(VkPhysicalDevice device)
+	SwapChainSupportDetails VDeviceManager::QueryVulkanSwapChainSupport(VkPhysicalDevice device)
 	{
 		SwapChainSupportDetails details;
 
@@ -410,7 +408,7 @@ namespace Engine::Rendering::Vulkan
 		return details;
 	}
 
-	bool VulkanDeviceManager::CheckVulkanDeviceExtensionSupport(VkPhysicalDevice device)
+	bool VDeviceManager::CheckVulkanDeviceExtensionSupport(VkPhysicalDevice device)
 	{
 		uint32_t extension_count;
 		vkEnumerateDeviceExtensionProperties(device, nullptr, &extension_count, nullptr);
@@ -434,7 +432,7 @@ namespace Engine::Rendering::Vulkan
 		return required_extensions.empty();
 	}
 
-	QueueFamilyIndices VulkanDeviceManager::FindVulkanQueueFamilies(VkPhysicalDevice device)
+	QueueFamilyIndices VDeviceManager::FindVulkanQueueFamilies(VkPhysicalDevice device)
 	{
 		QueueFamilyIndices indices;
 
@@ -466,7 +464,7 @@ namespace Engine::Rendering::Vulkan
 		return indices;
 	}
 
-	int16_t VulkanDeviceManager::CheckVulkanPhysicalDeviceScore(VkPhysicalDevice device)
+	int16_t VDeviceManager::CheckVulkanPhysicalDeviceScore(VkPhysicalDevice device)
 	{
 		// Physical device properties
 		VkPhysicalDeviceProperties device_properties;
@@ -556,7 +554,7 @@ namespace Engine::Rendering::Vulkan
 		return score;
 	}
 
-	VkSampleCountFlagBits VulkanDeviceManager::GetMaxUsableSampleCount()
+	VkSampleCountFlagBits VDeviceManager::GetMaxUsableSampleCount()
 	{
 		VkPhysicalDeviceProperties physical_device_properties;
 		vkGetPhysicalDeviceProperties(this->vk_physical_device, &physical_device_properties);

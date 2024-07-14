@@ -412,7 +412,7 @@ namespace Engine
 
 		this->asset_manager.reset();
 
-		this->rendering_engine->Cleanup();
+		// this->rendering_engine->Cleanup();
 
 		delete this->rendering_engine;
 	}
@@ -454,8 +454,6 @@ namespace Engine
 		this->asset_manager->lua_executor = this->script_executor;
 
 		this->scene_manager = std::make_shared<SceneManager>(this);
-
-		this->rendering_engine = new Rendering::Vulkan::VulkanRenderingEngine(this);
 	}
 
 	void Engine::Run()
@@ -463,12 +461,13 @@ namespace Engine
 		auto start = std::chrono::steady_clock::now();
 
 		// Initialize rendering engine
-		this->rendering_engine
-			->Init(this->config->window.size_x, this->config->window.size_y, this->config->window.title);
-
-		// Prepare rendering engine to run (framebuffers etc.)
-		this->rendering_engine->PrepRun();
-		this->rendering_engine->SetRenderCallback(Engine::Engine::RenderCallback);
+		this->rendering_engine = new Rendering::Vulkan::VulkanRenderingEngine(
+			this,
+			this->config->window.size_x,
+			this->config->window.size_y,
+			this->config->window.title
+		);
+		this->rendering_engine->SetRenderCallback(Engine::RenderCallback);
 
 		// return;
 

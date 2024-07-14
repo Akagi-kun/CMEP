@@ -28,12 +28,13 @@ set(SRC_FILES
 	src/Rendering/SpriteRenderer.cpp
 	src/Rendering/TextRenderer.cpp
 
+	src/Rendering/IMeshBuilder.cpp
 	src/Rendering/SpriteMeshBuilder.cpp
 	src/Rendering/TextMeshBuilder.cpp
 	
 	src/Rendering/Vulkan/VmaImplementation.cpp
 
-	src/Rendering/Vulkan/VulkanDeviceManager.cpp
+	src/Rendering/Vulkan/VDeviceManager.cpp
 	src/Rendering/Vulkan/VulkanRenderingEngine.cpp
 	src/Rendering/Vulkan/VulkanRenderingEngine_Init.cpp
 	

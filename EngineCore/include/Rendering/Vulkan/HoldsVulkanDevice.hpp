@@ -7,11 +7,11 @@ namespace Engine::Rendering::Vulkan
 	class HoldsVulkanDevice
 	{
 	protected:
-		VulkanDeviceManager* const device_manager;
+		VDeviceManager* const device_manager;
 
 	public:
 		HoldsVulkanDevice() = delete;
-		HoldsVulkanDevice(VulkanDeviceManager* const with_device_manager) : device_manager(with_device_manager)
+		HoldsVulkanDevice(VDeviceManager* const with_device_manager) : device_manager(with_device_manager)
 		{
 		}
 	};

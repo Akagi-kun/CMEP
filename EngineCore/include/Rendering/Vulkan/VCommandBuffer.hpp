@@ -15,11 +15,13 @@ namespace Engine::Rendering::Vulkan
 		VkCommandBuffer native_handle = VK_NULL_HANDLE;
 
 	public:
-		VCommandBuffer(VulkanDeviceManager* with_device_manager, VCommandPool* from_pool);
+		VCommandBuffer(VDeviceManager* with_device_manager, VCommandPool* from_pool);
 		~VCommandBuffer();
 
 		void BeginCmdBuffer(VkCommandBufferUsageFlags usage_flags);
 		void EndCmdBuffer();
+
+		void ResetBuffer();
 
 		void RecordCmds(std::function<void(VCommandBuffer*)> const& lambda);
 

@@ -1,6 +1,6 @@
 #include "Rendering/AxisRenderer.hpp"
 
-#include "Rendering/Vulkan/VulkanDeviceManager.hpp"
+#include "Rendering/Vulkan/VDeviceManager.hpp"
 #include "Rendering/Vulkan/VulkanRenderingEngine.hpp"
 #include "Rendering/Vulkan/VulkanUtilities.hpp"
 
@@ -58,19 +58,18 @@ namespace Engine::Rendering
 
 		this->vbo_vert_count = vertices.size();
 
-		glm::mat4 projection =
-			glm::perspective(glm::radians(45.0f), static_cast<float>(this->screen.x / this->screen.y), 0.1f, 100.0f);
-
+		glm::mat4 projection;
 		glm::mat4 view;
 		if (auto locked_scene_manager = this->owner_engine->GetSceneManager().lock())
 		{
-			view = locked_scene_manager->GetCameraViewMatrix();
+			view	   = locked_scene_manager->GetCameraViewMatrix();
+			projection = locked_scene_manager->GetProjectionMatrix(this->screen);
 		}
-		glm::mat4 model = glm::mat4(1.0f);
-
 		projection[1][1] *= -1;
 
-		this->mat_mvp = projection * view * model;
+		// auto model = glm::mat4(1.0f);
+
+		this->mat_mvp = projection * view; // * model;
 
 		Vulkan::VulkanRenderingEngine* renderer = this->owner_engine->GetRenderingEngine();
 
@@ -110,7 +109,7 @@ namespace Engine::Rendering
 		}
 	}
 
-	void AxisRenderer::Render(VkCommandBuffer commandBuffer, uint32_t currentFrame)
+	void AxisRenderer::Render(VkCommandBuffer command_buffer, uint32_t current_frame)
 	{
 		if (!this->has_updated_mesh)
 		{
@@ -121,27 +120,27 @@ namespace Engine::Rendering
 		Vulkan::Utils::VulkanUniformBufferTransfer(
 			renderer,
 			this->pipeline,
-			currentFrame,
+			current_frame,
 			&this->mat_mvp,
 			sizeof(glm::mat4)
 		);
 
 		vkCmdBindDescriptorSets(
-			commandBuffer,
+			command_buffer,
 			VK_PIPELINE_BIND_POINT_GRAPHICS,
 			this->pipeline->vk_pipeline_layout,
 			0,
 			1,
-			&this->pipeline->vk_descriptor_sets[currentFrame],
+			&this->pipeline->vk_descriptor_sets[current_frame],
 			0,
 			nullptr
 		);
 
-		vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, this->pipeline->pipeline);
+		vkCmdBindPipeline(command_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, this->pipeline->pipeline);
 		VkBuffer vertex_buffers[] = {this->vbo->GetNativeHandle()};
 		VkDeviceSize offsets[]	  = {0};
-		vkCmdBindVertexBuffers(commandBuffer, 0, 1, vertex_buffers, offsets);
+		vkCmdBindVertexBuffers(command_buffer, 0, 1, vertex_buffers, offsets);
 
-		vkCmdDraw(commandBuffer, static_cast<uint32_t>(this->vbo_vert_count), 1, 0, 0);
+		vkCmdDraw(command_buffer, static_cast<uint32_t>(this->vbo_vert_count), 1, 0, 0);
 	}
 } // namespace Engine::Rendering

@@ -2,7 +2,7 @@
 
 #include "Assets/Font.hpp"
 #include "Assets/Texture.hpp"
-#include "Rendering/Vulkan/VulkanDeviceManager.hpp"
+#include "Rendering/Vulkan/VDeviceManager.hpp"
 #include "Rendering/Vulkan/VulkanUtilities.hpp"
 
 #include "Logging/Logging.hpp"
@@ -169,7 +169,7 @@ namespace Engine::Rendering
 		}
 	}
 
-	void TextRenderer::Render(VkCommandBuffer commandBuffer, uint32_t currentFrame)
+	void TextRenderer::Render(VkCommandBuffer command_buffer, uint32_t current_frame)
 	{
 		if (!this->has_updated_mesh)
 		{
@@ -191,27 +191,27 @@ namespace Engine::Rendering
 		Vulkan::Utils::VulkanUniformBufferTransfer(
 			renderer,
 			this->pipeline,
-			currentFrame,
+			current_frame,
 			&this->mat_mvp,
 			sizeof(glm::mat4)
 		);
 
 		vkCmdBindDescriptorSets(
-			commandBuffer,
+			command_buffer,
 			VK_PIPELINE_BIND_POINT_GRAPHICS,
 			this->pipeline->vk_pipeline_layout,
 			0,
 			1,
-			&this->pipeline->vk_descriptor_sets[currentFrame],
+			&this->pipeline->vk_descriptor_sets[current_frame],
 			0,
 			nullptr
 		);
 
-		vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, this->pipeline->pipeline);
+		vkCmdBindPipeline(command_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, this->pipeline->pipeline);
 		VkBuffer vertex_buffers[] = {this->mesh_context.vbo->GetNativeHandle()};
 		VkDeviceSize offsets[]	  = {0};
-		vkCmdBindVertexBuffers(commandBuffer, 0, 1, vertex_buffers, offsets);
+		vkCmdBindVertexBuffers(command_buffer, 0, 1, vertex_buffers, offsets);
 
-		vkCmdDraw(commandBuffer, static_cast<uint32_t>(this->mesh_context.vbo_vert_count), 1, 0, 0);
+		vkCmdDraw(command_buffer, static_cast<uint32_t>(this->mesh_context.vbo_vert_count), 1, 0, 0);
 	}
 } // namespace Engine::Rendering

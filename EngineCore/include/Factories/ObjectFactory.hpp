@@ -2,7 +2,6 @@
 
 #include "Assets/Mesh.hpp"
 
-#include "Engine.hpp"
 #include "Object.hpp"
 #include "Scene.hpp"
 
@@ -25,7 +24,7 @@ namespace Engine::ObjectFactory
 	{
 		auto* object = new Object(with_engine);
 
-		auto* with_builder	= new TMeshBuilder(with_engine, with_engine->GetRenderingEngine());
+		auto* with_builder	= new TMeshBuilder(with_engine);
 		auto* with_renderer = new TRenderer(with_engine, with_builder);
 
 		for (const auto& supply : with_supply_data)

@@ -59,17 +59,17 @@ namespace Engine::Rendering::Vulkan
 		VImage* vk_depth_buffer			 = nullptr;
 
 		// Command pools and buffers
-		std::array<VCommandBuffer*, max_frames_in_flight> vk_command_buffers;
+		std::array<VCommandBuffer*, max_frames_in_flight> command_buffers;
 
 		// Synchronisation
 		std::array<VSyncObjects, max_frames_in_flight> sync_objects;
 
 		// Default pipeline
-		VulkanPipeline* graphics_pipeline_default = nullptr;
-		VkRenderPass vk_render_pass				  = VK_NULL_HANDLE;
+		// VulkanPipeline* graphics_pipeline_default = nullptr;
+		VkRenderPass vk_render_pass = VK_NULL_HANDLE;
 
 		// Device manager
-		std::shared_ptr<VulkanDeviceManager> device_manager;
+		std::shared_ptr<VDeviceManager> device_manager;
 
 		// Memory management
 		VmaAllocator vma_allocator;
@@ -92,14 +92,14 @@ namespace Engine::Rendering::Vulkan
 		void CleanupVulkanSwapChain();
 
 		// Command buffer functions
-		void RecordVulkanCommandBuffer(VkCommandBuffer commandBuffer, uint32_t imageIndex);
+		void RecordVulkanCommandBuffer(VCommandBuffer* command_buffer, uint32_t image_index);
 
 		// Shaders functions
 		VkShaderModule CreateVulkanShaderModule(const std::vector<char>& code);
 
 		// Init functions
 		void CreateVulkanSwapChain();
-		void CreateVulkanDefaultGraphicsPipeline();
+		// void CreateVulkanDefaultGraphicsPipeline();
 		void CreateVulkanRenderPass();
 		void CreateVulkanFramebuffers();
 		void CreateVulkanSyncObjects();
@@ -108,20 +108,15 @@ namespace Engine::Rendering::Vulkan
 		void CreateVulkanMemoryAllocator();
 
 	public:
-		// VulkanRenderingEngine() = delete;
-		using InternalEngineObject::InternalEngineObject;
+		VulkanRenderingEngine(Engine* with_engine, unsigned int xsize, unsigned int ysize, std::string title);
+		~VulkanRenderingEngine();
 
 		// Signaling function for framebuffer resize
 		void SignalFramebufferResizeGLFW(ScreenSize with_size);
 
 		// Cleanup functions
 		void Cleanup();
-		// void CleanupVulkanBuffer(VulkanBuffer* buffer);
 		void CleanupVulkanPipeline(VulkanPipeline* pipeline);
-
-		// Init
-		void Init(unsigned int xsize, unsigned int ysize, std::string title);
-		void PrepRun();
 
 		// Engine functions
 		void DrawFrame();
@@ -129,7 +124,7 @@ namespace Engine::Rendering::Vulkan
 
 		// Buffer functions
 		VBuffer* CreateVulkanVertexBufferFromData(std::vector<RenderingVertex> vertices);
-		VBuffer* CreateVulkanStagingBufferWithData(void* data, VkDeviceSize dataSize);
+		VBuffer* CreateVulkanStagingBufferWithData(void* data, VkDeviceSize data_size);
 
 		// Image functions
 		void CopyVulkanBufferToImage(VkBuffer buffer, VkImage image, uint32_t width, uint32_t height);
@@ -152,15 +147,26 @@ namespace Engine::Rendering::Vulkan
 		void CreateVulkanDescriptorSets(VulkanPipeline* pipeline);
 
 		// Getters
-		[[nodiscard]] std::weak_ptr<VulkanDeviceManager> GetDeviceManager();
+		[[nodiscard]] std::weak_ptr<VDeviceManager> GetDeviceManager()
+		{
+			return this->device_manager;
+		}
+
+		[[nodiscard]] VmaAllocator GetVMAAllocator()
+		{
+			return this->vma_allocator;
+		}
+
 		[[nodiscard]] GLFWwindowData GetWindow() const;
-		[[nodiscard]] static uint32_t GetMaxFramesInFlight();
-		[[nodiscard]] VmaAllocator GetVMAAllocator();
-		[[nodiscard]] VCommandPool* GetCommandPool();
+
+		[[nodiscard]] static uint32_t GetMaxFramesInFlight()
+		{
+			return VulkanRenderingEngine::max_frames_in_flight;
+		}
 
 		void SyncDeviceWaitIdle();
 
 		// Utility functions
-		uint32_t FindVulkanMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties);
+		uint32_t FindVulkanMemoryType(uint32_t type_filter, VkMemoryPropertyFlags properties);
 	};
 } // namespace Engine::Rendering::Vulkan

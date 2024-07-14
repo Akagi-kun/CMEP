@@ -1,7 +1,7 @@
 #include "Rendering/Vulkan/VBuffer.hpp"
 
 #include "Rendering/Vulkan/VCommandBuffer.hpp"
-#include "Rendering/Vulkan/VulkanDeviceManager.hpp"
+#include "Rendering/Vulkan/VDeviceManager.hpp"
 
 #include "vulkan/vulkan_core.h"
 
@@ -10,7 +10,7 @@
 namespace Engine::Rendering::Vulkan
 {
 	VBuffer::VBuffer(
-		VulkanDeviceManager* const with_device_manager,
+		VDeviceManager* const with_device_manager,
 		VmaAllocator with_allocator,
 		VkDeviceSize with_size,
 		VkBufferUsageFlags with_usage,

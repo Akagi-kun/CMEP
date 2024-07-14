@@ -31,7 +31,7 @@ namespace Engine::Rendering
 		void SupplyData(const RendererSupplyData& data) override;
 		void UpdateMesh() override;
 
-		void Render(VkCommandBuffer commandBuffer, uint32_t currentFrame) override;
+		void Render(VkCommandBuffer command_buffer, uint32_t current_frame) override;
 
 		[[nodiscard]] bool GetIsUI() const override
 		{

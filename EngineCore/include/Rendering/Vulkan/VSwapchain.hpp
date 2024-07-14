@@ -20,7 +20,7 @@ namespace Engine::Rendering::Vulkan
 		const VkExtent2D extent;
 
 	public:
-		VSwapchain(VulkanDeviceManager* with_device_manager, VkExtent2D with_extent, uint32_t with_count);
+		VSwapchain(VDeviceManager* with_device_manager, VkExtent2D with_extent, uint32_t with_count);
 
 		~VSwapchain();
 

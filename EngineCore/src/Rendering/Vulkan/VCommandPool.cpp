@@ -1,12 +1,12 @@
 #include "Rendering/Vulkan/VCommandPool.hpp"
 
-#include "Rendering/Vulkan/VulkanDeviceManager.hpp"
+#include "Rendering/Vulkan/VDeviceManager.hpp"
 
 #include <stdexcept>
 
 namespace Engine::Rendering::Vulkan
 {
-	VCommandPool::VCommandPool(VulkanDeviceManager* const with_device_manager) : HoldsVulkanDevice(with_device_manager)
+	VCommandPool::VCommandPool(VDeviceManager* const with_device_manager) : HoldsVulkanDevice(with_device_manager)
 	{
 		VkCommandPoolCreateInfo pool_info{};
 		pool_info.sType			   = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;

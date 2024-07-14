@@ -6,10 +6,7 @@ namespace Engine::Rendering
 	class SpriteMeshBuilder final : public IMeshBuilder
 	{
 	public:
-		SpriteMeshBuilder(Engine* engine, Vulkan::VulkanRenderingEngine* with_renderer)
-			: IMeshBuilder(engine, with_renderer)
-		{
-		}
+		using IMeshBuilder::IMeshBuilder;
 
 		void SupplyData(const RendererSupplyData& data) override
 		{

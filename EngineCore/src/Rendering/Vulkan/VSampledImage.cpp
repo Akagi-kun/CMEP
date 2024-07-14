@@ -1,13 +1,13 @@
 #include "Rendering/Vulkan/VSampledImage.hpp"
 
-#include "Rendering/Vulkan/VulkanDeviceManager.hpp"
+#include "Rendering/Vulkan/VDeviceManager.hpp"
 
 #include <stdexcept>
 
 namespace Engine::Rendering::Vulkan
 {
 	VSampledImage::VSampledImage(
-		VulkanDeviceManager* const with_device_manager,
+		VDeviceManager* const with_device_manager,
 		VmaAllocator with_allocator,
 		VulkanImageSize size,
 		VkSampleCountFlagBits num_samples,

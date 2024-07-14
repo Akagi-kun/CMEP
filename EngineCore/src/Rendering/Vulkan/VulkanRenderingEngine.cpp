@@ -4,9 +4,9 @@
 #include "Rendering/Vulkan/VBuffer.hpp"
 #include "Rendering/Vulkan/VCommandBuffer.hpp"
 #include "Rendering/Vulkan/VCommandPool.hpp"
+#include "Rendering/Vulkan/VDeviceManager.hpp"
 #include "Rendering/Vulkan/VImage.hpp" // IWYU pragma: keep
 #include "Rendering/Vulkan/VSwapchain.hpp"
-#include "Rendering/Vulkan/VulkanDeviceManager.hpp"
 #include "Rendering/Vulkan/VulkanUtilities.hpp"
 
 #include "Logging/Logging.hpp"
@@ -18,6 +18,7 @@
 #include <algorithm>
 #include <cstdint>
 #include <stdexcept>
+#include <utility>
 
 // Prefixes for logging messages
 #define LOGPFX_CURRENT LOGPFX_CLASS_VULKAN_RENDERING_ENGINE
@@ -35,26 +36,21 @@ namespace Engine::Rendering::Vulkan
 	///////////////////////    Runtime functions    ////////////////////////
 	////////////////////////////////////////////////////////////////////////
 
-	void VulkanRenderingEngine::RecordVulkanCommandBuffer(VkCommandBuffer commandBuffer, uint32_t imageIndex)
+	void VulkanRenderingEngine::RecordVulkanCommandBuffer(VCommandBuffer* command_buffer, uint32_t image_index)
 	{
 		VkCommandBufferBeginInfo begin_info{};
 		begin_info.sType			= VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
 		begin_info.flags			= 0;	   // Optional
 		begin_info.pInheritanceInfo = nullptr; // Optional
 
-		if (vkBeginCommandBuffer(commandBuffer, &begin_info) != VK_SUCCESS)
-		{
-			this->logger->SimpleLog(
-				Logging::LogLevel::Exception,
-				LOGPFX_CURRENT "Failed to begin recording command buffer"
-			);
-			throw std::runtime_error("failed to begin recording command buffer!");
-		}
+		command_buffer->BeginCmdBuffer(0);
+
+		auto& command_buf_handle = command_buffer->GetNativeHandle();
 
 		VkRenderPassBeginInfo render_pass_info{};
 		render_pass_info.sType			   = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
 		render_pass_info.renderPass		   = this->vk_render_pass;
-		render_pass_info.framebuffer	   = this->vk_swap_chain_framebuffers[imageIndex];
+		render_pass_info.framebuffer	   = this->vk_swap_chain_framebuffers[image_index];
 		render_pass_info.renderArea.offset = {0, 0};
 		render_pass_info.renderArea.extent = this->swapchain->GetExtent();
 
@@ -65,7 +61,7 @@ namespace Engine::Rendering::Vulkan
 		render_pass_info.clearValueCount = 2;
 		render_pass_info.pClearValues	 = clear_values.data();
 
-		vkCmdBeginRenderPass(commandBuffer, &render_pass_info, VK_SUBPASS_CONTENTS_INLINE);
+		vkCmdBeginRenderPass(command_buf_handle, &render_pass_info, VK_SUBPASS_CONTENTS_INLINE);
 
 		VkViewport viewport{};
 		viewport.x		  = 0.0f;
@@ -74,38 +70,23 @@ namespace Engine::Rendering::Vulkan
 		viewport.height	  = static_cast<float>(this->swapchain->GetExtent().height);
 		viewport.minDepth = 0.0f;
 		viewport.maxDepth = 1.0f;
-		vkCmdSetViewport(commandBuffer, 0, 1, &viewport);
+		vkCmdSetViewport(command_buf_handle, 0, 1, &viewport);
 
 		VkRect2D scissor{};
 		scissor.offset = {0, 0};
 		scissor.extent = this->swapchain->GetExtent();
-		vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
-
-		/* vkCmdBindDescriptorSets(
-			commandBuffer,
-			VK_PIPELINE_BIND_POINT_GRAPHICS,
-			this->graphics_pipeline_default->vk_pipeline_layout,
-			0,
-			1,
-			&this->graphics_pipeline_default->vk_descriptor_sets[current_frame],
-			0,
-			nullptr
-		); */
+		vkCmdSetScissor(command_buf_handle, 0, 1, &scissor);
 
 		// Perform actual render
 		// vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, this->graphics_pipeline_default->pipeline);
 		if (this->external_callback)
 		{
-			this->external_callback(commandBuffer, current_frame, this->owner_engine);
+			this->external_callback(command_buf_handle, current_frame, this->owner_engine);
 		}
 
-		vkCmdEndRenderPass(commandBuffer);
+		vkCmdEndRenderPass(command_buf_handle);
 
-		if (vkEndCommandBuffer(commandBuffer) != VK_SUCCESS)
-		{
-			this->logger->SimpleLog(Logging::LogLevel::Exception, LOGPFX_CURRENT "Failed to record command buffer");
-			throw std::runtime_error("failed to record command buffer!");
-		}
+		command_buffer->EndCmdBuffer();
 	}
 
 	VkExtent2D VulkanRenderingEngine::ChooseVulkanSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities)
@@ -129,14 +110,14 @@ namespace Engine::Rendering::Vulkan
 		return actual_extent;
 	}
 
-	uint32_t VulkanRenderingEngine::FindVulkanMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties)
+	uint32_t VulkanRenderingEngine::FindVulkanMemoryType(uint32_t type_filter, VkMemoryPropertyFlags properties)
 	{
 		VkPhysicalDeviceMemoryProperties mem_properties;
 		vkGetPhysicalDeviceMemoryProperties(this->device_manager->GetPhysicalDevice(), &mem_properties);
 
 		for (uint32_t i = 0; i < mem_properties.memoryTypeCount; i++)
 		{
-			if ((typeFilter & (1 << i)) != 0 &&
+			if ((type_filter & (1 << i)) != 0 &&
 				(mem_properties.memoryTypes[i].propertyFlags & properties) == properties)
 			{
 				return i;
@@ -186,69 +167,18 @@ namespace Engine::Rendering::Vulkan
 	////////////////////////    Init functions    //////////////////////////
 	////////////////////////////////////////////////////////////////////////
 
-	// Section moved to 'VulkanRenderingEngine_Init.cpp'
-	//
-
-	////////////////////////////////////////////////////////////////////////
-	///////////////////////    Public Interface    /////////////////////////
-	////////////////////////////////////////////////////////////////////////
-
-	void VulkanRenderingEngine::Cleanup()
+	VulkanRenderingEngine::VulkanRenderingEngine(
+		Engine* with_engine,
+		unsigned int xsize,
+		unsigned int ysize,
+		std::string title
+	)
+		: InternalEngineObject(with_engine), window_size({xsize, ysize}), window_title(std::move(title))
 	{
-		VkDevice logical_device = this->device_manager->GetLogicalDevice();
-
-		this->logger->SimpleLog(Logging::LogLevel::Info, LOGPFX_CURRENT "Cleaning up");
-
-		vkDeviceWaitIdle(logical_device);
-
-		this->CleanupVulkanSwapChain();
-
-		delete this->multisampled_color_image;
-		delete this->vk_depth_buffer;
-
-		for (size_t i = 0; i < VulkanRenderingEngine::max_frames_in_flight; i++)
-		{
-			vkDestroySemaphore(logical_device, this->sync_objects[i].present_ready, nullptr);
-			vkDestroySemaphore(logical_device, this->sync_objects[i].image_available, nullptr);
-			vkDestroyFence(logical_device, this->sync_objects[i].in_flight, nullptr);
-
-			vkWaitForFences(logical_device, 1, &(this->sync_objects[i].acquire_ready), VK_TRUE, UINT64_MAX);
-			vkDestroyFence(logical_device, this->sync_objects[i].acquire_ready, nullptr);
-		}
-
-		for (auto& vk_command_buffer : this->vk_command_buffers)
-		{
-			delete vk_command_buffer;
-		}
-
-		this->logger->SimpleLog(Logging::LogLevel::Debug3, LOGPFX_CURRENT "Cleaning up default vulkan pipeline");
-		this->CleanupVulkanPipeline(this->graphics_pipeline_default);
-
-		vkDestroyRenderPass(logical_device, this->vk_render_pass, nullptr);
-
-		// VMA Cleanup
-		vmaDestroyAllocator(this->vma_allocator);
-
-		// Destroy device after VMA
-		this->device_manager.reset();
-		// this->device_manager->Cleanup();
-
-		// Clean up GLFW
-		glfwDestroyWindow(this->window);
-		glfwTerminate();
-	}
-
-	void VulkanRenderingEngine::Init(unsigned int xsize, unsigned int ysize, std::string title)
-	{
-		this->window_size.x = xsize;
-		this->window_size.y = ysize;
-		this->window_title	= std::move(title);
-
 		// Initialize GLFW
 		if (glfwInit() == GLFW_FALSE)
 		{
-			this->logger->SimpleLog(Logging::LogLevel::Error, LOGPFX_CURRENT "glfwInit returned GLFW_FALSE!");
-			exit(1);
+			throw std::runtime_error("GLFW returned GLFW_FALSE on glfwInit!");
 		}
 		this->logger->SimpleLog(Logging::LogLevel::Info, LOGPFX_CURRENT "GLFW initialized");
 
@@ -279,19 +209,14 @@ namespace Engine::Rendering::Vulkan
 		this->logger
 			->SimpleLog(Logging::LogLevel::Debug1, LOGPFX_CURRENT "%u vulkan extensions supported", extension_count);
 
-		this->device_manager = std::make_shared<VulkanDeviceManager>(this->owner_engine, this->window);
+		this->device_manager = std::make_shared<VDeviceManager>(this->owner_engine, this->window);
 
 		this->CreateVulkanMemoryAllocator();
-	}
-
-	void VulkanRenderingEngine::PrepRun()
-	{
 		this->CreateVulkanSwapChain();
 		this->CreateVulkanRenderPass();
-		this->CreateVulkanDefaultGraphicsPipeline();
 
 		// Create command buffers
-		for (auto& vk_command_buffer : this->vk_command_buffers)
+		for (auto& vk_command_buffer : this->command_buffers)
 		{
 			vk_command_buffer = new VCommandBuffer(this->device_manager.get(), this->device_manager->GetCommandPool());
 		}
@@ -302,11 +227,61 @@ namespace Engine::Rendering::Vulkan
 		this->CreateVulkanSyncObjects();
 	}
 
+	VulkanRenderingEngine::~VulkanRenderingEngine()
+	{
+		VkDevice logical_device = this->device_manager->GetLogicalDevice();
+
+		this->logger->SimpleLog(Logging::LogLevel::Info, LOGPFX_CURRENT "Cleaning up");
+
+		vkDeviceWaitIdle(logical_device);
+
+		this->CleanupVulkanSwapChain();
+
+		delete this->multisampled_color_image;
+		delete this->vk_depth_buffer;
+
+		for (size_t i = 0; i < VulkanRenderingEngine::max_frames_in_flight; i++)
+		{
+			vkDestroySemaphore(logical_device, this->sync_objects[i].present_ready, nullptr);
+			vkDestroySemaphore(logical_device, this->sync_objects[i].image_available, nullptr);
+			vkDestroyFence(logical_device, this->sync_objects[i].in_flight, nullptr);
+
+			vkWaitForFences(logical_device, 1, &(this->sync_objects[i].acquire_ready), VK_TRUE, UINT64_MAX);
+			vkDestroyFence(logical_device, this->sync_objects[i].acquire_ready, nullptr);
+		}
+
+		for (auto& vk_command_buffer : this->command_buffers)
+		{
+			delete vk_command_buffer;
+		}
+
+		this->logger->SimpleLog(Logging::LogLevel::Debug3, LOGPFX_CURRENT "Cleaning up default vulkan pipeline");
+
+		vkDestroyRenderPass(logical_device, this->vk_render_pass, nullptr);
+
+		// VMA Cleanup
+		vmaDestroyAllocator(this->vma_allocator);
+
+		// Destroy device after VMA
+		this->device_manager.reset();
+
+		// Clean up GLFW
+		glfwDestroyWindow(this->window);
+		glfwTerminate();
+	}
+
+	// Rest of section moved to 'VulkanRenderingEngine_Init.cpp'
+	//
+
+	////////////////////////////////////////////////////////////////////////
+	///////////////////////    Public Interface    /////////////////////////
+	////////////////////////////////////////////////////////////////////////
+
 	void VulkanRenderingEngine::DrawFrame()
 	{
 		VkDevice logical_device = this->device_manager->GetLogicalDevice();
 
-		auto& frame_sync_objects = this->sync_objects[current_frame];
+		auto& frame_sync_objects = this->sync_objects[this->current_frame];
 
 		// Wait for fence
 		vkWaitForFences(logical_device, 1, &frame_sync_objects.in_flight, VK_TRUE, UINT64_MAX);
@@ -354,10 +329,10 @@ namespace Engine::Rendering::Vulkan
 		}
 
 		// Reset command buffer to initial state
-		vkResetCommandBuffer(this->vk_command_buffers[current_frame]->GetNativeHandle(), 0);
+		vkResetCommandBuffer(this->command_buffers[this->current_frame]->GetNativeHandle(), 0);
 
 		// Records render into command buffer
-		this->RecordVulkanCommandBuffer(this->vk_command_buffers[current_frame]->GetNativeHandle(), image_index);
+		this->RecordVulkanCommandBuffer(this->command_buffers[this->current_frame], image_index);
 
 		VkSubmitInfo submit_info{};
 		submit_info.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
@@ -369,18 +344,16 @@ namespace Engine::Rendering::Vulkan
 		submit_info.pWaitSemaphores		   = wait_semaphores;
 		submit_info.pWaitDstStageMask	   = wait_stages;
 		submit_info.commandBufferCount	   = 1;
-		submit_info.pCommandBuffers		   = &this->vk_command_buffers[current_frame]->GetNativeHandle();
+		submit_info.pCommandBuffers		   = &this->command_buffers[this->current_frame]->GetNativeHandle();
 
 		// Signal semaphores to be signaled once
 		// all submit_info.pCommandBuffers finish executing
-		// present_ready_semaphores are used in the next step
 		VkSemaphore signal_semaphores[]	 = {frame_sync_objects.present_ready};
 		submit_info.signalSemaphoreCount = 1;
 		submit_info.pSignalSemaphores	 = signal_semaphores;
 
 		// Submit to queue
-		// in_flight_fences[current_frame] will be signaled once
-		// all submit_info.pCommandBuffers finish executing
+		// passed fence will be signaled when command buffer execution is finished
 		if (vkQueueSubmit(this->device_manager->GetGraphicsQueue(), 1, &submit_info, frame_sync_objects.in_flight) !=
 			VK_SUCCESS)
 		{
@@ -420,26 +393,6 @@ namespace Engine::Rendering::Vulkan
 		data.window_title = this->window_title;
 
 		return data;
-	}
-
-	std::weak_ptr<VulkanDeviceManager> VulkanRenderingEngine::GetDeviceManager()
-	{
-		return this->device_manager;
-	}
-
-	uint32_t VulkanRenderingEngine::GetMaxFramesInFlight()
-	{
-		return VulkanRenderingEngine::max_frames_in_flight;
-	}
-
-	VmaAllocator VulkanRenderingEngine::GetVMAAllocator()
-	{
-		return this->vma_allocator;
-	}
-
-	VCommandPool* VulkanRenderingEngine::GetCommandPool()
-	{
-		return this->device_manager->GetCommandPool();
 	}
 
 	void VulkanRenderingEngine::SetRenderCallback(std::function<void(VkCommandBuffer, uint32_t, Engine*)> callback)
@@ -758,14 +711,14 @@ namespace Engine::Rendering::Vulkan
 		}
 	}
 
-	VBuffer* VulkanRenderingEngine::CreateVulkanStagingBufferWithData(void* data, VkDeviceSize dataSize)
+	VBuffer* VulkanRenderingEngine::CreateVulkanStagingBufferWithData(void* data, VkDeviceSize data_size)
 	{
 		VBuffer* staging_buffer;
 
 		staging_buffer = new VBuffer(
 			this->device_manager.get(),
 			this->vma_allocator,
-			dataSize,
+			data_size,
 			VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
 			VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
 			0
@@ -773,7 +726,7 @@ namespace Engine::Rendering::Vulkan
 
 		staging_buffer->MapMemory();
 
-		memcpy(staging_buffer->mapped_data, data, static_cast<size_t>(dataSize));
+		memcpy(staging_buffer->mapped_data, data, static_cast<size_t>(data_size));
 
 		staging_buffer->UnmapMemory();
 

@@ -21,7 +21,7 @@ namespace Engine::Rendering::Vulkan
 		void* mapped_data = nullptr;
 
 		VBuffer(
-			VulkanDeviceManager* with_device_manager,
+			VDeviceManager* with_device_manager,
 			VmaAllocator with_allocator,
 			VkDeviceSize with_size,
 			VkBufferUsageFlags with_usage,

@@ -6,7 +6,7 @@
 
 namespace Engine::Rendering::Vulkan
 {
-	class VulkanDeviceManager final : public InternalEngineObject
+	class VDeviceManager final : public InternalEngineObject
 	{
 	private:
 		// Defaults
@@ -69,8 +69,8 @@ namespace Engine::Rendering::Vulkan
 		void CreateVulkanLogicalDevice();
 
 	public:
-		VulkanDeviceManager(Engine* with_engine, GLFWwindow* new_window);
-		~VulkanDeviceManager();
+		VDeviceManager(Engine* with_engine, GLFWwindow* new_window);
+		~VDeviceManager();
 
 		[[nodiscard]] const VkPhysicalDevice& GetPhysicalDevice() const noexcept
 		{

@@ -14,7 +14,7 @@ namespace Engine::Rendering::Vulkan
 		VkCommandPool native_handle = VK_NULL_HANDLE;
 
 	public:
-		VCommandPool(VulkanDeviceManager* with_device_manager);
+		VCommandPool(VDeviceManager* with_device_manager);
 
 		~VCommandPool();
 

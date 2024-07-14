@@ -27,7 +27,7 @@ namespace Engine::Rendering::Vulkan
 		VkImageView image_view = VK_NULL_HANDLE;
 
 		VImage(
-			VulkanDeviceManager* with_device_manager,
+			VDeviceManager* with_device_manager,
 			VmaAllocator with_allocator,
 			VulkanImageSize size,
 			VkSampleCountFlagBits num_samples,
@@ -38,7 +38,7 @@ namespace Engine::Rendering::Vulkan
 		);
 		~VImage();
 
-		void TransitionImageLayout(VCommandPool* with_pool, VkFormat format, VkImageLayout new_layout);
+		void TransitionImageLayout(VkFormat format, VkImageLayout new_layout);
 
 		void AddImageView(VkImageAspectFlags with_aspect_flags = VK_IMAGE_ASPECT_COLOR_BIT);
 

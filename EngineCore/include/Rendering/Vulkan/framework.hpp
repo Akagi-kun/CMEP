@@ -16,7 +16,7 @@ namespace Engine::Rendering::Vulkan
 	class VCommandBuffer;
 
 	// Render management
-	class VulkanDeviceManager;
+	class VDeviceManager;
 	class VulkanRenderingEngine;
 
 	// Image related

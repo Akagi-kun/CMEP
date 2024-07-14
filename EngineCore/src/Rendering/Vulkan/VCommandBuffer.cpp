@@ -1,7 +1,7 @@
 #include "Rendering/Vulkan/VCommandBuffer.hpp"
 
 #include "Rendering/Vulkan/VCommandPool.hpp"
-#include "Rendering/Vulkan/VulkanDeviceManager.hpp"
+#include "Rendering/Vulkan/VDeviceManager.hpp"
 
 #include "vulkan/vulkan_core.h"
 
@@ -9,7 +9,7 @@
 
 namespace Engine::Rendering::Vulkan
 {
-	VCommandBuffer::VCommandBuffer(VulkanDeviceManager* const with_device_manager, VCommandPool* from_pool)
+	VCommandBuffer::VCommandBuffer(VDeviceManager* const with_device_manager, VCommandPool* from_pool)
 		: HoldsVulkanDevice(with_device_manager), owning_pool(from_pool)
 	{
 		VkCommandBufferAllocateInfo alloc_info{};
@@ -38,6 +38,8 @@ namespace Engine::Rendering::Vulkan
 
 	void VCommandBuffer::BeginCmdBuffer(VkCommandBufferUsageFlags usage_flags)
 	{
+		this->ResetBuffer();
+
 		VkCommandBufferBeginInfo begin_info{};
 		begin_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
 		begin_info.flags = usage_flags; // VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
@@ -50,8 +52,14 @@ namespace Engine::Rendering::Vulkan
 		vkEndCommandBuffer(this->native_handle);
 	}
 
+	void VCommandBuffer::ResetBuffer()
+	{
+		vkResetCommandBuffer(this->native_handle, 0);
+	}
+
 	void VCommandBuffer::RecordCmds(std::function<void(VCommandBuffer*)> const& lambda)
 	{
+		// TODO: Check if we should really pass non-zero here
 		this->BeginCmdBuffer(VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT);
 
 		lambda(this);
@@ -60,8 +68,6 @@ namespace Engine::Rendering::Vulkan
 		this->GraphicsQueueSubmit();
 
 		vkQueueWaitIdle(this->device_manager->GetGraphicsQueue());
-
-		vkResetCommandBuffer(this->native_handle, 0);
 	}
 
 	void VCommandBuffer::GraphicsQueueSubmit()

@@ -9,7 +9,8 @@ Checks: ['-*',
   '-modernize-use-using',
   '-modernize-use-trailing-return-type',
   'performance-*',
-  'bugprone-*']
+  'bugprone-*',
+  '-bugprone-easily-swappable-parameters']
 HeaderFileExtensions:
   - hpp
 ImplementationFileExtensions:

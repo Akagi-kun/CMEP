@@ -1,6 +1,6 @@
+#include "Rendering/Vulkan/VDeviceManager.hpp"
 #include "Rendering/Vulkan/VImage.hpp"
 #include "Rendering/Vulkan/VSwapchain.hpp"
-#include "Rendering/Vulkan/VulkanDeviceManager.hpp"
 #include "Rendering/Vulkan/VulkanRenderingEngine.hpp"
 #include "Rendering/Vulkan/VulkanStructDefs.hpp"
 
@@ -120,20 +120,6 @@ namespace Engine::Rendering::Vulkan
 		}
 
 		return shader_module;
-	}
-
-	void VulkanRenderingEngine::CreateVulkanDefaultGraphicsPipeline()
-	{
-		VulkanPipelineSettings pipeline_settings  = this->GetVulkanDefaultPipelineSettings();
-		pipeline_settings.input_assembly.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
-
-		pipeline_settings.descriptor_layout_settings.push_back(
-			VulkanDescriptorLayoutSettings{0, 1, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT}
-		);
-
-		pipeline_settings.shader = {"game/shaders/vulkan/default_vert.spv", "game/shaders/vulkan/default_frag.spv"};
-
-		this->graphics_pipeline_default = this->CreateVulkanPipeline(pipeline_settings);
 	}
 
 	void VulkanRenderingEngine::CreateVulkanRenderPass()

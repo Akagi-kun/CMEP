@@ -43,13 +43,7 @@ namespace Engine::Factories
 		this->logger
 			->SimpleLog(Logging::LogLevel::Debug2, LOGPFX_CURRENT "Initializing texture from file %s", path.c_str());
 
-		// Get size
-		// fseek(file, 0, SEEK_END);
-		// size_t filesize = ftell(file);
-		// rewind(file);
-
 		std::vector<unsigned char> data;
-
 		std::unique_ptr<Rendering::TextureData> texture_data = std::make_unique<Rendering::TextureData>();
 
 		switch (filetype)
@@ -167,7 +161,6 @@ namespace Engine::Factories
 
 			// Transfer image layout to compatible with transfers
 			texture_data->texture_image->TransitionImageLayout(
-				renderer->GetCommandPool(),
 				VK_FORMAT_R8G8B8A8_UNORM,
 				VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL
 			);
@@ -181,25 +174,19 @@ namespace Engine::Factories
 
 			// Transfer image layout to compatible with rendering
 			texture_data->texture_image->TransitionImageLayout(
-				renderer->GetCommandPool(),
 				VK_FORMAT_R8G8B8A8_UNORM,
 				VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL
 			);
 
 			// Unmap staging memory and cleanup buffer if we created it here
 			used_staging_buffer->UnmapMemory();
-			// vkUnmapMemory(locked_device_manager->GetLogicalDevice(),
-			// used_staging_buffer->allocation_info.deviceMemory);
 
 			if (staging_buffer == nullptr)
 			{
 				delete used_staging_buffer;
-				// renderer->CleanupVulkanBuffer(used_staging_buffer);
 			}
 
 			texture_data->texture_image->AddImageView();
-
-			// renderer->AppendVulkanSamplerToVulkanTextureImage(texture_data->texture_image);
 		}
 		return 0;
 	}
