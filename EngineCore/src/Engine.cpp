@@ -123,8 +123,8 @@ namespace Engine
 		}
 
 		this->config->window.title	= data["window"]["title"].get<std::string>();
-		this->config->window.size_x = data["window"]["sizeX"].get<uint16_t>();
-		this->config->window.size_y = data["window"]["sizeY"].get<uint16_t>();
+		this->config->window.size.x = data["window"]["sizeX"].get<uint16_t>();
+		this->config->window.size.y = data["window"]["sizeY"].get<uint16_t>();
 
 		this->config->rendering.framerate_target = data["rendering"]["framerateTarget"].get<uint16_t>();
 
@@ -466,12 +466,8 @@ namespace Engine
 		auto start = std::chrono::steady_clock::now();
 
 		// Initialize rendering engine
-		this->rendering_engine = new Rendering::Vulkan::VulkanRenderingEngine(
-			this,
-			this->config->window.size_x,
-			this->config->window.size_y,
-			this->config->window.title
-		);
+		this->rendering_engine =
+			new Rendering::Vulkan::VulkanRenderingEngine(this, this->config->window.size, this->config->window.title);
 		this->rendering_engine->SetRenderCallback(Engine::RenderCallback);
 
 		// return;

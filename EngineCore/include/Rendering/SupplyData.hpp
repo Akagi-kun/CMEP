@@ -1,7 +1,6 @@
 #pragma once
 
 #include "Rendering/Transform.hpp"
-#include "Rendering/Vulkan/ImportVulkan.hpp"
 
 #include <memory>
 #include <string>
@@ -31,12 +30,6 @@ namespace Engine::Rendering
 		TEXT = 32,
 
 		MAX_ENUM = 0xFF
-	};
-
-	struct RendererRenderRequest
-	{
-		VkCommandBuffer command_buffer;
-		uint32_t current_frame;
 	};
 
 	struct RendererSupplyData

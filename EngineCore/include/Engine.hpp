@@ -31,9 +31,8 @@ namespace Engine
 	{
 		struct
 		{
-			unsigned int size_x = 0;
-			unsigned int size_y = 0;
-			std::string title	= "unknown";
+			Rendering::ScreenSize size;
+			std::string title = "unknown";
 		} window;
 
 		struct

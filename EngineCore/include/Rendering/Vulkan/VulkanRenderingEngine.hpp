@@ -108,7 +108,7 @@ namespace Engine::Rendering::Vulkan
 		void CreateVulkanMemoryAllocator();
 
 	public:
-		VulkanRenderingEngine(Engine* with_engine, unsigned int xsize, unsigned int ysize, std::string title);
+		VulkanRenderingEngine(Engine* with_engine, ScreenSize with_window_size, std::string title);
 		~VulkanRenderingEngine();
 
 		// Signaling function for framebuffer resize

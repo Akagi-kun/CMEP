@@ -21,8 +21,8 @@ namespace Engine
 
 		// std::function<void(Object*)> on_click = nullptr;
 
-		Rendering::IRenderer* renderer		  = nullptr;
-		Rendering::IMeshBuilder* mesh_builder = nullptr;
+		Rendering::IRenderer* renderer = nullptr;
+		// Rendering::IMeshBuilder* mesh_builder = nullptr;
 
 		void UpdateRenderer() noexcept;
 

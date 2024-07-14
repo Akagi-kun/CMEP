@@ -167,13 +167,8 @@ namespace Engine::Rendering::Vulkan
 	////////////////////////    Init functions    //////////////////////////
 	////////////////////////////////////////////////////////////////////////
 
-	VulkanRenderingEngine::VulkanRenderingEngine(
-		Engine* with_engine,
-		unsigned int xsize,
-		unsigned int ysize,
-		std::string title
-	)
-		: InternalEngineObject(with_engine), window_size({xsize, ysize}), window_title(std::move(title))
+	VulkanRenderingEngine::VulkanRenderingEngine(Engine* with_engine, ScreenSize with_window_size, std::string title)
+		: InternalEngineObject(with_engine), window_size(with_window_size), window_title(std::move(title))
 	{
 		// Initialize GLFW
 		if (glfwInit() == GLFW_FALSE)

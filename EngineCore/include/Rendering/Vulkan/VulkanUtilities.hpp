@@ -78,22 +78,10 @@ namespace Engine::Rendering::Vulkan::Utils
 		if (auto locked_device_manager = rendering_engine->GetDeviceManager().lock())
 		{
 			pipeline->uniform_buffers[current_frame]->MapMemory();
-			/* vkMapMemory(
-				locked_device_manager->GetLogicalDevice(),
-				pipeline->uniform_buffers[current_frame]->allocation_info.deviceMemory,
-				pipeline->uniform_buffers[current_frame]->allocation_info.offset,
-				pipeline->uniform_buffers[current_frame]->allocation_info.size,
-				0,
-				&(pipeline->uniform_buffers[current_frame]->mapped_data)
-			); */
 
 			std::memcpy(pipeline->uniform_buffers[current_frame]->mapped_data, data, data_size);
 
 			pipeline->uniform_buffers[current_frame]->UnmapMemory();
-			/* vkUnmapMemory(
-				locked_device_manager->GetLogicalDevice(),
-				pipeline->uniform_buffers[current_frame]->allocation_info.deviceMemory
-			); */
 		}
 	}
 } // namespace Engine::Rendering::Vulkan::Utils
