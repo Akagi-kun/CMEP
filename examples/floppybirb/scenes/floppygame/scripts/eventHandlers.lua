@@ -218,8 +218,8 @@ onUpdate = function(event)
 			-- Constant offset to center the pipes
 			local const_pipe_y_offset = -80
 			-- We can use the math library in here!
-			--local pipe_y_offset = const_pipe_y_offset + math.random(-15, 15) * 10
-			local pipe_y_offset = const_pipe_y_offset
+			local pipe_y_offset = const_pipe_y_offset + math.random(-15, 15) * 10
+			--local pipe_y_offset = const_pipe_y_offset
 			
 			local pipe_id = tostring(spawn_pipe_last_idx + 1)
 
@@ -294,9 +294,9 @@ onUpdate = function(event)
 
 		-- Fall birb
 		-- we already have birbx/y/z from before
-		--birby = birby - birb_velocity * event.deltaTime
+		birby = birby - birb_velocity * event.deltaTime
 		birb:SetPosition(birbx, birby, birbz)
-		--birb_velocity = birb_velocity - birb_gravity * event.deltaTime
+		birb_velocity = birb_velocity - birb_gravity * event.deltaTime
 
 		gameOnHandleGrounds(scene, event)
 

@@ -126,7 +126,7 @@ namespace Engine
 		this->config->window.size.x = data["window"]["sizeX"].get<uint16_t>();
 		this->config->window.size.y = data["window"]["sizeY"].get<uint16_t>();
 
-		this->config->rendering.framerate_target = data["rendering"]["framerateTarget"].get<uint16_t>();
+		this->config->framerate_target = data["rendering"]["framerateTarget"].get<uint16_t>();
 
 		this->config->scene_path	= data["scene_path"].get<std::string>();
 		this->config->default_scene = data["default_scene"].get<std::string>();
@@ -246,19 +246,8 @@ namespace Engine
 	{
 		// TODO: Remove this!
 		// Create axis object
-		// auto* object = new Object(this);
-
 		auto* object = ObjectFactory::CreateSceneObject<Rendering::AxisRenderer, Rendering::AxisMeshBuilder>(this, {});
 
-		/*Rendering::IRenderer* with_renderer = new Rendering::AxisRenderer(this);
-
-		object->SetRenderer(with_renderer);
-
-		object->SetPosition(glm::vec3(0, 0, 0));
-		object->SetSize(glm::vec3(1, 1, 1));
-		object->SetRotation(glm::vec3(0, 0, 0));
-		object->ScreenSizeInform(this->config->window.size_x, this->config->window.size_y);
- */
 		this->scene_manager->GetSceneCurrent()->AddObject("_axis", object);
 
 		// Pre-make ON_UPDATE event so we don't have to create it over and over again in hot loop
@@ -267,8 +256,8 @@ namespace Engine
 		this->logger->SimpleLog(
 			Logging::LogLevel::Debug1,
 			LOGPFX_CURRENT "Locked to framerate %u%s",
-			this->framerate_target,
-			this->framerate_target == 0 ? " (VSYNC)" : ""
+			this->config->framerate_target,
+			this->config->framerate_target == 0 ? " (VSYNC)" : ""
 		);
 
 		// Show window
@@ -424,7 +413,7 @@ namespace Engine
 
 	void Engine::Init()
 	{
-		this->logger->MapCurrentThreadToName("engine");
+		// this->logger->MapCurrentThreadToName("engine");
 
 		// Engine info printout
 		this->logger->SimpleLog(

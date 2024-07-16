@@ -104,19 +104,6 @@ namespace Engine::Rendering
 			this->parent_transform.size = glm::vec3(1, 1, 1);
 		}
 
-		/* glm::quat model_rotation  = glm::quat(glm::radians(this->transform.rotation));
-		glm::quat parent_rotation = glm::quat(glm::radians(this->parent_transform.rotation));
-		glm::mat4 model			  = glm::scale(
-			  glm::translate(
-				  glm::scale(
-					  glm::translate(glm::mat4(1.0f), this->parent_transform.pos) * glm::mat4_cast(parent_rotation),
-					  this->parent_transform.size
-				  ),
-				  this->transform.pos
-			  ) * glm::mat4_cast(model_rotation),
-			  this->transform.size
-		  ); */
-
 		glm::mat4 model = CalculateModelMatrix(this->transform, this->parent_transform);
 
 		this->mat_mvp = projection * model;

@@ -27,7 +27,7 @@ namespace Engine
 		class LuaScript;
 	} // namespace Scripting
 
-	typedef struct structEngineConfig
+	struct EngineConfig
 	{
 		struct
 		{
@@ -35,16 +35,13 @@ namespace Engine
 			std::string title = "unknown";
 		} window;
 
-		struct
-		{
-			unsigned int framerate_target = 0;
-		} rendering;
+		unsigned int framerate_target = 0;
 
 		std::string scene_path	  = "game/scenes/";
 		std::string default_scene = "default";
 
 		std::string shader_path = "game/shaders/vulkan/";
-	} EngineConfig;
+	};
 
 	class Engine final
 	{
@@ -52,7 +49,7 @@ namespace Engine
 		std::string config_path;
 
 		// Window
-		uint_fast16_t framerate_target = 0;
+		// uint_fast16_t framerate_target = 0;
 
 		double last_delta_time = 0.0;
 
@@ -109,7 +106,7 @@ namespace Engine
 
 		void SetFramerateTarget(uint_fast16_t framerate) noexcept
 		{
-			this->framerate_target = framerate;
+			this->config->framerate_target = framerate;
 		}
 
 		[[nodiscard]] const std::string& GetShaderPath() const

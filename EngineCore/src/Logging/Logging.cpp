@@ -4,7 +4,7 @@
 
 #include <chrono>
 #include <cstdarg>
-#include <stdio.h>
+#include <cstdio>
 #include <thread>
 
 // Prefixes for logging messages
@@ -99,6 +99,9 @@ namespace Logging
 		const char* const color_str = level_to_color_table[static_cast<int>(level)];
 		const char* const level_str = level_to_string_table[static_cast<int>(level)];
 
+		static constexpr size_t threadid_buf_len   = 8;
+		static char threadid_buf[threadid_buf_len] = {};
+
 		// Get current time
 		const std::time_t tmp = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
 		std::tm cur_time	  = {};
@@ -109,36 +112,48 @@ namespace Logging
 		localtime_r(&tmp, &cur_time);
 #endif
 
-		// StartLog for all outputs
+		// For all outputs
 		for (auto& output : this->state->outputs)
 		{
-			// Log only if level is higher than outputs filter
+			// Log only if selected level is higher than output's minimum
 			if (level >= output.min_level)
 			{
 				output.has_started_logging = true;
 
-				uint16_t thread_id = GetCurrentThreadID();
+				uint16_t thread_id	 = GetCurrentThreadID();
+				auto find_result	 = this->state->threadid_name_map.find(thread_id);
+				bool use_thread_name = (find_result != this->state->threadid_name_map.end());
 
-				auto find_result = this->state->threadid_name_map.find(thread_id);
+				if (!use_thread_name)
+				{
+					sprintf(threadid_buf, "%04hx", thread_id);
+				}
 
 				fprintf(
 					output.handle,
-					"%s[%02i:%02i:%02i ",
+					"%s[%02i:%02i:%02i %s %s] ",
 					output.use_colors ? color_str : "",
 					cur_time.tm_hour,
 					cur_time.tm_min,
-					cur_time.tm_sec
+					cur_time.tm_sec,
+					use_thread_name ? find_result->second.c_str() : threadid_buf,
+					level_str
 				);
 
 				// TODO: Fix
-				if (find_result == this->state->threadid_name_map.end())
-				{
-					fprintf(output.handle, "%04hx %s] ", thread_id, level_str);
-				}
+				/* if (use_thread_name)
+				{ */
+				/* fprintf(
+					output.handle,
+					"%s %s] ",
+					use_thread_name ? find_result->second.c_str() : threadid_buf,
+					level_str
+				); */
+				/* }
 				else
 				{
-					fprintf(output.handle, "%s %s] ", find_result->second.c_str(), level_str);
-				}
+					fprintf(output.handle, "%s %s] ", threadid_buf, level_str);
+				} */
 			}
 		}
 	}

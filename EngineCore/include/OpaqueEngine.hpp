@@ -1,7 +1,6 @@
 #include "PlatformSemantics.hpp"
 
 #include <memory>
-#include <string>
 
 namespace Logging
 {
@@ -26,6 +25,6 @@ namespace Engine
 		CMEP_EXPORT void Init();
 		CMEP_EXPORT void Run();
 
-		CMEP_EXPORT void ConfigFile(std::string path);
+		CMEP_EXPORT void ConfigFile(const char* path);
 	};
 } // namespace Engine

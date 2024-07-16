@@ -2,7 +2,6 @@
 #include <cstdio>
 #include <cstring>
 #include <exception>
-#include <string>
 
 #if defined(_MSC_VER)
 #	include <Windows.h>
@@ -65,8 +64,8 @@ static int RunEngine(bool verbose)
 		else
 		{
 			// The exception was caught but is different from expected?
-			throw;
 			assert(false && "ABI exception check failed");
+			throw;
 		}
 	}
 
