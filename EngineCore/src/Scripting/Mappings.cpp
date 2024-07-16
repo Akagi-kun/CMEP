@@ -3,11 +3,10 @@
 #include "Assets/AssetManager.hpp"
 #include "Assets/Texture.hpp"
 #include "Rendering/MeshRenderer.hpp"
+#include "Rendering/Renderer2D.hpp"
 #include "Rendering/SpriteMeshBuilder.hpp"
-#include "Rendering/SpriteRenderer.hpp"
 #include "Rendering/SupplyData.hpp"
 #include "Rendering/TextMeshBuilder.hpp"
-#include "Rendering/TextRenderer.hpp"
 
 #include "Scripting/API/LuaFactories.hpp"
 #include "Scripting/API/framework.hpp"
@@ -114,9 +113,10 @@ namespace Engine::Scripting::Mappings
 			{
 				auto sprite = locked_am->GetTexture(sprite_name);
 
-				Object* obj = ObjectFactory::CreateSceneObject<Rendering::SpriteRenderer, Rendering::SpriteMeshBuilder>(
+				Object* obj = ObjectFactory::CreateSceneObject<Rendering::Renderer2D, Rendering::SpriteMeshBuilder>(
 					scene->GetOwnerEngine(),
-					{{Rendering::RendererSupplyDataType::TEXTURE, sprite}}
+					{{Rendering::RendererSupplyDataType::TEXTURE, sprite}},
+					"sprite"
 				);
 
 				if (obj != nullptr)
@@ -149,12 +149,13 @@ namespace Engine::Scripting::Mappings
 			Object* obj = nullptr;
 			if (auto locked_font = font.lock())
 			{
-				obj = ObjectFactory::CreateSceneObject<Rendering::TextRenderer, Rendering::TextMeshBuilder>(
+				obj = ObjectFactory::CreateSceneObject<Rendering::Renderer2D, Rendering::TextMeshBuilder>(
 					scene_manager->GetOwnerEngine(),
 					{
 						{Rendering::RendererSupplyDataType::TEXT, text},
 						{Rendering::RendererSupplyDataType::FONT, locked_font},
-					}
+					},
+					"text"
 				);
 			}
 

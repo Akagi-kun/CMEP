@@ -16,7 +16,8 @@
 
 namespace Engine::Rendering
 {
-	AxisRenderer::AxisRenderer(Engine* engine, IMeshBuilder* with_builder) : IRenderer(engine, with_builder)
+	AxisRenderer::AxisRenderer(Engine* engine, IMeshBuilder* with_builder, const char* with_pipeline_program)
+		: IRenderer(engine, with_builder, with_pipeline_program)
 	{
 		Vulkan::VulkanRenderingEngine* renderer = this->owner_engine->GetRenderingEngine();
 

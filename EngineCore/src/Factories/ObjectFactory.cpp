@@ -17,7 +17,7 @@ namespace Engine::ObjectFactory
 
 		auto* object = new Object(engine);
 
-		Rendering::IRenderer* with_renderer = new Rendering::MeshRenderer(engine);
+		Rendering::IRenderer* with_renderer = new Rendering::MeshRenderer(engine, nullptr);
 		with_renderer->SupplyData({Rendering::RendererSupplyDataType::MESH, mesh});
 
 		object->SetRenderer(with_renderer);

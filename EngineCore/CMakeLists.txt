@@ -25,8 +25,7 @@ set(SRC_FILES
 
 	src/Rendering/AxisRenderer.cpp
 	src/Rendering/MeshRenderer.cpp
-	src/Rendering/SpriteRenderer.cpp
-	src/Rendering/TextRenderer.cpp
+	src/Rendering/Renderer2D.cpp
 
 	src/Rendering/IMeshBuilder.cpp
 	src/Rendering/SpriteMeshBuilder.cpp

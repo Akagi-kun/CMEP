@@ -1,9 +1,8 @@
-#include "Rendering/SpriteRenderer.hpp"
+#include "Rendering/Renderer2D.hpp"
 
+#include "Assets/Font.hpp"
 #include "Assets/Texture.hpp"
-#include "Rendering/IRenderer.hpp"
 #include "Rendering/Vulkan/VDeviceManager.hpp"
-#include "Rendering/Vulkan/VulkanStructDefs.hpp"
 #include "Rendering/Vulkan/VulkanUtilities.hpp"
 #include "Rendering/framework.hpp"
 
@@ -11,77 +10,86 @@
 
 #include "Engine.hpp"
 
+#include <array>
 #include <cassert>
-#include <cstdint>
+#include <cstdlib>
 #include <cstring>
-#include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/quaternion.hpp>
+#include <vector>
 
 namespace Engine::Rendering
 {
-	SpriteRenderer::SpriteRenderer(Engine* engine, IMeshBuilder* with_builder) : IRenderer(engine, with_builder)
+	Renderer2D::Renderer2D(Engine* engine, IMeshBuilder* with_builder, const char* with_pipeline_program)
+		: IRenderer(engine, with_builder, with_pipeline_program)
 	{
 		Vulkan::VulkanRenderingEngine* renderer = this->owner_engine->GetRenderingEngine();
 
 		VulkanPipelineSettings pipeline_settings  = renderer->GetVulkanDefaultPipelineSettings();
 		pipeline_settings.input_assembly.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
 
-		std::string with_program_name = "sprite";
+		std::string with_program_name = this->pipeline_name;
 		pipeline_settings.shader	  = ShaderDefinition{
 			 with_program_name + "_vert.spv",
 			 with_program_name + "_frag.spv",
 		 };
 
-		pipeline_settings.descriptor_layout_settings.push_back(VulkanDescriptorLayoutSettings{
-			0,
-			1,
-			VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
-			VK_SHADER_STAGE_VERTEX_BIT,
-		});
-
+		pipeline_settings.descriptor_layout_settings.push_back(
+			VulkanDescriptorLayoutSettings{0, 1, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT}
+		);
 		pipeline_settings.descriptor_layout_settings.push_back(VulkanDescriptorLayoutSettings{
 			1,
 			1,
 			VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
-			VK_SHADER_STAGE_FRAGMENT_BIT,
+			VK_SHADER_STAGE_FRAGMENT_BIT
 		});
 
 		this->pipeline = renderer->CreateVulkanPipeline(pipeline_settings);
 	}
-
-	SpriteRenderer::~SpriteRenderer()
+	Renderer2D::~Renderer2D()
 	{
-		this->logger->SimpleLog(Logging::LogLevel::Debug3, "Cleaning up sprite renderer");
-
-		this->texture.reset();
+		this->logger->SimpleLog(Logging::LogLevel::Debug3, "Cleaning up text renderer");
 
 		Vulkan::VulkanRenderingEngine* renderer = this->owner_engine->GetRenderingEngine();
 		renderer->SyncDeviceWaitIdle();
-
 		renderer->CleanupVulkanPipeline(this->pipeline);
 	}
 
-	void SpriteRenderer::SupplyData(const RendererSupplyData& data)
+	void Renderer2D::SupplyData(const RendererSupplyData& data)
 	{
 		switch (data.type)
 		{
+			case RendererSupplyDataType::FONT:
+			{
+				auto font_cast		   = std::static_pointer_cast<Font>(data.payload_ptr);
+				this->texture		   = font_cast->GetPageTexture(0);
+				this->has_updated_mesh = false;
+				break;
+			}
 			case RendererSupplyDataType::TEXTURE:
 			{
 				this->texture		   = std::static_pointer_cast<Texture>(data.payload_ptr);
 				this->has_updated_mesh = false;
 				return;
 			}
+			case RendererSupplyDataType::TEXT:
+			{
+				this->text.assign(data.payload_string);
+				this->has_updated_mesh = false;
+				break;
+			}
 			default:
 			{
-				break;
+				throw std::runtime_error("Tried to supply Renderer data with payload type unsupported by the renderer!"
+				);
 			}
 		}
 
-		throw std::runtime_error("Tried to supply Renderer data with payload type unsupported by the renderer!");
+		assert(this->mesh_builder != nullptr && "This renderer has not been assigned a mesh builder!");
+		this->mesh_builder->SupplyData(data);
 	}
 
-	void SpriteRenderer::UpdateMesh()
+	void Renderer2D::UpdateMesh()
 	{
 		this->has_updated_mesh = true;
 
@@ -108,22 +116,21 @@ namespace Engine::Rendering
 
 		this->mat_mvp = projection * model;
 
-		Vulkan::VSampledImage* texture_image = this->texture->GetTextureImage();
-
-		VkDescriptorImageInfo image_info{};
-		image_info.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-		image_info.imageView   = texture_image->image_view;
-		image_info.sampler	   = texture_image->texture_sampler;
-
-		VkDescriptorBufferInfo buffer_info{};
-		buffer_info.offset = 0;
-		buffer_info.range  = sizeof(glm::mat4);
+		auto* texture_image = this->texture->GetTextureImage();
 
 		if (auto locked_device_manager = renderer->GetDeviceManager().lock())
 		{
 			for (size_t i = 0; i < Vulkan::VulkanRenderingEngine::GetMaxFramesInFlight(); i++)
 			{
+				VkDescriptorBufferInfo buffer_info{};
 				buffer_info.buffer = pipeline->uniform_buffers[i]->GetNativeHandle();
+				buffer_info.offset = 0;
+				buffer_info.range  = sizeof(glm::mat4);
+
+				VkDescriptorImageInfo image_info{};
+				image_info.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+				image_info.imageView   = texture_image->image_view;
+				image_info.sampler	   = texture_image->texture_sampler;
 
 				std::array<VkWriteDescriptorSet, 2> descriptor_writes{};
 
@@ -154,7 +161,7 @@ namespace Engine::Rendering
 		}
 	}
 
-	void SpriteRenderer::Render(VkCommandBuffer command_buffer, uint32_t current_frame)
+	void Renderer2D::Render(VkCommandBuffer command_buffer, uint32_t current_frame)
 	{
 		if (!this->has_updated_mesh)
 		{

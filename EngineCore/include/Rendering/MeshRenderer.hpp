@@ -21,7 +21,7 @@ namespace Engine::Rendering
 		bool has_updated_meshdata = false;
 
 	public:
-		MeshRenderer(Engine* engine);
+		MeshRenderer(Engine* engine, const char* with_pipeline_program);
 		~MeshRenderer() override;
 
 		void SupplyData(const RendererSupplyData& data) override;

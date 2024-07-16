@@ -4,9 +4,8 @@
 #include "Rendering/AxisRenderer.hpp"
 #include "Rendering/IRenderer.hpp"
 #include "Rendering/MeshRenderer.hpp"
+#include "Rendering/Renderer2D.hpp"
 #include "Rendering/SpriteMeshBuilder.hpp"
-#include "Rendering/SpriteRenderer.hpp"
-#include "Rendering/TextRenderer.hpp"
 
 #include "Factories/ObjectFactory.hpp"
 
@@ -68,14 +67,24 @@ namespace Engine
 		// Load Assets
 		this->LoadSceneAssets(data, scene_path);
 
-		// Load Event Handlers
-		this->LoadSceneEventHandlers(data, scene);
+		try
+		{
+			// Load Event Handlers
+			this->LoadSceneEventHandlers(data, scene);
 
-		// Load Templates
-		this->LoadSceneTemplates(data, scene);
+			// Load Templates
+			this->LoadSceneTemplates(data, scene);
 
-		// Load Scene
-		this->LoadSceneTree(data, scene);
+			// Load Scene
+			this->LoadSceneTree(data, scene);
+		}
+		catch (std::exception& e)
+		{
+			this->logger
+				->SimpleLog(Logging::LogLevel::Exception, "Failed on post-asset scene load! e.what(): %s", e.what());
+
+			throw;
+		}
 	}
 
 	RendererType SceneLoader::InterpretRendererType(nlohmann::json& from)
@@ -247,10 +256,11 @@ namespace Engine
 								scene_entry["renderer_supply_textures"][0].get<std::string>()
 							);
 
-							object = ObjectFactory::
-								CreateSceneObject<Rendering::SpriteRenderer, Rendering::SpriteMeshBuilder>(
+							object =
+								ObjectFactory::CreateSceneObject<Rendering::Renderer2D, Rendering::SpriteMeshBuilder>(
 									scene->GetOwnerEngine(),
-									{{Rendering::RendererSupplyDataType::TEXTURE, texture}}
+									{{Rendering::RendererSupplyDataType::TEXTURE, texture}},
+									"sprite"
 								);
 
 							break;

@@ -5,11 +5,7 @@
 #include "Object.hpp"
 #include "Scene.hpp"
 
-namespace Engine::Rendering
-{
-	class Texture;
-	class Font;
-} // namespace Engine::Rendering
+#include <stdexcept>
 
 // TODO: Move to Factories namespace?
 namespace Engine::ObjectFactory
@@ -20,12 +16,21 @@ namespace Engine::ObjectFactory
 	);
 
 	template <class TRenderer, class TMeshBuilder>
-	Object* CreateSceneObject(Engine* with_engine, const std::vector<Rendering::RendererSupplyData>& with_supply_data)
+	Object* CreateSceneObject(
+		Engine* with_engine,
+		const std::vector<Rendering::RendererSupplyData>& with_supply_data,
+		const char* with_pipeline_program
+	)
 	{
+		if (with_pipeline_program == nullptr)
+		{
+			throw std::invalid_argument("Cannot CreateSceneObject without a pipeline! (was nullptr)");
+		}
+
 		auto* object = new Object(with_engine);
 
 		auto* with_builder	= new TMeshBuilder(with_engine);
-		auto* with_renderer = new TRenderer(with_engine, with_builder);
+		auto* with_renderer = new TRenderer(with_engine, with_builder, with_pipeline_program);
 
 		for (const auto& supply : with_supply_data)
 		{

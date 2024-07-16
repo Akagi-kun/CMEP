@@ -47,7 +47,7 @@ cmake --build . --target <examplename>
 > Note: examples currently do not use the `--config` syntax and therefore it isn't necessary to provide it
 
 #### Running
-To start the engine use the `rungame` executable. This is located under the `./build/` subdirectory if the build is successful. A `./build/game/` directory with valid content is necessary for startup, this can be created by building an exmaple.
+To start the engine use the `rungame` executable. This is located under the `./build/` subdirectory if the build is successful. A `./build/game/` directory with valid content is necessary for startup, this can be created by building an example.
 
 ---
 

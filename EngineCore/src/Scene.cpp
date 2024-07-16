@@ -1,10 +1,9 @@
 #include "Scene.hpp"
 
 #include "Rendering/IRenderer.hpp"
+#include "Rendering/Renderer2D.hpp"
 #include "Rendering/SpriteMeshBuilder.hpp"
-#include "Rendering/SpriteRenderer.hpp"
 #include "Rendering/TextMeshBuilder.hpp"
-#include "Rendering/TextRenderer.hpp"
 
 #include "Factories/ObjectFactory.hpp"
 
@@ -124,18 +123,20 @@ namespace Engine
 			{
 				case RendererType::SPRITE:
 				{
-					obj = ObjectFactory::CreateSceneObject<Rendering::SpriteRenderer, Rendering::SpriteMeshBuilder>(
+					obj = ObjectFactory::CreateSceneObject<Rendering::Renderer2D, Rendering::SpriteMeshBuilder>(
 						this->GetOwnerEngine(),
-						object_template.supply_list
+						object_template.supply_list,
+						"sprite"
 					);
 
 					break;
 				}
 				case RendererType::TEXT:
 				{
-					obj = ObjectFactory::CreateSceneObject<Rendering::TextRenderer, Rendering::TextMeshBuilder>(
+					obj = ObjectFactory::CreateSceneObject<Rendering::Renderer2D, Rendering::TextMeshBuilder>(
 						this->GetOwnerEngine(),
-						object_template.supply_list
+						object_template.supply_list,
+						"text"
 					);
 
 					break;

@@ -29,6 +29,8 @@ namespace Engine
 			Transform parent_transform;
 			ScreenSize screen;
 
+			const char* pipeline_name = nullptr;
+
 			VulkanPipeline* pipeline = nullptr;
 			Vulkan::VBuffer* vbo	 = nullptr;
 			size_t vbo_vert_count	 = 0;
@@ -40,8 +42,8 @@ namespace Engine
 			bool has_updated_mesh = false;
 
 		public:
-			IRenderer(Engine* engine, IMeshBuilder* with_builder)
-				: InternalEngineObject(engine), mesh_builder(with_builder)
+			IRenderer(Engine* with_engine, IMeshBuilder* with_builder, const char* with_pipeline_program)
+				: InternalEngineObject(with_engine), pipeline_name(with_pipeline_program), mesh_builder(with_builder)
 			{
 			}
 			virtual ~IRenderer()

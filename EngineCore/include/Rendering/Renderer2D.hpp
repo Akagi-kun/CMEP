@@ -1,27 +1,27 @@
 #pragma once
 
-#include "Rendering/IMeshBuilder.hpp"
-#include "Rendering/Vulkan/VulkanRenderingEngine.hpp"
-
 #include "IRenderer.hpp"
 
 #include <memory>
+#include <string>
 
 namespace Engine::Rendering
 {
 	class Texture;
-	class Shader;
+	class Font;
 
-	class SpriteRenderer final : public IRenderer
+	class Renderer2D final : public IRenderer
 	{
 	private:
+		std::string text;
+
+		std::shared_ptr<Rendering::Texture> texture = nullptr;
+
 		glm::mat4 mat_mvp{};
 
-		std::shared_ptr<const Rendering::Texture> texture;
-
 	public:
-		SpriteRenderer(Engine* engine, IMeshBuilder* with_builder);
-		~SpriteRenderer() override;
+		Renderer2D(Engine* engine, IMeshBuilder* with_builder, const char* with_pipeline_program);
+		~Renderer2D() override;
 
 		void SupplyData(const RendererSupplyData& data) override;
 

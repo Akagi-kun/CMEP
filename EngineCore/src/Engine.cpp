@@ -246,7 +246,8 @@ namespace Engine
 	{
 		// TODO: Remove this!
 		// Create axis object
-		auto* object = ObjectFactory::CreateSceneObject<Rendering::AxisRenderer, Rendering::AxisMeshBuilder>(this, {});
+		auto* object =
+			ObjectFactory::CreateSceneObject<Rendering::AxisRenderer, Rendering::AxisMeshBuilder>(this, {}, "axis");
 
 		this->scene_manager->GetSceneCurrent()->AddObject("_axis", object);
 
