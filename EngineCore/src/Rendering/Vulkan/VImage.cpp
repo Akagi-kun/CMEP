@@ -60,9 +60,9 @@ namespace Engine::Rendering::Vulkan
 
 	VImage::~VImage()
 	{
-		if (this->image_view != nullptr)
+		if (this->native_view_handle != nullptr)
 		{
-			vkDestroyImageView(this->device_manager->GetLogicalDevice(), this->image_view, nullptr);
+			vkDestroyImageView(this->device_manager->GetLogicalDevice(), this->native_view_handle, nullptr);
 		}
 
 		vkDestroyImage(this->device_manager->GetLogicalDevice(), this->native_handle, nullptr);
@@ -142,8 +142,12 @@ namespace Engine::Rendering::Vulkan
 		view_info.subresourceRange.baseArrayLayer = 0;
 		view_info.subresourceRange.layerCount	  = 1;
 
-		if (vkCreateImageView(this->device_manager->GetLogicalDevice(), &view_info, nullptr, &this->image_view) !=
-			VK_SUCCESS)
+		if (vkCreateImageView(
+				this->device_manager->GetLogicalDevice(),
+				&view_info,
+				nullptr,
+				&this->native_view_handle
+			) != VK_SUCCESS)
 		{
 			throw std::runtime_error("failed to create texture image view!");
 		}

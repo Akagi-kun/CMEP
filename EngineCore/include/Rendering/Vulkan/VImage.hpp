@@ -18,14 +18,12 @@ namespace Engine::Rendering::Vulkan
 		VmaAllocation allocation;
 
 	protected:
-		VkImageLayout current_layout = VK_IMAGE_LAYOUT_UNDEFINED;
-		VkFormat image_format		 = VK_FORMAT_UNDEFINED;
-		VkImage native_handle		 = VK_NULL_HANDLE;
+		VkImageLayout current_layout   = VK_IMAGE_LAYOUT_UNDEFINED;
+		VkFormat image_format		   = VK_FORMAT_UNDEFINED;
+		VkImage native_handle		   = VK_NULL_HANDLE;
+		VkImageView native_view_handle = VK_NULL_HANDLE;
 
 	public:
-		// TODO: Make protected
-		VkImageView image_view = VK_NULL_HANDLE;
-
 		VImage(
 			VDeviceManager* with_device_manager,
 			VmaAllocator with_allocator,
@@ -47,6 +45,11 @@ namespace Engine::Rendering::Vulkan
 			assert(this->native_handle != VK_NULL_HANDLE && "This command pool has no valid native handle!");
 
 			return this->native_handle;
+		}
+
+		[[nodiscard]] VkImageView& GetNativeViewHandle()
+		{
+			return this->native_view_handle;
 		}
 	};
 } // namespace Engine::Rendering::Vulkan

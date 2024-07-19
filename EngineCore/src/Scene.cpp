@@ -11,6 +11,7 @@
 
 #include "Engine.hpp"
 
+#include <iterator>
 #include <memory>
 #include <stdexcept>
 
@@ -41,7 +42,7 @@ namespace Engine
 		return &(this->objects);
 	}
 
-	const std::vector<std::pair<std::string, Object*>>* Scene::GetAllObjectsSorted() noexcept
+	const std::vector<Object*>& Scene::GetAllObjectsSorted() noexcept
 	{
 		if (this->was_scene_modified)
 		{
@@ -49,21 +50,18 @@ namespace Engine
 			this->was_scene_modified = false;
 		}
 
-		return &(this->objects_sorted);
+		return this->objects_sorted;
 	}
 
-	static bool InternalSortCmpFunction(
-		std::pair<std::string, Object*>& pair_a,
-		std::pair<std::string, Object*>& pair_b
-	)
+	static bool InternalSortCmpFunction(Object*& object_a, Object*& object_b)
 	{
-		if (pair_a.second == nullptr || pair_b.second == nullptr)
+		if (object_a == nullptr || object_b == nullptr)
 		{
 			throw std::runtime_error("Could not sort scene, object is nullptr!");
 		}
 
-		auto* a_renderer = static_cast<Rendering::IRenderer*>(pair_a.second->GetRenderer());
-		auto* b_renderer = static_cast<Rendering::IRenderer*>(pair_b.second->GetRenderer());
+		auto* a_renderer = static_cast<Rendering::IRenderer*>(object_a->GetRenderer());
+		auto* b_renderer = static_cast<Rendering::IRenderer*>(object_b->GetRenderer());
 
 		assert(a_renderer != nullptr);
 		assert(b_renderer != nullptr);
@@ -76,37 +74,37 @@ namespace Engine
 		if (is_a_ui && is_b_ui)
 		{
 			// Introduce positive offset (TODO: is this necessary?)
-			const float a_z = pair_a.second->GetPosition().z + positive_offset;
-			const float b_z = pair_b.second->GetPosition().z + positive_offset;
+			const float a_z = object_a->GetPosition().z + positive_offset;
+			const float b_z = object_b->GetPosition().z + positive_offset;
 
 			return std::less<float>{}(a_z, b_z);
 		}
 
-		return std::less<std::pair<std::string, Object*>>{}(pair_a, pair_b);
+		return std::less<Object*>{}(object_a, object_b);
 	}
 
-	void Scene::InternalSort(
-		std::unordered_map<std::string, Object*>& from_map,
-		std::vector<std::pair<std::string, Object*>>& objects
-	)
+	void Scene::InternalSort(const std::unordered_map<std::string, Object*>& from_map, std::vector<Object*>& to_vector)
 	{
-		std::vector<std::pair<std::string, Object*>> copy_vector;
+		std::vector<Object*> buffer_vector;
+		buffer_vector.reserve(from_map.size());
 
-		for (auto& iter : from_map)
+		for (const auto& iter : from_map)
 		{
 			assert(iter.second != nullptr);
-			copy_vector.emplace_back(iter);
+			buffer_vector.emplace_back(iter.second);
 		}
 
-		std::sort(copy_vector.begin(), copy_vector.end(), InternalSortCmpFunction);
+		std::sort(buffer_vector.begin(), buffer_vector.end(), InternalSortCmpFunction);
 
-		objects.clear();
-		objects.reserve(from_map.size());
+		to_vector.clear();
+		to_vector.reserve(from_map.size());
 
-		for (auto& iter : copy_vector)
+		std::copy(buffer_vector.begin(), buffer_vector.end(), std::back_inserter(to_vector));
+
+		/* for (auto& iter : buffer_vector)
 		{
-			objects.push_back(iter);
-		}
+			to_vector.push_back(iter);
+		} */
 	}
 
 	void Scene::AddTemplatedObject(const std::string& name, const std::string& template_name)

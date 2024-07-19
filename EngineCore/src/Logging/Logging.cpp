@@ -107,7 +107,6 @@ namespace Logging
 		std::tm cur_time	  = {};
 #if defined(_MSC_VER)
 		localtime_s(&cur_time, &tmp);
-// TODO: Check this macro
 #else
 		localtime_r(&tmp, &cur_time);
 #endif
@@ -139,21 +138,6 @@ namespace Logging
 					use_thread_name ? find_result->second.c_str() : threadid_buf,
 					level_str
 				);
-
-				// TODO: Fix
-				/* if (use_thread_name)
-				{ */
-				/* fprintf(
-					output.handle,
-					"%s %s] ",
-					use_thread_name ? find_result->second.c_str() : threadid_buf,
-					level_str
-				); */
-				/* }
-				else
-				{
-					fprintf(output.handle, "%s %s] ", threadid_buf, level_str);
-				} */
 			}
 		}
 	}

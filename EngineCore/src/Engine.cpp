@@ -217,13 +217,13 @@ namespace Engine
 	{
 		auto& current_scene = engine->scene_manager->GetSceneCurrent();
 
-		// If was_scene_modified is true here, the scene has to be sorted
+		// If was_scene_modified is true here, the scene had been sorted
 		performance_state.did_sort = current_scene->was_scene_modified;
-		const auto* objects		   = current_scene->GetAllObjectsSorted();
+		const auto& objects		   = current_scene->GetAllObjectsSorted();
 
 		// engine->logger->SimpleLog(Logging::LogLevel::Info, "Object count: %lu", objects->size());
 
-		for (const auto& [name, ptr] : *objects)
+		for (const auto& ptr : objects)
 		{
 			try
 			{
@@ -233,8 +233,7 @@ namespace Engine
 			{
 				engine->logger->SimpleLog(
 					Logging::LogLevel::Exception,
-					LOGPFX_CURRENT "Caught exception while rendering object '%s'! e.what(): %s",
-					name.c_str(),
+					LOGPFX_CURRENT "Caught exception while rendering object! e.what(): %s",
 					e.what()
 				);
 				throw;

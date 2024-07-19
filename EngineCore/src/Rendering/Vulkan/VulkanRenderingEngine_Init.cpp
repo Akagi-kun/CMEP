@@ -212,8 +212,11 @@ namespace Engine::Rendering::Vulkan
 
 		for (size_t i = 0; i < image_view_handles.size(); i++)
 		{
-			std::array<VkImageView, 3> attachments =
-				{this->multisampled_color_image->image_view, this->vk_depth_buffer->image_view, image_view_handles[i]};
+			std::array<VkImageView, 3> attachments = {
+				this->multisampled_color_image->GetNativeViewHandle(),
+				this->vk_depth_buffer->GetNativeViewHandle(),
+				image_view_handles[i]
+			};
 
 			VkFramebufferCreateInfo framebuffer_info{};
 			framebuffer_info.sType			 = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;

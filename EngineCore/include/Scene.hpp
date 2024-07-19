@@ -37,14 +37,14 @@ namespace Engine
 	{
 	private:
 	protected:
-		std::vector<std::pair<std::string, Object*>> objects_sorted;
+		std::vector<Object*> objects_sorted;
 
 		std::unordered_map<std::string, Object*> objects;
 		std::unordered_map<std::string, ObjectTemplate> templates;
 
 		static void InternalSort(
-			std::unordered_map<std::string, Object*>& from_map,
-			std::vector<std::pair<std::string, Object*>>& objects
+			const std::unordered_map<std::string, Object*>& from_map,
+			std::vector<Object*>& to_vector
 		);
 
 	public:
@@ -58,7 +58,7 @@ namespace Engine
 		~Scene();
 
 		[[nodiscard]] const std::unordered_map<std::string, Object*>* GetAllObjects() noexcept;
-		[[nodiscard]] const std::vector<std::pair<std::string, Object*>>* GetAllObjectsSorted() noexcept;
+		[[nodiscard]] const std::vector<Object*>& GetAllObjectsSorted() noexcept;
 
 		void AddObject(const std::string& name, Object* ptr);
 		void AddTemplatedObject(const std::string& name, const std::string& template_name);

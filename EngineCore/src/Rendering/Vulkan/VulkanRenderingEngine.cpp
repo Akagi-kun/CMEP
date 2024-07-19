@@ -773,11 +773,6 @@ namespace Engine::Rendering::Vulkan
 				&(pipeline->vk_descriptor_set_layout)
 			) != VK_SUCCESS)
 		{
-			// TODO: Remove this?
-			this->logger->SimpleLog(
-				Logging::LogLevel::Error,
-				LOGPFX_CURRENT "Vulkan failed to create descriptor set layout"
-			);
 			throw std::runtime_error("failed to create descriptor set layout!");
 		}
 	}
@@ -813,8 +808,6 @@ namespace Engine::Rendering::Vulkan
 				&(pipeline->vk_descriptor_pool)
 			) != VK_SUCCESS)
 		{
-			// TODO: Remove this?
-			this->logger->SimpleLog(Logging::LogLevel::Error, LOGPFX_CURRENT "Vulkan failed to create descriptor pool");
 			throw std::runtime_error("failed to create descriptor pool!");
 		}
 	}
