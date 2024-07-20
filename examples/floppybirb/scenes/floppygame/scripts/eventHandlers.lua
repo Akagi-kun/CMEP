@@ -92,7 +92,7 @@ local gameOnGameOver = function(asset_manager, scene_manager)
 	game_midgameover_state = true
 	birb_velocity = -0.4
 
-	cmepmeta.logger.SimpleLog(string.format("Game over!"))
+	cmepapi.logger.SimpleLog(string.format("Game over!"))
 
 	local font = asset_manager:GetFont("myfont")
 	local object = cmepapi.ObjectFactoryCreateTextObject(scene_manager, "GAME OVER", font)
@@ -341,6 +341,18 @@ onInit = function(event)
 	object:SetPosition(0.0, 0.0, -0.01)
 	object:SetSize(24, 24, 1.0)
 	scene:AddObject("_debug_info", object)
+
+	-- Add background
+	local object = cmepapi.ObjectFactoryCreateSpriteObject(scene_manager, asset_manager, "background")
+	object:SetPosition(0.0, 0.0, -0.8)
+	object:SetSize(1, 1, 1)
+	scene:AddObject("background", object)
+
+	-- Add birb
+	local object = cmepapi.ObjectFactoryCreateSpriteObject(scene_manager, asset_manager, "birb")
+	object:SetPosition(0.2, util.pxToScreenY(360), 0.0)
+	object:SetSize(util.pxToScreenX(72), util.pxToScreenY(44), 1.0)
+	scene:AddObject("birb", object)
 
 	-- Add score
 	local object = cmepapi.ObjectFactoryCreateTextObject(scene_manager, "0", font)

@@ -24,12 +24,10 @@ namespace Engine
 		this->logger			 = this->owner_engine->GetLogger();
 
 		std::shared_ptr<Scene> default_scene = std::make_shared<Scene>(with_engine);
-		// default_scene->UpdateHeldLogger(this->logger);
 
 		this->scenes.emplace("_default", default_scene);
 
 		this->scene_loader = std::make_unique<SceneLoader>(with_engine);
-		// this->scene_loader->UpdateHeldLogger(this->logger);
 	}
 
 	SceneManager::~SceneManager()
@@ -47,9 +45,10 @@ namespace Engine
 
 	void SceneManager::OnCameraUpdated()
 	{
-		for (const auto& [name, ptr] : *(this->scenes.at(this->current_scene)->GetAllObjects()))
+		auto& current_scene = this->scenes.at(this->current_scene_name);
+
+		for (const auto& [name, ptr] : current_scene->GetAllObjects())
 		{
-			// auto* object_renderer = static_cast<Rendering::IRenderer*>(ptr->GetFirstModule(ModuleType::RENDERER));
 			auto* object_renderer = static_cast<Rendering::IRenderer*>(ptr->GetRenderer());
 			assert(object_renderer != nullptr);
 
@@ -71,12 +70,12 @@ namespace Engine
 
 	void SceneManager::SetScene(const std::string& scene_name)
 	{
-		this->current_scene = scene_name;
+		this->current_scene_name = scene_name;
 	}
 
 	std::shared_ptr<Scene>& SceneManager::GetSceneCurrent()
 	{
-		return this->scenes.at(this->current_scene);
+		return this->scenes.at(this->current_scene_name);
 	}
 
 	glm::vec3 SceneManager::GetLightTransform()

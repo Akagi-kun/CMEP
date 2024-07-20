@@ -238,7 +238,6 @@ namespace Engine::Rendering::Vulkan
 					VK_SUCCESS ||
 				vkCreateSemaphore(logical_device, &semaphore_info, nullptr, &(sync_object_frame.present_ready)) !=
 					VK_SUCCESS ||
-				vkCreateFence(logical_device, &fence_info, nullptr, &(sync_object_frame.acquire_ready)) != VK_SUCCESS ||
 				vkCreateFence(logical_device, &fence_info, nullptr, &(sync_object_frame.in_flight)) != VK_SUCCESS)
 			{
 				this->logger->SimpleLog(Logging::LogLevel::Error, LOGPFX_CURRENT "Vulkan failed creating sync objects");

@@ -10,8 +10,8 @@
 #include "Logging/Logging.hpp"
 
 #include "Engine.hpp"
+#include "Object.hpp"
 
-#include <iterator>
 #include <memory>
 #include <stdexcept>
 
@@ -26,7 +26,6 @@ namespace Engine
 		this->logger->SimpleLog(Logging::LogLevel::Debug1, LOGPFX_CURRENT "Destructor called");
 
 		this->templates.clear();
-		this->objects_sorted.clear();
 
 		for (auto& [name, ptr] : this->objects)
 		{
@@ -37,74 +36,9 @@ namespace Engine
 		this->objects.clear();
 	}
 
-	const std::unordered_map<std::string, Object*>* Scene::GetAllObjects() noexcept
+	const std::unordered_map<std::string, Object*>& Scene::GetAllObjects() noexcept
 	{
-		return &(this->objects);
-	}
-
-	const std::vector<Object*>& Scene::GetAllObjectsSorted() noexcept
-	{
-		if (this->was_scene_modified)
-		{
-			Scene::InternalSort(this->objects, this->objects_sorted);
-			this->was_scene_modified = false;
-		}
-
-		return this->objects_sorted;
-	}
-
-	static bool InternalSortCmpFunction(Object*& object_a, Object*& object_b)
-	{
-		if (object_a == nullptr || object_b == nullptr)
-		{
-			throw std::runtime_error("Could not sort scene, object is nullptr!");
-		}
-
-		auto* a_renderer = static_cast<Rendering::IRenderer*>(object_a->GetRenderer());
-		auto* b_renderer = static_cast<Rendering::IRenderer*>(object_b->GetRenderer());
-
-		assert(a_renderer != nullptr);
-		assert(b_renderer != nullptr);
-
-		static constexpr float positive_offset = 10.f;
-
-		const bool is_a_ui = a_renderer->GetIsUI();
-		const bool is_b_ui = b_renderer->GetIsUI();
-
-		if (is_a_ui && is_b_ui)
-		{
-			// Introduce positive offset (TODO: is this necessary?)
-			const float a_z = object_a->GetPosition().z + positive_offset;
-			const float b_z = object_b->GetPosition().z + positive_offset;
-
-			return std::less<float>{}(a_z, b_z);
-		}
-
-		return std::less<Object*>{}(object_a, object_b);
-	}
-
-	void Scene::InternalSort(const std::unordered_map<std::string, Object*>& from_map, std::vector<Object*>& to_vector)
-	{
-		std::vector<Object*> buffer_vector;
-		buffer_vector.reserve(from_map.size());
-
-		for (const auto& iter : from_map)
-		{
-			assert(iter.second != nullptr);
-			buffer_vector.emplace_back(iter.second);
-		}
-
-		std::sort(buffer_vector.begin(), buffer_vector.end(), InternalSortCmpFunction);
-
-		to_vector.clear();
-		to_vector.reserve(from_map.size());
-
-		std::copy(buffer_vector.begin(), buffer_vector.end(), std::back_inserter(to_vector));
-
-		/* for (auto& iter : buffer_vector)
-		{
-			to_vector.push_back(iter);
-		} */
+		return this->objects;
 	}
 
 	void Scene::AddTemplatedObject(const std::string& name, const std::string& template_name)
@@ -124,7 +58,7 @@ namespace Engine
 					obj = ObjectFactory::CreateSceneObject<Rendering::Renderer2D, Rendering::SpriteMeshBuilder>(
 						this->GetOwnerEngine(),
 						object_template.supply_list,
-						"sprite"
+						object_template.with_shader //"sprite"
 					);
 
 					break;
@@ -134,7 +68,7 @@ namespace Engine
 					obj = ObjectFactory::CreateSceneObject<Rendering::Renderer2D, Rendering::TextMeshBuilder>(
 						this->GetOwnerEngine(),
 						object_template.supply_list,
-						"text"
+						object_template.with_shader //"text"
 					);
 
 					break;
@@ -164,7 +98,6 @@ namespace Engine
 			ptr->ScreenSizeInform(data.window_x, data.window_y);
 
 			this->objects.emplace(name, ptr);
-			this->was_scene_modified = true;
 		}
 		else
 		{
@@ -190,16 +123,15 @@ namespace Engine
 		{
 			this->objects.erase(name);
 			delete object;
-
-			this->was_scene_modified = true;
 		}
 		else
 		{
-			this->logger->SimpleLog(
+			throw std::invalid_argument("Could not remove non-existent object '" + name + "'!");
+			/* this->logger->SimpleLog(
 				Logging::LogLevel::Warning,
 				LOGPFX_CURRENT "Tried to remove scene object '%s'! No such object exists!",
 				name.c_str()
-			);
+			); */
 		}
 	}
 

@@ -13,8 +13,6 @@
 
 namespace Engine
 {
-	class Engine;
-
 	enum class RendererType : uint8_t
 	{
 		MIN_ENUM = 0x00,
@@ -26,39 +24,28 @@ namespace Engine
 		MAX_ENUM = 0XFF
 	};
 
-	typedef struct ObjectTemplate_struct
+	struct ObjectTemplate
 	{
 		RendererType with_renderer;
+		std::string with_shader;
 		std::vector<Rendering::RendererSupplyData> supply_list;
-
-	} ObjectTemplate;
+	};
 
 	class Scene : public InternalEngineObject
 	{
 	private:
 	protected:
-		std::vector<Object*> objects_sorted;
-
 		std::unordered_map<std::string, Object*> objects;
 		std::unordered_map<std::string, ObjectTemplate> templates;
 
-		static void InternalSort(
-			const std::unordered_map<std::string, Object*>& from_map,
-			std::vector<Object*>& to_vector
-		);
-
 	public:
-		bool was_scene_modified = false;
-
 		std::multimap<EventHandling::EventType, std::pair<std::shared_ptr<Scripting::LuaScript>, std::string>>
 			lua_event_handlers;
 
 		using InternalEngineObject::InternalEngineObject;
-		// Scene() = default;
 		~Scene();
 
-		[[nodiscard]] const std::unordered_map<std::string, Object*>* GetAllObjects() noexcept;
-		[[nodiscard]] const std::vector<Object*>& GetAllObjectsSorted() noexcept;
+		[[nodiscard]] const std::unordered_map<std::string, Object*>& GetAllObjects() noexcept;
 
 		void AddObject(const std::string& name, Object* ptr);
 		void AddTemplatedObject(const std::string& name, const std::string& template_name);

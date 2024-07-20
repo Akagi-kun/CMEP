@@ -208,22 +208,16 @@ namespace Engine
 		}
 	}
 
-	static struct PerfState
-	{
-		bool did_sort : 1;
-	} performance_state;
-
 	void Engine::RenderCallback(VkCommandBuffer command_buffer, uint32_t current_frame, Engine* engine)
 	{
 		auto& current_scene = engine->scene_manager->GetSceneCurrent();
 
-		// If was_scene_modified is true here, the scene had been sorted
-		performance_state.did_sort = current_scene->was_scene_modified;
-		const auto& objects		   = current_scene->GetAllObjectsSorted();
+		//// If was_scene_modified is true here, the scene had been sorted
+		const auto& objects = current_scene->GetAllObjects();
 
 		// engine->logger->SimpleLog(Logging::LogLevel::Info, "Object count: %lu", objects->size());
 
-		for (const auto& ptr : objects)
+		for (const auto& [name, ptr] : objects)
 		{
 			try
 			{
@@ -295,6 +289,8 @@ namespace Engine
 				break;
 			}
 
+			SpinSleep(0.005);
+
 			const auto event_clock = std::chrono::steady_clock::now();
 
 			// Render
@@ -313,22 +309,23 @@ namespace Engine
 									 sec_to_msec;
 			const double poll_time = static_cast<double>((poll_clock - draw_clock).count()) / nano_to_sec * sec_to_msec;
 
+			const auto time_sum = event_time + draw_time + poll_time;
+
 			average_runtime_event += event_time;
 			average_idx++;
 
-			/*if (event_time > 1.0 || delta_time > 0.018 || delta_time < 0.008)
+			if (event_time > 12.0 || time_sum > 18.0 || time_sum < 8.0)
 			{
 				this->logger->SimpleLog(
 					Logging::LogLevel::Warning,
-					"delta %lf sum %lf (event %lf draw %lf poll %lf perf 0b%u)",
+					"delta %lf sum %lf (event %lf draw %lf poll %lf)",
 					delta_time * sec_to_msec,
-					event_time + draw_time + poll_time,
+					time_sum,
 					event_time,
 					draw_time,
-					poll_time,
-					performance_state.did_sort
+					poll_time
 				);
-			}*/
+			}
 
 			/* const auto frame_clock	= std::chrono::steady_clock::now();
 			const double sleep_secs = 1.0 / this->framerate_target -

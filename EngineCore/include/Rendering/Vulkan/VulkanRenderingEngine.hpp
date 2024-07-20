@@ -31,7 +31,6 @@ namespace Engine::Rendering::Vulkan
 	{
 		VkSemaphore image_available;
 		VkSemaphore present_ready; // render_finished_semaphores
-		VkFence acquire_ready;	   // maybe useless?
 		VkFence in_flight;
 	};
 

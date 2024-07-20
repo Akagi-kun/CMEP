@@ -13,7 +13,7 @@ namespace Engine
 	{
 	private:
 		std::unordered_map<std::string, std::shared_ptr<Scene>> scenes;
-		std::string current_scene = "_default";
+		std::string current_scene_name = "_default";
 
 		glm::vec3 camera_transform{};	// XYZ position
 		glm::vec2 camera_hv_rotation{}; // Horizontal and Vertical rotation

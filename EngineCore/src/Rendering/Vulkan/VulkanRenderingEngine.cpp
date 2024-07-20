@@ -240,9 +240,6 @@ namespace Engine::Rendering::Vulkan
 			vkDestroySemaphore(logical_device, this->sync_objects[i].present_ready, nullptr);
 			vkDestroySemaphore(logical_device, this->sync_objects[i].image_available, nullptr);
 			vkDestroyFence(logical_device, this->sync_objects[i].in_flight, nullptr);
-
-			vkWaitForFences(logical_device, 1, &(this->sync_objects[i].acquire_ready), VK_TRUE, UINT64_MAX);
-			vkDestroyFence(logical_device, this->sync_objects[i].acquire_ready, nullptr);
 		}
 
 		for (auto& vk_command_buffer : this->command_buffers)
@@ -254,10 +251,7 @@ namespace Engine::Rendering::Vulkan
 
 		vkDestroyRenderPass(logical_device, this->vk_render_pass, nullptr);
 
-		// VMA Cleanup
-		// vmaDestroyAllocator(this->vma_allocator);
-
-		// Destroy device after VMA
+		// Destroy device
 		this->device_manager.reset();
 
 		// Clean up GLFW
@@ -276,16 +270,14 @@ namespace Engine::Rendering::Vulkan
 	{
 		VkDevice logical_device = this->device_manager->GetLogicalDevice();
 
-		auto& frame_sync_objects = this->sync_objects[this->current_frame];
+		auto& frame_sync_objects = this->sync_objects[0]; // this->current_frame
 
 		// Wait for fence
 		vkWaitForFences(logical_device, 1, &frame_sync_objects.in_flight, VK_TRUE, UINT64_MAX);
-		vkWaitForFences(logical_device, 1, &frame_sync_objects.acquire_ready, VK_TRUE, UINT64_MAX);
 
 		// Reset fence after wait is over
 		// (fence has to be reset before being used again)
 		vkResetFences(logical_device, 1, &frame_sync_objects.in_flight);
-		vkResetFences(logical_device, 1, &frame_sync_objects.acquire_ready);
 
 		// Index of framebuffer in this->vk_swap_chain_framebuffers
 		uint32_t image_index;
@@ -296,7 +288,7 @@ namespace Engine::Rendering::Vulkan
 			this->swapchain->GetNativeHandle(),
 			UINT64_MAX,
 			frame_sync_objects.image_available,
-			frame_sync_objects.acquire_ready,
+			nullptr,
 			&image_index
 		);
 

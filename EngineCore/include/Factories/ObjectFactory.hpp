@@ -19,18 +19,18 @@ namespace Engine::ObjectFactory
 	Object* CreateSceneObject(
 		Engine* with_engine,
 		const std::vector<Rendering::RendererSupplyData>& with_supply_data,
-		const char* with_pipeline_program
+		std::string with_pipeline_program
 	)
 	{
-		if (with_pipeline_program == nullptr)
+		if (with_pipeline_program.empty())
 		{
-			throw std::invalid_argument("Cannot CreateSceneObject without a pipeline! (was nullptr)");
+			throw std::invalid_argument("Cannot CreateSceneObject without a pipeline! (was empty)");
 		}
 
 		auto* object = new Object(with_engine);
 
 		auto* with_builder	= new TMeshBuilder(with_engine);
-		auto* with_renderer = new TRenderer(with_engine, with_builder, with_pipeline_program);
+		auto* with_renderer = new TRenderer(with_engine, with_builder, with_pipeline_program.c_str());
 
 		for (const auto& supply : with_supply_data)
 		{

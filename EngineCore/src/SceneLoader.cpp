@@ -5,15 +5,13 @@
 #include "Rendering/IRenderer.hpp"
 #include "Rendering/MeshRenderer.hpp"
 #include "Rendering/Renderer2D.hpp"
-#include "Rendering/SpriteMeshBuilder.hpp"
-
-#include "Factories/ObjectFactory.hpp"
 
 #include "Engine.hpp"
 #include "EventHandling.hpp"
 
 #include <fstream>
 #include <stdexcept>
+#include <string>
 
 // Prefixes for logging messages
 #define LOGPFX_CURRENT LOGPFX_CLASS_SCENE_LOADER
@@ -74,9 +72,6 @@ namespace Engine
 
 			// Load Templates
 			this->LoadSceneTemplates(data, scene);
-
-			// Load Scene
-			this->LoadSceneTree(data, scene);
 		}
 		catch (std::exception& e)
 		{
@@ -120,7 +115,7 @@ namespace Engine
 		if (auto locked_asset_manager = asset_manager.lock())
 		{
 			// Load scene event handlers
-			for (const auto& event_handler_entry : data["eventHandlers"])
+			for (const auto& event_handler_entry : data["event_handlers"])
 			{
 				EventHandling::EventType event_type = EventHandling::EventType::MIN_ENUM;
 
@@ -167,139 +162,6 @@ namespace Engine
 		}
 	}
 
-	void SceneLoader::LoadSceneTree(nlohmann::json& data, std::shared_ptr<Scene>& scene)
-	{
-		// Get window config
-		const Rendering::GLFWwindowData window_config = this->owner_engine->GetRenderingEngine()->GetWindow();
-
-		std::weak_ptr<AssetManager> asset_manager = this->owner_engine->GetAssetManager();
-
-		if (auto locked_asset_manager = asset_manager.lock())
-		{
-			// Load scene
-			for (auto& scene_entry : data["scene"])
-			{
-				std::string object_name = scene_entry["name"].get<std::string>();
-
-				this->logger->SimpleLog(
-					Logging::LogLevel::Debug3,
-					LOGPFX_CURRENT "Loading scene object '%s'",
-					object_name.c_str()
-				);
-
-				auto& position_entry = scene_entry["position"];
-				glm::vec3 position	 = glm::vec3(
-					  position_entry[0].get<float>(),
-					  position_entry[1].get<float>(),
-					  position_entry[2].get<float>()
-				  );
-
-				if (scene_entry["pos_aspixel"].is_array())
-				{
-					auto& pos_aspixel = scene_entry["pos_aspixel"];
-
-					if (pos_aspixel[0].get<bool>())
-					{
-						position.x /= static_cast<float>(window_config.window_x);
-					}
-					if (pos_aspixel[1].get<bool>())
-					{
-						position.y /= static_cast<float>(window_config.window_y);
-					}
-				}
-				else if (scene_entry["pos_sub_aspixel"].is_array())
-				{
-					auto& pos_sub_aspixel = scene_entry["pos_sub_aspixel"];
-
-					if (pos_sub_aspixel[0].get<bool>())
-					{
-						position.x = (static_cast<float>(window_config.window_x) - position.x) /
-									 static_cast<float>(window_config.window_x);
-					}
-					if (pos_sub_aspixel[1].get<bool>())
-					{
-						position.y = (static_cast<float>(window_config.window_y) - position.y) /
-									 static_cast<float>(window_config.window_y);
-					}
-				}
-
-				auto& scale_entry = scene_entry["scale"];
-				glm::vec3 scale =
-					glm::vec3(scale_entry[0].get<float>(), scale_entry[1].get<float>(), scale_entry[2].get<float>());
-
-				if (scene_entry["scale_aspixel"].is_array())
-				{
-					auto& scale_aspixel = scene_entry["scale_aspixel"];
-
-					if (scale_aspixel[0].get<bool>())
-					{
-						scale.x /= static_cast<float>(window_config.window_x);
-					}
-
-					if (scale_aspixel[1].get<bool>())
-					{
-						scale.y /= static_cast<float>(window_config.window_y);
-					}
-				}
-
-				RendererType use_renderer_type = SceneLoader::InterpretRendererType(scene_entry["renderer"]);
-
-				Object* object = nullptr;
-
-				if (RendererType::MIN_ENUM < use_renderer_type && use_renderer_type < RendererType::MAX_ENUM)
-				{
-					switch (use_renderer_type)
-					{
-						case RendererType::SPRITE:
-						{
-							std::shared_ptr<Rendering::Texture> texture = locked_asset_manager->GetTexture(
-								scene_entry["renderer_supply_textures"][0].get<std::string>()
-							);
-
-							object =
-								ObjectFactory::CreateSceneObject<Rendering::Renderer2D, Rendering::SpriteMeshBuilder>(
-									scene->GetOwnerEngine(),
-									{{Rendering::RendererSupplyDataType::TEXTURE, texture}},
-									"sprite"
-								);
-
-							break;
-						}
-						default:
-						{
-							this->logger->SimpleLog(
-								Logging::LogLevel::Warning,
-								"Unknown renderer type '%s' (matched '%u')",
-								scene_entry["renderer"].get<std::string>().c_str(),
-								static_cast<unsigned int>(use_renderer_type)
-							);
-							break;
-						}
-					}
-
-					// We can assume that it's creation failed if it's nullptr
-					if (object != nullptr)
-					{
-						object->SetPosition(position);
-						object->SetSize(scale);
-
-						scene->AddObject(object_name, object);
-					}
-				}
-				else
-				{
-					this->logger->SimpleLog(
-						Logging::LogLevel::Warning,
-						LOGPFX_CURRENT "LoadSceneInternal: Missing or invalid RendererType! (check scene.json)"
-					);
-					continue;
-				}
-			}
-
-			this->logger->SimpleLog(Logging::LogLevel::Debug2, LOGPFX_CURRENT "Done stage: Scene");
-		}
-	}
-
 	void SceneLoader::LoadSceneTemplates(nlohmann::json& data, std::shared_ptr<Scene>& scene)
 	{
 		std::weak_ptr<AssetManager> asset_manager = this->owner_engine->GetAssetManager();
@@ -334,6 +196,8 @@ namespace Engine
 					Rendering::RendererSupplyData texture_supply(Rendering::RendererSupplyDataType::TEXTURE, texture);
 					object.supply_list.insert(object.supply_list.end(), texture_supply);
 				}
+
+				object.with_shader = template_entry["shader_name"].get<std::string>();
 
 				std::string name = template_entry["name"].get<std::string>();
 

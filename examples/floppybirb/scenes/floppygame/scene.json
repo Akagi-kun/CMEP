@@ -1,5 +1,5 @@
 {
-    "eventHandlers": [
+    "event_handlers": [
         {
             "type": "onInit",
             "file": "event_handler_script",
@@ -26,32 +26,11 @@
             "function": "onMouseMoved"
         }
     ],
-    "scene": [
-        {
-            "name": "background",
-            "position": [ 0.0, 0.0, -0.8 ],
-            "scale": [ 1.0, 1.0, 1.0 ],
-            "renderer": "sprite",
-            "renderer_supply_textures": [
-                "background"
-            ]
-        },
-        {
-            "name": "birb",
-            "position": [ 0.2, 360, 0.0 ],
-            "pos_aspixel": [ false, true ],
-            "scale": [ 72, 44, 1.0 ],
-            "scale_aspixel": [ true, true ],
-            "renderer": "sprite",
-            "renderer_supply_textures": [
-                "birb"
-            ]
-        }
-    ],
     "templates": [
         {
             "name": "pipe_up",
             "renderer": "sprite",
+            "shader_name": "sprite",
             "renderer_supply_textures": [
                 "pipe_up"
             ]
@@ -59,6 +38,7 @@
         {
             "name": "pipe_down",
             "renderer": "sprite",
+            "shader_name": "sprite",
             "renderer_supply_textures": [
                 "pipe_down"
             ]
