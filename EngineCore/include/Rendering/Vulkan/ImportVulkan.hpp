@@ -8,6 +8,6 @@
 #include "GLFW/glfw3.h" // IWYU pragma: export
 
 // Include VMA
-#include "vk_mem_alloc.h"
+#include "vk_mem_alloc.h" // IWYU pragma: export
 
 #pragma warning(pop)

@@ -4,21 +4,22 @@
 #include "Rendering/Vulkan/VCommandBuffer.hpp"
 #include "Rendering/Vulkan/VDeviceManager.hpp"
 
+#include "vulkan/vulkan_core.h"
+
 #include <stdexcept>
 
 namespace Engine::Rendering::Vulkan
 {
 	VImage::VImage(
 		VDeviceManager* const with_device_manager,
-		VmaAllocator with_allocator,
-		VulkanImageSize size,
+		VImageSize size,
 		VkSampleCountFlagBits num_samples,
 		VkFormat format,
 		VkImageTiling tiling,
 		VkImageUsageFlags usage,
 		VkMemoryPropertyFlags properties
 	)
-		: HoldsVulkanDevice(with_device_manager), HoldsVMA(with_allocator), image_format(format)
+		: HoldsVulkanDevice(with_device_manager), HoldsVMA(with_device_manager->GetVmaAllocator()), image_format(format)
 	{
 
 		VkImageCreateInfo image_info{};
@@ -70,15 +71,19 @@ namespace Engine::Rendering::Vulkan
 		vmaFreeMemory(this->allocator, this->allocation);
 	}
 
-	void VImage::TransitionImageLayout(VkFormat format, VkImageLayout new_layout)
+	void VImage::TransitionImageLayout(VkImageLayout new_layout)
 	{
 		VkImageMemoryBarrier barrier{};
-		barrier.sType							= VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
-		barrier.oldLayout						= this->current_layout;
-		barrier.newLayout						= new_layout;
-		barrier.srcQueueFamilyIndex				= VK_QUEUE_FAMILY_IGNORED;
-		barrier.dstQueueFamilyIndex				= VK_QUEUE_FAMILY_IGNORED;
-		barrier.image							= this->native_handle;
+		barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+
+		barrier.oldLayout = this->current_layout;
+		barrier.newLayout = new_layout;
+
+		barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+		barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+
+		barrier.image = this->native_handle;
+
 		barrier.subresourceRange.aspectMask		= VK_IMAGE_ASPECT_COLOR_BIT;
 		barrier.subresourceRange.baseMipLevel	= 0;
 		barrier.subresourceRange.levelCount		= 1;

@@ -72,7 +72,7 @@ namespace Engine::Rendering::Vulkan
 		std::shared_ptr<VDeviceManager> device_manager;
 
 		// Memory management
-		VmaAllocator vma_allocator;
+		// VmaAllocator vma_allocator;
 
 		// External callback for rendering
 		std::function<void(VkCommandBuffer, uint32_t, Engine*)> external_callback;
@@ -94,18 +94,13 @@ namespace Engine::Rendering::Vulkan
 		// Command buffer functions
 		void RecordVulkanCommandBuffer(VCommandBuffer* command_buffer, uint32_t image_index);
 
-		// Shaders functions
-		VkShaderModule CreateVulkanShaderModule(const std::vector<char>& code);
-
 		// Init functions
 		void CreateVulkanSwapChain();
-		// void CreateVulkanDefaultGraphicsPipeline();
 		void CreateVulkanRenderPass();
 		void CreateVulkanFramebuffers();
 		void CreateVulkanSyncObjects();
 		void CreateVulkanDepthResources();
 		void CreateMultisampledColorResources();
-		void CreateVulkanMemoryAllocator();
 
 	public:
 		VulkanRenderingEngine(Engine* with_engine, ScreenSize with_window_size, std::string title);
@@ -116,7 +111,6 @@ namespace Engine::Rendering::Vulkan
 
 		// Cleanup functions
 		void Cleanup();
-		void CleanupVulkanPipeline(VulkanPipeline* pipeline);
 
 		// Engine functions
 		void DrawFrame();
@@ -131,30 +125,12 @@ namespace Engine::Rendering::Vulkan
 
 		// Pipeline functions
 		VulkanPipelineSettings GetVulkanDefaultPipelineSettings();
-		VulkanPipeline* CreateVulkanPipelineFromPrealloc(VulkanPipeline* pipeline, VulkanPipelineSettings& settings);
-		VulkanPipeline* CreateVulkanPipeline(VulkanPipelineSettings& settings);
-
-		// Pipeline descriptor functions
-		void CreateVulkanDescriptorSetLayout(
-			VulkanPipeline* pipeline,
-			std::vector<VulkanDescriptorLayoutSettings>& settings
-		);
-		void CreateVulkanUniformBuffers(VulkanPipeline* pipeline);
-		void CreateVulkanDescriptorPool(
-			VulkanPipeline* pipeline,
-			std::vector<VulkanDescriptorLayoutSettings>& settings
-		);
-		void CreateVulkanDescriptorSets(VulkanPipeline* pipeline);
+		VPipeline* CreateVulkanPipeline(VulkanPipelineSettings& settings);
 
 		// Getters
 		[[nodiscard]] std::weak_ptr<VDeviceManager> GetDeviceManager()
 		{
 			return this->device_manager;
-		}
-
-		[[nodiscard]] VmaAllocator GetVMAAllocator()
-		{
-			return this->vma_allocator;
 		}
 
 		[[nodiscard]] GLFWwindowData GetWindow() const;

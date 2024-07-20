@@ -11,7 +11,6 @@
 #include "SceneManager.hpp"
 
 #include <cassert>
-#include <cstring>
 #include <string>
 
 namespace Engine::Rendering
@@ -46,7 +45,7 @@ namespace Engine::Rendering
 
 		delete this->vbo;
 
-		renderer->CleanupVulkanPipeline(this->pipeline);
+		delete this->pipeline;
 	}
 
 	void AxisRenderer::UpdateMesh()
@@ -74,10 +73,10 @@ namespace Engine::Rendering
 
 		if (auto locked_device_manager = renderer->GetDeviceManager().lock())
 		{
-			for (size_t i = 0; i < Vulkan::VulkanRenderingEngine::GetMaxFramesInFlight(); i++)
+			for (uint32_t i = 0; i < Vulkan::VulkanRenderingEngine::GetMaxFramesInFlight(); i++)
 			{
 				VkDescriptorBufferInfo buffer_info{};
-				buffer_info.buffer = pipeline->uniform_buffers[i]->GetNativeHandle();
+				buffer_info.buffer = pipeline->GetUniformBuffer(i)->GetNativeHandle();
 				buffer_info.offset = 0;
 				buffer_info.range  = sizeof(glm::mat4);
 
@@ -85,7 +84,7 @@ namespace Engine::Rendering
 				descriptor_writes.resize(1);
 
 				descriptor_writes[0].sType			 = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-				descriptor_writes[0].dstSet			 = this->pipeline->vk_descriptor_sets[i];
+				descriptor_writes[0].dstSet			 = this->pipeline->GetDescriptorSet(i);
 				descriptor_writes[0].dstBinding		 = 0;
 				descriptor_writes[0].dstArrayElement = 0;
 				descriptor_writes[0].descriptorType	 = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
@@ -130,7 +129,8 @@ namespace Engine::Rendering
 			sizeof(glm::mat4)
 		);
 
-		vkCmdBindDescriptorSets(
+		this->pipeline->BindPipeline(command_buffer, current_frame);
+		/* vkCmdBindDescriptorSets(
 			command_buffer,
 			VK_PIPELINE_BIND_POINT_GRAPHICS,
 			this->pipeline->vk_pipeline_layout,
@@ -141,7 +141,7 @@ namespace Engine::Rendering
 			nullptr
 		);
 
-		vkCmdBindPipeline(command_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, this->pipeline->pipeline);
+		vkCmdBindPipeline(command_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, this->pipeline->pipeline); */
 		VkBuffer vertex_buffers[] = {this->mesh_context.vbo->GetNativeHandle()};
 		VkDeviceSize offsets[]	  = {0};
 		vkCmdBindVertexBuffers(command_buffer, 0, 1, vertex_buffers, offsets);

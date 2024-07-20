@@ -38,6 +38,8 @@ set(SRC_FILES
 	src/Rendering/Vulkan/VulkanRenderingEngine.cpp
 	src/Rendering/Vulkan/VulkanRenderingEngine_Init.cpp
 	
+	src/Rendering/Vulkan/VShaderModule.cpp
+	src/Rendering/Vulkan/VPipeline.cpp
 	src/Rendering/Vulkan/VImage.cpp
 	src/Rendering/Vulkan/VSampledImage.cpp
 	src/Rendering/Vulkan/VSwapchain.cpp

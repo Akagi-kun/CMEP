@@ -31,9 +31,9 @@ namespace Engine
 
 			const char* pipeline_name = nullptr;
 
-			VulkanPipeline* pipeline = nullptr;
-			Vulkan::VBuffer* vbo	 = nullptr;
-			size_t vbo_vert_count	 = 0;
+			Vulkan::VPipeline* pipeline = nullptr;
+			Vulkan::VBuffer* vbo		= nullptr;
+			size_t vbo_vert_count		= 0;
 
 			IMeshBuilder* mesh_builder = nullptr;
 			MeshBuildContext mesh_context{};

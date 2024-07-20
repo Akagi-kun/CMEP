@@ -103,25 +103,6 @@ namespace Engine::Rendering::Vulkan
 		this->swapchain = nullptr;
 	}
 
-	VkShaderModule VulkanRenderingEngine::CreateVulkanShaderModule(const std::vector<char>& code)
-	{
-		VkDevice logical_device = this->device_manager->GetLogicalDevice();
-
-		VkShaderModuleCreateInfo create_info{};
-		create_info.sType	 = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
-		create_info.codeSize = code.size();
-		create_info.pCode	 = reinterpret_cast<const uint32_t*>(code.data());
-
-		VkShaderModule shader_module;
-		if (vkCreateShaderModule(logical_device, &create_info, nullptr, &shader_module) != VK_SUCCESS)
-		{
-			this->logger->SimpleLog(Logging::LogLevel::Error, LOGPFX_CURRENT "Vulkan failed creating shader module");
-			throw std::runtime_error("failed to create shader module!");
-		}
-
-		return shader_module;
-	}
-
 	void VulkanRenderingEngine::CreateVulkanRenderPass()
 	{
 		VkAttachmentDescription color_attachment{};
@@ -272,7 +253,6 @@ namespace Engine::Rendering::Vulkan
 
 		this->vk_depth_buffer = new VImage(
 			this->device_manager.get(),
-			this->vma_allocator,
 			{this->swapchain->GetExtent().width, this->swapchain->GetExtent().height},
 			this->device_manager->GetMSAASampleCount(),
 			depth_format,
@@ -290,7 +270,6 @@ namespace Engine::Rendering::Vulkan
 
 		this->multisampled_color_image = new VImage(
 			this->device_manager.get(),
-			this->vma_allocator,
 			{this->swapchain->GetExtent().width, this->swapchain->GetExtent().height},
 			this->device_manager->GetMSAASampleCount(),
 			color_format,
@@ -302,7 +281,7 @@ namespace Engine::Rendering::Vulkan
 		this->multisampled_color_image->AddImageView(VK_IMAGE_ASPECT_COLOR_BIT);
 	}
 
-	void VulkanRenderingEngine::CreateVulkanMemoryAllocator()
+	/* void VulkanRenderingEngine::CreateVulkanMemoryAllocator()
 	{
 		VmaAllocatorCreateInfo allocator_create_info = {};
 		allocator_create_info.vulkanApiVersion		 = VK_API_VERSION_1_1;
@@ -313,5 +292,5 @@ namespace Engine::Rendering::Vulkan
 		vmaCreateAllocator(&allocator_create_info, &(this->vma_allocator));
 
 		this->logger->SimpleLog(Logging::LogLevel::Debug1, LOGPFX_CURRENT "VMA created");
-	}
+	} */
 } // namespace Engine::Rendering::Vulkan

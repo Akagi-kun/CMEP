@@ -413,7 +413,7 @@ namespace Engine
 
 	void Engine::Init()
 	{
-		// this->logger->MapCurrentThreadToName("engine");
+		this->logger->MapCurrentThreadToName("engine");
 
 		// Engine info printout
 		this->logger->SimpleLog(

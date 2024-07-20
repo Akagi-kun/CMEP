@@ -3,11 +3,11 @@
 #include "Rendering/Vulkan/ImportVulkan.hpp"
 #include "Rendering/Vulkan/VBuffer.hpp"
 #include "Rendering/Vulkan/VCommandBuffer.hpp"
-#include "Rendering/Vulkan/VCommandPool.hpp"
+#include "Rendering/Vulkan/VCommandPool.hpp" // IWYU pragma: keep
 #include "Rendering/Vulkan/VDeviceManager.hpp"
 #include "Rendering/Vulkan/VImage.hpp" // IWYU pragma: keep
+#include "Rendering/Vulkan/VPipeline.hpp"
 #include "Rendering/Vulkan/VSwapchain.hpp"
-#include "Rendering/Vulkan/VulkanUtilities.hpp"
 
 #include "Logging/Logging.hpp"
 
@@ -206,7 +206,7 @@ namespace Engine::Rendering::Vulkan
 
 		this->device_manager = std::make_shared<VDeviceManager>(this->owner_engine, this->window);
 
-		this->CreateVulkanMemoryAllocator();
+		// this->CreateVulkanMemoryAllocator();
 		this->CreateVulkanSwapChain();
 		this->CreateVulkanRenderPass();
 
@@ -255,7 +255,7 @@ namespace Engine::Rendering::Vulkan
 		vkDestroyRenderPass(logical_device, this->vk_render_pass, nullptr);
 
 		// VMA Cleanup
-		vmaDestroyAllocator(this->vma_allocator);
+		// vmaDestroyAllocator(this->vma_allocator);
 
 		// Destroy device after VMA
 		this->device_manager.reset();
@@ -505,148 +505,11 @@ namespace Engine::Rendering::Vulkan
 		return default_settings;
 	}
 
-	VulkanPipeline* VulkanRenderingEngine::CreateVulkanPipelineFromPrealloc(
-		VulkanPipeline* pipeline,
-		VulkanPipelineSettings& settings
-	)
+	VPipeline* VulkanRenderingEngine::CreateVulkanPipeline(VulkanPipelineSettings& settings)
 	{
-		VkDevice logical_device = this->device_manager->GetLogicalDevice();
-
-		settings.color_blending.pAttachments = &settings.color_blend_attachment;
-
-		std::string shader_path = this->owner_engine->GetShaderPath();
-
-		// Vertex stage
-		assert(!settings.shader.vertex_stage.empty() && "A valid shader for this stage is required!");
-		auto vert_shader_code			  = Vulkan::Utils::ReadShaderFile(shader_path + settings.shader.vertex_stage);
-		VkShaderModule vert_shader_module = this->CreateVulkanShaderModule(vert_shader_code);
-
-		VkPipelineShaderStageCreateInfo vert_shader_stage_info{};
-		vert_shader_stage_info.sType  = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
-		vert_shader_stage_info.stage  = VK_SHADER_STAGE_VERTEX_BIT;
-		vert_shader_stage_info.module = vert_shader_module;
-		vert_shader_stage_info.pName  = "main";
-
-		// Fragment stage
-		assert(!settings.shader.fragment_stage.empty() && "A valid shader for this stage is required!");
-		auto frag_shader_code			  = Vulkan::Utils::ReadShaderFile(shader_path + settings.shader.fragment_stage);
-		VkShaderModule frag_shader_module = this->CreateVulkanShaderModule(frag_shader_code);
-
-		VkPipelineShaderStageCreateInfo frag_shader_stage_info{};
-		frag_shader_stage_info.sType  = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
-		frag_shader_stage_info.stage  = VK_SHADER_STAGE_FRAGMENT_BIT;
-		frag_shader_stage_info.module = frag_shader_module;
-		frag_shader_stage_info.pName  = "main";
-
-		VkPipelineShaderStageCreateInfo shader_stages[] = {vert_shader_stage_info, frag_shader_stage_info};
-		std::vector<VkDynamicState> dynamic_states		= {VK_DYNAMIC_STATE_VIEWPORT, VK_DYNAMIC_STATE_SCISSOR};
-
-		VkPipelineDynamicStateCreateInfo dynamic_state{};
-		dynamic_state.sType				= VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
-		dynamic_state.dynamicStateCount = static_cast<uint32_t>(dynamic_states.size());
-		dynamic_state.pDynamicStates	= dynamic_states.data();
-
-		auto binding_description	= RenderingVertex::GetBindingDescription();
-		auto attribute_descriptions = RenderingVertex::GetAttributeDescriptions();
-
-		VkPipelineVertexInputStateCreateInfo vertex_input_info{};
-		vertex_input_info.sType							  = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
-		vertex_input_info.vertexBindingDescriptionCount	  = 1;
-		vertex_input_info.vertexAttributeDescriptionCount = static_cast<uint32_t>(attribute_descriptions.size());
-		vertex_input_info.pVertexBindingDescriptions	  = &binding_description;
-		vertex_input_info.pVertexAttributeDescriptions	  = attribute_descriptions.data();
-
-		this->CreateVulkanDescriptorSetLayout(pipeline, settings.descriptor_layout_settings);
-
-		VkPipelineLayoutCreateInfo pipeline_layout_info{};
-		pipeline_layout_info.sType					= VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-		pipeline_layout_info.setLayoutCount			= 1;
-		pipeline_layout_info.pSetLayouts			= &pipeline->vk_descriptor_set_layout;
-		pipeline_layout_info.pushConstantRangeCount = 0;	   // Optional
-		pipeline_layout_info.pPushConstantRanges	= nullptr; // Optional
-
-		if (vkCreatePipelineLayout(logical_device, &pipeline_layout_info, nullptr, &(pipeline->vk_pipeline_layout)) !=
-			VK_SUCCESS)
-		{
-			this->logger->SimpleLog(
-				Logging::LogLevel::Error,
-				LOGPFX_CURRENT "Vulkan failed creating graphics pipeline layout"
-			);
-			throw std::runtime_error("failed to create pipeline layout!");
-		}
-
-		VkGraphicsPipelineCreateInfo pipeline_info{};
-		pipeline_info.sType				  = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
-		pipeline_info.stageCount		  = 2;
-		pipeline_info.pStages			  = shader_stages;
-		pipeline_info.pVertexInputState	  = &vertex_input_info;
-		pipeline_info.pInputAssemblyState = &settings.input_assembly;
-		pipeline_info.pViewportState	  = &settings.viewport_state;
-		pipeline_info.pRasterizationState = &settings.rasterizer;
-		pipeline_info.pMultisampleState	  = &settings.multisampling;
-		pipeline_info.pDepthStencilState  = nullptr; // Optional
-		pipeline_info.pColorBlendState	  = &settings.color_blending;
-		pipeline_info.pDynamicState		  = &dynamic_state;
-		pipeline_info.layout			  = pipeline->vk_pipeline_layout;
-		pipeline_info.pDepthStencilState  = &settings.depth_stencil;
-		pipeline_info.renderPass		  = this->vk_render_pass;
-		pipeline_info.subpass			  = 0;
-		pipeline_info.basePipelineHandle  = VK_NULL_HANDLE; // Optional
-		pipeline_info.basePipelineIndex	  = -1;				// Optional
-
-		if (vkCreateGraphicsPipelines(
-				logical_device,
-				VK_NULL_HANDLE,
-				1,
-				&pipeline_info,
-				nullptr,
-				&(pipeline->pipeline)
-			) != VK_SUCCESS)
-		{
-			this->logger->SimpleLog(
-				Logging::LogLevel::Exception,
-				LOGPFX_CURRENT "Vulkan failed creating triangle graphics pipeline"
-			);
-			throw std::runtime_error("failed to create triangle graphics pipeline!");
-		}
-
-		vkDestroyShaderModule(logical_device, frag_shader_module, nullptr);
-		vkDestroyShaderModule(logical_device, vert_shader_module, nullptr);
-
-		this->CreateVulkanUniformBuffers(pipeline);
-		this->CreateVulkanDescriptorPool(pipeline, settings.descriptor_layout_settings);
-		this->CreateVulkanDescriptorSets(pipeline);
-
-		return pipeline;
-	}
-
-	VulkanPipeline* VulkanRenderingEngine::CreateVulkanPipeline(VulkanPipelineSettings& settings)
-	{
-		auto* new_pipeline = new VulkanPipeline();
-
-		this->CreateVulkanPipelineFromPrealloc(new_pipeline, settings);
+		auto* new_pipeline = new VPipeline(this->device_manager.get(), settings, this->vk_render_pass);
 
 		return new_pipeline;
-	}
-
-	void VulkanRenderingEngine::CleanupVulkanPipeline(VulkanPipeline* pipeline)
-	{
-		this->logger->SimpleLog(Logging::LogLevel::Debug3, LOGPFX_CURRENT "Cleaning up vulkan pipeline");
-
-		for (size_t i = 0; i < VulkanRenderingEngine::max_frames_in_flight; i++)
-		{
-			delete pipeline->uniform_buffers[i];
-		}
-
-		VkDevice logical_device = this->device_manager->GetLogicalDevice();
-
-		vkDestroyDescriptorPool(logical_device, pipeline->vk_descriptor_pool, nullptr);
-		vkDestroyDescriptorSetLayout(logical_device, pipeline->vk_descriptor_set_layout, nullptr);
-
-		vkDestroyPipeline(logical_device, pipeline->pipeline, nullptr);
-		vkDestroyPipelineLayout(logical_device, pipeline->vk_pipeline_layout, nullptr);
-
-		delete pipeline;
 	}
 
 	// Buffers
@@ -660,7 +523,6 @@ namespace Engine::Rendering::Vulkan
 
 		staging_buffer = new VBuffer(
 			this->device_manager.get(),
-			this->vma_allocator,
 			buffer_size,
 			VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
 			VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
@@ -668,7 +530,6 @@ namespace Engine::Rendering::Vulkan
 		);
 		vertex_buffer = new VBuffer(
 			this->device_manager.get(),
-			this->vma_allocator,
 			buffer_size,
 			VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
 			VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
@@ -682,30 +543,10 @@ namespace Engine::Rendering::Vulkan
 		staging_buffer->UnmapMemory();
 
 		vertex_buffer->BufferCopy(staging_buffer, buffer_size);
-		// this->BufferVulkanTransferCopy(staging_buffer, vertex_buffer, buffer_size);
 
 		delete staging_buffer;
 
 		return vertex_buffer;
-	}
-
-	void VulkanRenderingEngine::CreateVulkanUniformBuffers(VulkanPipeline* pipeline)
-	{
-		VkDeviceSize buffer_size = sizeof(glm::mat4);
-
-		pipeline->uniform_buffers.resize(VulkanRenderingEngine::max_frames_in_flight);
-
-		for (size_t i = 0; i < VulkanRenderingEngine::max_frames_in_flight; i++)
-		{
-			pipeline->uniform_buffers[i] = new VBuffer(
-				this->device_manager.get(),
-				this->vma_allocator,
-				buffer_size,
-				VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
-				VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
-				0
-			);
-		}
 	}
 
 	VBuffer* VulkanRenderingEngine::CreateVulkanStagingBufferWithData(void* data, VkDeviceSize data_size)
@@ -714,7 +555,6 @@ namespace Engine::Rendering::Vulkan
 
 		staging_buffer = new VBuffer(
 			this->device_manager.get(),
-			this->vma_allocator,
 			data_size,
 			VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
 			VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
@@ -728,118 +568,6 @@ namespace Engine::Rendering::Vulkan
 		staging_buffer->UnmapMemory();
 
 		return staging_buffer;
-	}
-
-	// Descriptor sets
-
-	void VulkanRenderingEngine::CreateVulkanDescriptorSetLayout(
-		VulkanPipeline* pipeline,
-		std::vector<VulkanDescriptorLayoutSettings>& settings
-	)
-	{
-		std::vector<VkDescriptorSetLayoutBinding> bindings	= {};
-		std::vector<VkDescriptorBindingFlags> binding_flags = {};
-
-		for (auto& setting : settings)
-		{
-			VkDescriptorSetLayoutBinding new_binding{};
-			new_binding.binding			   = setting.binding;
-			new_binding.descriptorCount	   = setting.descriptor_count;
-			new_binding.descriptorType	   = setting.types;
-			new_binding.stageFlags		   = setting.stage_flags;
-			new_binding.pImmutableSamplers = nullptr;
-
-			bindings.push_back(new_binding);
-
-			VkDescriptorBindingFlags new_flags = VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT;
-			binding_flags.push_back(new_flags);
-		}
-
-		VkDescriptorSetLayoutBindingFlagsCreateInfo layout_flags_info{};
-		layout_flags_info.sType			= VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_BINDING_FLAGS_CREATE_INFO;
-		layout_flags_info.bindingCount	= static_cast<uint32_t>(binding_flags.size());
-		layout_flags_info.pBindingFlags = binding_flags.data();
-
-		VkDescriptorSetLayoutCreateInfo layout_info{};
-		layout_info.sType		 = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
-		layout_info.bindingCount = static_cast<uint32_t>(bindings.size());
-		layout_info.pBindings	 = bindings.data();
-		layout_info.pNext		 = &layout_flags_info;
-
-		if (vkCreateDescriptorSetLayout(
-				this->device_manager->GetLogicalDevice(),
-				&layout_info,
-				nullptr,
-				&(pipeline->vk_descriptor_set_layout)
-			) != VK_SUCCESS)
-		{
-			throw std::runtime_error("failed to create descriptor set layout!");
-		}
-	}
-
-	void VulkanRenderingEngine::CreateVulkanDescriptorPool(
-		VulkanPipeline* pipeline,
-		std::vector<VulkanDescriptorLayoutSettings>& settings
-	)
-	{
-		std::vector<VkDescriptorPoolSize> pool_sizes{};
-
-		pool_sizes.resize(settings.size());
-		for (size_t i = 0; i < settings.size(); i++)
-		{
-			VkDescriptorPoolSize pool_size{};
-			pool_size.type			  = settings[i].types;
-			pool_size.descriptorCount = static_cast<uint32_t>(VulkanRenderingEngine::max_frames_in_flight) *
-										settings[i].descriptor_count;
-
-			pool_sizes[i] = pool_size;
-		}
-
-		VkDescriptorPoolCreateInfo pool_info{};
-		pool_info.sType			= VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
-		pool_info.poolSizeCount = static_cast<uint32_t>(pool_sizes.size());
-		pool_info.pPoolSizes	= pool_sizes.data();
-		pool_info.maxSets		= static_cast<uint32_t>(VulkanRenderingEngine::max_frames_in_flight);
-
-		if (vkCreateDescriptorPool(
-				this->device_manager->GetLogicalDevice(),
-				&pool_info,
-				nullptr,
-				&(pipeline->vk_descriptor_pool)
-			) != VK_SUCCESS)
-		{
-			throw std::runtime_error("failed to create descriptor pool!");
-		}
-	}
-	void VulkanRenderingEngine::CreateVulkanDescriptorSets(VulkanPipeline* pipeline)
-	{
-		std::vector<VkDescriptorSetLayout> layouts(
-			VulkanRenderingEngine::max_frames_in_flight,
-			pipeline->vk_descriptor_set_layout
-		);
-		VkDescriptorSetAllocateInfo alloc_info{};
-		alloc_info.sType			  = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
-		alloc_info.descriptorPool	  = pipeline->vk_descriptor_pool;
-		alloc_info.descriptorSetCount = static_cast<uint32_t>(VulkanRenderingEngine::max_frames_in_flight);
-		alloc_info.pSetLayouts		  = layouts.data();
-
-		pipeline->vk_descriptor_sets.resize(VulkanRenderingEngine::max_frames_in_flight);
-
-		VkResult create_result = vkAllocateDescriptorSets(
-			this->device_manager->GetLogicalDevice(),
-			&alloc_info,
-			pipeline->vk_descriptor_sets.data()
-		);
-
-		if (create_result != VK_SUCCESS)
-		{
-			this->logger->SimpleLog(
-				Logging::LogLevel::Exception,
-				LOGPFX_CURRENT "Vulkan failed to create descriptor sets, VkResult: %i",
-				create_result
-			);
-			throw std::runtime_error("failed to allocate descriptor sets!");
-		}
 	}
 
 	// Image functions

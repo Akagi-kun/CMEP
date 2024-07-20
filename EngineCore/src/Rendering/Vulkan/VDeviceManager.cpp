@@ -1,5 +1,6 @@
-#include "Rendering/Vulkan/VCommandPool.hpp"
 #include "Rendering/Vulkan/VDeviceManager.hpp"
+
+#include "Rendering/Vulkan/VCommandPool.hpp"
 
 #include "Logging/Logging.hpp"
 
@@ -18,6 +19,7 @@
 
 namespace Engine::Rendering::Vulkan
 {
+
 #pragma region Debugging callbacks
 
 	VKAPI_ATTR static VkBool32 VKAPI_CALL VulkanDebugCallback(
@@ -81,6 +83,8 @@ namespace Engine::Rendering::Vulkan
 
 #pragma endregion
 
+#pragma region Constructor/Destructor
+
 	VDeviceManager::VDeviceManager(Engine* with_engine, GLFWwindow* new_window) : InternalEngineObject(with_engine)
 	{
 		this->window = new_window;
@@ -95,12 +99,16 @@ namespace Engine::Rendering::Vulkan
 		this->InitVulkanDevice();
 		this->CreateVulkanLogicalDevice();
 
+		this->InitVMA();
+
 		this->vk_command_pool = new VCommandPool(this);
 	}
 
 	VDeviceManager::~VDeviceManager()
 	{
 		this->logger->SimpleLog(Logging::LogLevel::Info, LOGPFX_CURRENT "Cleaning up");
+
+		vmaDestroyAllocator(this->vma_allocator);
 
 		delete this->vk_command_pool;
 
@@ -114,7 +122,22 @@ namespace Engine::Rendering::Vulkan
 		vkDestroyInstance(this->vk_instance, nullptr);
 	}
 
+#pragma endregion
+
 #pragma region Internal init functions
+
+	void VDeviceManager::InitVMA()
+	{
+		VmaAllocatorCreateInfo allocator_create_info = {};
+		allocator_create_info.vulkanApiVersion		 = VK_API_VERSION_1_1;
+		allocator_create_info.physicalDevice		 = this->vk_physical_device;
+		allocator_create_info.device				 = this->vk_logical_device;
+		allocator_create_info.instance				 = this->vk_instance;
+
+		vmaCreateAllocator(&allocator_create_info, &(this->vma_allocator));
+
+		this->logger->SimpleLog(Logging::LogLevel::Debug1, LOGPFX_CURRENT "VMA created");
+	}
 
 	void VDeviceManager::InitVulkanInstance()
 	{

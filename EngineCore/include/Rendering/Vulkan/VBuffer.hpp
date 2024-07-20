@@ -22,7 +22,6 @@ namespace Engine::Rendering::Vulkan
 
 		VBuffer(
 			VDeviceManager* with_device_manager,
-			VmaAllocator with_allocator,
 			VkDeviceSize with_size,
 			VkBufferUsageFlags with_usage,
 			VkMemoryPropertyFlags with_properties,

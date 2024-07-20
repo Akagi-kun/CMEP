@@ -11,7 +11,6 @@
 #include "SceneManager.hpp"
 
 #include <cassert>
-#include <cstring>
 #include <glm/gtc/quaternion.hpp>
 
 namespace Engine::Rendering
@@ -56,7 +55,7 @@ namespace Engine::Rendering
 
 		delete this->vbo;
 
-		renderer->CleanupVulkanPipeline(this->pipeline);
+		delete this->pipeline;
 	}
 
 	void MeshRenderer::SupplyData(const RendererSupplyData& data)
@@ -185,10 +184,10 @@ namespace Engine::Rendering
 
 			if (auto locked_device_manager = renderer->GetDeviceManager().lock())
 			{
-				for (size_t i = 0; i < Vulkan::VulkanRenderingEngine::GetMaxFramesInFlight(); i++)
+				for (uint32_t i = 0; i < Vulkan::VulkanRenderingEngine::GetMaxFramesInFlight(); i++)
 				{
 					VkDescriptorBufferInfo uniform_buffer_info{};
-					uniform_buffer_info.buffer = pipeline->uniform_buffers[i]->GetNativeHandle();
+					uniform_buffer_info.buffer = pipeline->GetUniformBuffer(i)->GetNativeHandle();
 					uniform_buffer_info.offset = 0;
 					uniform_buffer_info.range  = sizeof(glm::mat4);
 
@@ -196,7 +195,7 @@ namespace Engine::Rendering
 					descriptor_writes.resize(1);
 
 					descriptor_writes[0].sType			 = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-					descriptor_writes[0].dstSet			 = pipeline->vk_descriptor_sets[i];
+					descriptor_writes[0].dstSet			 = pipeline->GetDescriptorSet(i);
 					descriptor_writes[0].dstBinding		 = 0;
 					descriptor_writes[0].dstArrayElement = 0;
 					descriptor_writes[0].descriptorType	 = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
@@ -256,18 +255,8 @@ namespace Engine::Rendering
 			sizeof(glm::mat4)
 		);
 
-		vkCmdBindDescriptorSets(
-			command_buffer,
-			VK_PIPELINE_BIND_POINT_GRAPHICS,
-			this->pipeline->vk_pipeline_layout,
-			0,
-			1,
-			&this->pipeline->vk_descriptor_sets[current_frame],
-			0,
-			nullptr
-		);
+		this->pipeline->BindPipeline(command_buffer, current_frame);
 
-		vkCmdBindPipeline(command_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, this->pipeline->pipeline);
 		VkBuffer vertex_buffers[] = {this->vbo->GetNativeHandle()};
 		VkDeviceSize offsets[]	  = {0};
 		vkCmdBindVertexBuffers(command_buffer, 0, 1, vertex_buffers, offsets);

@@ -15,8 +15,7 @@ namespace Engine::Rendering::Vulkan
 
 		VSampledImage(
 			VDeviceManager* with_device_manager,
-			VmaAllocator with_allocator,
-			VulkanImageSize size,
+			VImageSize size,
 			VkSampleCountFlagBits num_samples,
 			VkFormat format,
 			VkImageTiling tiling,

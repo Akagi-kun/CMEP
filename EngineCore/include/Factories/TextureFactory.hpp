@@ -22,7 +22,7 @@ namespace Engine::Factories
 		);
 
 	public:
-		TextureFactory(Engine* with_engine);
+		using InternalEngineObject::InternalEngineObject;
 
 		std::shared_ptr<Rendering::Texture> InitFile(
 			const std::string& path,

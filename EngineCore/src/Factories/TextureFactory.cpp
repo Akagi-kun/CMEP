@@ -17,10 +17,6 @@
 
 namespace Engine::Factories
 {
-	TextureFactory::TextureFactory(Engine* with_engine) : InternalEngineObject(with_engine)
-	{
-	}
-
 	std::shared_ptr<Rendering::Texture> TextureFactory::InitFile(
 		const std::string& path,
 		Rendering::Vulkan::VBuffer* staging_buffer,
@@ -89,7 +85,6 @@ namespace Engine::Factories
 		fclose(file);
 
 		std::shared_ptr<Rendering::Texture> texture = std::make_shared<Rendering::Texture>(this->owner_engine);
-		// texture->UpdateHeldLogger(this->logger);
 
 		texture->Init(std::move(texture_data));
 
@@ -111,8 +106,6 @@ namespace Engine::Factories
 
 		texture_data->data		= raw_data;
 		texture_data->color_fmt = color_format;
-		// texture_data->filtering	   = filtering;
-		// texture_data->address_mode = sampler_address_mode;
 		texture_data->x			= xsize;
 		texture_data->y			= ysize;
 
@@ -127,7 +120,6 @@ namespace Engine::Factories
 		{
 			used_staging_buffer = new Rendering::Vulkan::VBuffer(
 				renderer->GetDeviceManager().lock().get(),
-				renderer->GetVMAAllocator(),
 				static_cast<size_t>(memory_size),
 				VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
 				VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
@@ -148,7 +140,6 @@ namespace Engine::Factories
 
 			texture_data->texture_image = new Rendering::Vulkan::VSampledImage(
 				locked_device_manager.get(),
-				renderer->GetVMAAllocator(),
 				{xsize, ysize},
 				VK_SAMPLE_COUNT_1_BIT,
 				VK_FORMAT_R8G8B8A8_UNORM,
@@ -160,10 +151,7 @@ namespace Engine::Factories
 			);
 
 			// Transfer image layout to compatible with transfers
-			texture_data->texture_image->TransitionImageLayout(
-				VK_FORMAT_R8G8B8A8_UNORM,
-				VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL
-			);
+			texture_data->texture_image->TransitionImageLayout(VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
 
 			renderer->CopyVulkanBufferToImage(
 				used_staging_buffer->GetNativeHandle(),
@@ -173,10 +161,7 @@ namespace Engine::Factories
 			);
 
 			// Transfer image layout to compatible with rendering
-			texture_data->texture_image->TransitionImageLayout(
-				VK_FORMAT_R8G8B8A8_UNORM,
-				VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL
-			);
+			texture_data->texture_image->TransitionImageLayout(VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 
 			// Unmap staging memory and cleanup buffer if we created it here
 			used_staging_buffer->UnmapMemory();

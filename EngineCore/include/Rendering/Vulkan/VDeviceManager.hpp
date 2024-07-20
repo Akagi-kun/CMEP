@@ -1,5 +1,7 @@
 #pragma once
 
+#include "Rendering/Vulkan/ImportVulkan.hpp"
+
 #include "InternalEngineObject.hpp"
 #include "VulkanStructDefs.hpp"
 #include "framework.hpp"
@@ -31,6 +33,9 @@ namespace Engine::Rendering::Vulkan
 
 		// Command buffer pool
 		VCommandPool* vk_command_pool = nullptr;
+
+		// Vulkan memory allocator
+		VmaAllocator vma_allocator;
 
 		// Surfaces
 		VkSurfaceKHR vk_surface = VK_NULL_HANDLE;
@@ -66,23 +71,29 @@ namespace Engine::Rendering::Vulkan
 		bool CheckVulkanValidationLayers();
 		void InitVulkanInstance();
 		void InitVulkanDevice();
+		void InitVMA();
 		void CreateVulkanLogicalDevice();
 
 	public:
 		VDeviceManager(Engine* with_engine, GLFWwindow* new_window);
 		~VDeviceManager();
 
-		[[nodiscard]] const VkPhysicalDevice& GetPhysicalDevice() const noexcept
+		[[nodiscard]] const VkPhysicalDevice& GetPhysicalDevice() noexcept
 		{
 			return this->vk_physical_device;
 		}
 
-		[[nodiscard]] const VkDevice& GetLogicalDevice() const noexcept
+		[[nodiscard]] const VkDevice& GetLogicalDevice() noexcept
 		{
 			return this->vk_logical_device;
 		}
 
-		[[nodiscard]] const VkInstance& GetInstance() const noexcept
+		[[nodiscard]] const VmaAllocator& GetVmaAllocator() noexcept
+		{
+			return this->vma_allocator;
+		}
+
+		[[nodiscard]] const VkInstance& GetInstance() noexcept
 		{
 			return this->vk_instance;
 		}
@@ -102,17 +113,17 @@ namespace Engine::Rendering::Vulkan
 			return this->msaa_samples;
 		}
 
-		[[nodiscard]] const VkQueue& GetGraphicsQueue() const noexcept
+		[[nodiscard]] const VkQueue& GetGraphicsQueue() noexcept
 		{
 			return this->vk_graphics_queue;
 		}
 
-		[[nodiscard]] const VkQueue& GetPresentQueue() const noexcept
+		[[nodiscard]] const VkQueue& GetPresentQueue() noexcept
 		{
 			return this->vk_present_queue;
 		}
 
-		[[nodiscard]] VCommandPool* GetCommandPool() const noexcept
+		[[nodiscard]] VCommandPool* GetCommandPool() noexcept
 		{
 			return this->vk_command_pool;
 		}

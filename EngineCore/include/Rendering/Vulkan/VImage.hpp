@@ -5,7 +5,6 @@
 #include "HoldsVMA.hpp"
 #include "HoldsVulkanDevice.hpp"
 #include "framework.hpp"
-#include "vulkan/vulkan_core.h"
 
 #include <cassert>
 
@@ -26,8 +25,7 @@ namespace Engine::Rendering::Vulkan
 	public:
 		VImage(
 			VDeviceManager* with_device_manager,
-			VmaAllocator with_allocator,
-			VulkanImageSize size,
+			VImageSize size,
 			VkSampleCountFlagBits num_samples,
 			VkFormat format,
 			VkImageTiling tiling,
@@ -36,7 +34,7 @@ namespace Engine::Rendering::Vulkan
 		);
 		~VImage();
 
-		void TransitionImageLayout(VkFormat format, VkImageLayout new_layout);
+		void TransitionImageLayout(VkImageLayout new_layout);
 
 		void AddImageView(VkImageAspectFlags with_aspect_flags = VK_IMAGE_ASPECT_COLOR_BIT);
 

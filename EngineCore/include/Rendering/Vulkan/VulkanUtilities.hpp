@@ -1,7 +1,8 @@
 #pragma once
 
+#include "Rendering/Vulkan/VPipeline.hpp"
+
 #include "VulkanRenderingEngine.hpp"
-#include "VulkanStructDefs.hpp"
 #include "vulkan/vulkan_core.h"
 
 #include <cstring>
@@ -69,7 +70,7 @@ namespace Engine::Rendering::Vulkan::Utils
 
 	inline void VulkanUniformBufferTransfer(
 		VulkanRenderingEngine* rendering_engine,
-		VulkanPipeline* pipeline,
+		VPipeline* pipeline,
 		uint32_t current_frame,
 		void* data,
 		size_t data_size
@@ -77,11 +78,12 @@ namespace Engine::Rendering::Vulkan::Utils
 	{
 		if (auto locked_device_manager = rendering_engine->GetDeviceManager().lock())
 		{
-			pipeline->uniform_buffers[current_frame]->MapMemory();
+			auto* uniform_buffer = pipeline->GetUniformBuffer(current_frame);
+			uniform_buffer->MapMemory();
 
-			std::memcpy(pipeline->uniform_buffers[current_frame]->mapped_data, data, data_size);
+			std::memcpy(uniform_buffer->mapped_data, data, data_size);
 
-			pipeline->uniform_buffers[current_frame]->UnmapMemory();
+			uniform_buffer->UnmapMemory();
 		}
 	}
 } // namespace Engine::Rendering::Vulkan::Utils

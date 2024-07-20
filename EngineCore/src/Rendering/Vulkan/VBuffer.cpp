@@ -11,13 +11,13 @@ namespace Engine::Rendering::Vulkan
 {
 	VBuffer::VBuffer(
 		VDeviceManager* const with_device_manager,
-		VmaAllocator with_allocator,
 		VkDeviceSize with_size,
 		VkBufferUsageFlags with_usage,
 		VkMemoryPropertyFlags with_properties,
 		VmaAllocationCreateFlags with_vma_alloc_flags
 	)
-		: HoldsVulkanDevice(with_device_manager), HoldsVMA(with_allocator), buffer_size(with_size)
+		: HoldsVulkanDevice(with_device_manager), HoldsVMA(with_device_manager->GetVmaAllocator()),
+		  buffer_size(with_size)
 	{
 
 		// Create a buffer handle

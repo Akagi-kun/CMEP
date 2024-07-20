@@ -56,7 +56,6 @@ namespace Engine::Rendering
 
 		auto* premade_staging_buffer = new Vulkan::VBuffer(
 			renderer->GetDeviceManager().lock().get(),
-			renderer->GetVMAAllocator(),
 			5120 * 5120 * 4,
 			VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
 			VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,

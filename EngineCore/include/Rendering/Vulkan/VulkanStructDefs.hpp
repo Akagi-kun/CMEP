@@ -69,7 +69,7 @@ namespace Engine::Rendering
 		std::vector<VulkanDescriptorLayoutSettings> descriptor_layout_settings;
 	};
 
-	struct VulkanPipeline
+	/* struct VulkanPipeline
 	{
 		VkPipeline pipeline;
 		VkPipelineLayout vk_pipeline_layout;
@@ -77,7 +77,7 @@ namespace Engine::Rendering
 		VkDescriptorSetLayout vk_descriptor_set_layout;
 		std::vector<VkDescriptorSet> vk_descriptor_sets;
 		std::vector<Vulkan::VBuffer*> uniform_buffers;
-	};
+	}; */
 
 	struct RenderingVertex
 	{
