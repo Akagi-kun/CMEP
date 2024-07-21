@@ -94,8 +94,9 @@ local gameOnGameOver = function(asset_manager, scene_manager)
 
 	cmepapi.logger.SimpleLog(string.format("Game over!"))
 
-	local font = asset_manager:GetFont("myfont")
-	local object = cmepapi.ObjectFactoryCreateTextObject(scene_manager, "GAME OVER", font)
+	local object = cmepapi.CreateSceneObject(asset_manager, "generic_2d", "text", "text", {
+		{"font", "myfont"}, {"text", "GAME OVER"}
+	  })
 	object:SetPosition(0.34, 0.45, -0.01)
 	object:SetSize(64, 64, 1.0)
 	scene_manager:GetSceneCurrent():AddObject("text_gameover", object)
@@ -307,7 +308,9 @@ onUpdate = function(event)
 
 		birby = birby - birb_velocity * event.deltaTime
 		birb:SetPosition(birbx, birby, birbz)
-			
+		
+		birb_velocity = birb_velocity * 1.01
+
 		-- Check collisions with grounds
 		if checkCollisionsGrounds(birbx, birby)
 		then
@@ -336,38 +339,49 @@ onInit = function(event)
 	local scene = scene_manager:GetSceneCurrent();
 
 	-- Create frametime counter and add it to scene
-	local font = asset_manager:GetFont("myfont")
-	local object = cmepapi.ObjectFactoryCreateTextObject(scene_manager, "avg: \nmin: \nmax: ", font)
+	local object = cmepapi.CreateSceneObject(asset_manager, "generic_2d", "text", "text", {
+		{"font", "myfont"}, {"text", "avg: \nmin: \nmax: "}
+	  })
 	object:SetPosition(0.0, 0.0, -0.01)
 	object:SetSize(24, 24, 1.0)
 	scene:AddObject("_debug_info", object)
 
 	-- Add background
-	local object = cmepapi.ObjectFactoryCreateSpriteObject(scene_manager, asset_manager, "background")
+	local object = cmepapi.CreateSceneObject(asset_manager, "generic_2d", "sprite", "sprite", {
+		{"texture", "background"}
+	  })
 	object:SetPosition(0.0, 0.0, -0.8)
 	object:SetSize(1, 1, 1)
 	scene:AddObject("background", object)
 
 	-- Add birb
-	local object = cmepapi.ObjectFactoryCreateSpriteObject(scene_manager, asset_manager, "birb")
+	local object = cmepapi.CreateSceneObject(asset_manager, "generic_2d", "sprite", "sprite", {
+		{"texture", "birb"}
+	  })
 	object:SetPosition(0.2, util.pxToScreenY(360), 0.0)
 	object:SetSize(util.pxToScreenX(72), util.pxToScreenY(44), 1.0)
 	scene:AddObject("birb", object)
 
 	-- Add score
-	local object = cmepapi.ObjectFactoryCreateTextObject(scene_manager, "0", font)
+	local object = cmepapi.CreateSceneObject(asset_manager, "generic_2d", "text", "text", {
+		{"font", "myfont"}, {"text", "0"}
+	  })
 	object:SetPosition(0.5, 0.0, -0.01)
 	object:SetSize(64, 64, 1.0)
 	scene:AddObject("text_score", object)
 
 	-- Add grounds
 	for i = 0, 2 do
-		local ground_top = cmepapi.ObjectFactoryCreateSpriteObject(scene_manager, asset_manager, "ground_top")
+		local ground_top = cmepapi.CreateSceneObject(asset_manager, "generic_2d", "sprite", "sprite", {
+			{"texture", "ground_top"}
+		})
 		ground_top:SetPosition(util.pxToScreenX(630) * i, 0.0, -0.1)
 		ground_top:SetSize(util.pxToScreenX(630), util.pxToScreenY(60), 1)
 		scene:AddObject("ground_top"..i, ground_top)
 
-		local ground_bottom = cmepapi.ObjectFactoryCreateSpriteObject(scene_manager, asset_manager, "ground_bottom")
+		local ground_bottom = cmepapi.CreateSceneObject(asset_manager, "generic_2d", "sprite", "sprite", {
+			{"texture", "ground_bottom"}
+	 	})
 		ground_bottom:SetPosition(util.pxToScreenX(630) * i, util.pxToScreenY(util.screen_size_y - 60), -0.1)
 		ground_bottom:SetSize(util.pxToScreenX(630), util.pxToScreenY(60), 1)
 		scene:AddObject("ground_bottom"..i, ground_bottom)

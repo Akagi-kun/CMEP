@@ -29,7 +29,7 @@ namespace Engine
 		{
 			this->logger->SimpleLog(
 				Logging::LogLevel::Debug3,
-				LOGPFX_CURRENT "Texture %s use_count: %u",
+				LOGPFX_CURRENT "Texture '%s' use_count: %u",
 				texture.first.c_str(),
 				texture.second.use_count()
 			);
@@ -37,8 +37,6 @@ namespace Engine
 		}
 
 		this->textures.clear();
-		this->texture_factory.reset();
-		this->font_factory.reset();
 	}
 
 #pragma region Adding Assets
@@ -50,8 +48,8 @@ namespace Engine
 		VkSamplerAddressMode address_mode
 	)
 	{
-		std::shared_ptr<Rendering::Texture> texture = this->texture_factory
-														  ->InitFile(path, nullptr, filetype, filtering, address_mode);
+		std::shared_ptr<Rendering::Texture> texture =
+			this->texture_factory->InitFile(path, nullptr, filetype, filtering, address_mode);
 
 		this->textures.emplace(name, texture);
 		this->logger->SimpleLog(
@@ -78,7 +76,6 @@ namespace Engine
 	void AssetManager::AddModel(const std::string& name, const std::string& path)
 	{
 		std::shared_ptr<Rendering::Mesh> mesh = std::make_shared<Rendering::Mesh>(this->owner_engine);
-		// mesh->UpdateHeldLogger(this->logger);
 
 		mesh->CreateMeshFromObj(path);
 
@@ -93,7 +90,7 @@ namespace Engine
 		{
 			this->logger->SimpleLog(
 				Logging::LogLevel::Debug2,
-				LOGPFX_CURRENT "Texture %s requested and is loaded",
+				LOGPFX_CURRENT "Texture '%s' requested and is loaded",
 				name.c_str()
 			);
 			return this->textures.at(name);
@@ -106,7 +103,6 @@ namespace Engine
 
 	std::shared_ptr<Rendering::Font> AssetManager::GetFont(const std::string& name)
 	{
-		this->logger->SimpleLog(Logging::LogLevel::Debug2, LOGPFX_CURRENT "Font %s requested", name.c_str());
 		if (this->fonts.find(name) != this->fonts.end())
 		{
 			return this->fonts.at(name);
@@ -119,7 +115,6 @@ namespace Engine
 
 	std::shared_ptr<Scripting::LuaScript> AssetManager::GetLuaScript(const std::string& name)
 	{
-		this->logger->SimpleLog(Logging::LogLevel::Debug2, LOGPFX_CURRENT "LuaScript %s requested", name.c_str());
 		if (this->luascripts.find(name) != this->luascripts.end())
 		{
 			return this->luascripts.at(name);
@@ -133,7 +128,6 @@ namespace Engine
 
 	std::shared_ptr<Rendering::Mesh> AssetManager::GetModel(const std::string& name)
 	{
-		this->logger->SimpleLog(Logging::LogLevel::Debug2, LOGPFX_CURRENT "Model %s requested", name.c_str());
 		if (this->models.find(name) != this->models.end())
 		{
 			return this->models.at(name);

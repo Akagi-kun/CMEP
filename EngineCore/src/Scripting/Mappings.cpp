@@ -4,9 +4,7 @@
 #include "Assets/Texture.hpp"
 #include "Rendering/MeshRenderer.hpp"
 #include "Rendering/Renderer2D.hpp"
-#include "Rendering/SpriteMeshBuilder.hpp"
 #include "Rendering/SupplyData.hpp"
-#include "Rendering/TextMeshBuilder.hpp"
 
 #include "Scripting/API/LuaFactories.hpp"
 #include "Scripting/API/framework.hpp"
@@ -14,9 +12,10 @@
 #include "Factories/ObjectFactory.hpp"
 
 #include "Engine.hpp"
-#include "SceneManager.hpp"
-#include "lua.h"
+#include "EnumStringConvertor.hpp"
 #include "lua.hpp"
+
+#include <stdexcept>
 
 // Prefixes for logging messages
 #define LOGPFX_CURRENT LOGPFX_LUA_MAPPED
@@ -94,97 +93,79 @@ namespace Engine::Scripting::Mappings
 
 #pragma region ObjectFactory
 
-		static int ObjectFactoryCreateSpriteObject(lua_State* state)
+		[[nodiscard]] static std::vector<Rendering::RendererSupplyData> InterpretSupplyData(
+			lua_State* state,
+			AssetManager* asset_manager,
+			int start_idx
+		)
 		{
-			CMEP_LUACHECK_FN_ARGC(state, 3)
+			std::vector<Rendering::RendererSupplyData> supply_data;
 
-			lua_getfield(state, 1, "_ptr");
-			auto* scene_manager = static_cast<SceneManager*>(lua_touserdata(state, -1));
-
-			lua_getfield(state, 2, "_smart_ptr");
-			std::weak_ptr<AssetManager> asset_manager = *static_cast<std::weak_ptr<AssetManager>*>(
-				lua_touserdata(state, -1)
-			);
-			std::string sprite_name = lua_tostring(state, 3);
-
-			auto& scene = scene_manager->GetSceneCurrent();
-
-			if (auto locked_am = asset_manager.lock())
+			int idx = 1;
+			while (true)
 			{
-				auto sprite = locked_am->GetTexture(sprite_name);
+				lua_rawgeti(state, start_idx, idx);
 
-				Object* obj =
-					Factories::ObjectFactory::CreateSceneObject<Rendering::Renderer2D, Rendering::SpriteMeshBuilder>(
-						scene->GetOwnerEngine(),
-						"sprite",
-						{{Rendering::RendererSupplyDataType::TEXTURE, sprite}}
-					);
-
-				if (obj != nullptr)
+				if (lua_isnil(state, -1))
 				{
-					API::LuaFactories::ObjectFactory(state, obj);
-
-					return 1;
+					break;
 				}
 
-				return luaL_error(state, "ObjectFactory returned nullptr");
-			}
+				lua_rawgeti(state, -1, 1);
+				std::string type = lua_tostring(state, -1);
 
-			return luaL_error(state, "Could not lock AssetManager");
-		}
+				lua_rawgeti(state, -2, 2);
+				std::string name = lua_tostring(state, -1);
 
-		static int ObjectFactoryCreateTextObject(lua_State* state)
-		{
-			CMEP_LUACHECK_FN_ARGC(state, 3)
+				EnumStringConvertor<Rendering::RendererSupplyDataType> supply_type = type;
 
-			lua_getfield(state, 1, "_ptr");
-			auto* scene_manager = static_cast<SceneManager*>(lua_touserdata(state, -1));
-
-			std::string text = lua_tostring(state, 2);
-
-			lua_getfield(state, 3, "_smart_ptr");
-			std::weak_ptr<Rendering::Font> font = *static_cast<std::weak_ptr<Rendering::Font>*>(
-				lua_touserdata(state, -1)
-			);
-
-			Object* obj = nullptr;
-			if (auto locked_font = font.lock())
-			{
-				obj = Factories::ObjectFactory::CreateSceneObject<Rendering::Renderer2D, Rendering::TextMeshBuilder>(
-					scene_manager->GetOwnerEngine(),
-					"text",
+				switch (supply_type.value)
+				{
+					case Rendering::RendererSupplyDataType::TEXTURE:
 					{
-						{Rendering::RendererSupplyDataType::TEXT, text},
-						{Rendering::RendererSupplyDataType::FONT, locked_font},
+						supply_data.emplace_back(supply_type, asset_manager->GetTexture(name));
+						break;
 					}
-				);
+					case Rendering::RendererSupplyDataType::FONT:
+					{
+						supply_data.emplace_back(supply_type, asset_manager->GetFont(name));
+						break;
+					}
+					case Rendering::RendererSupplyDataType::MESH:
+					{
+						supply_data.emplace_back(supply_type, asset_manager->GetModel(name));
+						break;
+					}
+					case Rendering::RendererSupplyDataType::TEXT:
+					{
+						supply_data.emplace_back(supply_type, name);
+						break;
+					}
+					default:
+					{
+						throw std::invalid_argument("RendererSupplyDataType is unknown, invalid or missing!");
+					}
+				}
+
+				lua_pop(state, 3);
+
+				idx++;
 			}
 
-			if (obj != nullptr)
-			{
-				API::LuaFactories::ObjectFactory(state, obj);
-
-				return 1;
-			}
-
-			return luaL_error(state, "ObjectFactory returned nullptr");
+			return supply_data;
 		}
 
-		static void InterpretSupplyData(lua_State* state)
-		{
-		}
-
-		static int ObjectFactoryCreateSceneObject(lua_State* state)
+		static int CreateSceneObject(lua_State* state)
 		{
 			CMEP_LUACHECK_FN_ARGC(state, 5)
 
-			lua_getfield(state, 1, "_ptr");
-			auto* scene_manager = static_cast<SceneManager*>(lua_touserdata(state, -1));
+			/* lua_getfield(state, 1, "_ptr");
+			auto* scene_manager = static_cast<SceneManager*>(lua_touserdata(state, -1)); */
 
-			/* lua_getfield(state, 2, "_smart_ptr");
+			lua_getfield(state, 1, "_smart_ptr");
 			std::weak_ptr<AssetManager> asset_manager = *static_cast<std::weak_ptr<AssetManager>*>(
 				lua_touserdata(state, -1)
-			); */
+			);
 
 			std::string renderer_type	  = lua_tostring(state, 2);
 			std::string mesh_builder_type = lua_tostring(state, 3);
@@ -192,48 +173,31 @@ namespace Engine::Scripting::Mappings
 
 			if (lua_istable(state, 5))
 			{
-				InterpretSupplyData(state);
-				/* const auto& factory = Factories::ObjectFactory::GetSceneObjectFactory(renderer_type,
-				mesh_builder_type); Object* obj			= factory(scene_manager->GetOwnerEngine(), shader_name, {});
-
-				if (obj != nullptr)
+				if (auto locked_asset_manager = asset_manager.lock())
 				{
-					API::LuaFactories::ObjectFactory(state, obj);
+					auto supply_data = InterpretSupplyData(state, locked_asset_manager.get(), 5);
 
-					return 1;
-				} */
-				return 0;
+					const auto& factory =
+						Factories::ObjectFactory::GetSceneObjectFactory(renderer_type, mesh_builder_type);
+					Object* obj = factory(locked_asset_manager->GetOwnerEngine(), shader_name, supply_data);
 
-				// return luaL_error(state, "Object was nullptr!");
+					if (obj != nullptr)
+					{
+						API::LuaFactories::ObjectFactory(state, obj);
+
+						return 1;
+					}
+
+					return luaL_error(state, "Object was nullptr!");
+					// return 0;
+				}
+
+				return luaL_error(state, "Could not lock asset manager!");
 			}
 
 			return luaL_error(state, "Invalid parameter type (expected 'table')");
 		}
 
-		/* static int ObjectFactoryCreateGeneric3DObject(lua_State* state)
-		{
-			CMEP_LUACHECK_FN_ARGC(state, 3)
-
-			lua_getfield(state, 1, "_ptr");
-			auto* scene_manager = static_cast<SceneManager*>(lua_touserdata(state, -1));
-
-			std::shared_ptr<Rendering::Mesh> mesh = std::make_shared<Rendering::Mesh>(scene_manager->GetOwnerEngine());
-
-			mesh->CreateMeshFromObj(std::string(lua_tostring(state, 2)));
-
-			auto& scene = scene_manager->GetSceneCurrent();
-
-			Object* obj = Factories::ObjectFactory::CreateGeneric3DObject(scene, mesh);
-
-			if (obj != nullptr)
-			{
-				API::LuaFactories::ObjectFactory(state, obj);
-
-				return 1;
-			}
-
-			return luaL_error(state, "ObjectFactory returned nullptr");
-		} */
 #pragma endregion
 
 	} // namespace Functions
@@ -242,9 +206,6 @@ namespace Engine::Scripting::Mappings
 		CMEP_LUAMAPPING_DEFINE(RendererSupplyText),
 		CMEP_LUAMAPPING_DEFINE(RendererSupplyTexture),
 
-		CMEP_LUAMAPPING_DEFINE(ObjectFactoryCreateSpriteObject),
-		CMEP_LUAMAPPING_DEFINE(ObjectFactoryCreateTextObject),
-		CMEP_LUAMAPPING_DEFINE(ObjectFactoryCreateSceneObject)
-		// CMEP_LUAMAPPING_DEFINE(ObjectFactoryCreateGeneric3DObject)
+		CMEP_LUAMAPPING_DEFINE(CreateSceneObject)
 	};
 } // namespace Engine::Scripting::Mappings
