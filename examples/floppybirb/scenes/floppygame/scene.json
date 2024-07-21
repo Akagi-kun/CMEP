@@ -1,28 +1,28 @@
 {
     "event_handlers": [
         {
-            "type": "onInit",
-            "file": "event_handler_script",
+            "type": "on_init",
+            "file": "script0",
             "function": "onInit"
         },
         {
-            "type": "onUpdate",
-            "file": "event_handler_script",
+            "type": "on_update",
+            "file": "script0",
             "function": "onUpdate"
         },
         {
-            "type": "onKeyDown",
-            "file": "event_handler_script",
+            "type": "on_key_down",
+            "file": "script0",
             "function": "onKeyDown"
         },
         {
-            "type": "onKeyUp",
-            "file": "event_handler_script",
+            "type": "on_key_up",
+            "file": "script0",
             "function": "onKeyUp"
         },
         {
-            "type": "onMouseMoved",
-            "file": "event_handler_script",
+            "type": "on_mouse_moved",
+            "file": "script0",
             "function": "onMouseMoved"
         }
     ],
@@ -93,7 +93,7 @@
         },
         {
             "type": "script",
-            "name": "event_handler_script",
+            "name": "script0",
             "location": "scripts/eventHandlers.lua"
         }
     ]

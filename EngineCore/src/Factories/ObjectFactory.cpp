@@ -11,40 +11,8 @@
 #include <cassert>
 #include <stdexcept>
 
-namespace Engine
-{
-	using namespace Factories::ObjectFactory;
-
-	template <>
-	EnumStringConvertor<RendererType>::map_type EnumStringConvertor<RendererType>::type_map = {
-		{"generic_2d", value_type::GENERIC_2D},
-		{"generic_3d", value_type::GENERIC_3D},
-	};
-
-	template <>
-	EnumStringConvertor<MeshBuilderType>::map_type EnumStringConvertor<MeshBuilderType>::type_map = {
-		{"sprite", value_type::SPRITE},
-		{"text", value_type::TEXT},
-		{"axis", value_type::AXIS},
-	};
-} // namespace Engine
-
 namespace Engine::Factories::ObjectFactory
 {
-	/* Object* CreateGeneric3DObject(const std::shared_ptr<Scene>& scene, const std::shared_ptr<Rendering::Mesh>& mesh)
-	{
-		Engine* engine = scene->GetOwnerEngine();
-
-		auto* object = new Object(engine);
-
-		Rendering::IRenderer* with_renderer = new Rendering::MeshRenderer(engine, nullptr);
-		with_renderer->SupplyData({Rendering::RendererSupplyDataType::MESH, mesh});
-
-		object->SetRenderer(with_renderer);
-
-		return object;
-	} */
-
 	std::function<Object*(Engine*, std::string, const std::vector<Rendering::RendererSupplyData>&)>
 	GetSceneObjectFactory(
 		EnumStringConvertor<RendererType> with_renderer,

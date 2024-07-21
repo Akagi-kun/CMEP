@@ -7,8 +7,6 @@
 #include "Logging/Logging.hpp"
 
 #include "Engine.hpp"
-#include "lauxlib.h"
-#include "lua.h"
 #include "lua.hpp"
 
 #include <filesystem>
@@ -45,7 +43,7 @@ namespace Engine::Scripting
 		lua_setfield(state, -2, "logger");
 		/*******************************/
 
-		lua_setglobal(state, "cmepapi");
+		lua_setglobal(state, "engine");
 
 		lua_settop(state, 0);
 	}

@@ -11,6 +11,3 @@ $VULKAN_SDK/bin/glslc mesh_frag.glsl -o mesh_frag.spv
 
 $VULKAN_SDK/bin/glslc sprite_vert.glsl -o sprite_vert.spv
 $VULKAN_SDK/bin/glslc sprite_frag.glsl -o sprite_frag.spv
-
-$VULKAN_SDK/bin/glslc default_vert.glsl -o default_vert.spv
-$VULKAN_SDK/bin/glslc default_frag.glsl -o default_frag.spv

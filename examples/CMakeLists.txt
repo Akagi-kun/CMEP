@@ -1,13 +1,11 @@
 cmake_minimum_required(VERSION 3.10)
 project(examples)
 
-
+#########################
 if(MSVC)
-    add_custom_target(floppybirb-compile-shaders compile.bat WORKING_DIRECTORY floppybirb\\shaders\\vulkan)
-    #add_custom_target(floppybirb-perform-copy xcopy /s /e /i /y examples\\floppybirb build\\game WORKING_DIRECTORY ..)
+    add_custom_target(floppybirb-compile-shaders compile.bat WORKING_DIRECTORY floppybirb/shaders/vulkan)
 else()
     add_custom_target(floppybirb-compile-shaders ./compile.sh WORKING_DIRECTORY floppybirb/shaders/vulkan)
-    #add_custom_target(floppybirb-perform-copy cp -r examples/floppybirb build COMMAND mv build/floppybirb build/game WORKING_DIRECTORY ..)
 endif()	
 
 add_custom_target(floppybirb-perform-copy)
@@ -17,18 +15,18 @@ add_custom_command(TARGET floppybirb-perform-copy
                     WORKING_DIRECTORY ..
                     )
 
-add_custom_target(floppybirb-remove-excess)
 add_custom_command(TARGET floppybirb-perform-copy
-		   POST_BUILD
+                   POST_BUILD
                    COMMAND ${CMAKE_COMMAND} -E
                    rm
                    shaders/vulkan/compile.bat
                    shaders/vulkan/cleanup.bat
                    shaders/vulkan/compile.sh
                    shaders/vulkan/cleanup.sh
-                   #shaders/vulkan/*.frag
                    WORKING_DIRECTORY ../build/game
                    )
 
 add_custom_target(floppybirb)
-add_dependencies(floppybirb floppybirb-compile-shaders floppybirb-perform-copy floppybirb-remove-excess)
+add_dependencies(floppybirb floppybirb-compile-shaders floppybirb-perform-copy)
+
+#########################

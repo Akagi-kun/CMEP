@@ -119,7 +119,7 @@ namespace Engine::Scripting::Mappings
 
 				EnumStringConvertor<Rendering::RendererSupplyDataType> supply_type = type;
 
-				switch (supply_type.value)
+				switch (supply_type)
 				{
 					case Rendering::RendererSupplyDataType::TEXTURE:
 					{

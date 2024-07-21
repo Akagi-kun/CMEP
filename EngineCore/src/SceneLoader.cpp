@@ -9,7 +9,9 @@
 #include "Factories/ObjectFactory.hpp"
 
 #include "Engine.hpp"
+#include "EnumStringConvertor.hpp"
 #include "EventHandling.hpp"
+#include "vulkan/vulkan_core.h"
 
 #include <fstream>
 #include <stdexcept>
@@ -86,46 +88,17 @@ namespace Engine
 
 	void SceneLoader::LoadSceneEventHandlers(nlohmann::json& data, std::shared_ptr<Scene>& scene)
 	{
-		static const std::map<std::string, EventHandling::EventType> event_type_map = {
-			{"onInit", EventHandling::EventType::ON_INIT},
-			{"onMouseMoved", EventHandling::EventType::ON_MOUSEMOVED},
-			{"onKeyDown", EventHandling::EventType::ON_KEYDOWN},
-			{"onKeyUp", EventHandling::EventType::ON_KEYUP},
-			{"onUpdate", EventHandling::EventType::ON_UPDATE},
-		};
-
 		std::weak_ptr<AssetManager> asset_manager = this->owner_engine->GetAssetManager();
 		if (auto locked_asset_manager = asset_manager.lock())
 		{
 			// Load scene event handlers
 			for (const auto& event_handler_entry : data["event_handlers"])
 			{
-				EventHandling::EventType event_type = EventHandling::EventType::MIN_ENUM;
-
 				std::string event_handler_type	   = event_handler_entry["type"].get<std::string>();
 				std::string event_handler_file	   = event_handler_entry["file"].get<std::string>();
 				std::string event_handler_function = event_handler_entry["function"].get<std::string>();
 
-				const auto& mapped_type = event_type_map.find(event_handler_type);
-
-				if (mapped_type != event_type_map.end())
-				{
-					event_type = mapped_type->second;
-					this->logger->SimpleLog(
-						Logging::LogLevel::Debug3,
-						LOGPFX_CURRENT "Event handler for type: %s",
-						event_handler_type.c_str()
-					);
-				}
-				else
-				{
-					this->logger->SimpleLog(
-						Logging::LogLevel::Warning,
-						LOGPFX_CURRENT "Unknown event type '%s'",
-						event_handler_type.c_str()
-					);
-					continue;
-				}
+				EventHandling::EventType event_type = EnumStringConvertor<EventHandling::EventType>(event_handler_type);
 
 				std::shared_ptr<Scripting::LuaScript> event_handler = locked_asset_manager->GetLuaScript(
 					event_handler_file
@@ -184,17 +157,6 @@ namespace Engine
 	{
 		std::weak_ptr<AssetManager> asset_manager = this->owner_engine->GetAssetManager();
 
-		static const std::map<std::string, VkFilter> filtering_map = {
-			{"nearest", VK_FILTER_NEAREST},
-			{"linear", VK_FILTER_LINEAR},
-		};
-
-		static const std::map<std::string, VkSamplerAddressMode> sampling_map = {
-			{"repeat", VK_SAMPLER_ADDRESS_MODE_REPEAT},
-			{"clamp", VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE},
-			{"clamp_border", VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_BORDER},
-		};
-
 		if (auto locked_asset_manager = asset_manager.lock())
 		{
 			for (auto& asset_entry : data["assets"])
@@ -208,58 +170,20 @@ namespace Engine
 
 					if (asset_type == "texture")
 					{
-						VkFilter filtering = VK_FILTER_LINEAR;
 						// Check if a specific filtering is requested, otherwise use default
+						VkFilter filtering = VK_FILTER_LINEAR;
 						if (asset_entry.contains("filtering"))
 						{
-							std::string filtering_value = asset_entry["filtering"].get<std::string>();
-
-							const auto& found_filtering = filtering_map.find(filtering_value);
-
-							if (found_filtering != filtering_map.end())
-							{
-								this->logger->SimpleLog(
-									Logging::LogLevel::Debug2,
-									LOGPFX_CURRENT "Using filtering '%s'",
-									filtering_value.c_str()
-								);
-								filtering = found_filtering->second;
-							}
-							else
-							{
-								this->logger->SimpleLog(
-									Logging::LogLevel::Warning,
-									LOGPFX_CURRENT "Unknown filtering '%s' (will use default)",
-									filtering_value.c_str()
-								);
-							}
+							filtering = EnumStringConvertor<VkFilter>(asset_entry["filtering"].get<std::string>());
 						}
 
-						VkSamplerAddressMode sampling_mode = VK_SAMPLER_ADDRESS_MODE_REPEAT;
 						// Check if a specific sampling is requested, otherwise use default
+						VkSamplerAddressMode sampling_mode = VK_SAMPLER_ADDRESS_MODE_REPEAT;
 						if (asset_entry.contains("sampling_mode"))
 						{
-							std::string sampling_mode_value = asset_entry["sampling_mode"].get<std::string>();
-
-							const auto& found_sampling_mode = sampling_map.find(sampling_mode_value);
-
-							if (found_sampling_mode != sampling_map.end())
-							{
-								this->logger->SimpleLog(
-									Logging::LogLevel::Debug2,
-									LOGPFX_CURRENT "Using sampling mode '%s'",
-									sampling_mode_value.c_str()
-								);
-								sampling_mode = found_sampling_mode->second;
-							}
-							else
-							{
-								this->logger->SimpleLog(
-									Logging::LogLevel::Warning,
-									LOGPFX_CURRENT "Unknown sampling mode '%s' (will use default)",
-									sampling_mode_value.c_str()
-								);
-							}
+							sampling_mode = EnumStringConvertor<VkSamplerAddressMode>(
+								asset_entry["sampling_mode"].get<std::string>()
+							);
 						}
 
 						locked_asset_manager->AddTexture(

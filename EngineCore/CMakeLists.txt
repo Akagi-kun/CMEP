@@ -6,6 +6,9 @@ set(SRC_FILES
 	src/InternalEngineObject.cpp
 	src/Engine.cpp
 	src/OpaqueEngine.cpp
+	
+	src/EnumStringConvertor.cpp
+
 	src/Object.cpp
 	src/Scene.cpp
 	src/SceneManager.cpp

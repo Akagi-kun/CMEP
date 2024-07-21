@@ -1,6 +1,8 @@
 #pragma once
 
-#include <stdint.h>
+#include "EnumStringConvertor.hpp"
+
+#include <cstdint>
 
 namespace Engine
 {
@@ -40,7 +42,8 @@ namespace Engine::EventHandling
 			} mouse; // ON_MOUSEMOVED event
 		};
 
-		Event(Engine* const with_engine, const EventType eventtype) : event_type(eventtype), raised_from(with_engine)
+		Event(Engine* const with_engine, const EnumStringConvertor<EventType> eventtype)
+			: event_type(eventtype), raised_from(with_engine)
 		{
 		}
 		~Event() = default;

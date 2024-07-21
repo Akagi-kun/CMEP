@@ -1,26 +1,23 @@
 #pragma once
 
-#include <map>
+#include <optional>
+#include <stdexcept>
 #include <string>
 #include <type_traits>
+#include <unordered_map>
 
 namespace Engine
 {
-	template <typename T> struct EnumStringConvertor
+	template <typename T> struct EnumStringConvertor final
 	{
 		using self_type	 = EnumStringConvertor<T>;
 		using value_type = T;
-		using map_type	 = const std::map<std::string, value_type>;
+		using map_type	 = const std::unordered_map<std::string_view, value_type>;
 
 		static_assert(std::is_enum<value_type>{}, "EnumStringConvertor can only convert to enum types!");
-		static_assert(
-			std::is_scalar<decltype(value_type::MIN_ENUM)>{} && std::is_scalar<decltype(value_type::MAX_ENUM)>{},
-			"EnumStringConvertor can only convert to enum types with defined MIN_ENUM and MAX_ENUM values!"
-		);
 
-		value_type value;
+		std::optional<value_type> value;
 
-		EnumStringConvertor() = default;
 		EnumStringConvertor(value_type from) : value(from)
 		{
 		}
@@ -30,7 +27,7 @@ namespace Engine
 
 		operator value_type() const
 		{
-			return this->value;
+			return this->value.value();
 		}
 
 	private:
@@ -41,7 +38,7 @@ namespace Engine
 		{
 			if (from.empty())
 			{
-				return value_type::MIN_ENUM;
+				throw std::invalid_argument("[EnumStringConvertor] Cannot convert an empty string to enum");
 			}
 
 			const auto& found_type = this->type_map.find(from);
@@ -51,7 +48,7 @@ namespace Engine
 				return found_type->second;
 			}
 
-			return value_type::MAX_ENUM;
+			throw std::invalid_argument("[EnumStringConvertor] Could not convert '" + from + "' (no match found)");
 		}
 	};
 } // namespace Engine
