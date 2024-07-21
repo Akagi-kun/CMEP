@@ -1,25 +1,54 @@
 #pragma once
 
-#include "Assets/Mesh.hpp"
-
+#include "EnumStringConvertor.hpp"
 #include "Object.hpp"
-#include "Scene.hpp"
 
 #include <stdexcept>
+#include <string>
 
 // TODO: Move to Factories namespace?
-namespace Engine::ObjectFactory
+namespace Engine::Factories::ObjectFactory
 {
-	Object* CreateGeneric3DObject(
+	enum class RendererType : uint8_t
+	{
+		MIN_ENUM = 0x00,
+
+		GENERIC_2D = 2,
+		GENERIC_3D = 5,
+
+		MAX_ENUM = 0XFF
+	};
+
+	enum class MeshBuilderType : uint8_t
+	{
+		MIN_ENUM = 0x00,
+
+		TEXT   = 1,
+		SPRITE = 2,
+		MESH   = 3,
+		AXIS   = 4,
+
+		MAX_ENUM = 0XFF
+	};
+
+	struct ObjectTemplate
+	{
+		EnumStringConvertor<RendererType> with_renderer		   = RendererType::MIN_ENUM;
+		EnumStringConvertor<MeshBuilderType> with_mesh_builder = MeshBuilderType::MIN_ENUM;
+		std::string with_shader;
+		std::vector<Rendering::RendererSupplyData> supply_list;
+	};
+
+	/* Object* CreateGeneric3DObject(
 		const std::shared_ptr<Scene>& scene,
 		const std::shared_ptr<::Engine::Rendering::Mesh>& mesh
-	);
+	); */
 
 	template <class TRenderer, class TMeshBuilder>
 	Object* CreateSceneObject(
 		Engine* with_engine,
-		const std::vector<Rendering::RendererSupplyData>& with_supply_data,
-		std::string with_pipeline_program
+		std::string with_pipeline_program,
+		const std::vector<Rendering::RendererSupplyData>& with_supply_data
 	)
 	{
 		if (with_pipeline_program.empty())
@@ -41,4 +70,13 @@ namespace Engine::ObjectFactory
 
 		return object;
 	}
-} // namespace Engine::ObjectFactory
+
+	std::function<Object*(Engine*, std::string, const std::vector<Rendering::RendererSupplyData>&)>
+	GetSceneObjectFactory(
+		EnumStringConvertor<RendererType> with_renderer,
+		EnumStringConvertor<MeshBuilderType> with_mesh_builder
+	);
+
+	Object* InstantiateObjectTemplate(Engine* with_engine, ObjectTemplate& from_template);
+
+} // namespace Engine::Factories::ObjectFactory

@@ -29,7 +29,8 @@
     "templates": [
         {
             "name": "pipe_up",
-            "renderer": "sprite",
+            "renderer": "generic_2d",
+            "mesh_builder": "sprite",
             "shader_name": "sprite",
             "renderer_supply_textures": [
                 "pipe_up"
@@ -37,7 +38,8 @@
         },
         {
             "name": "pipe_down",
-            "renderer": "sprite",
+            "renderer": "generic_2d",
+            "mesh_builder": "sprite",
             "shader_name": "sprite",
             "renderer_supply_textures": [
                 "pipe_down"

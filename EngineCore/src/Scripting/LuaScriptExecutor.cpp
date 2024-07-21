@@ -11,6 +11,7 @@
 #include "lua.h"
 #include "lua.hpp"
 
+#include <filesystem>
 #include <stdexcept>
 #include <string>
 
@@ -20,67 +21,6 @@
 
 namespace Engine::Scripting
 {
-	/*
-	static int MappingTrampoline(lua_State* state)
-	{
-		// 1 = table
-		// 2 = index
-
-		std::string index = lua_tostring(state, 2);
-
-		// lua_getglobal(state, "Window");
-		// lua_getfield(state, -1, "prototype");
-		// lua_getfield(state, -1, index.c_str());
-
-		// if (lua_isnil(state, -1))
-		//{
-		auto* mapping_upvalue = static_cast<std::unordered_map<std::string, lua_CFunction>*>(
-			lua_touserdata(state, lua_upvalueindex(1))
-		);
-
-		auto found = mapping_upvalue->find(index);
-		if (found != mapping_upvalue->end())
-		{
-			lua_pop(state, 1);
-			lua_pushcclosure(state, found->second, 0);
-
-			return 1;
-		}
-		// else
-		//{
-		return luaL_error(state, "Mapping '%s' not found by __index metafn!", index.c_str());
-		//}
-		//}
-
-		// return 1;
-	}
-	 */
-	/*
-	static int CreateMappingTrampoline(lua_State* state)
-	{
-		// 1
-		// assert(lua_istable(state, 1) == true);
-		lua_newtable(state);
-
-		lua_newtable(state);
-		// +1 (2)
-
-		lua_pushlightuserdata(state, &(Mappings::mappings));
-		// +1 (4)
-
-		lua_pushcclosure(state, MappingTrampoline, 1);
-		// -1 +1 (3)
-
-		lua_setfield(state, -2, "__index");
-		// -1 (2)
-
-		lua_setmetatable(state, -2);
-		// -1 (1)
-
-		return 1;
-	}
-	 */
-
 	// Register C callback functions from mappings
 	void LuaScriptExecutor::RegisterCallbacks(lua_State* state)
 	{

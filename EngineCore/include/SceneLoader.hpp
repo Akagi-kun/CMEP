@@ -1,7 +1,5 @@
 #pragma once
 
-#include "Logging/Logging.hpp"
-
 #include "InternalEngineObject.hpp"
 #include "Scene.hpp"
 
@@ -24,13 +22,10 @@ namespace Engine
 
 		void LoadSceneInternal(std::shared_ptr<Scene>& scene, std::string& scene_name);
 
-		static RendererType InterpretRendererType(nlohmann::json& from);
-
 	public:
 		std::string scene_prefix;
 
 		using InternalEngineObject::InternalEngineObject;
-		// SceneLoader(std::shared_ptr<Logging::Logger>& with_logger);
 		~SceneLoader();
 
 		std::shared_ptr<Scene> LoadScene(std::string name);

@@ -2,13 +2,14 @@
 
 #include "InternalEngineObject.hpp"
 #include "Scene.hpp"
-#include "SceneLoader.hpp"
 
 #include <memory>
 #include <unordered_map>
 
 namespace Engine
 {
+	class SceneLoader;
+
 	class SceneManager final : public InternalEngineObject
 	{
 	private:

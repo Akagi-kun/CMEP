@@ -239,8 +239,11 @@ namespace Engine
 	{
 		// TODO: Remove this!
 		// Create axis object
-		auto* object =
-			ObjectFactory::CreateSceneObject<Rendering::AxisRenderer, Rendering::AxisMeshBuilder>(this, {}, "axis");
+		auto* object = Factories::ObjectFactory::CreateSceneObject<Rendering::AxisRenderer, Rendering::AxisMeshBuilder>(
+			this,
+			"axis",
+			{}
+		);
 
 		this->scene_manager->GetSceneCurrent()->AddObject("_axis", object);
 
@@ -289,7 +292,7 @@ namespace Engine
 				break;
 			}
 
-			SpinSleep(0.005);
+			// SpinSleep(0.005);
 
 			const auto event_clock = std::chrono::steady_clock::now();
 

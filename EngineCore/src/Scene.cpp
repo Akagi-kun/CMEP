@@ -47,38 +47,9 @@ namespace Engine
 
 		if (templated_object != this->templates.end())
 		{
-			ObjectTemplate object_template = templated_object->second;
+			Factories::ObjectFactory::ObjectTemplate object_template = templated_object->second;
 
-			Object* obj = nullptr;
-
-			switch (object_template.with_renderer)
-			{
-				case RendererType::SPRITE:
-				{
-					obj = ObjectFactory::CreateSceneObject<Rendering::Renderer2D, Rendering::SpriteMeshBuilder>(
-						this->GetOwnerEngine(),
-						object_template.supply_list,
-						object_template.with_shader //"sprite"
-					);
-
-					break;
-				}
-				case RendererType::TEXT:
-				{
-					obj = ObjectFactory::CreateSceneObject<Rendering::Renderer2D, Rendering::TextMeshBuilder>(
-						this->GetOwnerEngine(),
-						object_template.supply_list,
-						object_template.with_shader //"text"
-					);
-
-					break;
-				}
-				default:
-				{
-					// Unknown renderer type, cannot add object
-					throw std::runtime_error("Unknown renderer type!");
-				}
-			}
+			Object* obj = Factories::ObjectFactory::InstantiateObjectTemplate(this->GetOwnerEngine(), object_template);
 
 			this->AddObject(name, obj);
 		}
@@ -135,7 +106,7 @@ namespace Engine
 		}
 	}
 
-	void Scene::LoadTemplatedObject(std::string name, ObjectTemplate object)
+	void Scene::LoadTemplatedObject(std::string name, Factories::ObjectFactory::ObjectTemplate object)
 	{
 		this->templates.emplace(name, object);
 	}

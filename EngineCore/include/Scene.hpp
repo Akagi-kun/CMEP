@@ -1,8 +1,8 @@
 #pragma once
 
-#include "Rendering/SupplyData.hpp"
-
 #include "Scripting/LuaScript.hpp"
+
+#include "Factories/ObjectFactory.hpp"
 
 #include "EventHandling.hpp"
 #include "InternalEngineObject.hpp"
@@ -13,7 +13,7 @@
 
 namespace Engine
 {
-	enum class RendererType : uint8_t
+	/* enum class RendererType : uint8_t
 	{
 		MIN_ENUM = 0x00,
 
@@ -29,14 +29,14 @@ namespace Engine
 		RendererType with_renderer;
 		std::string with_shader;
 		std::vector<Rendering::RendererSupplyData> supply_list;
-	};
+	}; */
 
 	class Scene : public InternalEngineObject
 	{
 	private:
 	protected:
 		std::unordered_map<std::string, Object*> objects;
-		std::unordered_map<std::string, ObjectTemplate> templates;
+		std::unordered_map<std::string, Factories::ObjectFactory::ObjectTemplate> templates;
 
 	public:
 		std::multimap<EventHandling::EventType, std::pair<std::shared_ptr<Scripting::LuaScript>, std::string>>
@@ -52,6 +52,6 @@ namespace Engine
 		[[nodiscard]] Object* FindObject(const std::string& name);
 		void RemoveObject(const std::string& name);
 
-		void LoadTemplatedObject(std::string name, ObjectTemplate object);
+		void LoadTemplatedObject(std::string name, Factories::ObjectFactory::ObjectTemplate object);
 	};
 } // namespace Engine

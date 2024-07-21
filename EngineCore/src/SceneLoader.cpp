@@ -6,6 +6,8 @@
 #include "Rendering/MeshRenderer.hpp"
 #include "Rendering/Renderer2D.hpp"
 
+#include "Factories/ObjectFactory.hpp"
+
 #include "Engine.hpp"
 #include "EventHandling.hpp"
 
@@ -82,25 +84,6 @@ namespace Engine
 		}
 	}
 
-	RendererType SceneLoader::InterpretRendererType(nlohmann::json& from)
-	{
-		static const std::map<std::string, RendererType> renderer_type_map = {
-			{"text", RendererType::TEXT},
-			{"sprite", RendererType::SPRITE},
-			{"mesh", RendererType::MESH},
-		};
-
-		std::string renderer_type		= from.get<std::string>();
-		const auto& found_renderer_type = renderer_type_map.find(renderer_type);
-
-		if (found_renderer_type != renderer_type_map.end())
-		{
-			return found_renderer_type->second;
-		}
-
-		return RendererType::MAX_ENUM;
-	}
-
 	void SceneLoader::LoadSceneEventHandlers(nlohmann::json& data, std::shared_ptr<Scene>& scene)
 	{
 		static const std::map<std::string, EventHandling::EventType> event_type_map = {
@@ -170,22 +153,11 @@ namespace Engine
 			// Load scene object templates
 			for (auto& template_entry : data["templates"])
 			{
-				ObjectTemplate object = ObjectTemplate();
+				Factories::ObjectFactory::ObjectTemplate object_template{};
 
-				RendererType use_renderer_type = SceneLoader::InterpretRendererType(template_entry["renderer"]);
-
-				if (RendererType::MIN_ENUM < use_renderer_type && use_renderer_type < RendererType::MAX_ENUM)
-				{
-					object.with_renderer = use_renderer_type;
-				}
-				else
-				{
-					this->logger->SimpleLog(
-						Logging::LogLevel::Warning,
-						LOGPFX_CURRENT "LoadSceneTemplates: Missing or invalid RendererType! (check scene.json)"
-					);
-					continue;
-				}
+				object_template.with_renderer	  = template_entry["renderer"].get<std::string>();
+				object_template.with_mesh_builder = template_entry["mesh_builder"].get<std::string>();
+				object_template.with_shader		  = template_entry["shader_name"].get<std::string>();
 
 				for (auto& texture_supply_entry : template_entry["renderer_supply_textures"])
 				{
@@ -194,14 +166,12 @@ namespace Engine
 					);
 
 					Rendering::RendererSupplyData texture_supply(Rendering::RendererSupplyDataType::TEXTURE, texture);
-					object.supply_list.insert(object.supply_list.end(), texture_supply);
+					object_template.supply_list.insert(object_template.supply_list.end(), texture_supply);
 				}
-
-				object.with_shader = template_entry["shader_name"].get<std::string>();
 
 				std::string name = template_entry["name"].get<std::string>();
 
-				scene->LoadTemplatedObject(name, object);
+				scene->LoadTemplatedObject(name, object_template);
 
 				this->logger->SimpleLog(Logging::LogLevel::Debug1, LOGPFX_CURRENT "Loaded template '%s'", name.c_str());
 			}
