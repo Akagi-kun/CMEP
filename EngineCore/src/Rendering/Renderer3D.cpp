@@ -188,14 +188,7 @@ namespace Engine::Rendering
 			this->mesh_context = this->mesh_builder->GetContext();
 		}
 
-		Vulkan::VulkanRenderingEngine* renderer = this->owner_engine->GetRenderingEngine();
-		Vulkan::Utils::VulkanUniformBufferTransfer(
-			renderer,
-			this->pipeline,
-			current_frame,
-			&this->mat_mvp,
-			sizeof(glm::mat4)
-		);
+		Vulkan::Utils::VulkanUniformBufferTransfer(this->pipeline, current_frame, &this->mat_mvp, sizeof(glm::mat4));
 
 		this->pipeline->BindPipeline(command_buffer, current_frame);
 
