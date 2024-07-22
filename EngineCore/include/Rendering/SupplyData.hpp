@@ -55,7 +55,7 @@ namespace Engine::Rendering
 	};
 } // namespace Engine::Rendering
 
-namespace Engine
+/* namespace Engine
 {
 	using namespace Rendering;
 
@@ -67,3 +67,4 @@ namespace Engine
 		{"text", value_type::TEXT},
 	};
 } // namespace Engine
+ */

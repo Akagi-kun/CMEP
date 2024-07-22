@@ -52,4 +52,14 @@ namespace Engine
 		{"lines"sv, VK_PRIMITIVE_TOPOLOGY_LINE_LIST},
 		{"triangles"sv, VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST}
 	};
+
+	using namespace Rendering;
+
+	template <>
+	EnumStringConvertor<RendererSupplyDataType>::map_type EnumStringConvertor<RendererSupplyDataType>::type_map = {
+		{"texture", value_type::TEXTURE},
+		{"mesh", value_type::MESH},
+		{"font", value_type::FONT},
+		{"text", value_type::TEXT},
+	};
 } // namespace Engine
