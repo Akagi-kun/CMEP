@@ -56,7 +56,7 @@ namespace Engine::Rendering
 		Vulkan::VulkanRenderingEngine* renderer = this->owner_engine->GetRenderingEngine();
 		renderer->SyncDeviceWaitIdle();
 
-		delete this->vbo;
+		// delete this->vbo;
 
 		delete this->pipeline;
 	}

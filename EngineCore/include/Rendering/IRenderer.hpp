@@ -2,7 +2,6 @@
 
 #include "Rendering/IMeshBuilder.hpp"
 #include "Rendering/Transform.hpp"
-#include "Rendering/Vulkan/Wrappers/VBuffer.hpp"
 
 #include "InternalEngineObject.hpp"
 #include "MeshBuildContext.hpp"
@@ -33,8 +32,8 @@ namespace Engine
 
 			// Internal data
 			Vulkan::VPipeline* pipeline = nullptr;
-			Vulkan::VBuffer* vbo		= nullptr;
-			size_t vbo_vert_count		= 0;
+			// Vulkan::VBuffer* vbo		= nullptr;
+			// size_t vbo_vert_count		= 0;
 
 			IMeshBuilder* mesh_builder = nullptr;
 			MeshBuildContext mesh_context{};
