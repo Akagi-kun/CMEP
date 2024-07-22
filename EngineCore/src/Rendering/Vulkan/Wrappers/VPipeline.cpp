@@ -1,10 +1,10 @@
-#include "Rendering/Vulkan/VPipeline.hpp"
+#include "Rendering/Vulkan/Wrappers/VPipeline.hpp"
 
-#include "Rendering/Vulkan/HoldsVMA.hpp"
-#include "Rendering/Vulkan/HoldsVulkanDevice.hpp"
 #include "Rendering/Vulkan/VDeviceManager.hpp"
-#include "Rendering/Vulkan/VShaderModule.hpp"
 #include "Rendering/Vulkan/VulkanRenderingEngine.hpp"
+#include "Rendering/Vulkan/Wrappers/HoldsVMA.hpp"
+#include "Rendering/Vulkan/Wrappers/HoldsVulkanDevice.hpp"
+#include "Rendering/Vulkan/Wrappers/VShaderModule.hpp"
 
 #include "Engine.hpp"
 

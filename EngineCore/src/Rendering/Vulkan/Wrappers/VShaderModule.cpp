@@ -1,4 +1,4 @@
-#include "Rendering/Vulkan/VShaderModule.hpp"
+#include "Rendering/Vulkan/Wrappers/VShaderModule.hpp"
 
 #include "Rendering/Vulkan/VDeviceManager.hpp"
 #include "Rendering/Vulkan/VulkanUtilities.hpp"

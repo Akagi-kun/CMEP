@@ -1,7 +1,7 @@
-#include "Rendering/Vulkan/VCommandBuffer.hpp"
+#include "Rendering/Vulkan/Wrappers/VCommandBuffer.hpp"
 
-#include "Rendering/Vulkan/VCommandPool.hpp"
 #include "Rendering/Vulkan/VDeviceManager.hpp"
+#include "Rendering/Vulkan/Wrappers/VCommandPool.hpp"
 
 #include "vulkan/vulkan_core.h"
 

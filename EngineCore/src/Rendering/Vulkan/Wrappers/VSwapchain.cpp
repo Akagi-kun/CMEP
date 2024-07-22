@@ -1,8 +1,8 @@
-#include "Rendering/Vulkan/VSwapchain.hpp"
+#include "Rendering/Vulkan/Wrappers/VSwapchain.hpp"
 
-#include "Rendering/Vulkan/HoldsVulkanDevice.hpp"
 #include "Rendering/Vulkan/VDeviceManager.hpp"
 #include "Rendering/Vulkan/VulkanUtilities.hpp"
+#include "Rendering/Vulkan/Wrappers/HoldsVulkanDevice.hpp"
 
 namespace Engine::Rendering::Vulkan
 {

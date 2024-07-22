@@ -1,8 +1,8 @@
-#include "Rendering/Vulkan/VImage.hpp"
+#include "Rendering/Vulkan/Wrappers/VImage.hpp"
 
-#include "Rendering/Vulkan/HoldsVulkanDevice.hpp"
-#include "Rendering/Vulkan/VCommandBuffer.hpp"
 #include "Rendering/Vulkan/VDeviceManager.hpp"
+#include "Rendering/Vulkan/Wrappers/HoldsVulkanDevice.hpp"
+#include "Rendering/Vulkan/Wrappers/VCommandBuffer.hpp"
 
 #include "vulkan/vulkan_core.h"
 

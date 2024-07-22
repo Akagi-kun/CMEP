@@ -1,4 +1,4 @@
-#include "Rendering/Vulkan/VSampledImage.hpp"
+#include "Rendering/Vulkan/Wrappers/VSampledImage.hpp"
 
 #include "Rendering/Vulkan/VDeviceManager.hpp"
 

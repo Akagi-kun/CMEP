@@ -1,4 +1,4 @@
-#include "Rendering/Vulkan/VCommandPool.hpp"
+#include "Rendering/Vulkan/Wrappers/VCommandPool.hpp"
 
 #include "Rendering/Vulkan/VDeviceManager.hpp"
 
