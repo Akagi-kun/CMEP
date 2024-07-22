@@ -13,10 +13,13 @@ namespace Engine::Rendering
 		glm::vec3 rotation = glm::vec3();
 	};
 
-	struct ScreenSize
+	template <typename T> struct Vector2
 	{
-		uint_fast16_t x;
-		uint_fast16_t y;
+		T x;
+		T y;
 	};
+
+	using ScreenSize  = Vector2<uint_fast16_t>;
+	using TextureSize = Vector2<uint_fast32_t>;
 
 } // namespace Engine::Rendering

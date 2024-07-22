@@ -1,8 +1,8 @@
 #pragma once
 
-#include "Rendering/Vulkan/HoldsVMA.hpp"
-#include "Rendering/Vulkan/HoldsVulkanDevice.hpp"
 #include "Rendering/Vulkan/VulkanStructDefs.hpp"
+#include "Rendering/Vulkan/Wrappers/HoldsVMA.hpp"
+#include "Rendering/Vulkan/Wrappers/HoldsVulkanDevice.hpp"
 
 #include "vulkan/vulkan_core.h"
 

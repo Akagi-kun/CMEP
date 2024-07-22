@@ -1,7 +1,6 @@
 #pragma once
 
 #include "ImportVulkan.hpp"
-#include "framework.hpp"
 #include "glm/vec2.hpp"
 #include "glm/vec3.hpp"
 
@@ -46,12 +45,6 @@ namespace Engine::Rendering
 		VkShaderStageFlags stage_flags;
 	};
 
-	struct ShaderDefinition
-	{
-		std::string vertex_stage;
-		std::string fragment_stage;
-	};
-
 	struct VulkanPipelineSettings
 	{
 		VkPipelineInputAssemblyStateCreateInfo input_assembly;
@@ -64,20 +57,10 @@ namespace Engine::Rendering
 		VkPipelineColorBlendStateCreateInfo color_blending;
 		VkPipelineDepthStencilStateCreateInfo depth_stencil;
 
-		ShaderDefinition shader;
+		std::string shader;
 
 		std::vector<VulkanDescriptorLayoutSettings> descriptor_layout_settings;
 	};
-
-	/* struct VulkanPipeline
-	{
-		VkPipeline pipeline;
-		VkPipelineLayout vk_pipeline_layout;
-		VkDescriptorPool vk_descriptor_pool;
-		VkDescriptorSetLayout vk_descriptor_set_layout;
-		std::vector<VkDescriptorSet> vk_descriptor_sets;
-		std::vector<Vulkan::VBuffer*> uniform_buffers;
-	}; */
 
 	struct RenderingVertex
 	{

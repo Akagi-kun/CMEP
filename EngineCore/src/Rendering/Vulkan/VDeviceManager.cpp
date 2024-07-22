@@ -1,6 +1,6 @@
 #include "Rendering/Vulkan/VDeviceManager.hpp"
 
-#include "Rendering/Vulkan/VCommandPool.hpp"
+#include "Rendering/Vulkan/Wrappers/VCommandPool.hpp"
 
 #include "Logging/Logging.hpp"
 

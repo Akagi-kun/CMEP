@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Rendering/Vulkan/VPipeline.hpp"
+#include "Rendering/Vulkan/Wrappers/VPipeline.hpp"
 
 #include "VulkanRenderingEngine.hpp"
 #include "vulkan/vulkan_core.h"
@@ -76,7 +76,7 @@ namespace Engine::Rendering::Vulkan::Utils
 		size_t data_size
 	)
 	{
-		if (auto locked_device_manager = rendering_engine->GetDeviceManager().lock())
+		if (auto* device_manager = rendering_engine->GetDeviceManager())
 		{
 			auto* uniform_buffer = pipeline->GetUniformBuffer(current_frame);
 			uniform_buffer->MapMemory();

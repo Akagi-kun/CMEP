@@ -3,21 +3,16 @@
 #include "Rendering/Transform.hpp"
 #include "Rendering/Vulkan/ImportVulkan.hpp"
 #include "Rendering/Vulkan/VulkanStructDefs.hpp"
+#include "Rendering/Vulkan/Wrappers/VBuffer.hpp"
+#include "Rendering/Vulkan/Wrappers/framework.hpp"
 
 #include "InternalEngineObject.hpp"
-#include "VBuffer.hpp"
-#include "framework.hpp"
 #include "vulkan/vulkan_core.h"
 
 #include <cstdint>
 #include <functional>
 #include <string>
 #include <vector>
-
-namespace Engine
-{
-	class Engine;
-}
 
 namespace Engine::Rendering::Vulkan
 {
@@ -124,15 +119,20 @@ namespace Engine::Rendering::Vulkan
 
 		// Pipeline functions
 		VulkanPipelineSettings GetVulkanDefaultPipelineSettings();
-		VPipeline* CreateVulkanPipeline(VulkanPipelineSettings& settings);
+		// VPipeline* CreateVulkanPipeline(VulkanPipelineSettings& settings);
 
 		// Getters
-		[[nodiscard]] std::weak_ptr<VDeviceManager> GetDeviceManager()
+		[[nodiscard]] VDeviceManager* GetDeviceManager()
 		{
-			return this->device_manager;
+			return this->device_manager.get();
 		}
 
 		[[nodiscard]] GLFWwindowData GetWindow() const;
+
+		[[nodiscard]] VkRenderPass GetRenderPass()
+		{
+			return this->vk_render_pass;
+		}
 
 		[[nodiscard]] static uint32_t GetMaxFramesInFlight()
 		{

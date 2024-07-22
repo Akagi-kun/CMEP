@@ -1,7 +1,8 @@
 #pragma once
 
-#include "Vulkan/VBuffer.hpp"
-#include "Vulkan/VulkanStructDefs.hpp"
+#include "Rendering/Vulkan/VulkanStructDefs.hpp"
+#include "Rendering/Vulkan/Wrappers/VBuffer.hpp"
+
 namespace Engine::Rendering
 {
 	struct MeshBuildContext

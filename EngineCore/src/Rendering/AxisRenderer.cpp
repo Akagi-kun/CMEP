@@ -16,24 +16,21 @@
 namespace Engine::Rendering
 {
 	AxisRenderer::AxisRenderer(Engine* engine, IMeshBuilder* with_builder, const char* with_pipeline_program)
-		: IRenderer(engine, with_builder, with_pipeline_program)
+		: IRenderer(engine, with_builder, with_pipeline_program, VK_PRIMITIVE_TOPOLOGY_LINE_LIST)
 	{
 		Vulkan::VulkanRenderingEngine* renderer = this->owner_engine->GetRenderingEngine();
 
 		VulkanPipelineSettings pipeline_settings  = renderer->GetVulkanDefaultPipelineSettings();
 		pipeline_settings.input_assembly.topology = VK_PRIMITIVE_TOPOLOGY_LINE_LIST;
 
-		std::string with_program_name = "axis";
-		pipeline_settings.shader	  = {
-			 with_program_name + "_vert.spv",
-			 with_program_name + "_frag.spv",
-		 };
+		pipeline_settings.shader = this->pipeline_name;
 
 		pipeline_settings.descriptor_layout_settings.push_back(
 			VulkanDescriptorLayoutSettings{0, 1, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT}
 		);
 
-		this->pipeline = renderer->CreateVulkanPipeline(pipeline_settings);
+		this->pipeline =
+			new Vulkan::VPipeline(renderer->GetDeviceManager(), pipeline_settings, renderer->GetRenderPass());
 	}
 
 	AxisRenderer::~AxisRenderer()
@@ -58,8 +55,8 @@ namespace Engine::Rendering
 			this->mesh_builder->Build();
 		}
 
-		glm::mat4 projection;
 		glm::mat4 view;
+		glm::mat4 projection;
 		if (auto locked_scene_manager = this->owner_engine->GetSceneManager().lock())
 		{
 			view	   = locked_scene_manager->GetCameraViewMatrix();
@@ -71,12 +68,12 @@ namespace Engine::Rendering
 
 		this->mat_mvp = projection * view; // * model;
 
-		if (auto locked_device_manager = renderer->GetDeviceManager().lock())
+		if (auto* device_manager = renderer->GetDeviceManager())
 		{
 			for (uint32_t i = 0; i < Vulkan::VulkanRenderingEngine::GetMaxFramesInFlight(); i++)
 			{
 				VkDescriptorBufferInfo buffer_info{};
-				buffer_info.buffer = pipeline->GetUniformBuffer(i)->GetNativeHandle();
+				buffer_info.buffer = this->pipeline->GetUniformBuffer(i)->GetNativeHandle();
 				buffer_info.offset = 0;
 				buffer_info.range  = sizeof(glm::mat4);
 
@@ -92,7 +89,7 @@ namespace Engine::Rendering
 				descriptor_writes[0].pBufferInfo	 = &buffer_info;
 
 				vkUpdateDescriptorSets(
-					locked_device_manager->GetLogicalDevice(),
+					device_manager->GetLogicalDevice(),
 					static_cast<uint32_t>(descriptor_writes.size()),
 					descriptor_writes.data(),
 					0,
@@ -130,18 +127,7 @@ namespace Engine::Rendering
 		);
 
 		this->pipeline->BindPipeline(command_buffer, current_frame);
-		/* vkCmdBindDescriptorSets(
-			command_buffer,
-			VK_PIPELINE_BIND_POINT_GRAPHICS,
-			this->pipeline->vk_pipeline_layout,
-			0,
-			1,
-			&this->pipeline->vk_descriptor_sets[current_frame],
-			0,
-			nullptr
-		);
 
-		vkCmdBindPipeline(command_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, this->pipeline->pipeline); */
 		VkBuffer vertex_buffers[] = {this->mesh_context.vbo->GetNativeHandle()};
 		VkDeviceSize offsets[]	  = {0};
 		vkCmdBindVertexBuffers(command_buffer, 0, 1, vertex_buffers, offsets);

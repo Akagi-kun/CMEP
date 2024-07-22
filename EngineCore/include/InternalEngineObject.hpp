@@ -18,7 +18,6 @@ namespace Engine
 		InternalEngineObject() = delete;
 		InternalEngineObject(Engine* with_engine);
 
-		// Const qualify this?
 		Engine* GetOwnerEngine()
 		{
 			return this->owner_engine;

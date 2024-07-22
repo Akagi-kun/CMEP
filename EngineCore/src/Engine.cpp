@@ -3,8 +3,8 @@
 
 #include "Assets/AssetManager.hpp"
 #include "Rendering/AxisMeshBuilder.hpp"
-#include "Rendering/AxisRenderer.hpp"
 #include "Rendering/IRenderer.hpp"
+#include "Rendering/Renderer3D.hpp"
 #include "Rendering/Vulkan/VulkanRenderingEngine.hpp"
 #include "Rendering/Vulkan/VulkanStructDefs.hpp"
 
@@ -19,6 +19,7 @@
 #include "Object.hpp"
 #include "buildinfo.hpp"
 #include "nlohmann/json.hpp"
+#include "vulkan/vulkan_core.h"
 
 #include <chrono>
 #include <exception>
@@ -89,8 +90,8 @@ namespace Engine
 			if ((this->state_mouse_x_pos - last_x) != 0.0 || (this->state_mouse_y_pos - last_y) != 0.0)
 			{
 				auto event		 = EventHandling::Event(this, EventHandling::EventType::ON_MOUSEMOVED);
-				event.mouse.x	 = this->state_mouse_x_pos - last_x;
-				event.mouse.y	 = this->state_mouse_y_pos - last_y;
+				event.mouse.x	 = std::clamp(this->state_mouse_x_pos - last_x, -128.0, 128.0);
+				event.mouse.y	 = std::clamp(this->state_mouse_y_pos - last_y, -128.0, 128.0);
 				event.delta_time = delta_time;
 				this->FireEvent(event);
 
@@ -192,7 +193,7 @@ namespace Engine
 		auto* renderer	   = static_cast<Rendering::Vulkan::VulkanRenderingEngine*>(glfwGetWindowUserPointer(window));
 		auto* owner_engine = renderer->GetOwnerEngine();
 
-		if (action == GLFW_PRESS)
+		if (action == GLFW_PRESS || action == GLFW_REPEAT)
 		{
 			auto event		 = EventHandling::Event(owner_engine, EventHandling::EventType::ON_KEYDOWN);
 			event.keycode	 = static_cast<uint16_t>(key);
@@ -239,10 +240,11 @@ namespace Engine
 	{
 		// TODO: Remove this!
 		// Create axis object
-		auto* object = Factories::ObjectFactory::CreateSceneObject<Rendering::AxisRenderer, Rendering::AxisMeshBuilder>(
+		auto* object = Factories::ObjectFactory::CreateSceneObject<Rendering::Renderer3D, Rendering::AxisMeshBuilder>(
 			this,
 			"axis",
-			{}
+			{},
+			VK_PRIMITIVE_TOPOLOGY_LINE_LIST
 		);
 
 		this->scene_manager->GetSceneCurrent()->AddObject("_axis", object);
@@ -279,6 +281,8 @@ namespace Engine
 
 			// Update deltaTime of premade ON_UPDATE event and fire it
 			premade_on_update_event.delta_time = delta_time;
+
+			this->HandleInput(delta_time);
 
 			// Check return code of FireEvent (events should return non-zero codes as failure)
 			const auto ret = this->FireEvent(premade_on_update_event);
@@ -317,7 +321,7 @@ namespace Engine
 			average_runtime_event += event_time;
 			average_idx++;
 
-			if (event_time > 12.0 || time_sum > 18.0 || time_sum < 8.0)
+			if (event_time > 12.0 || time_sum > 19.0 || time_sum < 8.0)
 			{
 				this->logger->SimpleLog(
 					Logging::LogLevel::Warning,

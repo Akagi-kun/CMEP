@@ -91,12 +91,11 @@ namespace Engine::Rendering
 				}
 
 				// Get texture information
-				uint_fast32_t texture_width		 = 0;
-				uint_fast32_t texture_height	 = 0;
+				TextureSize texture_size;
 				std::shared_ptr<Texture> texture = this->font->GetPageTexture(chardata->page);
 				assert(texture != nullptr);
-				texture->GetSize(texture_width, texture_height);
-				assert(texture_width > 0 && texture_height > 0);
+				texture->GetSize(texture_size);
+				assert(texture_size.x > 0 && texture_size.y > 0);
 
 				// Character parameters as specified in .fnt file
 				const auto char_x	   = static_cast<float>(chardata->x);
@@ -141,48 +140,48 @@ namespace Engine::Rendering
 						glm::vec3(position_x, position_y + size_y, position_z),
 						glm::vec3(color_r, color_g, color_b),
 						glm::vec2(
-							(char_x) / static_cast<float>(texture_width),
-							(char_y + char_height) / static_cast<float>(texture_height)
+							(char_x) / static_cast<float>(texture_size.x),
+							(char_y + char_height) / static_cast<float>(texture_size.y)
 						)
 					},
 					RenderingVertex{
 						glm::vec3(position_x + size_x, position_y + size_y, position_z),
 						glm::vec3(color_r, color_g, color_b),
 						glm::vec2(
-							(char_x + char_width) / static_cast<float>(texture_width),
-							(char_y + char_height) / static_cast<float>(texture_height)
+							(char_x + char_width) / static_cast<float>(texture_size.x),
+							(char_y + char_height) / static_cast<float>(texture_size.y)
 						)
 					},
 					RenderingVertex{
 						glm::vec3(position_x, position_y, position_z),
 						glm::vec3(color_r, color_g, color_b),
 						glm::vec2(
-							(char_x) / static_cast<float>(texture_width),
-							(char_y) / static_cast<float>(texture_height)
+							(char_x) / static_cast<float>(texture_size.x),
+							(char_y) / static_cast<float>(texture_size.y)
 						)
 					},
 					RenderingVertex{
 						glm::vec3(position_x + size_x, position_y + size_y, position_z),
 						glm::vec3(color_r, color_g, color_b),
 						glm::vec2(
-							(char_x + char_width) / static_cast<float>(texture_width),
-							(char_y + char_height) / static_cast<float>(texture_height)
+							(char_x + char_width) / static_cast<float>(texture_size.x),
+							(char_y + char_height) / static_cast<float>(texture_size.y)
 						)
 					},
 					RenderingVertex{
 						glm::vec3(position_x + size_x, position_y, position_z),
 						glm::vec3(color_r, color_g, color_b),
 						glm::vec2(
-							(char_x + char_width) / static_cast<float>(texture_width),
-							(char_y) / static_cast<float>(texture_height)
+							(char_x + char_width) / static_cast<float>(texture_size.x),
+							(char_y) / static_cast<float>(texture_size.y)
 						)
 					},
 					RenderingVertex{
 						glm::vec3(position_x, position_y, position_z),
 						glm::vec3(color_r, color_g, color_b),
 						glm::vec2(
-							(char_x) / static_cast<float>(texture_width),
-							(char_y) / static_cast<float>(texture_height)
+							(char_x) / static_cast<float>(texture_size.x),
+							(char_y) / static_cast<float>(texture_size.y)
 						)
 					}
 				};

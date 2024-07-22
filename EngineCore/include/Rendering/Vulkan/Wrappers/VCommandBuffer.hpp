@@ -1,10 +1,12 @@
 #pragma once
 
-#include "HoldsVulkanDevice.hpp"
-#include "framework.hpp"
+#include "Rendering/Vulkan/Wrappers/HoldsVulkanDevice.hpp"
+#include "Rendering/Vulkan/Wrappers/framework.hpp"
+
 #include "vulkan/vulkan_core.h"
 
 #include <functional>
+
 
 namespace Engine::Rendering::Vulkan
 {

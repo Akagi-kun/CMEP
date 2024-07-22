@@ -47,9 +47,9 @@ namespace Engine
 
 			void Init(std::unique_ptr<FontData> init_data);
 
-			FontChar* GetChar(char ch);
+			FontChar* GetChar(char character_id);
 			std::shared_ptr<Texture> GetPageTexture(int page);
-			std::string* GetFontInfoParameter(std::string name);
+			std::string* GetFontInfoParameter(const std::string& name);
 		};
 	} // namespace Rendering
 } // namespace Engine

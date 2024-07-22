@@ -1,9 +1,9 @@
 #pragma once
 
-#include "Rendering/Vulkan/HoldsVMA.hpp"
-#include "Rendering/Vulkan/HoldsVulkanDevice.hpp"
+#include "Rendering/Vulkan/Wrappers/HoldsVMA.hpp"
+#include "Rendering/Vulkan/Wrappers/HoldsVulkanDevice.hpp"
+#include "Rendering/Vulkan/Wrappers/framework.hpp"
 
-#include "framework.hpp"
 #include "vulkan/vulkan_core.h"
 
 namespace Engine::Rendering::Vulkan

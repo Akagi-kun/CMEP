@@ -2,7 +2,6 @@
 
 #include "Assets/AssetManager.hpp"
 #include "Assets/Texture.hpp"
-#include "Rendering/MeshRenderer.hpp"
 #include "Rendering/Renderer2D.hpp"
 #include "Rendering/SupplyData.hpp"
 
@@ -13,7 +12,9 @@
 
 #include "Engine.hpp"
 #include "EnumStringConvertor.hpp"
+#include "KVPairHelper.hpp"
 #include "lua.hpp"
+#include "vulkan/vulkan_core.h"
 
 #include <stdexcept>
 
@@ -58,8 +59,6 @@ namespace Engine::Scripting::Mappings
 		{
 			CMEP_LUACHECK_FN_ARGC(state, 2)
 
-			// lua_getfield(state, 1, "_ptr");
-			// auto* renderer = static_cast<Rendering::IRenderer*>(lua_touserdata(state, -1));
 			auto* renderer = static_cast<Rendering::IRenderer*>(lua_touserdata(state, 1));
 
 			const char* text = lua_tostring(state, 2);
@@ -74,8 +73,6 @@ namespace Engine::Scripting::Mappings
 		{
 			CMEP_LUACHECK_FN_ARGC(state, 2)
 
-			// lua_getfield(state, 1, "_ptr");
-			// auto* renderer = static_cast<Rendering::IRenderer*>(lua_touserdata(state, -1));
 			auto* renderer = static_cast<Rendering::IRenderer*>(lua_touserdata(state, 1));
 
 			lua_getfield(state, 2, "_smart_ptr");
@@ -157,7 +154,7 @@ namespace Engine::Scripting::Mappings
 
 		static int CreateSceneObject(lua_State* state)
 		{
-			CMEP_LUACHECK_FN_ARGC(state, 5)
+			CMEP_LUACHECK_FN_ARGC(state, 4)
 
 			/* lua_getfield(state, 1, "_ptr");
 			auto* scene_manager = static_cast<SceneManager*>(lua_touserdata(state, -1)); */
@@ -167,19 +164,41 @@ namespace Engine::Scripting::Mappings
 				lua_touserdata(state, -1)
 			);
 
-			std::string renderer_type	  = lua_tostring(state, 2);
-			std::string mesh_builder_type = lua_tostring(state, 3);
-			std::string shader_name		  = lua_tostring(state, 4);
+			std::string template_params = lua_tostring(state, 2);
 
-			if (lua_istable(state, 5))
+			auto [renderer_data, mesh_builder_type]	 = Utility::SplitKVPair(template_params, "/");
+			auto [renderer_type, renderer_primitive] = Utility::SplitKVPair(renderer_data, ":");
+
+			std::string shader_name = lua_tostring(state, 3);
+
+			if (lua_istable(state, 4))
 			{
 				if (auto locked_asset_manager = asset_manager.lock())
 				{
-					auto supply_data = InterpretSupplyData(state, locked_asset_manager.get(), 5);
+					auto supply_data = InterpretSupplyData(state, locked_asset_manager.get(), 4);
 
 					const auto& factory =
 						Factories::ObjectFactory::GetSceneObjectFactory(renderer_type, mesh_builder_type);
-					Object* obj = factory(locked_asset_manager->GetOwnerEngine(), shader_name, supply_data);
+
+					Object* obj;
+					if (renderer_primitive.empty())
+					{
+						obj = factory(
+							locked_asset_manager->GetOwnerEngine(),
+							shader_name,
+							supply_data,
+							VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST
+						);
+					}
+					else
+					{
+						obj = factory(
+							locked_asset_manager->GetOwnerEngine(),
+							shader_name,
+							supply_data,
+							renderer_primitive
+						);
+					}
 
 					if (obj != nullptr)
 					{

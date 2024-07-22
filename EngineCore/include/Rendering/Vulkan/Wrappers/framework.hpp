@@ -34,5 +34,4 @@ namespace Engine::Rendering::Vulkan
 
 	// Buffer related
 	class VBuffer;
-
 } // namespace Engine::Rendering::Vulkan

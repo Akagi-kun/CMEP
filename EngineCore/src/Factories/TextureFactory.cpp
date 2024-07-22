@@ -26,7 +26,7 @@ namespace Engine::Factories
 	)
 	{
 		FILE* file = fopen(path.c_str(), "rb");
-		if (file == NULL)
+		if (file == nullptr)
 		{
 			this->logger->SimpleLog(
 				Logging::LogLevel::Exception,
@@ -84,9 +84,8 @@ namespace Engine::Factories
 
 		fclose(file);
 
-		std::shared_ptr<Rendering::Texture> texture = std::make_shared<Rendering::Texture>(this->owner_engine);
-
-		texture->Init(std::move(texture_data));
+		std::shared_ptr<Rendering::Texture> texture =
+			std::make_shared<Rendering::Texture>(this->owner_engine, std::move(texture_data));
 
 		return texture;
 	}
@@ -106,8 +105,7 @@ namespace Engine::Factories
 
 		texture_data->data		= raw_data;
 		texture_data->color_fmt = color_format;
-		texture_data->x			= xsize;
-		texture_data->y			= ysize;
+		texture_data->size		= {xsize, ysize};
 
 		auto memory_size = static_cast<VkDeviceSize>(xsize * ysize) * channel_count;
 
@@ -119,7 +117,7 @@ namespace Engine::Factories
 		if (staging_buffer == nullptr)
 		{
 			used_staging_buffer = new Rendering::Vulkan::VBuffer(
-				renderer->GetDeviceManager().lock().get(),
+				renderer->GetDeviceManager(),
 				static_cast<size_t>(memory_size),
 				VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
 				VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
@@ -132,14 +130,14 @@ namespace Engine::Factories
 			used_staging_buffer = staging_buffer;
 		}
 
-		if (auto locked_device_manager = renderer->GetDeviceManager().lock())
+		if (auto* device_manager = renderer->GetDeviceManager())
 		{
 			used_staging_buffer->MapMemory();
 
 			memcpy(used_staging_buffer->mapped_data, raw_data.data(), static_cast<size_t>(memory_size));
 
 			texture_data->texture_image = new Rendering::Vulkan::VSampledImage(
-				locked_device_manager.get(),
+				device_manager,
 				{xsize, ysize},
 				VK_SAMPLE_COUNT_1_BIT,
 				VK_FORMAT_R8G8B8A8_UNORM,

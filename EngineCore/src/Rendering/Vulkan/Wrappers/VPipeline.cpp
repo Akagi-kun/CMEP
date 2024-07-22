@@ -23,9 +23,10 @@ namespace Engine::Rendering::Vulkan
 
 		std::string shader_path = this->device_manager->GetOwnerEngine()->GetShaderPath();
 
+		assert(!settings.shader.empty() && "A valid shader for this pipeline is required!");
+
 		// Vertex stage
-		assert(!settings.shader.vertex_stage.empty() && "A valid shader for this stage is required!");
-		auto vert_shader_module = VShaderModule(this->device_manager, shader_path + settings.shader.vertex_stage);
+		auto vert_shader_module = VShaderModule(this->device_manager, shader_path + settings.shader + "_vert.spv");
 
 		VkPipelineShaderStageCreateInfo vert_shader_stage_info{};
 		vert_shader_stage_info.sType  = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
@@ -34,8 +35,7 @@ namespace Engine::Rendering::Vulkan
 		vert_shader_stage_info.pName  = "main";
 
 		// Fragment stage
-		assert(!settings.shader.fragment_stage.empty() && "A valid shader for this stage is required!");
-		auto frag_shader_module = VShaderModule(this->device_manager, shader_path + settings.shader.fragment_stage);
+		auto frag_shader_module = VShaderModule(this->device_manager, shader_path + settings.shader + "_frag.spv");
 
 		VkPipelineShaderStageCreateInfo frag_shader_stage_info{};
 		frag_shader_stage_info.sType  = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;

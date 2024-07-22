@@ -5,6 +5,7 @@
 #include "Logging/Logging.hpp"
 
 #include "Engine.hpp"
+#include "KVPairHelper.hpp"
 
 #include <cstring>
 #include <filesystem>
@@ -59,25 +60,9 @@ namespace Engine::Factories
 		return entry;
 	}
 
-	static std::tuple<std::string, std::string> SplitKVPair(
-		const std::string& from_string,
-		const std::string& delimiter
-	)
-	{
-		// Get position of delimiter in entry
-		const size_t delimiter_begin = from_string.find(delimiter);
-		const size_t delimiter_end	 = delimiter_begin + delimiter.size();
-
-		// Get the key and value
-		std::string key	  = from_string.substr(0, delimiter_begin);
-		std::string value = from_string.substr(delimiter_end, from_string.size() - delimiter_end);
-
-		return {key, value};
-	}
-
 	static std::tuple<std::string, std::string> GetNextKVPair(std::stringstream& from_stream)
 	{
-		return SplitKVPair(StreamGetNextToken(from_stream), "=");
+		return Utility::SplitKVPair(StreamGetNextToken(from_stream), "=");
 	}
 
 	void FontFactory::ParseBmfont(std::unique_ptr<Rendering::FontData>& font, std::ifstream& font_file)
@@ -243,7 +228,7 @@ namespace Engine::Factories
 				// Add every entry of the line
 				while (!line_stream.eof())
 				{
-					tie(key, value) = SplitKVPair(StreamGetNextToken(line_stream), "=");
+					tie(key, value) = Utility::SplitKVPair(StreamGetNextToken(line_stream), "=");
 					font->info.emplace(key, value);
 				}
 
@@ -252,7 +237,7 @@ namespace Engine::Factories
 			case BmFontLineType::CHARS:
 			{
 				// chars has only a single entry (the count of chars), no loop required
-				tie(key, value)	 = SplitKVPair(StreamGetNextToken(line_stream), "=");
+				tie(key, value)	 = Utility::SplitKVPair(StreamGetNextToken(line_stream), "=");
 				font->char_count = static_cast<unsigned int>(std::stoi(value));
 
 				break;

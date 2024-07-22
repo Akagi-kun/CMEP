@@ -94,7 +94,7 @@ local gameOnGameOver = function(asset_manager, scene_manager)
 
 	engine.logger.SimpleLog(string.format("Game over!"))
 
-	local object = engine.CreateSceneObject(asset_manager, "generic_2d", "text", "text", {
+	local object = engine.CreateSceneObject(asset_manager, "renderer_2d", "text", "text", {
 		{"font", "myfont"}, {"text", "GAME OVER"}
 	  })
 	object:SetPosition(0.34, 0.45, -0.01)
@@ -152,7 +152,6 @@ onKeyDown = function(event)
 	--
 	if event.keycode == 256 then
 		event.engine:Stop()
-		return 0
 	end
 
 	return 0
@@ -203,8 +202,6 @@ onUpdate = function(event)
 		local deltaTime_avg = deltaTime_accum / deltaTime_count
 		--cmepmeta.logger.SimpleLog(string.format("Frametime is: %f ms!", deltaTime_accum / deltaTime_count * 1000))
 		local object = scene:FindObject("_debug_info")
-		--engine.TextRendererUpdateText(object.renderer, string.format("avg: %fms\nmin: %fms\nmax: %fms", deltaTime_avg * 1000, deltaTime_min * 1000, deltaTime_max * 1000))
-		
 		engine.RendererSupplyText(object.renderer, string.format("avg: %fms\nmin: %fms\nmax: %fms", deltaTime_avg * 1000, deltaTime_min * 1000, deltaTime_max * 1000))
 
 		deltaTime_min = 2000.0
@@ -339,7 +336,7 @@ onInit = function(event)
 	local scene = scene_manager:GetSceneCurrent();
 
 	-- Create frametime counter and add it to scene
-	local object = engine.CreateSceneObject(asset_manager, "generic_2d", "text", "text", {
+	local object = engine.CreateSceneObject(asset_manager, "renderer_2d/text", "text", {
 		{"font", "myfont"}, {"text", "avg: \nmin: \nmax: "}
 	  })
 	object:SetPosition(0.0, 0.0, -0.01)
@@ -347,7 +344,7 @@ onInit = function(event)
 	scene:AddObject("_debug_info", object)
 
 	-- Add background
-	local object = engine.CreateSceneObject(asset_manager, "generic_2d", "sprite", "sprite", {
+	local object = engine.CreateSceneObject(asset_manager, "renderer_2d/sprite", "sprite", {
 		{"texture", "background"}
 	  })
 	object:SetPosition(0.0, 0.0, -0.8)
@@ -355,7 +352,7 @@ onInit = function(event)
 	scene:AddObject("background", object)
 
 	-- Add birb
-	local object = engine.CreateSceneObject(asset_manager, "generic_2d", "sprite", "sprite", {
+	local object = engine.CreateSceneObject(asset_manager, "renderer_2d/sprite", "sprite", {
 		{"texture", "birb"}
 	  })
 	object:SetPosition(0.2, util.pxToScreenY(360), 0.0)
@@ -363,7 +360,7 @@ onInit = function(event)
 	scene:AddObject("birb", object)
 
 	-- Add score
-	local object = engine.CreateSceneObject(asset_manager, "generic_2d", "text", "text", {
+	local object = engine.CreateSceneObject(asset_manager, "renderer_2d/text", "text", {
 		{"font", "myfont"}, {"text", "0"}
 	  })
 	object:SetPosition(0.5, 0.0, -0.01)
@@ -372,14 +369,14 @@ onInit = function(event)
 
 	-- Add grounds
 	for i = 0, 2 do
-		local ground_top = engine.CreateSceneObject(asset_manager, "generic_2d", "sprite", "sprite", {
+		local ground_top = engine.CreateSceneObject(asset_manager, "renderer_2d/sprite", "sprite", {
 			{"texture", "ground_top"}
 		})
 		ground_top:SetPosition(util.pxToScreenX(630) * i, 0.0, -0.1)
 		ground_top:SetSize(util.pxToScreenX(630), util.pxToScreenY(60), 1)
 		scene:AddObject("ground_top"..i, ground_top)
 
-		local ground_bottom = engine.CreateSceneObject(asset_manager, "generic_2d", "sprite", "sprite", {
+		local ground_bottom = engine.CreateSceneObject(asset_manager, "renderer_2d/sprite", "sprite", {
 			{"texture", "ground_bottom"}
 	 	})
 		ground_bottom:SetPosition(util.pxToScreenX(630) * i, util.pxToScreenY(util.screen_size_y - 60), -0.1)

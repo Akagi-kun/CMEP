@@ -1,10 +1,7 @@
 #include "SceneLoader.hpp"
 
 #include "Assets/AssetManager.hpp"
-#include "Rendering/AxisRenderer.hpp"
 #include "Rendering/IRenderer.hpp"
-#include "Rendering/MeshRenderer.hpp"
-#include "Rendering/Renderer2D.hpp"
 
 #include "Factories/ObjectFactory.hpp"
 

@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Rendering/Transform.hpp"
-#include "Rendering/Vulkan/VSampledImage.hpp"
+#include "Rendering/Vulkan/Wrappers/VSampledImage.hpp"
 
 #include "IMeshBuilder.hpp"
 

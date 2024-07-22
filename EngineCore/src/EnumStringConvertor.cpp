@@ -22,8 +22,8 @@ namespace Engine
 
 	template <>
 	EnumStringConvertor<RendererType>::map_type EnumStringConvertor<RendererType>::type_map = {
-		{"generic_2d"sv, value_type::GENERIC_2D},
-		{"generic_3d"sv, value_type::GENERIC_3D},
+		{"renderer_2d"sv, value_type::RENDERER_2D},
+		{"renderer_3d"sv, value_type::RENDERER_3D},
 	};
 
 	template <>
@@ -36,14 +36,20 @@ namespace Engine
 
 	template <>
 	EnumStringConvertor<VkFilter>::map_type EnumStringConvertor<VkFilter>::type_map = {
-		{"nearest", VK_FILTER_NEAREST},
-		{"linear", VK_FILTER_LINEAR},
+		{"nearest"sv, VK_FILTER_NEAREST},
+		{"linear"sv, VK_FILTER_LINEAR},
 	};
 
 	template <>
 	EnumStringConvertor<VkSamplerAddressMode>::map_type EnumStringConvertor<VkSamplerAddressMode>::type_map = {
-		{"repeat", VK_SAMPLER_ADDRESS_MODE_REPEAT},
-		{"clamp", VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE},
-		{"clamp_border", VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_BORDER},
+		{"repeat"sv, VK_SAMPLER_ADDRESS_MODE_REPEAT},
+		{"clamp"sv, VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE},
+		{"clamp_border"sv, VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_BORDER},
+	};
+
+	template <>
+	EnumStringConvertor<VkPrimitiveTopology>::map_type EnumStringConvertor<VkPrimitiveTopology>::type_map = {
+		{"lines"sv, VK_PRIMITIVE_TOPOLOGY_LINE_LIST},
+		{"triangles"sv, VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST}
 	};
 } // namespace Engine

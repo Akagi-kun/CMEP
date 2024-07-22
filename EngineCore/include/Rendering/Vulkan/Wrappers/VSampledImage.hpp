@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Rendering/Vulkan/VImage.hpp"
+#include "Rendering/Vulkan/Wrappers/VImage.hpp"
 
 namespace Engine::Rendering::Vulkan
 {

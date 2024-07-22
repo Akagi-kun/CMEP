@@ -1,8 +1,8 @@
 #include "Rendering/Vulkan/VDeviceManager.hpp"
-#include "Rendering/Vulkan/VImage.hpp"
-#include "Rendering/Vulkan/VSwapchain.hpp"
 #include "Rendering/Vulkan/VulkanRenderingEngine.hpp"
 #include "Rendering/Vulkan/VulkanStructDefs.hpp"
+#include "Rendering/Vulkan/Wrappers/VImage.hpp"
+#include "Rendering/Vulkan/Wrappers/VSwapchain.hpp"
 
 #include "Logging/Logging.hpp"
 

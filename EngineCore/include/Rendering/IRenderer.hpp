@@ -2,14 +2,12 @@
 
 #include "Rendering/IMeshBuilder.hpp"
 #include "Rendering/Transform.hpp"
-#include "Rendering/Vulkan/VulkanRenderingEngine.hpp"
+#include "Rendering/Vulkan/Wrappers/VBuffer.hpp"
 
 #include "InternalEngineObject.hpp"
 #include "MeshBuildContext.hpp"
 #include "SupplyData.hpp"
 #include "Transform.hpp"
-#include "Vulkan/VBuffer.hpp"
-// #include "glm/glm.hpp"
 
 #include <cstdint>
 
@@ -29,8 +27,11 @@ namespace Engine
 			Transform parent_transform;
 			ScreenSize screen;
 
+			// Renderer configuration
 			const char* pipeline_name = nullptr;
+			VkPrimitiveTopology selected_topology;
 
+			// Internal data
 			Vulkan::VPipeline* pipeline = nullptr;
 			Vulkan::VBuffer* vbo		= nullptr;
 			size_t vbo_vert_count		= 0;
@@ -42,8 +43,14 @@ namespace Engine
 			bool has_updated_mesh = false;
 
 		public:
-			IRenderer(Engine* with_engine, IMeshBuilder* with_builder, const char* with_pipeline_program)
-				: InternalEngineObject(with_engine), pipeline_name(with_pipeline_program), mesh_builder(with_builder)
+			IRenderer(
+				Engine* with_engine,
+				IMeshBuilder* with_builder,
+				const char* with_pipeline_program,
+				VkPrimitiveTopology with_primitives
+			)
+				: InternalEngineObject(with_engine), pipeline_name(with_pipeline_program),
+				  selected_topology(with_primitives), mesh_builder(with_builder)
 			{
 			}
 			virtual ~IRenderer()

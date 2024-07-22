@@ -43,6 +43,7 @@ namespace Engine::Scripting
 		lua_setfield(state, -2, "logger");
 		/*******************************/
 
+		// TODO: Rename
 		lua_setglobal(state, "engine");
 
 		lua_settop(state, 0);

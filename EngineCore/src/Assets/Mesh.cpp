@@ -1,6 +1,6 @@
 #include "Assets/Mesh.hpp"
 
-#include "Rendering/Vulkan/VBuffer.hpp"
+#include "Rendering/Vulkan/Wrappers/VBuffer.hpp"
 
 #include "Logging/Logging.hpp"
 
@@ -55,12 +55,12 @@ namespace Engine::Rendering
 		Vulkan::VulkanRenderingEngine* renderer = this->owner_engine->GetRenderingEngine();
 
 		auto* premade_staging_buffer = new Vulkan::VBuffer(
-			renderer->GetDeviceManager().lock().get(),
-			5120 * 5120 * 4,
+			renderer->GetDeviceManager(),
+			1024 * 1024 * 4,
 			VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
 			VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
 			0
-		); // renderer->createVulkanStagingBufferPreMapped(10240 * 10240 * 4); // 10240x1024 4-channel staging buffer
+		); // 1240x1024 4-channel staging buffer
 
 		for (size_t i = 0; i < materials.size(); i++)
 		{
@@ -81,54 +81,9 @@ namespace Engine::Rendering
 							this->diffuse_textures.push_back(nullptr);
 						}
 			 */
-			// if (material.bump_texname != "")
-			// {
-			// 	Logging::GlobalLogger->SimpleLog(Logging::LogLevel::Debug2, "TinyObjReader: Bump texture: '%s' for
-			// material: '%s'", material.bump_texname.c_str(), material.name.c_str());
-			// 	std::shared_ptr<Rendering::Texture> textureBump = std::make_shared<Rendering::Texture>();
-			// 	textureBump->UsePremadeStagingBuffer(premade_staging_buffer);
-			// 	textureBump->InitFile(Rendering::Texture_InitFiletype::FILE_PNG, material.bump_texname);
-			// 	this->bump_textures.push_back(textureBump);
-			// 	bump_count++;
-			// }
-			// else
-			// {
-			// 	this->bump_textures.push_back(nullptr);
-			// }
-
-			// if (material.roughness_texname != "")
-			// {
-			// 	Logging::GlobalLogger->SimpleLog(Logging::LogLevel::Debug2, "TinyObjReader: Roughness texture: '%s' for
-			// material: '%s'", material.roughness_texname.c_str(), material.name.c_str());
-			// 	std::shared_ptr<Rendering::Texture> textureRoughness = std::make_shared<Rendering::Texture>();
-			// 	textureRoughness->UsePremadeStagingBuffer(premade_staging_buffer);
-			// 	textureRoughness->InitFile(Rendering::Texture_InitFiletype::FILE_PNG, material.roughness_texname);
-			// 	this->roughness_textures.push_back(textureRoughness);
-			// 	roughness_count++;
-			// }
-			// else
-			// {
-			// 	this->roughness_textures.push_back(nullptr);
-			// }
-
-			// if (material.reflection_texname != "")
-			// {
-			// 	Logging::GlobalLogger->SimpleLog(Logging::LogLevel::Debug2, "TinyObjReader: Reflection texture: '%s' for
-			// material: '%s'", material.reflection_texname.c_str(), material.name.c_str());
-			// 	std::shared_ptr<Rendering::Texture> textureReflection = std::make_shared<Rendering::Texture>();
-			// 	textureReflection->UsePremadeStagingBuffer(premade_staging_buffer);
-			// 	textureReflection->InitFile(Rendering::Texture_InitFiletype::FILE_PNG, material.reflection_texname);
-			// 	this->reflective_textures.push_back(textureReflection);
-			// 	reflection_count++;
-			// }
-			// else
-			// {
-			// 	this->reflective_textures.push_back(nullptr);
-			// }
 		}
 
 		delete premade_staging_buffer;
-		// renderer->CleanupVulkanBuffer(premade_staging_buffer);
 
 		this->logger->SimpleLog(
 			Logging::LogLevel::Info,

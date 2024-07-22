@@ -13,12 +13,7 @@
 #include "Logging/LoggingPrefix.hpp"
 
 namespace Engine::Rendering
-{ /*
-	 Font::Font(AssetManager* managed_by)
-	 {
-		 this->asset_manager = managed_by;
-	 }
-  */
+{
 	Font::~Font()
 	{
 		this->logger->SimpleLog(Logging::LogLevel::Debug3, LOGPFX_CURRENT "Destructor called");
@@ -31,9 +26,9 @@ namespace Engine::Rendering
 		this->data = std::move(init_data);
 	}
 
-	FontChar* Font::GetChar(char ch)
+	FontChar* Font::GetChar(char character_id)
 	{
-		auto find_ret = this->data->chars.find(ch);
+		auto find_ret = this->data->chars.find(character_id);
 		if (find_ret != this->data->chars.end())
 		{
 			return &find_ret->second;
@@ -51,7 +46,7 @@ namespace Engine::Rendering
 		return nullptr;
 	}
 
-	std::string* Font::GetFontInfoParameter(std::string name)
+	std::string* Font::GetFontInfoParameter(const std::string& name)
 	{
 		auto find_ret = this->data->info.find(name);
 		if (find_ret != this->data->info.end())

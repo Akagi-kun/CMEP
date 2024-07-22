@@ -27,7 +27,7 @@ set(SRC_FILES
 	src/Assets/Texture.cpp
 
 	src/Rendering/AxisRenderer.cpp
-	src/Rendering/MeshRenderer.cpp
+	src/Rendering/Renderer3D.cpp
 	src/Rendering/Renderer2D.cpp
 
 	src/Rendering/IMeshBuilder.cpp
@@ -41,14 +41,14 @@ set(SRC_FILES
 	src/Rendering/Vulkan/VulkanRenderingEngine.cpp
 	src/Rendering/Vulkan/VulkanRenderingEngine_Init.cpp
 	
-	src/Rendering/Vulkan/VShaderModule.cpp
-	src/Rendering/Vulkan/VPipeline.cpp
-	src/Rendering/Vulkan/VImage.cpp
-	src/Rendering/Vulkan/VSampledImage.cpp
-	src/Rendering/Vulkan/VSwapchain.cpp
-	src/Rendering/Vulkan/VBuffer.cpp
-	src/Rendering/Vulkan/VCommandPool.cpp
-	src/Rendering/Vulkan/VCommandBuffer.cpp
+	src/Rendering/Vulkan/Wrappers/VShaderModule.cpp
+	src/Rendering/Vulkan/Wrappers/VPipeline.cpp
+	src/Rendering/Vulkan/Wrappers/VImage.cpp
+	src/Rendering/Vulkan/Wrappers/VSampledImage.cpp
+	src/Rendering/Vulkan/Wrappers/VSwapchain.cpp
+	src/Rendering/Vulkan/Wrappers/VBuffer.cpp
+	src/Rendering/Vulkan/Wrappers/VCommandPool.cpp
+	src/Rendering/Vulkan/Wrappers/VCommandBuffer.cpp
 	
 	src/Scripting/LuaScript.cpp
 	src/Scripting/LuaScriptExecutor.cpp
@@ -84,8 +84,6 @@ else()
 		)
 endif()
 
-#include_directories(include)
-
 add_library(EngineCore SHARED ${SRC_FILES})
 
 if(MSVC)
@@ -95,7 +93,7 @@ else()
 	target_compile_options(EngineCore PRIVATE -Wall -Wno-unknown-pragmas -Wno-nullability -Wno-nullability-completeness) # -Wextra -Wpedantic -Werror
 endif()
 
-target_link_directories(EngineCore PUBLIC lib ../build) # ../build/Debug 
+target_link_directories(EngineCore PUBLIC lib ../build)
 
 if((WIN32 OR UNIX) AND NOT APPLE)
 	target_link_directories(EngineCore PUBLIC ../external/lua-prebuilt)
@@ -118,13 +116,13 @@ if(DEFINED ENV{VULKAN_SDK})
 		target_link_directories(EngineCore PUBLIC $ENV{VULKAN_SDK}/Lib)
 		target_include_directories(EngineCore PUBLIC $ENV{VULKAN_SDK}/Include)
 	else()
-		if(APPLE)
+		#if(APPLE)
 			target_link_directories(EngineCore PUBLIC $ENV{VULKAN_SDK}/lib)
 			target_include_directories(EngineCore PUBLIC $ENV{VULKAN_SDK}/include)
-		else()
-			target_link_directories(EngineCore PUBLIC $ENV{VULKAN_SDK}/lib)
-			target_include_directories(EngineCore PUBLIC $ENV{VULKAN_SDK}/include)
-		endif()
+		#else()
+		#	target_link_directories(EngineCore PUBLIC $ENV{VULKAN_SDK}/lib)
+		#	target_include_directories(EngineCore PUBLIC $ENV{VULKAN_SDK}/include)
+		#endif()
 	endif()
 else()
 	message("Warning! Vulkan SDK environment variable not found!")

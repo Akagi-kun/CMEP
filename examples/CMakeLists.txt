@@ -1,32 +1,5 @@
 cmake_minimum_required(VERSION 3.10)
 project(examples)
 
-#########################
-if(MSVC)
-    add_custom_target(floppybirb-compile-shaders compile.bat WORKING_DIRECTORY floppybirb/shaders/vulkan)
-else()
-    add_custom_target(floppybirb-compile-shaders ./compile.sh WORKING_DIRECTORY floppybirb/shaders/vulkan)
-endif()	
-
-add_custom_target(floppybirb-perform-copy)
-add_custom_command(TARGET floppybirb-perform-copy
-                    COMMAND ${CMAKE_COMMAND} -E
-                    copy_directory_if_different examples/floppybirb build/game
-                    WORKING_DIRECTORY ..
-                    )
-
-add_custom_command(TARGET floppybirb-perform-copy
-                   POST_BUILD
-                   COMMAND ${CMAKE_COMMAND} -E
-                   rm
-                   shaders/vulkan/compile.bat
-                   shaders/vulkan/cleanup.bat
-                   shaders/vulkan/compile.sh
-                   shaders/vulkan/cleanup.sh
-                   WORKING_DIRECTORY ../build/game
-                   )
-
-add_custom_target(floppybirb)
-add_dependencies(floppybirb floppybirb-compile-shaders floppybirb-perform-copy)
-
-#########################
+add_subdirectory(floppybirb)
+add_subdirectory(testgame)

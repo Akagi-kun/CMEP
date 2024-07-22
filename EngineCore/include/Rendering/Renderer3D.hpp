@@ -1,5 +1,4 @@
 #pragma once
-#include "Assets/Mesh.hpp"
 
 #include "IRenderer.hpp"
 
@@ -10,19 +9,25 @@ namespace Engine::Rendering
 	class Texture;
 	class Shader;
 
-	class MeshRenderer final : public IRenderer
+	class Renderer3D final : public IRenderer
 	{
 	private:
 		glm::mat4 mat_mvp{};
 
-		// std::shared_ptr<Rendering::Texture> texture;
-		std::shared_ptr<Mesh> mesh;
+		std::shared_ptr<Rendering::Texture> texture = nullptr;
+
+		// std::shared_ptr<Mesh> mesh;
 
 		bool has_updated_meshdata = false;
 
 	public:
-		MeshRenderer(Engine* engine, const char* with_pipeline_program);
-		~MeshRenderer() override;
+		Renderer3D(
+			Engine* engine,
+			IMeshBuilder* with_builder,
+			const char* with_pipeline_program,
+			VkPrimitiveTopology with_primitives
+		);
+		~Renderer3D() override;
 
 		void SupplyData(const RendererSupplyData& data) override;
 		void UpdateMesh() override;

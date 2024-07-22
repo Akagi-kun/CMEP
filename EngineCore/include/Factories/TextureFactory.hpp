@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Assets/Texture.hpp"
-#include "Rendering/Vulkan/framework.hpp"
+#include "Rendering/Vulkan/Wrappers/framework.hpp"
 
 #include "InternalEngineObject.hpp"
 

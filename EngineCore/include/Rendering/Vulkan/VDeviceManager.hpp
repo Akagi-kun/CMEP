@@ -1,10 +1,10 @@
 #pragma once
 
 #include "Rendering/Vulkan/ImportVulkan.hpp"
+#include "Rendering/Vulkan/Wrappers/framework.hpp"
 
 #include "InternalEngineObject.hpp"
 #include "VulkanStructDefs.hpp"
-#include "framework.hpp"
 
 namespace Engine::Rendering::Vulkan
 {

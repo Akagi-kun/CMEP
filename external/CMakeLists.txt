@@ -6,7 +6,6 @@ message("-- Binary dir is: " ${CMAKE_CURRENT_BINARY_DIR})
 if(NOT MSVC)
 	if(NOT APPLE)
 		message("-- Will compile luajit for unix (non-osx)")
-		#add_custom_target(lua_build COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/external/build_lua.sh linux)
 		add_custom_target(lua_build DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/../build/libluajit.so ${CMAKE_CURRENT_BINARY_DIR}/../build/libluajit.a ${CMAKE_CURRENT_BINARY_DIR}/../build/libluajit-5.1.so.2)	
 
 		# Build luajit

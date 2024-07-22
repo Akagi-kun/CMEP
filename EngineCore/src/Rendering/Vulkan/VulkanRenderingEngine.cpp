@@ -1,13 +1,12 @@
 #include "Rendering/Vulkan/VulkanRenderingEngine.hpp"
 
 #include "Rendering/Vulkan/ImportVulkan.hpp"
-#include "Rendering/Vulkan/VBuffer.hpp"
-#include "Rendering/Vulkan/VCommandBuffer.hpp"
-#include "Rendering/Vulkan/VCommandPool.hpp" // IWYU pragma: keep
 #include "Rendering/Vulkan/VDeviceManager.hpp"
-#include "Rendering/Vulkan/VImage.hpp" // IWYU pragma: keep
-#include "Rendering/Vulkan/VPipeline.hpp"
-#include "Rendering/Vulkan/VSwapchain.hpp"
+#include "Rendering/Vulkan/Wrappers/VBuffer.hpp"
+#include "Rendering/Vulkan/Wrappers/VCommandBuffer.hpp"
+#include "Rendering/Vulkan/Wrappers/VCommandPool.hpp" // IWYU pragma: keep
+#include "Rendering/Vulkan/Wrappers/VImage.hpp"		  // IWYU pragma: keep
+#include "Rendering/Vulkan/Wrappers/VSwapchain.hpp"
 
 #include "Logging/Logging.hpp"
 
@@ -495,13 +494,6 @@ namespace Engine::Rendering::Vulkan
 		default_settings.descriptor_layout_settings = {};
 
 		return default_settings;
-	}
-
-	VPipeline* VulkanRenderingEngine::CreateVulkanPipeline(VulkanPipelineSettings& settings)
-	{
-		auto* new_pipeline = new VPipeline(this->device_manager.get(), settings, this->vk_render_pass);
-
-		return new_pipeline;
 	}
 
 	// Buffers

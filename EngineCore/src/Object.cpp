@@ -2,8 +2,6 @@
 
 #include "Rendering/IRenderer.hpp"
 
-#include "InternalEngineObject.hpp"
-
 // Prefixes for logging messages
 #define LOGPFX_CURRENT LOGPFX_CLASS_OBJECT
 #include "Logging/LoggingPrefix.hpp"
@@ -22,7 +20,6 @@ namespace Engine
 		assert(this->owner_engine != nullptr);
 
 		this->renderer = with_renderer;
-		// this->renderer->UpdateHeldLogger(this->logger);
 	}
 
 	Rendering::IRenderer* Object::GetRenderer()
@@ -37,14 +34,7 @@ namespace Engine
 			this->renderer->UpdateTransform(this->transform, this->parent_transform, this->screen);
 		}
 	}
-	/*
-		void Object::UpdateHeldLogger(std::shared_ptr<Logging::Logger>& new_logger)
-		{
-			InternalEngineObject::UpdateHeldLogger(new_logger);
 
-			this->renderer->UpdateHeldLogger(new_logger);
-		}
-	 */
 	void Object::ScreenSizeInform(unsigned int with_screenx, unsigned int with_screeny) noexcept
 	{
 		this->screen.x = with_screenx;
@@ -89,15 +79,7 @@ namespace Engine
 			child->UpdateRenderer();
 		}
 	}
-	/*
-		IModule* Object::GetFirstModule(ModuleType with_type)
-		{
-			auto module_range = this->modules.equal_range(with_type);
 
-			// Returns first module of this type
-			return module_range.first->second;
-		}
-	 */
 	glm::vec3 Object::GetPosition() const noexcept
 	{
 		return this->transform.pos;

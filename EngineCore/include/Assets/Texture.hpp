@@ -1,6 +1,7 @@
 #pragma once
 
-#include "Rendering/Vulkan/VSampledImage.hpp"
+#include "Rendering/Transform.hpp"
+#include "Rendering/Vulkan/Wrappers/VSampledImage.hpp"
 
 #include "InternalEngineObject.hpp"
 
@@ -21,8 +22,7 @@ namespace Engine::Rendering
 	struct TextureData
 	{
 		std::vector<unsigned char> data;
-		uint_fast32_t x						 = 0;
-		uint_fast32_t y						 = 0;
+		TextureSize size;
 		int color_fmt						 = 4;
 		Vulkan::VSampledImage* texture_image = nullptr;
 	};
@@ -33,14 +33,27 @@ namespace Engine::Rendering
 		std::unique_ptr<TextureData> data;
 
 	public:
-		using InternalEngineObject::InternalEngineObject;
+		Texture(Engine* with_engine, std::unique_ptr<TextureData> init_data);
 		~Texture();
 
-		void Init(std::unique_ptr<TextureData> init_data);
+		void GetSize(TextureSize& size) const noexcept
+		{
+			size = this->data->size;
+		}
 
-		void GetSize(uint_fast32_t& x, uint_fast32_t& y) const noexcept;
-		[[nodiscard]] std::vector<unsigned char>& GetData() const;
-		[[nodiscard]] Vulkan::VSampledImage* GetTextureImage() const noexcept;
-		[[nodiscard]] int GetColorFormat() const noexcept;
+		[[nodiscard]] std::vector<unsigned char>& GetData() const
+		{
+			return this->data->data;
+		}
+
+		[[nodiscard]] Vulkan::VSampledImage* GetTextureImage() const noexcept
+		{
+			return this->data->texture_image;
+		}
+
+		[[nodiscard]] int GetColorFormat() const noexcept
+		{
+			return this->data->color_fmt;
+		}
 	};
 } // namespace Engine::Rendering
