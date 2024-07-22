@@ -16,6 +16,7 @@
 
 #include <algorithm>
 #include <cstdint>
+#include <cstring>
 #include <stdexcept>
 #include <utility>
 
@@ -37,11 +38,6 @@ namespace Engine::Rendering::Vulkan
 
 	void VulkanRenderingEngine::RecordVulkanCommandBuffer(VCommandBuffer* command_buffer, uint32_t image_index)
 	{
-		VkCommandBufferBeginInfo begin_info{};
-		begin_info.sType			= VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-		begin_info.flags			= 0;	   // Optional
-		begin_info.pInheritanceInfo = nullptr; // Optional
-
 		command_buffer->BeginCmdBuffer(0);
 
 		auto& command_buf_handle = command_buffer->GetNativeHandle();

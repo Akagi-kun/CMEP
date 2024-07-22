@@ -13,28 +13,9 @@
 
 namespace Engine
 {
-	/* enum class RendererType : uint8_t
-	{
-		MIN_ENUM = 0x00,
-
-		TEXT   = 1,
-		SPRITE = 2,
-		MESH   = 3,
-
-		MAX_ENUM = 0XFF
-	};
-
-	struct ObjectTemplate
-	{
-		RendererType with_renderer;
-		std::string with_shader;
-		std::vector<Rendering::RendererSupplyData> supply_list;
-	}; */
-
 	class Scene : public InternalEngineObject
 	{
 	private:
-	protected:
 		std::unordered_map<std::string, Object*> objects;
 		std::unordered_map<std::string, Factories::ObjectFactory::ObjectTemplate> templates;
 

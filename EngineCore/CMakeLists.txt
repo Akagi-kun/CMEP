@@ -26,9 +26,8 @@ set(SRC_FILES
 	src/Assets/Mesh.cpp
 	src/Assets/Texture.cpp
 
-	src/Rendering/AxisRenderer.cpp
-	src/Rendering/Renderer3D.cpp
 	src/Rendering/Renderer2D.cpp
+	src/Rendering/Renderer3D.cpp
 
 	src/Rendering/IMeshBuilder.cpp
 	src/Rendering/SpriteMeshBuilder.cpp
