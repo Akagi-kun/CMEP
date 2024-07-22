@@ -2,8 +2,6 @@
 
 #include "Rendering/Transform.hpp"
 
-#include "EnumStringConvertor.hpp"
-
 #include <memory>
 #include <string>
 #include <utility>
@@ -54,17 +52,3 @@ namespace Engine::Rendering
 		}
 	};
 } // namespace Engine::Rendering
-
-/* namespace Engine
-{
-	using namespace Rendering;
-
-	template <>
-	EnumStringConvertor<RendererSupplyDataType>::map_type EnumStringConvertor<RendererSupplyDataType>::type_map = {
-		{"texture", value_type::TEXTURE},
-		{"mesh", value_type::MESH},
-		{"font", value_type::FONT},
-		{"text", value_type::TEXT},
-	};
-} // namespace Engine
- */

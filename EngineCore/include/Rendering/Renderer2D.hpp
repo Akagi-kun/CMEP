@@ -20,12 +20,7 @@ namespace Engine::Rendering
 		glm::mat4 mat_mvp{};
 
 	public:
-		Renderer2D(
-			Engine* engine,
-			IMeshBuilder* with_builder,
-			const char* with_pipeline_program,
-			VkPrimitiveTopology with_primitives
-		);
+		Renderer2D(Engine* engine, IMeshBuilder* with_builder, const char* with_pipeline_program);
 		~Renderer2D() override;
 
 		void SupplyData(const RendererSupplyData& data) override;

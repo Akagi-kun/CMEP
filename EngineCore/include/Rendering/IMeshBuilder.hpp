@@ -35,6 +35,8 @@ namespace Engine::Rendering
 			return this->context;
 		}
 
+		[[nodiscard]] virtual VkPrimitiveTopology GetSupportedTopology() const noexcept = 0;
+
 		[[nodiscard]] bool HasRebuilt()
 		{
 			if (this->context.been_rebuilt)

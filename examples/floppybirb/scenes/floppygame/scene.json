@@ -32,8 +32,8 @@
             "renderer": "renderer_2d",
             "mesh_builder": "sprite",
             "shader_name": "sprite",
-            "renderer_supply_textures": [
-                "pipe_up"
+            "supply_data": [
+                ["texture", "pipe_up"]
             ]
         },
         {
@@ -41,8 +41,8 @@
             "renderer": "renderer_2d",
             "mesh_builder": "sprite",
             "shader_name": "sprite",
-            "renderer_supply_textures": [
-                "pipe_down"
+            "supply_data": [
+                ["texture", "pipe_down"]
             ]
         }
     ],

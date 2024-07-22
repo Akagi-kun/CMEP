@@ -129,14 +129,24 @@ namespace Engine
 				object_template.with_mesh_builder = template_entry["mesh_builder"].get<std::string>();
 				object_template.with_shader		  = template_entry["shader_name"].get<std::string>();
 
-				for (auto& texture_supply_entry : template_entry["renderer_supply_textures"])
+				for (auto& supply_entry : template_entry["supply_data"])
 				{
-					std::shared_ptr<Rendering::Texture> texture = locked_asset_manager->GetTexture(
-						texture_supply_entry.get<std::string>()
+					std::string key = supply_entry[0].get<std::string>();
+					std::string val = supply_entry[1].get<std::string>();
+
+					Factories::ObjectFactory::PushSupplyData(
+						locked_asset_manager.get(),
+						object_template.supply_list,
+						key,
+						val
 					);
 
-					Rendering::RendererSupplyData texture_supply(Rendering::RendererSupplyDataType::TEXTURE, texture);
-					object_template.supply_list.insert(object_template.supply_list.end(), texture_supply);
+					/* std::shared_ptr<Rendering::Texture> texture = locked_asset_manager->GetTexture(
+						supply_entry.get<std::string>()
+					); */
+
+					// Rendering::RendererSupplyData texture_supply(Rendering::RendererSupplyDataType::TEXTURE,
+					// texture); object_template.supply_list.insert(object_template.supply_list.end(), texture_supply);
 				}
 
 				std::string name = template_entry["name"].get<std::string>();

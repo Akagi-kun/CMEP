@@ -19,18 +19,13 @@
 
 namespace Engine::Rendering
 {
-	Renderer2D::Renderer2D(
-		Engine* engine,
-		IMeshBuilder* with_builder,
-		const char* with_pipeline_program,
-		VkPrimitiveTopology with_primitives
-	)
-		: IRenderer(engine, with_builder, with_pipeline_program, with_primitives)
+	Renderer2D::Renderer2D(Engine* engine, IMeshBuilder* with_builder, const char* with_pipeline_program)
+		: IRenderer(engine, with_builder, with_pipeline_program)
 	{
 		Vulkan::VulkanRenderingEngine* renderer = this->owner_engine->GetRenderingEngine();
 
 		VulkanPipelineSettings pipeline_settings  = renderer->GetVulkanDefaultPipelineSettings();
-		pipeline_settings.input_assembly.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
+		pipeline_settings.input_assembly.topology = this->mesh_builder->GetSupportedTopology();
 
 		pipeline_settings.shader = this->pipeline_name;
 

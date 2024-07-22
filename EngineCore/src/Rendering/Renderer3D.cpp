@@ -16,18 +16,13 @@
 
 namespace Engine::Rendering
 {
-	Renderer3D::Renderer3D(
-		Engine* engine,
-		IMeshBuilder* with_builder,
-		const char* with_pipeline_program,
-		VkPrimitiveTopology with_primitives
-	)
-		: IRenderer(engine, with_builder, with_pipeline_program, with_primitives)
+	Renderer3D::Renderer3D(Engine* engine, IMeshBuilder* with_builder, const char* with_pipeline_program)
+		: IRenderer(engine, with_builder, with_pipeline_program)
 	{
 		Vulkan::VulkanRenderingEngine* renderer = this->owner_engine->GetRenderingEngine();
 
 		VulkanPipelineSettings pipeline_settings  = renderer->GetVulkanDefaultPipelineSettings();
-		pipeline_settings.input_assembly.topology = with_primitives;
+		pipeline_settings.input_assembly.topology = this->mesh_builder->GetSupportedTopology();
 
 		pipeline_settings.shader = this->pipeline_name;
 
@@ -72,19 +67,17 @@ namespace Engine::Rendering
 				this->has_updated_mesh = false;
 				break;
 			}
-			/* case RendererSupplyDataType::TEXTURE:
+			case RendererSupplyDataType::TEXTURE:
 			{
-				this->texture			   = std::static_pointer_cast<Texture>(data.payload_ptr);
-				this->has_updated_mesh	   = false;
-				this->has_updated_meshdata = false;
-				return;
+				this->texture		   = std::static_pointer_cast<Texture>(data.payload_ptr);
+				this->has_updated_mesh = false;
+				break;
 			}
-			 case RendererSupplyDataType::MESH:
+			/* case RendererSupplyDataType::MESH:
 			{
 				this->mesh				   = std::static_pointer_cast<Mesh>(data.payload_ptr);
 				this->has_updated_mesh	   = false;
-				this->has_updated_meshdata = false;
-				return;
+				break;
 			} */
 			default:
 			{
@@ -98,14 +91,10 @@ namespace Engine::Rendering
 
 	void Renderer3D::UpdateMesh()
 	{
-		/* if (!this->mesh)
-		{
-			return;
-		} */
-
 		this->has_updated_mesh = true;
 
-		Vulkan::VulkanRenderingEngine* renderer = this->owner_engine->GetRenderingEngine();
+		auto* renderer		 = this->owner_engine->GetRenderingEngine();
+		auto* device_manager = renderer->GetDeviceManager();
 
 		if (this->mesh_builder != nullptr)
 		{
@@ -129,12 +118,12 @@ namespace Engine::Rendering
 
 		glm::mat4 model = CalculateModelMatrix(this->transform, this->parent_transform);
 
-		this->mat_mvp = projection * view; // * model;
-
-		// auto* texture_image = this->texture->GetTextureImage();
-
-		if (auto* device_manager = renderer->GetDeviceManager())
+		if (this->texture)
 		{
+			this->mat_mvp = projection * view * model;
+
+			auto* texture_image = this->texture->GetTextureImage();
+
 			for (uint32_t i = 0; i < Vulkan::VulkanRenderingEngine::GetMaxFramesInFlight(); i++)
 			{
 				VkDescriptorBufferInfo buffer_info{};
@@ -142,12 +131,12 @@ namespace Engine::Rendering
 				buffer_info.offset = 0;
 				buffer_info.range  = sizeof(glm::mat4);
 
-				/* VkDescriptorImageInfo image_info{};
+				VkDescriptorImageInfo image_info{};
 				image_info.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 				image_info.imageView   = texture_image->GetNativeViewHandle();
-				image_info.sampler	   = texture_image->texture_sampler; */
+				image_info.sampler	   = texture_image->texture_sampler;
 
-				std::array<VkWriteDescriptorSet, 1> descriptor_writes{};
+				std::array<VkWriteDescriptorSet, 2> descriptor_writes{};
 
 				descriptor_writes[0].sType			 = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
 				descriptor_writes[0].dstSet			 = this->pipeline->GetDescriptorSet(i);
@@ -157,13 +146,13 @@ namespace Engine::Rendering
 				descriptor_writes[0].descriptorCount = 1;
 				descriptor_writes[0].pBufferInfo	 = &buffer_info;
 
-				/* descriptor_writes[1].sType		 = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+				descriptor_writes[1].sType			 = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
 				descriptor_writes[1].dstSet			 = pipeline->GetDescriptorSet(i);
 				descriptor_writes[1].dstBinding		 = 1;
 				descriptor_writes[1].dstArrayElement = 0;
 				descriptor_writes[1].descriptorType	 = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
 				descriptor_writes[1].descriptorCount = 1;
-				descriptor_writes[1].pImageInfo		 = &image_info; */
+				descriptor_writes[1].pImageInfo		 = &image_info;
 
 				vkUpdateDescriptorSets(
 					device_manager->GetLogicalDevice(),
@@ -173,6 +162,36 @@ namespace Engine::Rendering
 					nullptr
 				);
 			}
+
+			return;
+		}
+
+		this->mat_mvp = projection * view;
+
+		for (uint32_t i = 0; i < Vulkan::VulkanRenderingEngine::GetMaxFramesInFlight(); i++)
+		{
+			VkDescriptorBufferInfo buffer_info{};
+			buffer_info.buffer = this->pipeline->GetUniformBuffer(i)->GetNativeHandle();
+			buffer_info.offset = 0;
+			buffer_info.range  = sizeof(glm::mat4);
+
+			std::array<VkWriteDescriptorSet, 1> descriptor_writes{};
+
+			descriptor_writes[0].sType			 = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+			descriptor_writes[0].dstSet			 = this->pipeline->GetDescriptorSet(i);
+			descriptor_writes[0].dstBinding		 = 0;
+			descriptor_writes[0].dstArrayElement = 0;
+			descriptor_writes[0].descriptorType	 = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+			descriptor_writes[0].descriptorCount = 1;
+			descriptor_writes[0].pBufferInfo	 = &buffer_info;
+
+			vkUpdateDescriptorSets(
+				device_manager->GetLogicalDevice(),
+				static_cast<uint32_t>(descriptor_writes.size()),
+				descriptor_writes.data(),
+				0,
+				nullptr
+			);
 		}
 	}
 

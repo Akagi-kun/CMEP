@@ -14,9 +14,6 @@
 #include "EnumStringConvertor.hpp"
 #include "KVPairHelper.hpp"
 #include "lua.hpp"
-#include "vulkan/vulkan_core.h"
-
-#include <stdexcept>
 
 // Prefixes for logging messages
 #define LOGPFX_CURRENT LOGPFX_LUA_MAPPED
@@ -109,40 +106,12 @@ namespace Engine::Scripting::Mappings
 				}
 
 				lua_rawgeti(state, -1, 1);
-				std::string type = lua_tostring(state, -1);
-
 				lua_rawgeti(state, -2, 2);
-				std::string name = lua_tostring(state, -1);
 
-				EnumStringConvertor<Rendering::RendererSupplyDataType> supply_type = type;
+				std::string type  = lua_tostring(state, -2);
+				std::string value = lua_tostring(state, -1);
 
-				switch (supply_type)
-				{
-					case Rendering::RendererSupplyDataType::TEXTURE:
-					{
-						supply_data.emplace_back(supply_type, asset_manager->GetTexture(name));
-						break;
-					}
-					case Rendering::RendererSupplyDataType::FONT:
-					{
-						supply_data.emplace_back(supply_type, asset_manager->GetFont(name));
-						break;
-					}
-					case Rendering::RendererSupplyDataType::MESH:
-					{
-						supply_data.emplace_back(supply_type, asset_manager->GetModel(name));
-						break;
-					}
-					case Rendering::RendererSupplyDataType::TEXT:
-					{
-						supply_data.emplace_back(supply_type, name);
-						break;
-					}
-					default:
-					{
-						throw std::invalid_argument("RendererSupplyDataType is unknown, invalid or missing!");
-					}
-				}
+				Factories::ObjectFactory::PushSupplyData(asset_manager, supply_data, type, value);
 
 				lua_pop(state, 3);
 
@@ -166,8 +135,9 @@ namespace Engine::Scripting::Mappings
 
 			std::string template_params = lua_tostring(state, 2);
 
-			auto [renderer_data, mesh_builder_type]	 = Utility::SplitKVPair(template_params, "/");
-			auto [renderer_type, renderer_primitive] = Utility::SplitKVPair(renderer_data, ":");
+			// separates out params for the object
+			// valid format is 'renderer/mesh_builder'
+			auto [renderer_type, mesh_builder_type] = Utility::SplitKVPair(template_params, "/");
 
 			std::string shader_name = lua_tostring(state, 3);
 
@@ -180,25 +150,7 @@ namespace Engine::Scripting::Mappings
 					const auto& factory =
 						Factories::ObjectFactory::GetSceneObjectFactory(renderer_type, mesh_builder_type);
 
-					Object* obj;
-					if (renderer_primitive.empty())
-					{
-						obj = factory(
-							locked_asset_manager->GetOwnerEngine(),
-							shader_name,
-							supply_data,
-							VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST
-						);
-					}
-					else
-					{
-						obj = factory(
-							locked_asset_manager->GetOwnerEngine(),
-							shader_name,
-							supply_data,
-							renderer_primitive
-						);
-					}
+					Object* obj = factory(locked_asset_manager->GetOwnerEngine(), shader_name, supply_data);
 
 					if (obj != nullptr)
 					{

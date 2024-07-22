@@ -27,13 +27,8 @@ namespace Engine
 			ScreenSize screen;
 
 			// Renderer configuration
-			const char* pipeline_name = nullptr;
-			VkPrimitiveTopology selected_topology;
-
-			// Internal data
+			const char* pipeline_name	= nullptr;
 			Vulkan::VPipeline* pipeline = nullptr;
-			// Vulkan::VBuffer* vbo		= nullptr;
-			// size_t vbo_vert_count		= 0;
 
 			IMeshBuilder* mesh_builder = nullptr;
 			MeshBuildContext mesh_context{};
@@ -42,14 +37,8 @@ namespace Engine
 			bool has_updated_mesh = false;
 
 		public:
-			IRenderer(
-				Engine* with_engine,
-				IMeshBuilder* with_builder,
-				const char* with_pipeline_program,
-				VkPrimitiveTopology with_primitives
-			)
-				: InternalEngineObject(with_engine), pipeline_name(with_pipeline_program),
-				  selected_topology(with_primitives), mesh_builder(with_builder)
+			IRenderer(Engine* with_engine, IMeshBuilder* with_builder, const char* with_pipeline_program)
+				: InternalEngineObject(with_engine), pipeline_name(with_pipeline_program), mesh_builder(with_builder)
 			{
 			}
 			virtual ~IRenderer()

@@ -243,8 +243,7 @@ namespace Engine
 		auto* object = Factories::ObjectFactory::CreateSceneObject<Rendering::Renderer3D, Rendering::AxisMeshBuilder>(
 			this,
 			"axis",
-			{},
-			VK_PRIMITIVE_TOPOLOGY_LINE_LIST
+			{}
 		);
 
 		this->scene_manager->GetSceneCurrent()->AddObject("_axis", object);

@@ -14,5 +14,10 @@ namespace Engine::Rendering
 		}
 
 		void Build() override;
+
+		[[nodiscard]] VkPrimitiveTopology GetSupportedTopology() const noexcept override
+		{
+			return VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
+		}
 	};
 } // namespace Engine::Rendering

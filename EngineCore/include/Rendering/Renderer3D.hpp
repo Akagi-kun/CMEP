@@ -16,17 +16,10 @@ namespace Engine::Rendering
 
 		std::shared_ptr<Rendering::Texture> texture = nullptr;
 
-		// std::shared_ptr<Mesh> mesh;
-
 		bool has_updated_meshdata = false;
 
 	public:
-		Renderer3D(
-			Engine* engine,
-			IMeshBuilder* with_builder,
-			const char* with_pipeline_program,
-			VkPrimitiveTopology with_primitives
-		);
+		Renderer3D(Engine* engine, IMeshBuilder* with_builder, const char* with_pipeline_program);
 		~Renderer3D() override;
 
 		void SupplyData(const RendererSupplyData& data) override;
