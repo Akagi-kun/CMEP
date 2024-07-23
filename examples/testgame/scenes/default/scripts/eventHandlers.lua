@@ -58,9 +58,12 @@ onKeyDown = function(event)
 	  
 	local camera_h, camera_v = scene_manager:GetCameraHVRotation();
 
-	local front_x = math.cos(math.rad(camera_v)) * math.cos(math.rad(camera_h));
-	local front_y = math.sin(math.rad(camera_v));
-	local front_z = math.cos(math.rad(camera_v)) * math.sin(math.rad(camera_h));
+	local pitch = math.rad(camera_v)
+	local yaw = math.rad(camera_h) 
+
+	local front_x = math.cos(yaw) * math.cos(pitch);
+	local front_y = math.sin(pitch);
+	local front_z = math.sin(yaw) * math.cos(pitch);
 
 	-- world_up = 0, 1, 0
 	local right_x, right_y, right_z = vectorCross(front_x, front_y, front_z, 0, 1, 0)

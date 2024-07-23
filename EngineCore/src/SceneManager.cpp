@@ -124,20 +124,23 @@ namespace Engine
 
 	glm::mat4 SceneManager::GetCameraViewMatrix()
 	{
-		glm::vec3 direction = glm::vec3(
-			cos(glm::radians(this->camera_hv_rotation.x)) * cos(glm::radians(this->camera_hv_rotation.y)),
-			sin(glm::radians(this->camera_hv_rotation.y)),
-			sin(glm::radians(this->camera_hv_rotation.x)) * cos(glm::radians(this->camera_hv_rotation.y))
-		);
+		auto pitch = glm::radians(this->camera_hv_rotation.y);
+		auto yaw   = glm::radians(this->camera_hv_rotation.x);
 
 		// Points forward
-		glm::vec3 dir_forward = glm::normalize(direction);
-		// Points to the right
-		glm::vec3 dir_right	  = glm::normalize(glm::cross(direction, glm::vec3(0, 1, 0)));
-		// Points up
-		glm::vec3 dir_up	  = glm::normalize(glm::cross(dir_right, dir_forward));
+		glm::vec3 direction = {
+			cos(yaw) * cos(pitch),
+			sin(pitch),
+			sin(yaw) * cos(pitch),
+		};
+		glm::vec3 forward = glm::normalize(direction);
 
-		glm::mat4 view_matrix = glm::lookAt(this->camera_transform, this->camera_transform + dir_forward, dir_up);
+		// Points to the right
+		glm::vec3 right	   = glm::normalize(glm::cross(forward, glm::vec3(0, 1, 0)));
+		// Points up
+		glm::vec3 up_local = glm::normalize(glm::cross(right, forward));
+
+		glm::mat4 view_matrix = glm::lookAt(this->camera_transform, this->camera_transform + forward, up_local);
 
 		return view_matrix;
 	}
@@ -150,20 +153,25 @@ namespace Engine
 
 	void SceneManager::SetCameraHVRotation(glm::vec2 hvrotation)
 	{
-		/* // TODO: check limit correctness
-		static constexpr float rotation_y_limit = 1.7f;
-		static constexpr float rotation_x_limit = 4.5f;
+		static constexpr float y_center = 180.f;
+		static constexpr float y_min	= y_center - 90.f;
+		static constexpr float y_max	= y_center + 89.9f;
 
-		// Limit rotation on Y
-		if (hvrotation.y < rotation_y_limit)
+		// Clamp Y so you cannot do a backflip
+		hvrotation.y = std::clamp(hvrotation.y, y_min, y_max);
+
+		static constexpr float x_min = 0.f;
+		static constexpr float x_max = 360.f;
+
+		// Wrap X around (so we don't get awkwardly high or low X values)
+		if (hvrotation.x > x_max)
 		{
-			hvrotation.y = rotation_y_limit;
+			hvrotation.x = x_min;
 		}
-		// Limit rotation on X
-		if (hvrotation.x > rotation_x_limit)
+		else if (hvrotation.x < x_min)
 		{
-			hvrotation.x = rotation_x_limit;
-		} */
+			hvrotation.x = x_max;
+		}
 
 		this->camera_hv_rotation = hvrotation;
 		this->OnCameraUpdated();
