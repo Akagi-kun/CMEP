@@ -207,7 +207,6 @@ namespace Engine::Scripting
 		}
 
 		lua_Integer ret = lua_tointeger(state, -1);
-		lua_pop(state, 1);
 
 		return static_cast<int>(ret);
 	}

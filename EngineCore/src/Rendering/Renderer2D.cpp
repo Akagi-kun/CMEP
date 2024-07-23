@@ -2,8 +2,8 @@
 
 #include "Assets/Font.hpp"
 #include "Assets/Texture.hpp"
+#include "Rendering/IRenderer.hpp"
 #include "Rendering/Vulkan/VDeviceManager.hpp"
-#include "Rendering/Vulkan/VulkanUtilities.hpp"
 #include "Rendering/Vulkan/Wrappers/VPipeline.hpp"
 #include "Rendering/framework.hpp"
 
@@ -67,18 +67,11 @@ namespace Engine::Rendering
 			{
 				this->texture		   = std::static_pointer_cast<Texture>(data.payload_ptr);
 				this->has_updated_mesh = false;
-				return;
-			}
-			case RendererSupplyDataType::TEXT:
-			{
-				this->text.assign(data.payload_string);
-				this->has_updated_mesh = false;
 				break;
 			}
 			default:
 			{
-				throw std::runtime_error("Tried to supply Renderer data with payload type unsupported by the renderer!"
-				);
+				break;
 			}
 		}
 
@@ -109,9 +102,8 @@ namespace Engine::Rendering
 			this->parent_transform.size = glm::vec3(1, 1, 1);
 		}
 
-		glm::mat4 model = CalculateModelMatrix(this->transform, this->parent_transform);
-
-		this->mat_mvp = projection * model;
+		this->matrix_data.mat_model = CalculateModelMatrix(this->transform, this->parent_transform);
+		this->matrix_data.mat_vp	= projection; // * view
 
 		auto* texture_image = this->texture->GetTextureImage();
 
@@ -122,7 +114,7 @@ namespace Engine::Rendering
 				VkDescriptorBufferInfo buffer_info{};
 				buffer_info.buffer = pipeline->GetUniformBuffer(i)->GetNativeHandle();
 				buffer_info.offset = 0;
-				buffer_info.range  = sizeof(glm::mat4);
+				buffer_info.range  = sizeof(RendererMatrixData);
 
 				VkDescriptorImageInfo image_info{};
 				image_info.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
@@ -156,34 +148,5 @@ namespace Engine::Rendering
 				);
 			}
 		}
-	}
-
-	void Renderer2D::Render(VkCommandBuffer command_buffer, uint32_t current_frame)
-	{
-		if (!this->has_updated_mesh)
-		{
-			this->UpdateMesh();
-		}
-
-		if (this->mesh_builder->HasRebuilt())
-		{
-			this->mesh_context = this->mesh_builder->GetContext();
-		}
-
-		// Skip render if VBO empty
-		if (this->mesh_context.vbo_vert_count <= 0)
-		{
-			return;
-		}
-
-		Vulkan::Utils::VulkanUniformBufferTransfer(this->pipeline, current_frame, &this->mat_mvp, sizeof(glm::mat4));
-
-		this->pipeline->BindPipeline(command_buffer, current_frame);
-
-		VkBuffer vertex_buffers[] = {this->mesh_context.vbo->GetNativeHandle()};
-		VkDeviceSize offsets[]	  = {0};
-		vkCmdBindVertexBuffers(command_buffer, 0, 1, vertex_buffers, offsets);
-
-		vkCmdDraw(command_buffer, static_cast<uint32_t>(this->mesh_context.vbo_vert_count), 1, 0, 0);
 	}
 } // namespace Engine::Rendering

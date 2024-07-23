@@ -44,6 +44,12 @@
             "type": "script",
             "name": "script0",
             "location": "scripts/eventHandlers.lua"
+        },
+        {
+            "type": "texture",
+            "name": "sprite0",
+            "location": "textures/test.png",
+            "sampling_mode": "clamp"
         }
     ]
 }

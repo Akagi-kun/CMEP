@@ -265,7 +265,7 @@ namespace Engine::Rendering::Vulkan
 	{
 		VkDevice logical_device = this->device_manager->GetLogicalDevice();
 
-		auto& frame_sync_objects = this->sync_objects[0]; // this->current_frame
+		auto& frame_sync_objects = this->sync_objects[this->current_frame];
 
 		// Wait for fence
 		vkWaitForFences(logical_device, 1, &frame_sync_objects.in_flight, VK_TRUE, UINT64_MAX);
@@ -414,13 +414,6 @@ namespace Engine::Rendering::Vulkan
 		scissor.offset = {0, 0};
 		scissor.extent = this->swapchain->GetExtent();
 
-		VkPipelineViewportStateCreateInfo viewport_state{};
-		viewport_state.sType		 = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
-		viewport_state.viewportCount = 1;
-		viewport_state.pViewports	 = &viewport;
-		viewport_state.scissorCount	 = 1;
-		viewport_state.pScissors	 = &scissor;
-
 		VkPipelineRasterizationStateCreateInfo rasterizer{};
 		rasterizer.sType				   = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
 		rasterizer.depthClampEnable		   = VK_FALSE;
@@ -481,7 +474,6 @@ namespace Engine::Rendering::Vulkan
 		default_settings.input_assembly				= input_assembly;
 		default_settings.viewport					= viewport;
 		default_settings.scissor					= scissor;
-		default_settings.viewport_state				= viewport_state;
 		default_settings.rasterizer					= rasterizer;
 		default_settings.multisampling				= multisampling;
 		default_settings.color_blend_attachment		= color_blend_attachment;
@@ -496,19 +488,11 @@ namespace Engine::Rendering::Vulkan
 
 	VBuffer* VulkanRenderingEngine::CreateVulkanVertexBufferFromData(std::vector<RenderingVertex> vertices)
 	{
-		VBuffer* staging_buffer = nullptr;
-		VBuffer* vertex_buffer	= nullptr;
-
 		VkDeviceSize buffer_size = sizeof(vertices[0]) * vertices.size();
 
-		staging_buffer = new VBuffer(
-			this->device_manager.get(),
-			buffer_size,
-			VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
-			VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
-			0
-		);
-		vertex_buffer = new VBuffer(
+		auto* staging_buffer = this->CreateVulkanStagingBufferWithData(vertices.data(), buffer_size);
+
+		auto* vertex_buffer = new VBuffer(
 			this->device_manager.get(),
 			buffer_size,
 			VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
@@ -516,12 +500,7 @@ namespace Engine::Rendering::Vulkan
 			0
 		);
 
-		staging_buffer->MapMemory();
-
-		memcpy(staging_buffer->mapped_data, vertices.data(), static_cast<size_t>(buffer_size));
-
-		staging_buffer->UnmapMemory();
-
+		// Copy into final buffer
 		vertex_buffer->BufferCopy(staging_buffer, buffer_size);
 
 		delete staging_buffer;
@@ -542,9 +521,7 @@ namespace Engine::Rendering::Vulkan
 		);
 
 		staging_buffer->MapMemory();
-
 		memcpy(staging_buffer->mapped_data, data, static_cast<size_t>(data_size));
-
 		staging_buffer->UnmapMemory();
 
 		return staging_buffer;

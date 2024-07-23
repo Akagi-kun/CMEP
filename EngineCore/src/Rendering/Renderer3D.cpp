@@ -2,8 +2,8 @@
 
 #include "Assets/Font.hpp"
 #include "Assets/Texture.hpp"
+#include "Rendering/IRenderer.hpp"
 #include "Rendering/Vulkan/VDeviceManager.hpp"
-#include "Rendering/Vulkan/VulkanUtilities.hpp"
 #include "Rendering/framework.hpp"
 
 #include "Logging/Logging.hpp"
@@ -40,8 +40,6 @@ namespace Engine::Rendering
 
 		this->pipeline =
 			new Vulkan::VPipeline(renderer->GetDeviceManager(), pipeline_settings, renderer->GetRenderPass());
-
-		this->mat_mvp = glm::mat4();
 	}
 
 	Renderer3D::~Renderer3D()
@@ -73,12 +71,6 @@ namespace Engine::Rendering
 				this->has_updated_mesh = false;
 				break;
 			}
-			/* case RendererSupplyDataType::MESH:
-			{
-				this->mesh				   = std::static_pointer_cast<Mesh>(data.payload_ptr);
-				this->has_updated_mesh	   = false;
-				break;
-			} */
 			default:
 			{
 				break;
@@ -110,80 +102,59 @@ namespace Engine::Rendering
 		}
 		projection[1][1] *= -1;
 
-		if (this->parent_transform.size.x == 0.0f && this->parent_transform.size.y == 0.0f &&
+		/* if (this->parent_transform.size.x == 0.0f && this->parent_transform.size.y == 0.0f &&
 			this->parent_transform.size.z == 0.0f)
 		{
 			this->parent_transform.size = glm::vec3(1, 1, 1);
-		}
+		} */
 
-		glm::mat4 model = CalculateModelMatrix(this->transform, this->parent_transform);
+		this->matrix_data.mat_model = CalculateModelMatrix(this->transform, this->parent_transform);
+		this->matrix_data.mat_vp	= projection * view;
+
+		Vulkan::VSampledImage* texture_image = nullptr;
 
 		if (this->texture)
 		{
-			this->mat_mvp = projection * view * model;
-
-			auto* texture_image = this->texture->GetTextureImage();
-
-			for (uint32_t i = 0; i < Vulkan::VulkanRenderingEngine::GetMaxFramesInFlight(); i++)
-			{
-				VkDescriptorBufferInfo buffer_info{};
-				buffer_info.buffer = this->pipeline->GetUniformBuffer(i)->GetNativeHandle();
-				buffer_info.offset = 0;
-				buffer_info.range  = sizeof(glm::mat4);
-
-				VkDescriptorImageInfo image_info{};
-				image_info.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-				image_info.imageView   = texture_image->GetNativeViewHandle();
-				image_info.sampler	   = texture_image->texture_sampler;
-
-				std::array<VkWriteDescriptorSet, 2> descriptor_writes{};
-
-				descriptor_writes[0].sType			 = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-				descriptor_writes[0].dstSet			 = this->pipeline->GetDescriptorSet(i);
-				descriptor_writes[0].dstBinding		 = 0;
-				descriptor_writes[0].dstArrayElement = 0;
-				descriptor_writes[0].descriptorType	 = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-				descriptor_writes[0].descriptorCount = 1;
-				descriptor_writes[0].pBufferInfo	 = &buffer_info;
-
-				descriptor_writes[1].sType			 = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-				descriptor_writes[1].dstSet			 = pipeline->GetDescriptorSet(i);
-				descriptor_writes[1].dstBinding		 = 1;
-				descriptor_writes[1].dstArrayElement = 0;
-				descriptor_writes[1].descriptorType	 = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-				descriptor_writes[1].descriptorCount = 1;
-				descriptor_writes[1].pImageInfo		 = &image_info;
-
-				vkUpdateDescriptorSets(
-					device_manager->GetLogicalDevice(),
-					static_cast<uint32_t>(descriptor_writes.size()),
-					descriptor_writes.data(),
-					0,
-					nullptr
-				);
-			}
-
-			return;
+			texture_image = this->texture->GetTextureImage();
 		}
-
-		this->mat_mvp = projection * view;
 
 		for (uint32_t i = 0; i < Vulkan::VulkanRenderingEngine::GetMaxFramesInFlight(); i++)
 		{
 			VkDescriptorBufferInfo buffer_info{};
 			buffer_info.buffer = this->pipeline->GetUniformBuffer(i)->GetNativeHandle();
 			buffer_info.offset = 0;
-			buffer_info.range  = sizeof(glm::mat4);
+			buffer_info.range  = sizeof(RendererMatrixData);
 
-			std::array<VkWriteDescriptorSet, 1> descriptor_writes{};
+			std::vector<VkWriteDescriptorSet> descriptor_writes{};
 
-			descriptor_writes[0].sType			 = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-			descriptor_writes[0].dstSet			 = this->pipeline->GetDescriptorSet(i);
-			descriptor_writes[0].dstBinding		 = 0;
-			descriptor_writes[0].dstArrayElement = 0;
-			descriptor_writes[0].descriptorType	 = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-			descriptor_writes[0].descriptorCount = 1;
-			descriptor_writes[0].pBufferInfo	 = &buffer_info;
+			VkWriteDescriptorSet uniform_buffer_set = {};
+			uniform_buffer_set.sType				= VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+			uniform_buffer_set.dstSet				= this->pipeline->GetDescriptorSet(i);
+			uniform_buffer_set.dstBinding			= 0;
+			uniform_buffer_set.dstArrayElement		= 0;
+			uniform_buffer_set.descriptorType		= VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+			uniform_buffer_set.descriptorCount		= 1;
+			uniform_buffer_set.pBufferInfo			= &buffer_info;
+
+			descriptor_writes.push_back(uniform_buffer_set);
+
+			if (this->texture)
+			{
+				VkDescriptorImageInfo image_info{};
+				image_info.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+				image_info.imageView   = texture_image->GetNativeViewHandle();
+				image_info.sampler	   = texture_image->texture_sampler;
+
+				VkWriteDescriptorSet optional_texture_set = {};
+				optional_texture_set.sType				  = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+				optional_texture_set.dstSet				  = pipeline->GetDescriptorSet(i);
+				optional_texture_set.dstBinding			  = 1;
+				optional_texture_set.dstArrayElement	  = 0;
+				optional_texture_set.descriptorType		  = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+				optional_texture_set.descriptorCount	  = 1;
+				optional_texture_set.pImageInfo			  = &image_info;
+				descriptor_writes.push_back(optional_texture_set);
+			}
 
 			vkUpdateDescriptorSets(
 				device_manager->GetLogicalDevice(),
@@ -193,28 +164,5 @@ namespace Engine::Rendering
 				nullptr
 			);
 		}
-	}
-
-	void Renderer3D::Render(VkCommandBuffer command_buffer, uint32_t current_frame)
-	{
-		if (!this->has_updated_mesh)
-		{
-			this->UpdateMesh();
-		}
-
-		if (this->mesh_builder->HasRebuilt())
-		{
-			this->mesh_context = this->mesh_builder->GetContext();
-		}
-
-		Vulkan::Utils::VulkanUniformBufferTransfer(this->pipeline, current_frame, &this->mat_mvp, sizeof(glm::mat4));
-
-		this->pipeline->BindPipeline(command_buffer, current_frame);
-
-		VkBuffer vertex_buffers[] = {this->mesh_context.vbo->GetNativeHandle()};
-		VkDeviceSize offsets[]	  = {0};
-		vkCmdBindVertexBuffers(command_buffer, 0, 1, vertex_buffers, offsets);
-
-		vkCmdDraw(command_buffer, static_cast<uint32_t>(this->mesh_context.vbo_vert_count), 1, 0, 0);
 	}
 } // namespace Engine::Rendering

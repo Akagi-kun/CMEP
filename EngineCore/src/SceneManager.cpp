@@ -10,6 +10,7 @@
 #include "SceneLoader.hpp"
 #include "glm/ext/matrix_clip_space.hpp"
 #include "glm/ext/matrix_transform.hpp"
+#include "glm/trigonometric.hpp"
 
 // Prefixes for logging messages
 #define LOGPFX_CURRENT LOGPFX_CLASS_SCENE_MANAGER
@@ -124,9 +125,9 @@ namespace Engine
 	glm::mat4 SceneManager::GetCameraViewMatrix()
 	{
 		glm::vec3 direction = glm::vec3(
-			cos(this->camera_hv_rotation.x) * cos(this->camera_hv_rotation.y),
-			sin(this->camera_hv_rotation.y),
-			sin(this->camera_hv_rotation.x) * cos(this->camera_hv_rotation.y)
+			cos(glm::radians(this->camera_hv_rotation.x)) * cos(glm::radians(this->camera_hv_rotation.y)),
+			sin(glm::radians(this->camera_hv_rotation.y)),
+			sin(glm::radians(this->camera_hv_rotation.x)) * cos(glm::radians(this->camera_hv_rotation.y))
 		);
 
 		// Points forward
@@ -149,7 +150,7 @@ namespace Engine
 
 	void SceneManager::SetCameraHVRotation(glm::vec2 hvrotation)
 	{
-		// TODO: check limit correctness
+		/* // TODO: check limit correctness
 		static constexpr float rotation_y_limit = 1.7f;
 		static constexpr float rotation_x_limit = 4.5f;
 
@@ -162,7 +163,7 @@ namespace Engine
 		if (hvrotation.x > rotation_x_limit)
 		{
 			hvrotation.x = rotation_x_limit;
-		}
+		} */
 
 		this->camera_hv_rotation = hvrotation;
 		this->OnCameraUpdated();

@@ -50,7 +50,7 @@ namespace Engine
 
 		for (auto& child : this->children)
 		{
-			child->SetParentPositionRotationSize(this->transform);
+			child->SetParentTransform(this->transform);
 			child->UpdateRenderer();
 		}
 	}
@@ -62,7 +62,7 @@ namespace Engine
 
 		for (auto& child : this->children)
 		{
-			child->SetParentPositionRotationSize(this->transform);
+			child->SetParentTransform(this->transform);
 			child->UpdateRenderer();
 		}
 	}
@@ -75,7 +75,7 @@ namespace Engine
 
 		for (auto& child : this->children)
 		{
-			child->SetParentPositionRotationSize(this->transform);
+			child->SetParentTransform(this->transform);
 			child->UpdateRenderer();
 		}
 	}
@@ -93,7 +93,7 @@ namespace Engine
 		return this->transform.rotation;
 	}
 
-	void Object::SetParentPositionRotationSize(Rendering::Transform with_parent_transform)
+	void Object::SetParentTransform(Rendering::Transform with_parent_transform)
 	{
 		this->parent_transform = with_parent_transform;
 	}
@@ -101,7 +101,7 @@ namespace Engine
 	void Object::AddChild(Object* with_child)
 	{
 		with_child->SetParent(this);
-		with_child->SetParentPositionRotationSize(this->transform);
+		with_child->SetParentTransform(this->transform);
 		with_child->UpdateRenderer();
 		this->children.push_back(with_child);
 	}

@@ -50,7 +50,6 @@ namespace Engine::Rendering
 		VkPipelineInputAssemblyStateCreateInfo input_assembly;
 		VkViewport viewport;
 		VkRect2D scissor;
-		VkPipelineViewportStateCreateInfo viewport_state;
 		VkPipelineRasterizationStateCreateInfo rasterizer;
 		VkPipelineMultisampleStateCreateInfo multisampling;
 		VkPipelineColorBlendAttachmentState color_blend_attachment;

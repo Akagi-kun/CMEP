@@ -11,7 +11,8 @@ namespace Engine
 	{
 	private:
 		Rendering::Transform transform;
-		Rendering::Transform parent_transform;
+		// Initialize parent transform so that it renders without parent properly
+		Rendering::Transform parent_transform = {glm::vec3(0), glm::vec3(1, 1, 1), glm::vec3(0)};
 		Rendering::ScreenSize screen;
 
 		Object* parent;
@@ -40,7 +41,7 @@ namespace Engine
 		[[nodiscard]] glm::vec3 GetSize() const noexcept;
 		[[nodiscard]] glm::vec3 GetRotation() const noexcept;
 
-		void SetParentPositionRotationSize(Rendering::Transform with_parent_transform);
+		void SetParentTransform(Rendering::Transform with_parent_transform);
 
 		void AddChild(Object* with_child);
 		void RemoveChildren();

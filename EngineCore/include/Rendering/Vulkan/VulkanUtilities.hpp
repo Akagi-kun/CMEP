@@ -6,6 +6,7 @@
 #include "vulkan/vulkan_core.h"
 
 #include <cstring>
+#include <filesystem>
 #include <fstream>
 #include <vector>
 
@@ -48,7 +49,7 @@ namespace Engine::Rendering::Vulkan::Utils
 		return format == VK_FORMAT_D32_SFLOAT_S8_UINT || format == VK_FORMAT_D24_UNORM_S8_UINT;
 	}
 
-	inline std::vector<char> ReadShaderFile(const std::string& path)
+	inline std::vector<char> ReadShaderFile(const std::filesystem::path& path)
 	{
 		std::ifstream file(path, std::ios::ate | std::ios::binary);
 

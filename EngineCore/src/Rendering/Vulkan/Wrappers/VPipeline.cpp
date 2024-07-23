@@ -1,5 +1,6 @@
 #include "Rendering/Vulkan/Wrappers/VPipeline.hpp"
 
+#include "Rendering/IRenderer.hpp"
 #include "Rendering/Vulkan/VDeviceManager.hpp"
 #include "Rendering/Vulkan/VulkanRenderingEngine.hpp"
 #include "Rendering/Vulkan/Wrappers/HoldsVMA.hpp"
@@ -19,14 +20,12 @@ namespace Engine::Rendering::Vulkan
 	{
 		const auto& logical_device = this->device_manager->GetLogicalDevice();
 
-		settings.color_blending.pAttachments = &settings.color_blend_attachment;
-
 		std::string shader_path = this->device_manager->GetOwnerEngine()->GetShaderPath();
 
 		assert(!settings.shader.empty() && "A valid shader for this pipeline is required!");
 
 		// Vertex stage
-		auto vert_shader_module = VShaderModule(this->device_manager, shader_path + settings.shader + "_vert.spv");
+		auto vert_shader_module = VShaderModule(this->device_manager, shader_path, settings.shader + "_vert.spv");
 
 		VkPipelineShaderStageCreateInfo vert_shader_stage_info{};
 		vert_shader_stage_info.sType  = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
@@ -35,7 +34,7 @@ namespace Engine::Rendering::Vulkan
 		vert_shader_stage_info.pName  = "main";
 
 		// Fragment stage
-		auto frag_shader_module = VShaderModule(this->device_manager, shader_path + settings.shader + "_frag.spv");
+		auto frag_shader_module = VShaderModule(this->device_manager, shader_path, settings.shader + "_frag.spv");
 
 		VkPipelineShaderStageCreateInfo frag_shader_stage_info{};
 		frag_shader_stage_info.sType  = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
@@ -118,13 +117,22 @@ namespace Engine::Rendering::Vulkan
 			throw std::runtime_error("failed to create pipeline layout!");
 		}
 
+		VkPipelineViewportStateCreateInfo viewport_state{};
+		viewport_state.sType		 = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
+		viewport_state.viewportCount = 1;
+		viewport_state.pViewports	 = &settings.viewport;
+		viewport_state.scissorCount	 = 1;
+		viewport_state.pScissors	 = &settings.scissor;
+
+		settings.color_blending.pAttachments = &settings.color_blend_attachment;
+
 		VkGraphicsPipelineCreateInfo pipeline_info{};
 		pipeline_info.sType				  = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
 		pipeline_info.stageCount		  = 2;
 		pipeline_info.pStages			  = shader_stages;
 		pipeline_info.pVertexInputState	  = &vertex_input_info;
 		pipeline_info.pInputAssemblyState = &settings.input_assembly;
-		pipeline_info.pViewportState	  = &settings.viewport_state;
+		pipeline_info.pViewportState	  = &viewport_state;
 		pipeline_info.pRasterizationState = &settings.rasterizer;
 		pipeline_info.pMultisampleState	  = &settings.multisampling;
 		pipeline_info.pDepthStencilState  = nullptr; // Optional
@@ -152,7 +160,7 @@ namespace Engine::Rendering::Vulkan
 		/************************************/
 		// this->CreateVulkanUniformBuffers(pipeline);
 
-		VkDeviceSize buffer_size = sizeof(glm::mat4);
+		VkDeviceSize buffer_size = sizeof(RendererMatrixData);
 
 		this->uniform_buffers.resize(VulkanRenderingEngine::GetMaxFramesInFlight());
 

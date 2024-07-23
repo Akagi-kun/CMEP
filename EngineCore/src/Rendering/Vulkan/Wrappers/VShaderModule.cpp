@@ -5,12 +5,16 @@
 
 namespace Engine::Rendering::Vulkan
 {
-	VShaderModule::VShaderModule(VDeviceManager* with_device_manager, const std::filesystem::path& with_path)
+	VShaderModule::VShaderModule(
+		VDeviceManager* with_device_manager,
+		std::filesystem::path with_path,
+		const std::string& filename
+	)
 		: HoldsVulkanDevice(with_device_manager)
 	{
 		VkDevice logical_device = this->device_manager->GetLogicalDevice();
 
-		const auto shader_code = Vulkan::Utils::ReadShaderFile(with_path.string());
+		const auto shader_code = Vulkan::Utils::ReadShaderFile(with_path.append(filename));
 
 		VkShaderModuleCreateInfo create_info{};
 		create_info.sType	 = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;

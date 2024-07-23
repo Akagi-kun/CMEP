@@ -2,6 +2,8 @@
 
 #include "Rendering/IMeshBuilder.hpp"
 #include "Rendering/Transform.hpp"
+#include "Rendering/Vulkan/VulkanUtilities.hpp"
+#include "Rendering/Vulkan/Wrappers/VPipeline.hpp"
 
 #include "InternalEngineObject.hpp"
 #include "MeshBuildContext.hpp"
@@ -10,64 +12,95 @@
 
 #include <cstdint>
 
-namespace Engine
+namespace Engine::Rendering
 {
-	class Object;
-	class Engine;
-	class SceneManager;
-
-	namespace Rendering
+	struct RendererMatrixData
 	{
-		// Interface for Renderers
-		class IRenderer : public InternalEngineObject
+		glm::mat4 mat_vp{};
+		glm::mat4 mat_model{};
+	};
+
+	// Interface for Renderers
+	class IRenderer : public InternalEngineObject
+	{
+	protected:
+		Transform transform;
+		Transform parent_transform;
+		ScreenSize screen;
+
+		// Renderer configuration
+		const char* pipeline_name	= nullptr;
+		Vulkan::VPipeline* pipeline = nullptr;
+
+		RendererMatrixData matrix_data;
+
+		IMeshBuilder* mesh_builder = nullptr;
+		MeshBuildContext mesh_context{};
+
+		// If this is false, UpdateMesh shall be internally called on next Render
+		bool has_updated_mesh = false;
+
+	public:
+		IRenderer(Engine* with_engine, IMeshBuilder* with_builder, const char* with_pipeline_program)
+			: InternalEngineObject(with_engine), pipeline_name(with_pipeline_program), mesh_builder(with_builder)
 		{
-		protected:
-			Transform transform;
-			Transform parent_transform;
-			ScreenSize screen;
+		}
+		virtual ~IRenderer()
+		{
+			delete this->mesh_builder;
+			this->mesh_builder = nullptr;
+		}
 
-			// Renderer configuration
-			const char* pipeline_name	= nullptr;
-			Vulkan::VPipeline* pipeline = nullptr;
+		// Renderers shall implement this to get textures, fonts etc.
+		virtual void SupplyData(const RendererSupplyData& data) = 0;
 
-			IMeshBuilder* mesh_builder = nullptr;
-			MeshBuildContext mesh_context{};
+		void UpdateTransform(
+			const Transform& with_transform,
+			const Transform& with_parent_transform,
+			const ScreenSize& with_screen
+		)
+		{
+			this->transform		   = with_transform;
+			this->parent_transform = with_parent_transform;
+			this->screen		   = with_screen;
 
-			// If this is false, UpdateMesh shall be internally called on next Render
-			bool has_updated_mesh = false;
+			this->has_updated_mesh = false;
+		}
 
-		public:
-			IRenderer(Engine* with_engine, IMeshBuilder* with_builder, const char* with_pipeline_program)
-				: InternalEngineObject(with_engine), pipeline_name(with_pipeline_program), mesh_builder(with_builder)
+		virtual void UpdateMesh() = 0;
+
+		void Render(VkCommandBuffer command_buffer, uint32_t current_frame)
+		{
+			if (!this->has_updated_mesh)
 			{
-			}
-			virtual ~IRenderer()
-			{
-				delete this->mesh_builder;
-				this->mesh_builder = nullptr;
-			}
-
-			// Renderers shall implement this to get textures, fonts etc.
-			virtual void SupplyData(const RendererSupplyData& data) = 0;
-
-			void UpdateTransform(
-				const Transform& with_transform,
-				const Transform& with_parent_transform,
-				const ScreenSize& with_screen
-			)
-			{
-				this->transform		   = with_transform;
-				this->parent_transform = with_parent_transform;
-				this->screen		   = with_screen;
-
-				this->has_updated_mesh = false;
+				this->UpdateMesh();
 			}
 
-			virtual void UpdateMesh() = 0;
+			if (this->mesh_builder->HasRebuilt())
+			{
+				this->mesh_context = this->mesh_builder->GetContext();
+			}
 
-			virtual void Render(VkCommandBuffer command_buffer, uint32_t current_frame) = 0;
+			// Skip render if VBO empty
+			if (this->mesh_context.vbo_vert_count <= 0)
+			{
+				return;
+			}
 
-			[[nodiscard]] virtual bool GetIsUI() const = 0;
-		};
-	} // namespace Rendering
-} // namespace Engine
+			Vulkan::Utils::VulkanUniformBufferTransfer(
+				this->pipeline,
+				current_frame,
+				&this->matrix_data,
+				sizeof(RendererMatrixData)
+			);
+
+			this->pipeline->BindPipeline(command_buffer, current_frame);
+
+			VkBuffer vertex_buffers[] = {this->mesh_context.vbo->GetNativeHandle()};
+			VkDeviceSize offsets[]	  = {0};
+			vkCmdBindVertexBuffers(command_buffer, 0, 1, vertex_buffers, offsets);
+
+			vkCmdDraw(command_buffer, static_cast<uint32_t>(this->mesh_context.vbo_vert_count), 1, 0, 0);
+		}
+	};
+} // namespace Engine::Rendering

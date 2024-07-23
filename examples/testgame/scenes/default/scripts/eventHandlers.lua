@@ -7,7 +7,7 @@
 -- (events for which no event handler is specified are discarded)
 -- 
 onMouseMoved = function(event)
-	local mouseSpeed = 0.05;
+	local mouseSpeed = 5.0;
 
 	local scene_manager = event.engine:GetSceneManager()
 
@@ -21,6 +21,19 @@ onMouseMoved = function(event)
 	scene_manager:SetCameraHVRotation(h, v)
 
 	return 0
+end
+
+local vectorCross = function(v1x, v1y, v1z, v2x, v2y, v2z)
+	-- x		= v1.y * v2.z - v2.y * v1.z
+	local out_x = v1y  * v2z  - v2y  * v1z;
+	
+	-- y		= v2.x * v1.z - v1.x * v2.z
+	local out_y = v2x  * v1z  - v1x  * v2z;
+
+	-- z		= v1.x * v2.y - v2.x * v1.y
+	local out_z = v1x  * v2y  - v2x  * v1y;
+
+	return out_x, out_y, out_z
 end
 
 -- ON_KEYDOWN event
@@ -42,30 +55,30 @@ onKeyDown = function(event)
 	local scene_manager = event.engine:GetSceneManager()
 
 	local moveSpeed = 5.0 * event.deltaTime;
-      
+	  
 	local camera_h, camera_v = scene_manager:GetCameraHVRotation();
 
-	local direction_x = math.cos(camera_v) * math.cos(camera_h);
-	local direction_y = math.sin(camera_v);
-	local direction_z = math.cos(camera_v) * math.sin(camera_h);
+	local front_x = math.cos(math.rad(camera_v)) * math.cos(math.rad(camera_h));
+	local front_y = math.sin(math.rad(camera_v));
+	local front_z = math.cos(math.rad(camera_v)) * math.sin(math.rad(camera_h));
 
-	--{x = v1.y*v2.z - v2.y*v1.z , y = v2.x*v1.z-v1.x*v2.z , z = v1.x*v2.y-v2.x*v1.y}
-	local right_x = direction_x * 0.0 - 1.0 * direction_z;
-	local right_y = 0.0 * direction_z - direction_x * 0.0;
-	local right_z = direction_x * 1.0 - 0.0 * direction_y;
-	
+	-- world_up = 0, 1, 0
+	local right_x, right_y, right_z = vectorCross(front_x, front_y, front_z, 0, 1, 0)
+
+	local up_x, up_y, up_z = vectorCross(right_x, right_y, right_z, front_x, front_y, front_z)
+
 	local transform_x, transform_y, transform_z = scene_manager:GetCameraTransform();
 	
 	local keycodeSwitchTbl = {
 	   [string.byte('W')] = function()
-		  transform_x = transform_x + direction_x * moveSpeed;
-		  transform_y = transform_y + direction_y * moveSpeed;
-		  transform_z = transform_z + direction_z * moveSpeed;
+		  transform_x = transform_x + front_x * moveSpeed;
+		  transform_y = transform_y + front_y * moveSpeed;
+		  transform_z = transform_z + front_z * moveSpeed;
 	   end,
 	   [string.byte('S')] = function()
-		  transform_x = transform_x - direction_x * moveSpeed;
-		  transform_y = transform_y - direction_y * moveSpeed;
-		  transform_z = transform_z - direction_z * moveSpeed;
+		  transform_x = transform_x - front_x * moveSpeed;
+		  transform_y = transform_y - front_y * moveSpeed;
+		  transform_z = transform_z - front_z * moveSpeed;
 	   end,
 	   [string.byte('A')] = function()
 		  transform_x = transform_x - right_x * moveSpeed;
@@ -76,6 +89,11 @@ onKeyDown = function(event)
 		  transform_x = transform_x + right_x * moveSpeed;
 		  transform_y = transform_y + right_y * moveSpeed;
 		  transform_z = transform_z + right_z * moveSpeed;
+	   end,
+	   [340] = function() -- shift key is value 340
+		  transform_x = transform_x - up_x * moveSpeed;
+		  transform_y = transform_y - up_y * moveSpeed;
+		  transform_z = transform_z - up_z * moveSpeed;
 	   end
 	};
 	
@@ -179,9 +197,17 @@ onInit = function(event)
 	object:SetRotation(0, -135, 180)
 	scene:AddObject("test3d", object)
 
+	local object = engine.CreateSceneObject(asset_manager, "renderer_3d/sprite", "sprite", {
+		{"texture", "sprite0"}
+	})
+	object:SetPosition(-2.0, 1.0, 0.0)
+	object:SetSize(1.0, 1.0, 1.0)
+	object:SetRotation(0, -100, 180)
+	scene:AddObject("test3dsprite", object)
+
 	-- Set-up camera
 	scene_manager:SetCameraTransform(-3.0, 2.3, 4.7)
-	scene_manager:SetCameraHVRotation(2.0, 3.4)
+	scene_manager:SetCameraHVRotation(114.0, 194.8)
 
 	return 0
 end

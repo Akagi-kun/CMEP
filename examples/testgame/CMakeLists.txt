@@ -22,6 +22,7 @@ add_custom_command(TARGET testgame-perform-copy
                    shaders/vulkan/cleanup.bat
                    shaders/vulkan/compile.sh
                    shaders/vulkan/cleanup.sh
+                   CMakeLists.txt
                    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/build/game
                    )
 

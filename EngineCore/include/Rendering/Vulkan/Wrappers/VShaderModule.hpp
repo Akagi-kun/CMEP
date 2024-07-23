@@ -14,7 +14,11 @@ namespace Engine::Rendering::Vulkan
 		VkShaderModule native_handle;
 
 	public:
-		VShaderModule(VDeviceManager* with_device_manager, const std::filesystem::path& with_path);
+		VShaderModule(
+			VDeviceManager* with_device_manager,
+			std::filesystem::path with_path,
+			const std::string& filename
+		);
 		~VShaderModule();
 
 		[[nodiscard]] VkShaderModule GetNativeHandle()
