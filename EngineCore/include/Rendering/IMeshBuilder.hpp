@@ -30,14 +30,14 @@ namespace Engine::Rendering
 
 		virtual void Build() = 0;
 
+		[[nodiscard]] virtual VkPrimitiveTopology GetSupportedTopology() const noexcept = 0;
+
 		[[nodiscard]] const MeshBuildContext& GetContext() const
 		{
 			return this->context;
 		}
 
-		[[nodiscard]] virtual VkPrimitiveTopology GetSupportedTopology() const noexcept = 0;
-
-		[[nodiscard]] bool HasRebuilt()
+		[[nodiscard]] bool HasRebuilt() noexcept
 		{
 			if (this->context.been_rebuilt)
 			{

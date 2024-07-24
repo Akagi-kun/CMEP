@@ -25,10 +25,7 @@ namespace Engine::Rendering
 			// Copy into context
 			std::copy(generated_mesh.begin(), generated_mesh.end(), std::back_inserter(this->context.mesh));
 
-			this->context.vbo			 = this->renderer->CreateVulkanVertexBufferFromData(generated_mesh);
-			this->context.vbo_vert_count = generated_mesh.size();
-
-			this->context.been_rebuilt = true;
+			this->context.RebuildVBO(this->renderer);
 		}
 	}
 } // namespace Engine::Rendering

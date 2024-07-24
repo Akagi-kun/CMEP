@@ -8,6 +8,7 @@
 #include "Rendering/Vulkan/Wrappers/VShaderModule.hpp"
 
 #include "Engine.hpp"
+#include "vulkan/vulkan_core.h"
 
 namespace Engine::Rendering::Vulkan
 {
@@ -240,12 +241,14 @@ namespace Engine::Rendering::Vulkan
 
 	VPipeline::~VPipeline()
 	{
+		VkDevice logical_device = this->device_manager->GetLogicalDevice();
+
+		vkDeviceWaitIdle(logical_device);
+
 		for (auto& uniform_buffer : this->uniform_buffers)
 		{
 			delete uniform_buffer;
 		}
-
-		VkDevice logical_device = this->device_manager->GetLogicalDevice();
 
 		vkDestroyDescriptorPool(logical_device, this->descriptor_pool, nullptr);
 		vkDestroyDescriptorSetLayout(logical_device, this->descriptor_set_layout, nullptr);

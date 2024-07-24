@@ -94,7 +94,7 @@ local gameOnGameOver = function(asset_manager, scene_manager)
 
 	engine.logger.SimpleLog(string.format("Game over!"))
 
-	local object = engine.CreateSceneObject(asset_manager, "renderer_2d", "text", "text", {
+	local object = engine.CreateSceneObject(asset_manager, "renderer_2d/text", "text", {
 		{"font", "myfont"}, {"text", "GAME OVER"}
 	  })
 	object:SetPosition(0.34, 0.45, -0.01)

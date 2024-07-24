@@ -11,7 +11,6 @@
 
 #include "Engine.hpp"
 
-#include <array>
 #include <cassert>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/quaternion.hpp>
@@ -29,9 +28,13 @@ namespace Engine::Rendering
 
 		pipeline_settings.shader = this->pipeline_name;
 
-		pipeline_settings.descriptor_layout_settings.push_back(
-			VulkanDescriptorLayoutSettings{0, 1, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT}
-		);
+		pipeline_settings.descriptor_layout_settings.push_back(VulkanDescriptorLayoutSettings{
+			0,
+			1,
+			VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
+			VK_SHADER_STAGE_VERTEX_BIT,
+		});
+
 		pipeline_settings.descriptor_layout_settings.push_back(VulkanDescriptorLayoutSettings{
 			1,
 			1,
@@ -42,12 +45,10 @@ namespace Engine::Rendering
 		this->pipeline =
 			new Vulkan::VPipeline(renderer->GetDeviceManager(), pipeline_settings, renderer->GetRenderPass());
 	}
+
 	Renderer2D::~Renderer2D()
 	{
-		this->logger->SimpleLog(Logging::LogLevel::Debug3, "Cleaning up text renderer");
-
-		Vulkan::VulkanRenderingEngine* renderer = this->owner_engine->GetRenderingEngine();
-		renderer->SyncDeviceWaitIdle();
+		this->logger->SimpleLog(Logging::LogLevel::Debug3, "Cleaning up Renderer2D");
 
 		delete this->pipeline;
 	}
@@ -81,72 +82,79 @@ namespace Engine::Rendering
 
 	void Renderer2D::UpdateMesh()
 	{
-		this->has_updated_mesh = true;
+		// TODO: Fix this (should be true, or just check another way)
+		this->has_updated_mesh = false;
 
-		Vulkan::VulkanRenderingEngine* renderer = this->owner_engine->GetRenderingEngine();
+		auto* renderer		 = this->owner_engine->GetRenderingEngine();
+		auto* device_manager = renderer->GetDeviceManager();
 
 		if (this->mesh_builder != nullptr)
 		{
 			this->mesh_builder->Build();
 		}
 
-		glm::mat4 projection{};
-		if (auto locked_scene_manager = this->owner_engine->GetSceneManager().lock())
 		{
-			projection = locked_scene_manager->GetProjectionMatrixOrtho();
-		}
-
-		if (this->parent_transform.size.x == 0.0f || this->parent_transform.size.y == 0.0f ||
-			this->parent_transform.size.z == 0.0f)
-		{
-			this->parent_transform.size = glm::vec3(1, 1, 1);
-		}
-
-		this->matrix_data.mat_model = CalculateModelMatrix(this->transform, this->parent_transform);
-		this->matrix_data.mat_vp	= projection; // * view
-
-		auto* texture_image = this->texture->GetTextureImage();
-
-		if (auto* device_manager = renderer->GetDeviceManager())
-		{
-			for (uint32_t i = 0; i < Vulkan::VulkanRenderingEngine::GetMaxFramesInFlight(); i++)
+			glm::mat4 projection{};
+			if (auto locked_scene_manager = this->owner_engine->GetSceneManager().lock())
 			{
-				VkDescriptorBufferInfo buffer_info{};
-				buffer_info.buffer = pipeline->GetUniformBuffer(i)->GetNativeHandle();
-				buffer_info.offset = 0;
-				buffer_info.range  = sizeof(RendererMatrixData);
+				projection = locked_scene_manager->GetProjectionMatrixOrtho();
+			}
 
+			this->matrix_data.mat_model = CalculateModelMatrix(this->transform, this->parent_transform);
+			this->matrix_data.mat_vp	= projection; // * view;
+		}
+
+		Vulkan::VSampledImage* texture_image = nullptr;
+
+		if (this->texture)
+		{
+			texture_image = this->texture->GetTextureImage();
+		}
+
+		for (uint32_t i = 0; i < Vulkan::VulkanRenderingEngine::GetMaxFramesInFlight(); i++)
+		{
+			std::vector<VkWriteDescriptorSet> descriptor_writes{};
+
+			VkDescriptorBufferInfo buffer_info{};
+			buffer_info.buffer = this->pipeline->GetUniformBuffer(i)->GetNativeHandle();
+			buffer_info.offset = 0;
+			buffer_info.range  = sizeof(RendererMatrixData);
+
+			VkWriteDescriptorSet uniform_buffer_set = {};
+			uniform_buffer_set.sType				= VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+			uniform_buffer_set.dstSet				= this->pipeline->GetDescriptorSet(i);
+			uniform_buffer_set.dstBinding			= 0;
+			uniform_buffer_set.dstArrayElement		= 0;
+			uniform_buffer_set.descriptorType		= VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+			uniform_buffer_set.descriptorCount		= 1;
+			uniform_buffer_set.pBufferInfo			= &buffer_info;
+			descriptor_writes.push_back(uniform_buffer_set);
+
+			if (this->texture)
+			{
 				VkDescriptorImageInfo image_info{};
 				image_info.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 				image_info.imageView   = texture_image->GetNativeViewHandle();
 				image_info.sampler	   = texture_image->texture_sampler;
 
-				std::array<VkWriteDescriptorSet, 2> descriptor_writes{};
-
-				descriptor_writes[0].sType			 = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-				descriptor_writes[0].dstSet			 = pipeline->GetDescriptorSet(i);
-				descriptor_writes[0].dstBinding		 = 0;
-				descriptor_writes[0].dstArrayElement = 0;
-				descriptor_writes[0].descriptorType	 = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-				descriptor_writes[0].descriptorCount = 1;
-				descriptor_writes[0].pBufferInfo	 = &buffer_info;
-
-				descriptor_writes[1].sType			 = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-				descriptor_writes[1].dstSet			 = pipeline->GetDescriptorSet(i);
-				descriptor_writes[1].dstBinding		 = 1;
-				descriptor_writes[1].dstArrayElement = 0;
-				descriptor_writes[1].descriptorType	 = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-				descriptor_writes[1].descriptorCount = 1;
-				descriptor_writes[1].pImageInfo		 = &image_info;
-
-				vkUpdateDescriptorSets(
-					device_manager->GetLogicalDevice(),
-					static_cast<uint32_t>(descriptor_writes.size()),
-					descriptor_writes.data(),
-					0,
-					nullptr
-				);
+				VkWriteDescriptorSet optional_texture_set = {};
+				optional_texture_set.sType				  = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+				optional_texture_set.dstSet				  = pipeline->GetDescriptorSet(i);
+				optional_texture_set.dstBinding			  = 1;
+				optional_texture_set.dstArrayElement	  = 0;
+				optional_texture_set.descriptorType		  = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+				optional_texture_set.descriptorCount	  = 1;
+				optional_texture_set.pImageInfo			  = &image_info;
+				descriptor_writes.push_back(optional_texture_set);
 			}
+
+			vkUpdateDescriptorSets(
+				device_manager->GetLogicalDevice(),
+				static_cast<uint32_t>(descriptor_writes.size()),
+				descriptor_writes.data(),
+				0,
+				nullptr
+			);
 		}
 	}
 } // namespace Engine::Rendering
