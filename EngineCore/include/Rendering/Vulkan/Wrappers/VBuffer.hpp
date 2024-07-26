@@ -6,6 +6,8 @@
 
 #include "vulkan/vulkan_core.h"
 
+#include <cstring>
+
 namespace Engine::Rendering::Vulkan
 {
 	class VBuffer : public HoldsVulkanDevice, public HoldsVMA
@@ -38,6 +40,15 @@ namespace Engine::Rendering::Vulkan
 			VkDeviceSize with_src_offset = 0,
 			VkDeviceSize with_dst_offset = 0
 		);
+
+		void MemoryCopy(const void* with_data, size_t with_size)
+		{
+			this->MapMemory();
+
+			std::memcpy(this->mapped_data, with_data, with_size);
+
+			this->UnmapMemory();
+		}
 
 		[[nodiscard]] VkBuffer& GetNativeHandle()
 		{

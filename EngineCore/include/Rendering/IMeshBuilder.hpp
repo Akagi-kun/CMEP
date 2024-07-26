@@ -10,6 +10,7 @@ namespace Engine::Rendering
 	class IMeshBuilder : public InternalEngineObject
 	{
 	protected:
+		std::vector<RenderingVertex> mesh;
 		MeshBuildContext context = {};
 		Vulkan::VulkanRenderingEngine* renderer;
 

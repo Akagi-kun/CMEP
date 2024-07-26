@@ -2,7 +2,6 @@
 
 #include "Rendering/IMeshBuilder.hpp"
 #include "Rendering/Transform.hpp"
-#include "Rendering/Vulkan/VulkanUtilities.hpp"
 #include "Rendering/Vulkan/Wrappers/VPipeline.hpp"
 
 #include "InternalEngineObject.hpp"
@@ -81,26 +80,20 @@ namespace Engine::Rendering
 				this->mesh_context = this->mesh_builder->GetContext();
 			}
 
-			// Skip render if VBO empty
-			if (this->mesh_context.vbo_vert_count <= 0)
+			// Render only if VBO non-empty
+			if (this->mesh_context.vbo_vert_count > 0)
 			{
-				return;
+				this->pipeline->GetUniformBuffer(current_frame)
+					->MemoryCopy(&this->matrix_data, sizeof(RendererMatrixData));
+
+				this->pipeline->BindPipeline(command_buffer, current_frame);
+
+				VkBuffer vertex_buffers[] = {this->mesh_context.vbo->GetNativeHandle()};
+				VkDeviceSize offsets[]	  = {0};
+				vkCmdBindVertexBuffers(command_buffer, 0, 1, vertex_buffers, offsets);
+
+				vkCmdDraw(command_buffer, static_cast<uint32_t>(this->mesh_context.vbo_vert_count), 1, 0, 0);
 			}
-
-			Vulkan::Utils::VulkanUniformBufferTransfer(
-				this->pipeline,
-				current_frame,
-				&this->matrix_data,
-				sizeof(RendererMatrixData)
-			);
-
-			this->pipeline->BindPipeline(command_buffer, current_frame);
-
-			VkBuffer vertex_buffers[] = {this->mesh_context.vbo->GetNativeHandle()};
-			VkDeviceSize offsets[]	  = {0};
-			vkCmdBindVertexBuffers(command_buffer, 0, 1, vertex_buffers, offsets);
-
-			vkCmdDraw(command_buffer, static_cast<uint32_t>(this->mesh_context.vbo_vert_count), 1, 0, 0);
 		}
 	};
 } // namespace Engine::Rendering

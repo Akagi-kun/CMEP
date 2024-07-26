@@ -39,7 +39,7 @@ namespace Engine::Rendering
 			delete this->context.vbo;
 
 			this->context.vbo = nullptr;
-			this->context.mesh.clear();
+			this->mesh.clear();
 		}
 		this->context.been_rebuilt = true;
 
@@ -192,10 +192,8 @@ namespace Engine::Rendering
 			}
 		}
 
-		// Copy into context
-		this->context.mesh.reserve(generated_mesh.size());
-		std::copy(generated_mesh.begin(), generated_mesh.end(), std::back_inserter(this->context.mesh));
-
-		this->context.RebuildVBO(this->renderer);
+		// Create context
+		std::copy(generated_mesh.begin(), generated_mesh.end(), std::back_inserter(this->mesh));
+		this->context.RebuildVBO(this->renderer, this->mesh);
 	}
 } // namespace Engine::Rendering

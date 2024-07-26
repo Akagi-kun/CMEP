@@ -8,20 +8,17 @@ namespace Engine::Rendering
 {
 	struct MeshBuildContext
 	{
-		// Build storage
-		std::vector<RenderingVertex> mesh;
-
 		// On build finish
 		Vulkan::VBuffer* vbo;
 		size_t vbo_vert_count;
 
 		bool been_rebuilt;
 
-		void RebuildVBO(Vulkan::VulkanRenderingEngine* renderer)
+		void RebuildVBO(Vulkan::VulkanRenderingEngine* renderer, const std::vector<RenderingVertex>& mesh)
 		{
 			delete this->vbo;
-			this->vbo			 = renderer->CreateVulkanVertexBufferFromData(this->mesh);
-			this->vbo_vert_count = this->mesh.size();
+			this->vbo			 = renderer->CreateVulkanVertexBufferFromData(mesh);
+			this->vbo_vert_count = mesh.size();
 			this->been_rebuilt	 = true;
 		}
 	};

@@ -1,8 +1,5 @@
 #pragma once
 
-#include "Rendering/Vulkan/Wrappers/VBuffer.hpp"
-#include "Rendering/Vulkan/Wrappers/VPipeline.hpp"
-
 #include "vulkan/vulkan_core.h"
 
 #include <cstring>
@@ -67,15 +64,5 @@ namespace Engine::Rendering::Vulkan::Utils
 		file.close();
 
 		return buffer;
-	}
-
-	inline void VulkanUniformBufferTransfer(VPipeline* pipeline, uint32_t current_frame, void* data, size_t data_size)
-	{
-		auto* uniform_buffer = pipeline->GetUniformBuffer(current_frame);
-		uniform_buffer->MapMemory();
-
-		std::memcpy(uniform_buffer->mapped_data, data, data_size);
-
-		uniform_buffer->UnmapMemory();
 	}
 } // namespace Engine::Rendering::Vulkan::Utils

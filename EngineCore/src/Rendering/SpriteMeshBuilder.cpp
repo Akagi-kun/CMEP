@@ -22,10 +22,9 @@ namespace Engine::Rendering
 				RenderingVertex{glm::vec3(0.0, 0.0, 0.0), glm::vec3(1.f, 0.f, 0.f), glm::vec2(0.0, 0.0)},
 			};
 
-			// Copy into context
-			std::copy(generated_mesh.begin(), generated_mesh.end(), std::back_inserter(this->context.mesh));
-
-			this->context.RebuildVBO(this->renderer);
+			// Create context
+			std::copy(generated_mesh.begin(), generated_mesh.end(), std::back_inserter(this->mesh));
+			this->context.RebuildVBO(this->renderer, this->mesh);
 		}
 	}
 } // namespace Engine::Rendering
