@@ -10,7 +10,7 @@ This project is currently in alpha and although simple games (as shown in the `.
 #### Install Vulkan SDK
 Before you build the engine you first have to install the Vulkan SDK, download it from https://vulkan.lunarg.com/ and install it/unpack it.
 
-Depending on your platform (Linux needs this, untested on MacOS), it might be necessary to set the `VULKAN_SDK` environment variable to a valid Vulkan SDK location so cmake finds all includes. Use either the `setup-env.sh` script that comes with Vulkan SDK or set it manually.
+Depending on your platform (Linux needs this, untested on MacOS), it might be necessary to set the `VULKAN_SDK` environment variable to a valid Vulkan SDK location so cmake finds all includes. Use either the `setup-env.sh` script (`source path/to/vulkansdk/setup-env.sh`) that comes with the Vulkan SDK or set it manually.
 
 #### Clone repository and submodules
 First use `git clone "https://github.com/Snezhnaya-chan/CMEP.git"` in a new clean directory to clone repository.
