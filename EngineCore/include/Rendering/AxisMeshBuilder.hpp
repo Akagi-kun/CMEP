@@ -2,6 +2,7 @@
 
 #include "IMeshBuilder.hpp"
 #include "vulkan/vulkan_core.h"
+
 namespace Engine::Rendering
 {
 	class AxisMeshBuilder final : public IMeshBuilder
