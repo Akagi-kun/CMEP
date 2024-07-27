@@ -3,6 +3,8 @@ project(CMEP)
 
 enable_testing()
 
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+
 set(builddir ${CMAKE_CURRENT_SOURCE_DIR}/build/)
 message("-- Build directory is: " ${builddir})
 set(EXECUTABLE_OUTPUT_PATH ${builddir} CACHE PATH "Build directory" FORCE)
