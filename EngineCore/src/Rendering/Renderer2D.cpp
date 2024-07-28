@@ -88,22 +88,6 @@ namespace Engine::Rendering
 		auto* renderer		 = this->owner_engine->GetRenderingEngine();
 		auto* device_manager = renderer->GetDeviceManager();
 
-		if (this->mesh_builder != nullptr)
-		{
-			this->mesh_builder->Build();
-		}
-
-		{
-			glm::mat4 projection{};
-			if (auto locked_scene_manager = this->owner_engine->GetSceneManager().lock())
-			{
-				projection = locked_scene_manager->GetProjectionMatrixOrtho();
-			}
-
-			this->matrix_data.mat_model = CalculateModelMatrix(this->transform, this->parent_transform);
-			this->matrix_data.mat_vp	= projection; // * view;
-		}
-
 		Vulkan::VSampledImage* texture_image = nullptr;
 
 		if (this->texture)
@@ -156,5 +140,19 @@ namespace Engine::Rendering
 				nullptr
 			);
 		}
+	}
+
+	void Renderer2D::UpdateMatrices()
+	{
+		glm::mat4 projection{};
+		if (auto locked_scene_manager = this->owner_engine->GetSceneManager().lock())
+		{
+			projection = locked_scene_manager->GetProjectionMatrixOrtho();
+		}
+
+		this->matrix_data.mat_model = CalculateModelMatrix(this->transform, this->parent_transform);
+		this->matrix_data.mat_vp	= projection; // * view;
+
+		this->has_updated_matrices = true;
 	}
 } // namespace Engine::Rendering

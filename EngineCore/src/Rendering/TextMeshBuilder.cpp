@@ -11,6 +11,8 @@ namespace Engine::Rendering
 {
 	void TextMeshBuilder::SupplyData(const RendererSupplyData& data)
 	{
+		IMeshBuilder::SupplyData(data);
+
 		switch (data.type)
 		{
 			case RendererSupplyDataType::FONT:
@@ -41,7 +43,6 @@ namespace Engine::Rendering
 			this->context.vbo = nullptr;
 			this->mesh.clear();
 		}
-		this->context.been_rebuilt = true;
 
 		auto window_data  = this->renderer->GetWindow();
 		this->screen_size = {
@@ -194,6 +195,9 @@ namespace Engine::Rendering
 
 		// Create context
 		std::copy(generated_mesh.begin(), generated_mesh.end(), std::back_inserter(this->mesh));
+
+		this->context = MeshBuildContext();
 		this->context.RebuildVBO(this->renderer, this->mesh);
+		this->needs_rebuild = false;
 	}
 } // namespace Engine::Rendering

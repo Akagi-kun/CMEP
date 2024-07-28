@@ -8,10 +8,7 @@ namespace Engine::Rendering
 	public:
 		using IMeshBuilder::IMeshBuilder;
 
-		void SupplyData(const RendererSupplyData& data) override
-		{
-			(void)(data);
-		}
+		using IMeshBuilder::SupplyData;
 
 		void Build() override;
 

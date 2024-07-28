@@ -11,6 +11,9 @@ namespace Engine::Rendering
 	{
 	protected:
 		std::vector<RenderingVertex> mesh;
+		// bool been_rebuilt  = false;
+		bool needs_rebuild = true;
+
 		MeshBuildContext context = {};
 		Vulkan::VulkanRenderingEngine* renderer;
 
@@ -27,7 +30,12 @@ namespace Engine::Rendering
 			delete this->context.vbo;
 		}
 
-		virtual void SupplyData(const RendererSupplyData& data) = 0;
+		// Always call IMeshBuilder::SupplyData when overriding!
+		virtual void SupplyData(const RendererSupplyData& data)
+		{
+			this->needs_rebuild = true;
+			(void)(data);
+		}
 
 		virtual void Build() = 0;
 
@@ -38,15 +46,20 @@ namespace Engine::Rendering
 			return this->context;
 		}
 
-		[[nodiscard]] bool HasRebuilt() noexcept
+		/* [[nodiscard]] bool HasRebuilt() noexcept
 		{
-			if (this->context.been_rebuilt)
+			if (this->been_rebuilt)
 			{
-				this->context.been_rebuilt = false;
+				this->been_rebuilt = false;
 				return true;
 			}
 
 			return false;
+		} */
+
+		[[nodiscard]] bool NeedsRebuild() const noexcept
+		{
+			return this->needs_rebuild;
 		}
 	};
 } // namespace Engine::Rendering

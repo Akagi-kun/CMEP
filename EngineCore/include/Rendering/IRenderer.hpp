@@ -36,8 +36,12 @@ namespace Engine::Rendering
 		IMeshBuilder* mesh_builder = nullptr;
 		MeshBuildContext mesh_context{};
 
-		// If this is false, UpdateMesh shall be internally called on next Render
+		// When false, UpdateMesh shall be internally called on next Render
 		bool has_updated_mesh = false;
+
+		// When false, UpdateMatrices will be called
+		// Note that UpdateMatrices is also manually called from SceneManager
+		bool has_updated_matrices = false;
 
 	public:
 		IRenderer(Engine* with_engine, IMeshBuilder* with_builder, const char* with_pipeline_program)
@@ -63,20 +67,28 @@ namespace Engine::Rendering
 			this->parent_transform = with_parent_transform;
 			this->screen		   = with_screen;
 
-			this->has_updated_mesh = false;
+			this->has_updated_matrices = false;
 		}
 
-		virtual void UpdateMesh() = 0;
+		virtual void UpdateMesh()	  = 0;
+		virtual void UpdateMatrices() = 0;
 
 		void Render(VkCommandBuffer command_buffer, uint32_t current_frame)
 		{
+			if (!this->has_updated_matrices)
+			{
+				this->UpdateMatrices();
+			}
+
 			if (!this->has_updated_mesh)
 			{
 				this->UpdateMesh();
 			}
 
-			if (this->mesh_builder->HasRebuilt())
+			// If builder requests a rebuild, do it and update current context
+			if (this->mesh_builder->NeedsRebuild())
 			{
+				this->mesh_builder->Build();
 				this->mesh_context = this->mesh_builder->GetContext();
 			}
 

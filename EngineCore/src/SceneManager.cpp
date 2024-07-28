@@ -53,12 +53,14 @@ namespace Engine
 	{
 		auto& current_scene = this->scenes.at(this->current_scene_name);
 
+		// Explicitly update matrices of all objects
+		// since otherwise they'd update them only on transform updates
 		for (const auto& [name, ptr] : current_scene->GetAllObjects())
 		{
 			auto* object_renderer = static_cast<Rendering::IRenderer*>(ptr->GetRenderer());
 			assert(object_renderer != nullptr);
 
-			object_renderer->UpdateMesh();
+			object_renderer->UpdateMatrices();
 		}
 	}
 

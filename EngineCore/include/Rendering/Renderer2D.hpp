@@ -20,5 +20,6 @@ namespace Engine::Rendering
 		void SupplyData(const RendererSupplyData& data) override;
 
 		void UpdateMesh() override;
+		void UpdateMatrices() override;
 	};
 } // namespace Engine::Rendering
