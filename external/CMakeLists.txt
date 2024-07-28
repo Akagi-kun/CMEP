@@ -6,7 +6,7 @@ project(CMEP)
 # We use the author's native build system (make for unix-like, msvcbuild.bat for windows)
 
 # Debug info
-message("-- [EXTERNAL] Binary dir is: " ${CMAKE_CURRENT_BINARY_DIR})
+#message("-- [EXTERNAL] Binary dir is: " ${CMAKE_CURRENT_BINARY_DIR})
 message("-- [EXTERNAL] Source dir is: " ${CMAKE_CURRENT_SOURCE_DIR})
 
 # Setup various platform-specific semantics
@@ -37,8 +37,8 @@ else() # Windows
 
 endif()
 
-set(VAR_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/../build)
-set(VAR_SOURCE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/luajit/src)
+set(VAR_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/../build)
+set(VAR_SOURCE_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/luajit/src)
 
 set(VAR_DYLIB_FILENAME ${VAR_LUAJIT_NAME}.${VAR_DYLIB_EXTENSION})
 set(VAR_STATICLIB_FILENAME ${VAR_LUAJIT_NAME}.${VAR_STATICLIB_EXTENSION})
@@ -59,8 +59,7 @@ if(NOT MSVC AND NOT APPLE) # Non-OSX Unix-like specifics
 	# Create necessary linux symlink
 	add_custom_command(OUTPUT ${VAR_OUTPUT_DIRECTORY}/${VAR_SYMLINK_FILENAME}
 
-			   		   DEPENDS
-					   ${VAR_OUTPUT_DIRECTORY}/${VAR_DYLIB_FILENAME}
+			   		   DEPENDS ${VAR_OUTPUT_DIRECTORY}/${VAR_DYLIB_FILENAME}
 
 					   COMMAND ${CMAKE_COMMAND} -E create_symlink ./${VAR_DYLIB_FILENAME} ./${VAR_SYMLINK_FILENAME}
 
@@ -80,6 +79,7 @@ add_custom_target(lua_build
 				  WORKING_DIRECTORY ${VAR_OUTPUT_DIRECTORY})
 
 # Build luajit using platform specific command
+# Creates a dynamic library and a static library
 add_custom_command(OUTPUT
 				   ${VAR_SOURCE_DIRECTORY}/${VAR_DYLIB_FILENAME}
 				   ${VAR_SOURCE_DIRECTORY}/${VAR_STATICLIB_FILENAME}
@@ -100,9 +100,10 @@ add_custom_command(OUTPUT
 				   ${VAR_SOURCE_DIRECTORY}/${VAR_STATICLIB_FILENAME}
 
 				   COMMAND ${CMAKE_COMMAND} -E copy
+				   # From
 				   ./${VAR_DYLIB_FILENAME}
 				   ./${VAR_STATICLIB_FILENAME}
-
+				   # To
 				   ${VAR_OUTPUT_DIRECTORY}/
 
 				   WORKING_DIRECTORY ${VAR_SOURCE_DIRECTORY}/)
