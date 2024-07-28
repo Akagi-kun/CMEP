@@ -11,7 +11,6 @@ namespace Engine::Rendering
 	{
 	protected:
 		std::vector<RenderingVertex> mesh;
-		// bool been_rebuilt  = false;
 		bool needs_rebuild = true;
 
 		MeshBuildContext context = {};
@@ -45,17 +44,6 @@ namespace Engine::Rendering
 		{
 			return this->context;
 		}
-
-		/* [[nodiscard]] bool HasRebuilt() noexcept
-		{
-			if (this->been_rebuilt)
-			{
-				this->been_rebuilt = false;
-				return true;
-			}
-
-			return false;
-		} */
 
 		[[nodiscard]] bool NeedsRebuild() const noexcept
 		{
