@@ -92,7 +92,7 @@ else()
 	target_compile_options(EngineCore PRIVATE -std=c++17 -Wall -Wno-unknown-pragmas -Wno-nullability -Wno-nullability-completeness) # -Wextra -Wpedantic -Werror
 endif()
 
-target_link_directories(EngineCore PUBLIC lib ../build)
+target_link_directories(EngineCore PUBLIC ../build)
 
 if((WIN32 OR UNIX) AND NOT APPLE)
 	target_link_directories(EngineCore PUBLIC ../external/lua-prebuilt)
@@ -105,7 +105,6 @@ target_include_directories(EngineCore PUBLIC include
 											 ../external/glfw/include
 											 ../external/nlohmann-json/single_include
 											 ../external/VulkanMemoryAllocator/include
-											 ../external/lua-prebuilt/include
 											 ../external/lodepng
 											 ../external/glm
 											 ../common_include
@@ -115,13 +114,8 @@ if(DEFINED ENV{VULKAN_SDK})
 		target_link_directories(EngineCore PUBLIC $ENV{VULKAN_SDK}/Lib)
 		target_include_directories(EngineCore PUBLIC $ENV{VULKAN_SDK}/Include)
 	else()
-		#if(APPLE)
-			target_link_directories(EngineCore PUBLIC $ENV{VULKAN_SDK}/lib)
-			target_include_directories(EngineCore PUBLIC $ENV{VULKAN_SDK}/include)
-		#else()
-		#	target_link_directories(EngineCore PUBLIC $ENV{VULKAN_SDK}/lib)
-		#	target_include_directories(EngineCore PUBLIC $ENV{VULKAN_SDK}/include)
-		#endif()
+		target_link_directories(EngineCore PUBLIC $ENV{VULKAN_SDK}/lib)
+		target_include_directories(EngineCore PUBLIC $ENV{VULKAN_SDK}/include)
 	endif()
 else()
 	message("Warning! Vulkan SDK environment variable not found!")

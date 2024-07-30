@@ -1,10 +1,6 @@
 cmake_minimum_required(VERSION 3.10)
 project(CMEP CXX)
 
-set(HEADER_FILES
-	../common_include/EngineCore.hpp
-	)
-
 set(SRC_FILES
 	src/main.cpp
 	)
@@ -24,9 +20,7 @@ else()
 		)
 endif()
 
-include_directories(include)
-
-add_executable(rungame ${SRC_FILES} ${HEADER_FILES})
+add_executable(rungame ${SRC_FILES})
 
 if(MSVC)
 # TODO: Remove /wd4996 after deprecation fixes
@@ -35,24 +29,26 @@ else()
 	target_compile_options(rungame PRIVATE -std=c++17 -Wall -Wextra -Wno-unknown-pragmas) # -Wpedantic -Werror
 endif()
 
-target_include_directories(rungame PUBLIC ../external ../external/lua-prebuilt/include include ../common_include ../EngineCore/include ../external/VulkanMemoryAllocator/include)
+target_link_directories(rungame PUBLIC ../build)
+
+target_include_directories(rungame PUBLIC include
+										  ../external/luajit/src
+										  ../external/glfw/include
+										  ../external/nlohmann-json/single_include
+										  ../external/glm
+										  ../common_include
+										  )
+
 if(DEFINED ENV{VULKAN_SDK})
 	if(WIN32)
-		target_link_directories(rungame PUBLIC $ENV{VULKAN_SDK}/Lib lib ../build/Debug ../build ../external/lua-prebuilt)
+		target_link_directories(rungame PUBLIC $ENV{VULKAN_SDK}/Lib)
 		target_include_directories(rungame PUBLIC $ENV{VULKAN_SDK}/Include)
 	else()
-		if(APPLE)
-			target_link_directories(rungame PUBLIC $ENV{VULKAN_SDK}/lib lib ../build/Debug ../build ../external/lua-5.4.6/src)
-			target_include_directories(rungame PUBLIC $ENV{VULKAN_SDK}/include)
-		else()
-			target_link_directories(rungame PUBLIC $ENV{VULKAN_SDK}/lib lib ../build/Debug ../build ../external/lua-prebuilt)
-			target_include_directories(rungame PUBLIC $ENV{VULKAN_SDK}/include)
-		endif()
+		target_link_directories(rungame PUBLIC $ENV{VULKAN_SDK}/lib)
+		target_include_directories(rungame PUBLIC $ENV{VULKAN_SDK}/include)
 	endif()
 else()
-	link_directories(rungame PUBLIC lib ../build/Debug ../build ../external/lua)
 	message("Warning! Vulkan SDK environment variable not found!")
 endif()
-
 
 target_link_libraries(rungame EngineCore ${STATIC_LIBRARIES})
