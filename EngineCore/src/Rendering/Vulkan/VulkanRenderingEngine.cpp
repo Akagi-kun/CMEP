@@ -35,6 +35,7 @@ namespace Engine::Rendering::Vulkan
 	////////////////////////////////////////////////////////////////////////
 	///////////////////////    Runtime functions    ////////////////////////
 	////////////////////////////////////////////////////////////////////////
+#pragma region Runtime functions
 
 	void VulkanRenderingEngine::RecordVulkanCommandBuffer(VCommandBuffer* command_buffer, uint32_t image_index)
 	{
@@ -84,7 +85,7 @@ namespace Engine::Rendering::Vulkan
 		command_buffer->EndCmdBuffer();
 	}
 
-	VkExtent2D VulkanRenderingEngine::ChooseVulkanSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities)
+	VkExtent2D VulkanRenderingEngine::ChooseVulkanSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities) const
 	{
 		if (capabilities.currentExtent.width != std::numeric_limits<uint32_t>::max())
 		{
@@ -93,7 +94,7 @@ namespace Engine::Rendering::Vulkan
 
 		int width;
 		int height;
-		glfwGetFramebufferSize(window, &width, &height);
+		glfwGetFramebufferSize(this->window.native_handle, &width, &height);
 
 		VkExtent2D actual_extent = {static_cast<uint32_t>(width), static_cast<uint32_t>(height)};
 
@@ -158,12 +159,14 @@ namespace Engine::Rendering::Vulkan
 		);
 	}
 
+#pragma endregion
 	////////////////////////////////////////////////////////////////////////
 	////////////////////////    Init functions    //////////////////////////
 	////////////////////////////////////////////////////////////////////////
 
 	VulkanRenderingEngine::VulkanRenderingEngine(Engine* with_engine, ScreenSize with_window_size, std::string title)
-		: InternalEngineObject(with_engine), window_size(with_window_size), window_title(std::move(title))
+		: InternalEngineObject(with_engine),
+		  window{nullptr, with_window_size, std::move(title)} //, window_title(std::move(title))
 	{
 		// Initialize GLFW
 		if (glfwInit() == GLFW_FALSE)
@@ -183,15 +186,15 @@ namespace Engine::Rendering::Vulkan
 		// TODO: Fix i3wm
 		glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
 
-		this->window = glfwCreateWindow(
-			static_cast<int>(this->window_size.x),
-			static_cast<int>(this->window_size.y),
-			this->window_title.c_str(),
+		this->window.native_handle = glfwCreateWindow(
+			static_cast<int>(this->window.size.x),
+			static_cast<int>(this->window.size.y),
+			this->window.title.c_str(),
 			nullptr, // glfwGetPrimaryMonitor(),
 			nullptr
 		);
-		glfwSetWindowUserPointer(this->window, this);
-		glfwSetFramebufferSizeCallback(this->window, FramebufferResizeCallback);
+		glfwSetWindowUserPointer(this->window.native_handle, this);
+		glfwSetFramebufferSizeCallback(this->window.native_handle, FramebufferResizeCallback);
 
 		uint32_t extension_count = 0;
 		vkEnumerateInstanceExtensionProperties(nullptr, &extension_count, nullptr);
@@ -199,9 +202,8 @@ namespace Engine::Rendering::Vulkan
 		this->logger
 			->SimpleLog(Logging::LogLevel::Debug1, LOGPFX_CURRENT "%u vulkan extensions supported", extension_count);
 
-		this->device_manager = std::make_shared<VDeviceManager>(this->owner_engine, this->window);
+		this->device_manager = std::make_shared<VDeviceManager>(this->owner_engine, this->window.native_handle);
 
-		// this->CreateVulkanMemoryAllocator();
 		this->CreateVulkanSwapChain();
 		this->CreateVulkanRenderPass();
 
@@ -250,7 +252,7 @@ namespace Engine::Rendering::Vulkan
 		this->device_manager.reset();
 
 		// Clean up GLFW
-		glfwDestroyWindow(this->window);
+		glfwDestroyWindow(this->window.native_handle);
 		glfwTerminate();
 	}
 
@@ -366,17 +368,6 @@ namespace Engine::Rendering::Vulkan
 		}
 	}
 
-	GLFWwindowData VulkanRenderingEngine::GetWindow() const
-	{
-		GLFWwindowData data{};
-		data.window		  = this->window;
-		data.window_x	  = this->window_size.x;
-		data.window_y	  = this->window_size.y;
-		data.window_title = this->window_title;
-
-		return data;
-	}
-
 	void VulkanRenderingEngine::SetRenderCallback(std::function<void(VkCommandBuffer, uint32_t, Engine*)> callback)
 	{
 		this->external_callback = std::move(callback);
@@ -390,7 +381,7 @@ namespace Engine::Rendering::Vulkan
 	void VulkanRenderingEngine::SignalFramebufferResizeGLFW(ScreenSize with_size)
 	{
 		this->framebuffer_resized = true;
-		this->window_size		  = with_size;
+		this->window.size		  = with_size;
 	}
 
 	// Pipelines

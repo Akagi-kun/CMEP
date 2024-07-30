@@ -39,14 +39,10 @@ namespace Engine::Rendering::Vulkan
 			create_info.imageSharingMode	  = VK_SHARING_MODE_CONCURRENT;
 			create_info.queueFamilyIndexCount = 2;
 			create_info.pQueueFamilyIndices	  = queue_family_indices;
-
-			// this->logger->SimpleLog(Logging::LogLevel::Debug1, LOGPFX_CURRENT "Using concurrent sharing mode");
 		}
 		else
 		{
 			create_info.imageSharingMode = VK_SHARING_MODE_EXCLUSIVE;
-
-			// this->logger->SimpleLog(Logging::LogLevel::Debug1, LOGPFX_CURRENT "Using exclusive sharing mode");
 		}
 
 		if (vkCreateSwapchainKHR(
@@ -56,7 +52,6 @@ namespace Engine::Rendering::Vulkan
 				&(this->native_handle)
 			) != VK_SUCCESS)
 		{
-			// this->logger->SimpleLog(Logging::LogLevel::Error, LOGPFX_CURRENT "Vulkan swap chain creation failed");
 			throw std::runtime_error("Failed to create swap chain!");
 		}
 
@@ -108,11 +103,13 @@ namespace Engine::Rendering::Vulkan
 
 	VSwapchain::~VSwapchain()
 	{
+		VkDevice logical_device = this->device_manager->GetLogicalDevice();
+
 		for (auto* image_view : this->image_view_handles)
 		{
-			vkDestroyImageView(this->device_manager->GetLogicalDevice(), image_view, nullptr);
+			vkDestroyImageView(logical_device, image_view, nullptr);
 		}
 
-		vkDestroySwapchainKHR(this->device_manager->GetLogicalDevice(), this->native_handle, nullptr);
+		vkDestroySwapchainKHR(logical_device, this->native_handle, nullptr);
 	}
 } // namespace Engine::Rendering::Vulkan

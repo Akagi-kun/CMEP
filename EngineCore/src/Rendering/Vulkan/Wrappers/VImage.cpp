@@ -52,7 +52,6 @@ namespace Engine::Rendering::Vulkan
 				&(this->allocation_info)
 			) != VK_SUCCESS)
 		{
-			// this->logger->SimpleLog(Logging::LogLevel::Exception, LOGPFX_CURRENT "Failed to create image");
 			throw std::runtime_error("Failed to create VulkanImage!");
 		}
 
@@ -61,12 +60,16 @@ namespace Engine::Rendering::Vulkan
 
 	VImage::~VImage()
 	{
+		VkDevice logical_device = this->device_manager->GetLogicalDevice();
+
+		vkDeviceWaitIdle(logical_device);
+
 		if (this->native_view_handle != nullptr)
 		{
-			vkDestroyImageView(this->device_manager->GetLogicalDevice(), this->native_view_handle, nullptr);
+			vkDestroyImageView(logical_device, this->native_view_handle, nullptr);
 		}
 
-		vkDestroyImage(this->device_manager->GetLogicalDevice(), this->native_handle, nullptr);
+		vkDestroyImage(logical_device, this->native_handle, nullptr);
 
 		vmaFreeMemory(this->allocator, this->allocation);
 	}

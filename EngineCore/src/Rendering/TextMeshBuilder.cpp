@@ -4,7 +4,6 @@
 #include "Assets/Texture.hpp"
 #include "Rendering/Vulkan/VulkanStructDefs.hpp"
 
-#include <cstdint>
 #include <iterator>
 
 namespace Engine::Rendering
@@ -45,10 +44,10 @@ namespace Engine::Rendering
 		}
 
 		auto window_data  = this->renderer->GetWindow();
-		this->screen_size = {
-			static_cast<uint_fast16_t>(window_data.window_x),
-			static_cast<uint_fast16_t>(window_data.window_y)
-		};
+		this->screen_size = window_data.size; /* {
+			static_cast<uint_fast16_t>(window_data.size.x),
+			static_cast<uint_fast16_t>(window_data.size.y)
+		}; */
 
 		int font_size = std::stoi(*this->font->GetFontInfoParameter("size"));
 

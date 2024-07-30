@@ -1,7 +1,6 @@
 #pragma once
 
 #include "Rendering/Transform.hpp"
-#include "Rendering/Vulkan/ImportVulkan.hpp"
 #include "Rendering/Vulkan/VulkanStructDefs.hpp"
 #include "Rendering/Vulkan/Wrappers/VBuffer.hpp"
 #include "Rendering/Vulkan/Wrappers/framework.hpp"
@@ -35,9 +34,7 @@ namespace Engine::Rendering::Vulkan
 		// Maximum number of frames in rotation/flight
 		static constexpr uint16_t max_frames_in_flight = 3;
 
-		GLFWwindow* window = nullptr;
-		ScreenSize window_size;
-		std::string window_title;
+		GLFWwindowData window{};
 
 		uint32_t current_frame	 = 0;
 		bool framebuffer_resized = false;
@@ -52,21 +49,16 @@ namespace Engine::Rendering::Vulkan
 		// Depth buffers
 		VImage* vk_depth_buffer			 = nullptr;
 
-		// Command pools and buffers
+		// Command buffers
 		std::array<VCommandBuffer*, max_frames_in_flight> command_buffers;
 
 		// Synchronisation
 		std::array<VSyncObjects, max_frames_in_flight> sync_objects;
 
-		// Default pipeline
-		// VulkanPipeline* graphics_pipeline_default = nullptr;
 		VkRenderPass vk_render_pass = VK_NULL_HANDLE;
 
 		// Device manager
 		std::shared_ptr<VDeviceManager> device_manager;
-
-		// Memory management
-		// VmaAllocator vma_allocator;
 
 		// External callback for rendering
 		std::function<void(VkCommandBuffer, uint32_t, Engine*)> external_callback;
@@ -81,7 +73,7 @@ namespace Engine::Rendering::Vulkan
 		bool DoesVulkanFormatHaveStencilComponent(VkFormat format);
 
 		// Swap chain functions
-		VkExtent2D ChooseVulkanSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities);
+		[[nodiscard]] VkExtent2D ChooseVulkanSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities) const;
 		void RecreateVulkanSwapChain();
 		void CleanupVulkanSwapChain();
 
@@ -119,7 +111,6 @@ namespace Engine::Rendering::Vulkan
 
 		// Pipeline functions
 		VulkanPipelineSettings GetVulkanDefaultPipelineSettings();
-		// VPipeline* CreateVulkanPipeline(VulkanPipelineSettings& settings);
 
 		// Getters
 		[[nodiscard]] VDeviceManager* GetDeviceManager()
@@ -127,7 +118,10 @@ namespace Engine::Rendering::Vulkan
 			return this->device_manager.get();
 		}
 
-		[[nodiscard]] GLFWwindowData GetWindow() const;
+		[[nodiscard]] GLFWwindowData GetWindow() const
+		{
+			return this->window;
+		}
 
 		[[nodiscard]] VkRenderPass GetRenderPass()
 		{

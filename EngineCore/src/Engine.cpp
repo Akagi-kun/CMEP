@@ -82,16 +82,18 @@ namespace Engine
 	{
 		Rendering::GLFWwindowData windowdata = this->rendering_engine->GetWindow();
 
-		static double last_x = static_cast<double>(windowdata.window_x) / 2;
-		static double last_y = static_cast<double>(windowdata.window_y) / 2;
+		static double last_x = static_cast<double>(windowdata.size.x) / 2;
+		static double last_y = static_cast<double>(windowdata.size.y) / 2;
+
+		static constexpr double clamp_difference = 128;
 
 		if (this->state_is_window_in_focus && this->state_is_window_in_content)
 		{
 			if ((this->state_mouse_x_pos - last_x) != 0.0 || (this->state_mouse_y_pos - last_y) != 0.0)
 			{
 				auto event		 = EventHandling::Event(this, EventHandling::EventType::ON_MOUSEMOVED);
-				event.mouse.x	 = std::clamp(this->state_mouse_x_pos - last_x, -128.0, 128.0);
-				event.mouse.y	 = std::clamp(this->state_mouse_y_pos - last_y, -128.0, 128.0);
+				event.mouse.x	 = std::clamp(this->state_mouse_x_pos - last_x, -clamp_difference, clamp_difference);
+				event.mouse.y	 = std::clamp(this->state_mouse_y_pos - last_y, -clamp_difference, clamp_difference);
 				event.delta_time = delta_time;
 				this->FireEvent(event);
 
@@ -260,7 +262,7 @@ namespace Engine
 
 		// Show window
 		Rendering::GLFWwindowData glfw_window = this->rendering_engine->GetWindow();
-		glfwShowWindow(glfw_window.window);
+		glfwShowWindow(glfw_window.native_handle);
 
 		// static constexpr double nano_to_msec = 1e6;
 		static constexpr double nano_to_sec = 1e9;
@@ -272,7 +274,7 @@ namespace Engine
 		auto prev_clock = std::chrono::steady_clock::now();
 
 		// hot loop
-		while (glfwWindowShouldClose(glfw_window.window) == 0)
+		while (glfwWindowShouldClose(glfw_window.native_handle) == 0)
 		{
 			const auto next_clock	= std::chrono::steady_clock::now();
 			const double delta_time = static_cast<double>((next_clock - prev_clock).count()) / nano_to_sec;
@@ -470,10 +472,10 @@ namespace Engine
 
 		// Set-up GLFW
 		Rendering::GLFWwindowData windowdata = this->rendering_engine->GetWindow();
-		glfwSetWindowFocusCallback(windowdata.window, Engine::OnWindowFocusCallback);
-		glfwSetCursorPosCallback(windowdata.window, Engine::CursorPositionCallback);
-		glfwSetCursorEnterCallback(windowdata.window, Engine::CursorEnterLeaveCallback);
-		glfwSetKeyCallback(windowdata.window, Engine::OnKeyEventCallback);
+		glfwSetWindowFocusCallback(windowdata.native_handle, Engine::OnWindowFocusCallback);
+		glfwSetCursorPosCallback(windowdata.native_handle, Engine::CursorPositionCallback);
+		glfwSetCursorEnterCallback(windowdata.native_handle, Engine::CursorEnterLeaveCallback);
+		glfwSetKeyCallback(windowdata.native_handle, Engine::OnKeyEventCallback);
 		glfwSetErrorCallback(Engine::ErrorCallback);
 
 		// Fire ON_INIT event
@@ -508,7 +510,7 @@ namespace Engine
 	void Engine::Stop()
 	{
 		// 1 denotes true here
-		glfwSetWindowShouldClose(this->rendering_engine->GetWindow().window, 1);
+		glfwSetWindowShouldClose(this->rendering_engine->GetWindow().native_handle, 1);
 	}
 
 	void Engine::ConfigFile(std::string path)

@@ -1,10 +1,5 @@
 #include "Scene.hpp"
 
-#include "Rendering/IRenderer.hpp"
-#include "Rendering/Renderer2D.hpp"
-#include "Rendering/SpriteMeshBuilder.hpp"
-#include "Rendering/TextMeshBuilder.hpp"
-
 #include "Factories/ObjectFactory.hpp"
 
 #include "Logging/Logging.hpp"
@@ -65,8 +60,8 @@ namespace Engine
 		{
 			this->logger->SimpleLog(Logging::LogLevel::Debug3, LOGPFX_CURRENT "Adding object '%s'", name.c_str());
 
-			Rendering::GLFWwindowData data = this->owner_engine->GetRenderingEngine()->GetWindow();
-			ptr->ScreenSizeInform(data.window_x, data.window_y);
+			Rendering::GLFWwindowData window_data = this->owner_engine->GetRenderingEngine()->GetWindow();
+			ptr->ScreenSizeInform(window_data.size.x, window_data.size.y);
 
 			this->objects.emplace(name, ptr);
 		}
@@ -98,11 +93,6 @@ namespace Engine
 		else
 		{
 			throw std::invalid_argument("Could not remove non-existent object '" + name + "'!");
-			/* this->logger->SimpleLog(
-				Logging::LogLevel::Warning,
-				LOGPFX_CURRENT "Tried to remove scene object '%s'! No such object exists!",
-				name.c_str()
-			); */
 		}
 	}
 

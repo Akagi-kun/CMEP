@@ -49,9 +49,6 @@ namespace Engine::Rendering::Vulkan
 
 		this->swapchain = new VSwapchain(this->device_manager.get(), extent, swapchain_image_count);
 
-		// this->vk_swap_chain_image_format = VK_FORMAT_B8G8R8A8_UNORM;
-		// this->vk_swap_chain_extent = extent;
-
 		this->logger->SimpleLog(Logging::LogLevel::Debug3, LOGPFX_CURRENT "Vulkan swap chain created");
 	}
 
@@ -62,10 +59,10 @@ namespace Engine::Rendering::Vulkan
 		// If window is minimized, wait for it to show up again
 		int width  = 0;
 		int height = 0;
-		glfwGetFramebufferSize(window, &width, &height);
+		glfwGetFramebufferSize(this->window.native_handle, &width, &height);
 		while (width == 0 || height == 0)
 		{
-			glfwGetFramebufferSize(window, &width, &height);
+			glfwGetFramebufferSize(this->window.native_handle, &width, &height);
 			glfwWaitEvents();
 		}
 
@@ -79,12 +76,8 @@ namespace Engine::Rendering::Vulkan
 		delete this->multisampled_color_image;
 		delete this->vk_depth_buffer;
 
-		// this->CleanupVulkanImage(this->vk_depth_buffer);
-		// this->CleanupVulkanImage(this->multisampled_color_image);
-
 		// Create a new swap chain
 		this->CreateVulkanSwapChain();
-		// this->CreateVulkanSwapChainViews();
 		this->CreateVulkanDepthResources();
 		this->CreateMultisampledColorResources();
 		this->CreateVulkanFramebuffers();
@@ -279,17 +272,4 @@ namespace Engine::Rendering::Vulkan
 
 		this->multisampled_color_image->AddImageView(VK_IMAGE_ASPECT_COLOR_BIT);
 	}
-
-	/* void VulkanRenderingEngine::CreateVulkanMemoryAllocator()
-	{
-		VmaAllocatorCreateInfo allocator_create_info = {};
-		allocator_create_info.vulkanApiVersion		 = VK_API_VERSION_1_1;
-		allocator_create_info.physicalDevice		 = this->device_manager->GetPhysicalDevice();
-		allocator_create_info.device				 = this->device_manager->GetLogicalDevice();
-		allocator_create_info.instance				 = this->device_manager->GetInstance();
-
-		vmaCreateAllocator(&allocator_create_info, &(this->vma_allocator));
-
-		this->logger->SimpleLog(Logging::LogLevel::Debug1, LOGPFX_CURRENT "VMA created");
-	} */
 } // namespace Engine::Rendering::Vulkan

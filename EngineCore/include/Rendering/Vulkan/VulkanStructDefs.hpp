@@ -1,5 +1,7 @@
 #pragma once
 
+#include "Rendering/Transform.hpp"
+
 #include "ImportVulkan.hpp"
 #include "glm/vec2.hpp"
 #include "glm/vec3.hpp"
@@ -24,10 +26,9 @@ namespace Engine::Rendering
 
 	struct GLFWwindowData
 	{
-		GLFWwindow* window;
-		unsigned int window_x = 0;
-		unsigned int window_y = 0;
-		std::string window_title;
+		GLFWwindow* native_handle;
+		ScreenSize size;
+		std::string title;
 	};
 
 	struct SwapChainSupportDetails
