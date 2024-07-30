@@ -1,6 +1,5 @@
 #pragma once
 
-#include "Assets/Mesh.hpp"
 #include "Assets/Texture.hpp"
 
 #include "Scripting/LuaScript.hpp"
@@ -26,7 +25,6 @@ namespace Engine
 		std::unordered_map<std::string, std::shared_ptr<Scripting::LuaScript>> luascripts;
 		std::unordered_map<std::string, std::shared_ptr<Rendering::Texture>> textures;
 		std::unordered_map<std::string, std::shared_ptr<Rendering::Font>> fonts;
-		std::unordered_map<std::string, std::shared_ptr<Rendering::Mesh>> models;
 
 		std::unique_ptr<Factories::FontFactory> font_factory;
 		std::unique_ptr<Factories::TextureFactory> texture_factory;
@@ -46,11 +44,9 @@ namespace Engine
 		);
 		void AddFont(const std::string& name, const std::string& path);
 		void AddLuaScript(const std::string& name, const std::string& path);
-		void AddModel(const std::string& name, const std::string& path);
 
 		std::shared_ptr<Rendering::Texture> GetTexture(const std::string& name);
 		std::shared_ptr<Rendering::Font> GetFont(const std::string& name);
 		std::shared_ptr<Scripting::LuaScript> GetLuaScript(const std::string& name);
-		std::shared_ptr<Rendering::Mesh> GetModel(const std::string& name);
 	};
 } // namespace Engine

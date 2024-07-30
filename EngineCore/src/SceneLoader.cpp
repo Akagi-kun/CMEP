@@ -1,7 +1,6 @@
 #include "SceneLoader.hpp"
 
 #include "Assets/AssetManager.hpp"
-#include "Rendering/IRenderer.hpp"
 
 #include "Factories/ObjectFactory.hpp"
 
@@ -140,13 +139,6 @@ namespace Engine
 						key,
 						val
 					);
-
-					/* std::shared_ptr<Rendering::Texture> texture = locked_asset_manager->GetTexture(
-						supply_entry.get<std::string>()
-					); */
-
-					// Rendering::RendererSupplyData texture_supply(Rendering::RendererSupplyDataType::TEXTURE,
-					// texture); object_template.supply_list.insert(object_template.supply_list.end(), texture_supply);
 				}
 
 				std::string name = template_entry["name"].get<std::string>();
@@ -223,10 +215,6 @@ namespace Engine
 
 						// Once all textures have been loaded, finally load the font
 						locked_asset_manager->AddFont(asset_name, scene_path + asset_location);
-					}
-					else if (asset_type == "model")
-					{
-						locked_asset_manager->AddModel(asset_name, scene_path + asset_location);
 					}
 					else
 					{

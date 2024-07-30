@@ -77,39 +77,6 @@ namespace Engine::Scripting::API
 			return luaL_error(state, "Cannot lock AssetManager, invalid object passed");
 		}
 
-		static int GetModel(lua_State* state)
-		{
-			CMEP_LUACHECK_FN_ARGC(state, 2)
-			lua_getfield(state, 1, "_smart_ptr");
-			std::weak_ptr<AssetManager> asset_manager = *static_cast<std::weak_ptr<AssetManager>*>(
-				lua_touserdata(state, -1)
-			);
-
-			std::string path = lua_tostring(state, 2);
-
-			if (auto locked_asset_manager = asset_manager.lock())
-			{
-				std::shared_ptr<Rendering::Mesh> model = locked_asset_manager->GetModel(path);
-
-				if (model != nullptr)
-				{
-					// Generate object table
-					lua_newtable(state);
-
-					void* ptr = lua_newuserdata(state, sizeof(std::shared_ptr<Rendering::Mesh>));
-					new (ptr) std::shared_ptr<Rendering::Mesh>(model);
-
-					lua_setfield(state, -2, "_smart_ptr");
-
-					return 1;
-				}
-
-				return luaL_error(state, "AssetManager returned nullptr; GetModel '%s'", path.c_str());
-			}
-
-			return luaL_error(state, "Cannot lock AssetManager, invalid object passed");
-		}
-
 		static int AddTexture(lua_State* state)
 		{
 			CMEP_LUACHECK_FN_ARGC(state, 3)
@@ -135,7 +102,6 @@ namespace Engine::Scripting::API
 	std::unordered_map<std::string, const lua_CFunction> asset_manager_mappings = {
 		CMEP_LUAMAPPING_DEFINE(Functions_AssetManager, GetFont),
 		CMEP_LUAMAPPING_DEFINE(Functions_AssetManager, GetTexture),
-		CMEP_LUAMAPPING_DEFINE(Functions_AssetManager, GetModel),
 
 		CMEP_LUAMAPPING_DEFINE(Functions_AssetManager, AddTexture),
 	};

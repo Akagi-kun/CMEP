@@ -23,7 +23,6 @@ set(SRC_FILES
 
 	src/Assets/AssetManager.cpp
 	src/Assets/Font.cpp
-	src/Assets/Mesh.cpp
 	src/Assets/Texture.cpp
 
 	src/Rendering/Renderer2D.cpp

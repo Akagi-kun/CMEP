@@ -19,14 +19,15 @@ namespace Engine
 		glm::vec3 camera_transform{};	// XYZ position
 		glm::vec2 camera_hv_rotation{}; // Horizontal and Vertical rotation
 
-		glm::vec3 light_position{};
-
 		static constexpr float initial_fov = 45.0f;
 		float field_of_vision			   = initial_fov;
 
-		void OnCameraUpdated();
+		// TODO: Remove?
+		glm::vec3 light_position{};
 
 		std::unique_ptr<SceneLoader> scene_loader;
+
+		void OnCameraUpdated();
 
 	public:
 		SceneManager(Engine* with_engine);

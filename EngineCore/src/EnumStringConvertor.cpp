@@ -58,7 +58,6 @@ namespace Engine
 	template <>
 	EnumStringConvertor<RendererSupplyDataType>::map_type EnumStringConvertor<RendererSupplyDataType>::type_map = {
 		{"texture", value_type::TEXTURE},
-		{"mesh", value_type::MESH},
 		{"font", value_type::FONT},
 		{"text", value_type::TEXT},
 	};

@@ -2,7 +2,6 @@
 
 #include "Assets/AssetManager.hpp"
 #include "Rendering/AxisMeshBuilder.hpp"
-#include "Rendering/IRenderer.hpp"
 #include "Rendering/Renderer2D.hpp"
 #include "Rendering/Renderer3D.hpp"
 #include "Rendering/SpriteMeshBuilder.hpp"
@@ -35,6 +34,7 @@ namespace Engine::Factories::ObjectFactory
 					{
 						return CreateSceneObject<Rendering::Renderer2D, Rendering::TextMeshBuilder>;
 					}
+					// Axis is not compatible with 2D rendering
 					// case MeshBuilderType::AXIS:
 					//{
 					//	return CreateSceneObject<Rendering::Renderer2D, Rendering::AxisMeshBuilder>;
@@ -98,11 +98,6 @@ namespace Engine::Factories::ObjectFactory
 			case Rendering::RendererSupplyDataType::FONT:
 			{
 				into_vector.emplace_back(of_type, asset_manager->GetFont(with_value));
-				break;
-			}
-			case Rendering::RendererSupplyDataType::MESH:
-			{
-				into_vector.emplace_back(of_type, asset_manager->GetModel(with_value));
 				break;
 			}
 			case Rendering::RendererSupplyDataType::TEXT:

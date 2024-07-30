@@ -1,7 +1,6 @@
 #include "Assets/AssetManager.hpp"
 
 #include "Assets/Font.hpp"
-#include "Assets/Mesh.hpp"
 
 #include "Logging/Logging.hpp"
 
@@ -73,14 +72,6 @@ namespace Engine
 		this->luascripts.emplace(name, script);
 	}
 
-	void AssetManager::AddModel(const std::string& name, const std::string& path)
-	{
-		std::shared_ptr<Rendering::Mesh> mesh = std::make_shared<Rendering::Mesh>(this->owner_engine);
-
-		mesh->CreateMeshFromObj(path);
-
-		this->models.emplace(name, std::move(mesh));
-	}
 #pragma endregion
 
 #pragma region Getting Assets
@@ -122,18 +113,6 @@ namespace Engine
 
 		this->logger
 			->SimpleLog(Logging::LogLevel::Error, LOGPFX_CURRENT "LuaScript asset '%s' not found", name.c_str());
-
-		return nullptr;
-	}
-
-	std::shared_ptr<Rendering::Mesh> AssetManager::GetModel(const std::string& name)
-	{
-		if (this->models.find(name) != this->models.end())
-		{
-			return this->models.at(name);
-		}
-
-		this->logger->SimpleLog(Logging::LogLevel::Error, LOGPFX_CURRENT "Model asset '%s' not found", name.c_str());
 
 		return nullptr;
 	}

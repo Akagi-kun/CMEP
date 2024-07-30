@@ -24,7 +24,7 @@ namespace Engine::Rendering
 		MIN_ENUM = 0x00,
 
 		TEXTURE = 1,
-		MESH	= 2,
+		// MESH	= 2,
 		FONT	= 3,
 
 		TEXT = 32,
