@@ -1,6 +1,9 @@
 cmake_minimum_required(VERSION 3.10)
 project(CMEP)
 
+# Also build glfw
+add_subdirectory(glfw)
+
 # This script is a mess
 # but sadly LuaJIT does not have a cmake compatible build system
 # We use the author's native build system (make for unix-like, msvcbuild.bat for windows)

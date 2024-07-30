@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.5)
 project(CMEP)
 
-enable_testing()
+#enable_testing()
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
@@ -11,8 +11,6 @@ set(EXECUTABLE_OUTPUT_PATH ${VAR_BUILD_DIRECTORY} CACHE PATH "Build directory" F
 set(LIBRARY_OUTPUT_PATH ${VAR_BUILD_DIRECTORY} CACHE PATH "Build directory" FORCE)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_DEBUG ${VAR_BUILD_DIRECTORY} CACHE PATH "Build directory" FORCE)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE ${VAR_BUILD_DIRECTORY} CACHE PATH "Build directory" FORCE)
-
-add_subdirectory(external/glfw)
 
 # Global compile options
 if(MSVC)
@@ -39,34 +37,14 @@ else()
 
 endif()
 
+add_subdirectory(external)
+
 add_subdirectory(EngineCore)
 add_dependencies(EngineCore glfw)
+add_dependencies(EngineCore lua_build)
 
 add_subdirectory(rungame)
 add_dependencies(rungame glfw)
-
-add_subdirectory(external)
-
-add_dependencies(EngineCore lua_build)
-
 add_dependencies(rungame EngineCore)
-
-#set(TESTS_TO_RUN
-#	vulkan_init_cleanup
-#	vulkan_draw_frame
-#	vulkan_buffer_create_cleanup
-#
-#	logging_init_release
-#	logging_log
-#	logging_simplelog
-#	logging_map_thread_simplelog
-#
-#	engine
-#	)
-
-#add_subdirectory(runtest)
-#foreach(test_to_run ${TESTS_TO_RUN})
-#	add_test(NAME runtest_${test_to_run} COMMAND runtest ${test_to_run} WORKING_DIRECTORY .\\build\\)
-#endforeach()
 
 add_subdirectory(examples)
