@@ -14,7 +14,7 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE ${VAR_BUILD_DIRECTORY} CACHE PATH "Bu
 
 # Global compile options
 if(MSVC)
-	add_compile_options(/std:c++17 /MP /EHs /Zi)
+	add_compile_options(/MP /EHs /Zi)
 	add_link_options(/DEBUG:FULL /INCREMENTAL:NO /OPT:REF)
 
 	# Debug only
@@ -25,7 +25,7 @@ if(MSVC)
 	add_compile_options($<$<CONFIG:Release>:/O2>)
 
 else()
-	add_compile_options(-std=c++17 -g)
+	add_compile_options(-g)
 	add_link_options(-lpthread -lstdc++)
 
 	# Debug only
