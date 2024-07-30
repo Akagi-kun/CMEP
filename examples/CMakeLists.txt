@@ -1,35 +1,60 @@
 cmake_minimum_required(VERSION 3.10)
 project(examples)
 
-message("-- [EXAMPLES] Source directory is: " ${CMAKE_SOURCE_DIR})
+message("-- [EXAMPLES] Source dir is: " ${CMAKE_SOURCE_DIR})
+
+file(STRINGS 
+	 ${CMAKE_SOURCE_DIR}/shader_library/files.txt
+	 VAR_AVAILABLE_SHADERS
+	 )
+
+# Set platform dependent compile command
+if(MSVC)
+	set(VAR_SHADER_COMPILE_COMMAND $ENV{VULKAN_SDK}/Bin/glslc.exe)
+else()
+	set(VAR_SHADER_COMPILE_COMMAND $ENV{VULKAN_SDK}/bin/glslc)
+endif()
+
+# Compile a specific shader
+function(compile_shader VAR_DIRECTORY VAR_SHADER)
+
+	# Process path into stem (filename without extension)
+	cmake_path(SET PATH_SHADER ${VAR_SHADER})
+	cmake_path(GET PATH_SHADER STEM VAR_SHADER_FILENAME)
+
+	message("-- Shader available: " ${VAR_SHADER_FILENAME})
+
+	add_custom_command(TARGET ${VAR_DIRECTORY}-copy-shaders POST_BUILD
+					   COMMAND ${VAR_SHADER_COMPILE_COMMAND} ${VAR_SHADER_FILENAME}.glsl -o ${VAR_SHADER_FILENAME}.spv
+					   WORKING_DIRECTORY ${VAR_BUILD_DIRECTORY}/game/shaders)
+endfunction()
 
 function(add_example_directory VAR_DIRECTORY)
-	if(MSVC)
-	    add_custom_target(${VAR_DIRECTORY}-compile-shaders compile.bat WORKING_DIRECTORY ${VAR_DIRECTORY}/shaders/vulkan)
-	else()
-	    add_custom_target(${VAR_DIRECTORY}-compile-shaders ./compile.sh WORKING_DIRECTORY ${VAR_DIRECTORY}/shaders/vulkan)
-	endif()
-
-	add_custom_target(${VAR_DIRECTORY}-perform-copy)
-	add_custom_command(TARGET ${VAR_DIRECTORY}-perform-copy
+	# Copy example
+	add_custom_target(${VAR_DIRECTORY}-copy-folder)
+	add_custom_command(TARGET ${VAR_DIRECTORY}-copy-folder PRE_BUILD
 	                    COMMAND ${CMAKE_COMMAND} -E
 	                    copy_directory_if_different examples/${VAR_DIRECTORY} ${VAR_BUILD_DIRECTORY}/game
 	                    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
 	                    )
-	
-	add_custom_command(TARGET ${VAR_DIRECTORY}-perform-copy
-	                   POST_BUILD
-	                   COMMAND ${CMAKE_COMMAND} -E
-	                   rm
-	                   shaders/vulkan/compile.bat
-	                   shaders/vulkan/cleanup.bat
-	                   shaders/vulkan/compile.sh
-	                   shaders/vulkan/cleanup.sh
-	                   WORKING_DIRECTORY ${VAR_BUILD_DIRECTORY}/game
-	                   )
+
+	# Copy in all shaders available in the shader_library directory
+	add_custom_target(${VAR_DIRECTORY}-copy-shaders)
+	foreach(file ${VAR_AVAILABLE_SHADERS})
+		add_custom_command(TARGET ${VAR_DIRECTORY}-copy-shaders
+						   COMMAND ${CMAKE_COMMAND} -E
+						   copy ${file} ${VAR_BUILD_DIRECTORY}/game/shaders
+						   WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/shader_library
+						   )
+
+		# Compile shader
+		compile_shader(${VAR_DIRECTORY} ${file})
+	endforeach()
+
+	add_dependencies(${VAR_DIRECTORY}-copy-shaders ${VAR_DIRECTORY}-copy-folder)
 
 	add_custom_target(${VAR_DIRECTORY})
-	add_dependencies(${VAR_DIRECTORY} ${VAR_DIRECTORY}-compile-shaders ${VAR_DIRECTORY}-perform-copy)
+	add_dependencies(${VAR_DIRECTORY} ${VAR_DIRECTORY}-copy-shaders)
 endfunction()
 
 add_example_directory(floppybirb)

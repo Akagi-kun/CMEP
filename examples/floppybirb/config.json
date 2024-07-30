@@ -8,6 +8,6 @@
         "framerateTarget": 0
     },
     "scene_path": "game/scenes/",
-    "shader_path": "game/shaders/vulkan/",
+    "shader_path": "game/shaders/",
     "default_scene": "floppygame"
 }
