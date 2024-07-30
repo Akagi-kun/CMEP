@@ -28,7 +28,14 @@ include_directories(include)
 
 add_executable(rungame ${SRC_FILES} ${HEADER_FILES})
 
-include_directories(rungame PUBLIC ../external ../external/lua-prebuilt/include include ../common_include ../EngineCore/include ../external/VulkanMemoryAllocator/include)
+if(MSVC)
+# TODO: Remove /wd4996 after deprecation fixes
+	target_compile_options(rungame PRIVATE /std:c++17 /W3 /WX)
+else()
+	target_compile_options(rungame PRIVATE -std=c++17 -Wall -Wextra -Wno-unknown-pragmas) # -Wpedantic -Werror
+endif()
+
+target_include_directories(rungame PUBLIC ../external ../external/lua-prebuilt/include include ../common_include ../EngineCore/include ../external/VulkanMemoryAllocator/include)
 if(DEFINED ENV{VULKAN_SDK})
 	if(WIN32)
 		target_link_directories(rungame PUBLIC $ENV{VULKAN_SDK}/Lib lib ../build/Debug ../build ../external/lua-prebuilt)
