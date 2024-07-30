@@ -18,7 +18,7 @@
 
 namespace Engine::Rendering
 {
-	Renderer2D::Renderer2D(Engine* engine, IMeshBuilder* with_builder, const char* with_pipeline_program)
+	Renderer2D::Renderer2D(Engine* engine, IMeshBuilder* with_builder, std::string_view with_pipeline_program)
 		: IRenderer(engine, with_builder, with_pipeline_program)
 	{
 		Vulkan::VulkanRenderingEngine* renderer = this->owner_engine->GetRenderingEngine();
@@ -81,15 +81,15 @@ namespace Engine::Rendering
 		{
 			case RendererSupplyDataType::FONT:
 			{
-				auto font_cast		   = std::static_pointer_cast<Font>(data.payload_ptr);
-				this->texture		   = font_cast->GetPageTexture(0);
-				this->has_updated_mesh = false;
+				auto font_cast				  = std::static_pointer_cast<Font>(data.payload_ptr);
+				this->texture				  = font_cast->GetPageTexture(0);
+				this->has_updated_descriptors = false;
 				break;
 			}
 			case RendererSupplyDataType::TEXTURE:
 			{
-				this->texture		   = std::static_pointer_cast<Texture>(data.payload_ptr);
-				this->has_updated_mesh = false;
+				this->texture				  = std::static_pointer_cast<Texture>(data.payload_ptr);
+				this->has_updated_descriptors = false;
 				break;
 			}
 			default:
@@ -100,52 +100,6 @@ namespace Engine::Rendering
 
 		assert(this->mesh_builder != nullptr && "This renderer has not been assigned a mesh builder!");
 		this->mesh_builder->SupplyData(data);
-	}
-
-	void Renderer2D::UpdateMesh()
-	{
-		// TODO: Fix this (should be true, or just check another way)
-		this->has_updated_mesh = false;
-
-		auto* renderer		 = this->owner_engine->GetRenderingEngine();
-		auto* device_manager = renderer->GetDeviceManager();
-
-		if (this->texture)
-		{
-			Vulkan::VSampledImage* texture_image = this->texture->GetTextureImage();
-
-			for (uint32_t i = 0; i < Vulkan::VulkanRenderingEngine::GetMaxFramesInFlight(); i++)
-			{
-				std::array<VkWriteDescriptorSet, 1> descriptor_writes{};
-
-				VkDescriptorImageInfo image_info{};
-				image_info.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-				image_info.imageView   = texture_image->GetNativeViewHandle();
-				image_info.sampler	   = texture_image->texture_sampler;
-
-				VkWriteDescriptorSet& texture_set0 = descriptor_writes[0];
-				texture_set0.sType				   = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-				texture_set0.dstSet				   = pipeline->GetDescriptorSet(i);
-				texture_set0.dstBinding			   = 1;
-				texture_set0.dstArrayElement	   = 0;
-				texture_set0.descriptorType		   = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-				texture_set0.descriptorCount	   = 1;
-				texture_set0.pImageInfo			   = &image_info;
-
-				// TODO: Add support for additional textures?
-
-				if (!descriptor_writes.empty())
-				{
-					vkUpdateDescriptorSets(
-						device_manager->GetLogicalDevice(),
-						static_cast<uint32_t>(descriptor_writes.size()),
-						descriptor_writes.data(),
-						0,
-						nullptr
-					);
-				}
-			}
-		}
 	}
 
 	void Renderer2D::UpdateMatrices()

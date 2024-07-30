@@ -25,6 +25,7 @@ set(SRC_FILES
 	src/Assets/Font.cpp
 	src/Assets/Texture.cpp
 
+	src/Rendering/IRenderer.cpp
 	src/Rendering/Renderer2D.cpp
 	src/Rendering/Renderer3D.cpp
 
