@@ -44,6 +44,28 @@ namespace Engine::Rendering
 
 		this->pipeline =
 			new Vulkan::VPipeline(renderer->GetDeviceManager(), pipeline_settings, renderer->GetRenderPass());
+
+		auto* device_manager = renderer->GetDeviceManager();
+
+		// Update descriptor set for matrices
+		for (uint32_t i = 0; i < Vulkan::VulkanRenderingEngine::GetMaxFramesInFlight(); i++)
+		{
+			VkDescriptorBufferInfo buffer_info{};
+			buffer_info.buffer = this->pipeline->GetUniformBuffer(i)->GetNativeHandle();
+			buffer_info.offset = 0;
+			buffer_info.range  = sizeof(RendererMatrixData);
+
+			VkWriteDescriptorSet uniform_buffer_set = {};
+			uniform_buffer_set.sType				= VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+			uniform_buffer_set.dstSet				= this->pipeline->GetDescriptorSet(i);
+			uniform_buffer_set.dstBinding			= 0;
+			uniform_buffer_set.dstArrayElement		= 0;
+			uniform_buffer_set.descriptorType		= VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+			uniform_buffer_set.descriptorCount		= 1;
+			uniform_buffer_set.pBufferInfo			= &buffer_info;
+
+			vkUpdateDescriptorSets(device_manager->GetLogicalDevice(), 1, &uniform_buffer_set, 0, nullptr);
+		}
 	}
 
 	Renderer2D::~Renderer2D()
@@ -88,57 +110,41 @@ namespace Engine::Rendering
 		auto* renderer		 = this->owner_engine->GetRenderingEngine();
 		auto* device_manager = renderer->GetDeviceManager();
 
-		Vulkan::VSampledImage* texture_image = nullptr;
-
 		if (this->texture)
 		{
-			texture_image = this->texture->GetTextureImage();
-		}
+			Vulkan::VSampledImage* texture_image = this->texture->GetTextureImage();
 
-		for (uint32_t i = 0; i < Vulkan::VulkanRenderingEngine::GetMaxFramesInFlight(); i++)
-		{
-			std::vector<VkWriteDescriptorSet> descriptor_writes{};
-
-			VkDescriptorBufferInfo buffer_info{};
-			buffer_info.buffer = this->pipeline->GetUniformBuffer(i)->GetNativeHandle();
-			buffer_info.offset = 0;
-			buffer_info.range  = sizeof(RendererMatrixData);
-
-			VkWriteDescriptorSet uniform_buffer_set = {};
-			uniform_buffer_set.sType				= VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-			uniform_buffer_set.dstSet				= this->pipeline->GetDescriptorSet(i);
-			uniform_buffer_set.dstBinding			= 0;
-			uniform_buffer_set.dstArrayElement		= 0;
-			uniform_buffer_set.descriptorType		= VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-			uniform_buffer_set.descriptorCount		= 1;
-			uniform_buffer_set.pBufferInfo			= &buffer_info;
-			descriptor_writes.push_back(uniform_buffer_set);
-
-			if (this->texture)
+			for (uint32_t i = 0; i < Vulkan::VulkanRenderingEngine::GetMaxFramesInFlight(); i++)
 			{
+				std::array<VkWriteDescriptorSet, 1> descriptor_writes{};
+
 				VkDescriptorImageInfo image_info{};
 				image_info.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 				image_info.imageView   = texture_image->GetNativeViewHandle();
 				image_info.sampler	   = texture_image->texture_sampler;
 
-				VkWriteDescriptorSet optional_texture_set = {};
-				optional_texture_set.sType				  = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-				optional_texture_set.dstSet				  = pipeline->GetDescriptorSet(i);
-				optional_texture_set.dstBinding			  = 1;
-				optional_texture_set.dstArrayElement	  = 0;
-				optional_texture_set.descriptorType		  = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-				optional_texture_set.descriptorCount	  = 1;
-				optional_texture_set.pImageInfo			  = &image_info;
-				descriptor_writes.push_back(optional_texture_set);
-			}
+				VkWriteDescriptorSet& texture_set0 = descriptor_writes[0];
+				texture_set0.sType				   = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+				texture_set0.dstSet				   = pipeline->GetDescriptorSet(i);
+				texture_set0.dstBinding			   = 1;
+				texture_set0.dstArrayElement	   = 0;
+				texture_set0.descriptorType		   = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+				texture_set0.descriptorCount	   = 1;
+				texture_set0.pImageInfo			   = &image_info;
 
-			vkUpdateDescriptorSets(
-				device_manager->GetLogicalDevice(),
-				static_cast<uint32_t>(descriptor_writes.size()),
-				descriptor_writes.data(),
-				0,
-				nullptr
-			);
+				// TODO: Add support for additional textures?
+
+				if (!descriptor_writes.empty())
+				{
+					vkUpdateDescriptorSets(
+						device_manager->GetLogicalDevice(),
+						static_cast<uint32_t>(descriptor_writes.size()),
+						descriptor_writes.data(),
+						0,
+						nullptr
+					);
+				}
+			}
 		}
 	}
 
