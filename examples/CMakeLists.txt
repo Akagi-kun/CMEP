@@ -13,7 +13,7 @@ function(add_example_directory VAR_DIRECTORY)
 	add_custom_target(${VAR_DIRECTORY}-perform-copy)
 	add_custom_command(TARGET ${VAR_DIRECTORY}-perform-copy
 	                    COMMAND ${CMAKE_COMMAND} -E
-	                    copy_directory_if_different examples/${VAR_DIRECTORY} build/game
+	                    copy_directory_if_different examples/${VAR_DIRECTORY} ${VAR_BUILD_DIRECTORY}/game
 	                    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
 	                    )
 	
@@ -25,7 +25,7 @@ function(add_example_directory VAR_DIRECTORY)
 	                   shaders/vulkan/cleanup.bat
 	                   shaders/vulkan/compile.sh
 	                   shaders/vulkan/cleanup.sh
-	                   WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/build/game
+	                   WORKING_DIRECTORY ${VAR_BUILD_DIRECTORY}/game
 	                   )
 
 	add_custom_target(${VAR_DIRECTORY})
@@ -34,6 +34,3 @@ endfunction()
 
 add_example_directory(floppybirb)
 add_example_directory(testgame)
-
-#add_subdirectory(floppybirb)
-#add_subdirectory(testgame)

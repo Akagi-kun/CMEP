@@ -5,12 +5,12 @@ enable_testing()
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
-set(builddir ${CMAKE_CURRENT_SOURCE_DIR}/build/)
-message("-- Build directory is: " ${builddir})
-set(EXECUTABLE_OUTPUT_PATH ${builddir} CACHE PATH "Build directory" FORCE)
-set(LIBRARY_OUTPUT_PATH ${builddir} CACHE PATH "Build directory" FORCE)
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_DEBUG ${builddir} CACHE PATH "Build directory" FORCE)
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE ${builddir} CACHE PATH "Build directory" FORCE)
+set(VAR_BUILD_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/build/)
+message("-- Build directory is: " ${VAR_BUILD_DIRECTORY})
+set(EXECUTABLE_OUTPUT_PATH ${VAR_BUILD_DIRECTORY} CACHE PATH "Build directory" FORCE)
+set(LIBRARY_OUTPUT_PATH ${VAR_BUILD_DIRECTORY} CACHE PATH "Build directory" FORCE)
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_DEBUG ${VAR_BUILD_DIRECTORY} CACHE PATH "Build directory" FORCE)
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE ${VAR_BUILD_DIRECTORY} CACHE PATH "Build directory" FORCE)
 
 add_subdirectory(external/glfw)
 
