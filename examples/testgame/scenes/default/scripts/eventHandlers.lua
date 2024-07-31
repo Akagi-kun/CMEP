@@ -54,7 +54,7 @@ onKeyDown = function(event)
 
 	local scene_manager = event.engine:GetSceneManager()
 
-	local moveSpeed = 5.0 * event.deltaTime;
+	local moveSpeed = 7.0 * event.deltaTime;
 	  
 	local camera_h, camera_v = scene_manager:GetCameraHVRotation();
 
@@ -178,35 +178,43 @@ onInit = function(event)
 	local scene = scene_manager:GetSceneCurrent();
 
 	-- Create frametime counter and add it to scene
-	local object = engine.CreateSceneObject(asset_manager, "renderer_2d/text", "text", {
+	local object0 = engine.CreateSceneObject(asset_manager, "renderer_2d/text", "text", {
 		{"font", "myfont"}, {"text", "avg: \nmin: \nmax: "}
 	  })
-	object:SetPosition(0.0, 0.0, -0.01)
-	object:SetSize(24, 24, 1.0)
-	scene:AddObject("_debug_info", object)
+	object0:SetPosition(0.0, 0.0, -0.01)
+	object0:SetSize(24, 24, 1.0)
+	scene:AddObject("_debug_info", object0)
 	
-	local object = engine.CreateSceneObject(asset_manager, "renderer_2d/text", "text", {
+	local object1 = engine.CreateSceneObject(asset_manager, "renderer_2d/text", "text", {
 		{"font", "myfont"}, {"text", "H: V: \nX: Y: Z: "}
 	  })
-	object:SetPosition(0.6, 0.0, -0.01)
-	object:SetSize(24, 24, 1.0)
-	scene:AddObject("_debug_info2", object)
+	object1:SetPosition(0.6, 0.0, -0.01)
+	object1:SetSize(24, 24, 1.0)
+	scene:AddObject("_debug_info2", object1)
 
-	local object = engine.CreateSceneObject(asset_manager, "renderer_3d/text", "text", {
+--[[ 	local object2 = engine.CreateSceneObject(asset_manager, "renderer_3d/text", "text", {
 		{"font", "myfont"}, {"text", "TEST TEXT"}
 	})
-	object:SetPosition(0.5, 0.3, 0.0)
-	object:SetSize(128, 128, 1.0)
-	object:SetRotation(0, -135, 180)
-	scene:AddObject("test3d", object)
-
-	local object = engine.CreateSceneObject(asset_manager, "renderer_3d/sprite", "sprite", {
+	object2:SetPosition(0.5, 0.3, 0.0)
+	object2:SetSize(128, 128, 1.0)
+	object2:SetRotation(0, -135, 180)
+	scene:AddObject("test3d", object2)
+ ]]
+	local object3 = engine.CreateSceneObject(asset_manager, "renderer_3d/sprite", "sprite", {
 		{"texture", "sprite0"}
 	})
-	object:SetPosition(-2.0, 1.0, 0.0)
-	object:SetSize(1.0, 1.0, 1.0)
-	object:SetRotation(0, -100, 180)
-	scene:AddObject("test3dsprite", object)
+	object3:SetPosition(-2.0, 1.0, 0.0)
+	object3:SetSize(1.0, 1.0, 1.0)
+	object3:SetRotation(0, -100, 180)
+	scene:AddObject("test3dsprite", object3)
+
+	local object4 = engine.CreateSceneObject(asset_manager, "renderer_3d/generator", "color", {
+		{"texture", "sprite0"}, {"script", "testgen"}
+	})
+	object4:SetPosition(0.0, 1.0, 0.0)
+	object4:SetSize(1.0, 1.0, 1.0)
+	object4:SetRotation(0, 0, 0)
+	scene:AddObject("testgenerator", object4)
 
 	-- Set-up camera
 	scene_manager:SetCameraTransform(-3.0, 2.3, 4.7)

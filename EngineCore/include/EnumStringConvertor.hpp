@@ -30,6 +30,13 @@ namespace Engine
 			return this->value.value();
 		}
 
+		static bool Valid(const std::string& from)
+		{
+			const auto& found_type = self_type::type_map.find(from);
+
+			return (found_type != self_type::type_map.end());
+		}
+
 	private:
 		static map_type type_map;
 
@@ -41,9 +48,9 @@ namespace Engine
 				throw std::invalid_argument("[EnumStringConvertor] Cannot convert an empty string to enum");
 			}
 
-			const auto& found_type = this->type_map.find(from);
+			const auto& found_type = self_type::type_map.find(from);
 
-			if (found_type != this->type_map.end())
+			if (found_type != self_type::type_map.end())
 			{
 				return found_type->second;
 			}

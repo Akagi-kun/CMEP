@@ -2,6 +2,9 @@
 
 #include "Assets/AssetManager.hpp"
 
+#include "Scripting/EventLuaScript.hpp"
+#include "Scripting/GeneratorLuaScript.hpp"
+
 #include "Factories/ObjectFactory.hpp"
 
 #include "Engine.hpp"
@@ -96,7 +99,7 @@ namespace Engine
 
 				EventHandling::EventType event_type = EnumStringConvertor<EventHandling::EventType>(event_handler_type);
 
-				std::shared_ptr<Scripting::LuaScript> event_handler = locked_asset_manager->GetLuaScript(
+				std::shared_ptr<Scripting::ILuaScript> event_handler = locked_asset_manager->GetLuaScript(
 					event_handler_file
 				);
 
@@ -160,13 +163,13 @@ namespace Engine
 		{
 			for (auto& asset_entry : data["assets"])
 			{
-				// Enclose in try/catch
 				try
 				{
 					std::string asset_type	   = asset_entry["type"].get<std::string>();
 					std::string asset_name	   = asset_entry["name"].get<std::string>();
 					std::string asset_location = asset_entry["location"].get<std::string>();
 
+					// TODO: Use enum here
 					if (asset_type == "texture")
 					{
 						// Check if a specific filtering is requested, otherwise use default
@@ -195,7 +198,24 @@ namespace Engine
 					}
 					else if (asset_type == "script")
 					{
-						locked_asset_manager->AddLuaScript(asset_name, scene_path + asset_location);
+						std::shared_ptr<Scripting::ILuaScript> script;
+
+						if (asset_entry.contains("is_generator"))
+						{
+							script = std::make_shared<Scripting::GeneratorLuaScript>(
+								this->owner_engine,
+								scene_path + asset_location
+							);
+						}
+						else
+						{
+							script = std::make_shared<Scripting::EventLuaScript>(
+								this->owner_engine,
+								scene_path + asset_location
+							);
+						}
+
+						locked_asset_manager->AddLuaScript(asset_name, script);
 					}
 					else if (asset_type == "font")
 					{
@@ -218,13 +238,20 @@ namespace Engine
 					}
 					else
 					{
-						this->logger->SimpleLog(
+						using namespace std::literals;
+
+						throw std::invalid_argument(
+							"Unknown type '"s.append(asset_type).append("' for asset '").append(asset_name).append("'")
+						);
+
+						/* this->logger->SimpleLog(
 							Logging::LogLevel::Warning,
 							LOGPFX_CURRENT "Unknown type '%s' for asset '%s'",
 							asset_type.c_str(),
 							asset_name.c_str()
 						);
 						continue;
+						*/
 					}
 
 					this->logger->SimpleLog(

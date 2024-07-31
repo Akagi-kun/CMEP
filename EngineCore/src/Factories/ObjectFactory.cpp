@@ -2,6 +2,7 @@
 
 #include "Assets/AssetManager.hpp"
 #include "Rendering/AxisMeshBuilder.hpp"
+#include "Rendering/GeneratorMeshBuilder.hpp"
 #include "Rendering/Renderer2D.hpp"
 #include "Rendering/Renderer3D.hpp"
 #include "Rendering/SpriteMeshBuilder.hpp"
@@ -61,6 +62,10 @@ namespace Engine::Factories::ObjectFactory
 					{
 						return CreateSceneObject<Rendering::Renderer3D, Rendering::AxisMeshBuilder>;
 					}
+					case MeshBuilderType::GENERATOR:
+					{
+						return CreateSceneObject<Rendering::Renderer3D, Rendering::GeneratorMeshBuilder>;
+					}
 					default:
 					{
 						throw std::invalid_argument("Invalid mesh builder type!");
@@ -103,6 +108,11 @@ namespace Engine::Factories::ObjectFactory
 			case Rendering::RendererSupplyDataType::TEXT:
 			{
 				into_vector.emplace_back(of_type, with_value);
+				break;
+			}
+			case Rendering::RendererSupplyDataType::SCRIPT:
+			{
+				into_vector.emplace_back(of_type, asset_manager->GetLuaScript(with_value));
 				break;
 			}
 			default:

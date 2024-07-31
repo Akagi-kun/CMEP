@@ -1,14 +1,21 @@
 #pragma once
 
-#include "IMeshBuilder.hpp"
+#include "Rendering/IMeshBuilder.hpp"
+
+#include "Scripting/ILuaScript.hpp"
 
 namespace Engine::Rendering
 {
-	class SpriteMeshBuilder final : public IMeshBuilder
+	class GeneratorMeshBuilder final : public IMeshBuilder
 	{
+	private:
+		std::shared_ptr<Scripting::ILuaScript> generator_script;
+
 	public:
 		using IMeshBuilder::IMeshBuilder;
 		using IMeshBuilder::SupplyData;
+
+		void SupplyData(const RendererSupplyData& data) override;
 
 		void Build() override;
 

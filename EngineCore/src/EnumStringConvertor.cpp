@@ -31,7 +31,7 @@ namespace Engine
 		{"sprite"sv, value_type::SPRITE},
 		{"text"sv, value_type::TEXT},
 		{"axis"sv, value_type::AXIS},
-		{"mesh"sv, value_type::MESH},
+		{"generator"sv, value_type::GENERATOR},
 	};
 
 	template <>
@@ -57,8 +57,9 @@ namespace Engine
 
 	template <>
 	EnumStringConvertor<RendererSupplyDataType>::map_type EnumStringConvertor<RendererSupplyDataType>::type_map = {
-		{"texture", value_type::TEXTURE},
-		{"font", value_type::FONT},
-		{"text", value_type::TEXT},
+		{"texture"sv, value_type::TEXTURE},
+		{"font"sv, value_type::FONT},
+		{"text"sv, value_type::TEXT},
+		{"script"sv, value_type::SCRIPT}
 	};
 } // namespace Engine

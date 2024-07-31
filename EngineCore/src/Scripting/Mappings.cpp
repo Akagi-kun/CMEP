@@ -13,6 +13,7 @@
 #include "Engine.hpp"
 #include "EnumStringConvertor.hpp"
 #include "KVPairHelper.hpp"
+#include "lauxlib.h"
 #include "lua.hpp"
 
 // Prefixes for logging messages
@@ -125,9 +126,6 @@ namespace Engine::Scripting::Mappings
 		{
 			CMEP_LUACHECK_FN_ARGC(state, 4)
 
-			/* lua_getfield(state, 1, "_ptr");
-			auto* scene_manager = static_cast<SceneManager*>(lua_touserdata(state, -1)); */
-
 			lua_getfield(state, 1, "_smart_ptr");
 			std::weak_ptr<AssetManager> asset_manager = *static_cast<std::weak_ptr<AssetManager>*>(
 				lua_touserdata(state, -1)
@@ -141,26 +139,32 @@ namespace Engine::Scripting::Mappings
 
 			std::string shader_name = lua_tostring(state, 3);
 
+			// Check for table
 			if (lua_istable(state, 4))
 			{
 				if (auto locked_asset_manager = asset_manager.lock())
 				{
 					auto supply_data = InterpretSupplyData(state, locked_asset_manager.get(), 4);
 
-					const auto& factory =
+					// Check if mesh builder type is valid, if so, get a factory for it
+					const auto factory =
 						Factories::ObjectFactory::GetSceneObjectFactory(renderer_type, mesh_builder_type);
 
-					Object* obj = factory(locked_asset_manager->GetOwnerEngine(), shader_name, supply_data);
-
-					if (obj != nullptr)
+					if (factory)
 					{
-						API::LuaFactories::ObjectFactory(state, obj);
+						Object* obj = factory(locked_asset_manager->GetOwnerEngine(), shader_name, supply_data);
 
-						return 1;
+						if (obj != nullptr)
+						{
+							API::LuaFactories::ObjectFactory(state, obj);
+
+							return 1;
+						}
+
+						return luaL_error(state, "Object was nullptr!");
 					}
 
-					return luaL_error(state, "Object was nullptr!");
-					// return 0;
+					return luaL_error(state, "No factory was found for this object!");
 				}
 
 				return luaL_error(state, "Could not lock asset manager!");

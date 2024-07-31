@@ -1,5 +1,4 @@
-// Uncomment this to log all allocation to stdout
-//
+// Uncomment this to log all allocations to stdout
 /*
 #define VMA_DEBUG_LOG_FORMAT(format, ...)                                                                              \
 	do                                                                                                                 \

@@ -1,17 +1,9 @@
 #include "Rendering/SpriteMeshBuilder.hpp"
 
-#include "Rendering/MeshBuildContext.hpp"
-
 #include <iterator>
 
 namespace Engine::Rendering
 {
-	/* void SpriteMeshBuilder::SupplyData(const RendererSupplyData& data)
-	{
-		IMeshBuilder::SupplyData(data);
-		(void)(data);
-	} */
-
 	void SpriteMeshBuilder::Build()
 	{
 		if (this->context.vbo == nullptr)

@@ -2,7 +2,7 @@
 
 #include "Assets/Texture.hpp"
 
-#include "Scripting/LuaScript.hpp"
+#include "Scripting/ILuaScript.hpp"
 
 #include "Factories/FontFactory.hpp"
 #include "Factories/TextureFactory.hpp"
@@ -22,7 +22,7 @@ namespace Engine
 	class AssetManager final : public InternalEngineObject
 	{
 	private:
-		std::unordered_map<std::string, std::shared_ptr<Scripting::LuaScript>> luascripts;
+		std::unordered_map<std::string, std::shared_ptr<Scripting::ILuaScript>> luascripts;
 		std::unordered_map<std::string, std::shared_ptr<Rendering::Texture>> textures;
 		std::unordered_map<std::string, std::shared_ptr<Rendering::Font>> fonts;
 
@@ -43,10 +43,11 @@ namespace Engine
 			VkSamplerAddressMode address_mode = VK_SAMPLER_ADDRESS_MODE_REPEAT
 		);
 		void AddFont(const std::string& name, const std::string& path);
-		void AddLuaScript(const std::string& name, const std::string& path);
+
+		void AddLuaScript(const std::string& name, std::shared_ptr<Scripting::ILuaScript> script);
 
 		std::shared_ptr<Rendering::Texture> GetTexture(const std::string& name);
 		std::shared_ptr<Rendering::Font> GetFont(const std::string& name);
-		std::shared_ptr<Scripting::LuaScript> GetLuaScript(const std::string& name);
+		std::shared_ptr<Scripting::ILuaScript> GetLuaScript(const std::string& name);
 	};
 } // namespace Engine

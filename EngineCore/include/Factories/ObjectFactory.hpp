@@ -25,10 +25,10 @@ namespace Engine::Factories::ObjectFactory
 	{
 		MIN_ENUM = 0x00,
 
-		TEXT   = 1,
-		SPRITE = 2,
-		MESH   = 3,
-		AXIS   = 4,
+		TEXT	  = 1,
+		SPRITE	  = 2,
+		GENERATOR = 3,
+		AXIS	  = 4,
 
 		MAX_ENUM = 0XFF
 	};
@@ -68,15 +68,18 @@ namespace Engine::Factories::ObjectFactory
 		return object;
 	}
 
+	using type_ObjectFactory =
+		std::function<Object*(Engine*, std::string, const std::vector<Rendering::RendererSupplyData>&)>;
+
 	// Returns a Callable capable of creating the desired object
-	std::function<Object*(Engine*, std::string, const std::vector<Rendering::RendererSupplyData>&)>
-	GetSceneObjectFactory(
+	type_ObjectFactory GetSceneObjectFactory(
 		EnumStringConvertor<RendererType> with_renderer,
 		EnumStringConvertor<MeshBuilderType> with_mesh_builder
 	);
 
 	Object* InstantiateObjectTemplate(Engine* with_engine, ObjectTemplate& from_template);
 
+	// Constructs a RendererSupplyData and pushes it into a std::vector
 	void PushSupplyData(
 		AssetManager* asset_manager,
 		std::vector<Rendering::RendererSupplyData>& into_vector,

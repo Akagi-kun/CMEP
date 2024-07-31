@@ -2,6 +2,8 @@
 
 #include "Assets/Font.hpp"
 
+#include "Scripting/ILuaScript.hpp"
+
 #include "Logging/Logging.hpp"
 
 #include "InternalEngineObject.hpp"
@@ -65,10 +67,8 @@ namespace Engine
 		this->fonts.emplace(name, std::move(font));
 	}
 
-	void AssetManager::AddLuaScript(const std::string& name, const std::string& path)
+	void AssetManager::AddLuaScript(const std::string& name, std::shared_ptr<Scripting::ILuaScript> script)
 	{
-		auto* script = new Scripting::LuaScript(this->lua_executor, path);
-
 		this->luascripts.emplace(name, script);
 	}
 
@@ -104,7 +104,7 @@ namespace Engine
 		return nullptr;
 	}
 
-	std::shared_ptr<Scripting::LuaScript> AssetManager::GetLuaScript(const std::string& name)
+	std::shared_ptr<Scripting::ILuaScript> AssetManager::GetLuaScript(const std::string& name)
 	{
 		if (this->luascripts.find(name) != this->luascripts.end())
 		{

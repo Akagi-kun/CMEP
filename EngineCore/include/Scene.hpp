@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Scripting/LuaScript.hpp"
+#include "Scripting/ILuaScript.hpp"
 
 #include "Factories/ObjectFactory.hpp"
 
@@ -20,7 +20,7 @@ namespace Engine
 		std::unordered_map<std::string, Factories::ObjectFactory::ObjectTemplate> templates;
 
 	public:
-		std::multimap<EventHandling::EventType, std::pair<std::shared_ptr<Scripting::LuaScript>, std::string>>
+		std::multimap<EventHandling::EventType, std::pair<std::shared_ptr<Scripting::ILuaScript>, std::string>>
 			lua_event_handlers;
 
 		using InternalEngineObject::InternalEngineObject;

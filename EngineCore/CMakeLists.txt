@@ -30,9 +30,10 @@ set(SRC_FILES
 	src/Rendering/Renderer3D.cpp
 
 	src/Rendering/IMeshBuilder.cpp
-	src/Rendering/SpriteMeshBuilder.cpp
 	src/Rendering/TextMeshBuilder.cpp
 	src/Rendering/AxisMeshBuilder.cpp
+	src/Rendering/SpriteMeshBuilder.cpp
+	src/Rendering/GeneratorMeshBuilder.cpp
 	
 	src/Rendering/Vulkan/VmaImplementation.cpp
 
@@ -49,8 +50,9 @@ set(SRC_FILES
 	src/Rendering/Vulkan/Wrappers/VCommandPool.cpp
 	src/Rendering/Vulkan/Wrappers/VCommandBuffer.cpp
 	
-	src/Scripting/LuaScript.cpp
-	src/Scripting/LuaScriptExecutor.cpp
+	src/Scripting/ILuaScript.cpp
+	src/Scripting/EventLuaScript.cpp
+	src/Scripting/GeneratorLuaScript.cpp
 	
 	src/Scripting/Mappings.cpp
 	src/Scripting/API/LuaFactories.cpp

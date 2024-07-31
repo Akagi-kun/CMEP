@@ -46,6 +46,12 @@
             "location": "scripts/eventHandlers.lua"
         },
         {
+            "type": "script",
+            "name": "testgen",
+            "location": "scripts/testgen.lua",
+            "is_generator": true
+        },
+        {
             "type": "texture",
             "name": "sprite0",
             "location": "textures/test.png",

@@ -4,3 +4,5 @@ sprite_frag.glsl
 sprite_vert.glsl
 text_frag.glsl
 text_vert.glsl
+color_frag.glsl
+color_vert.glsl

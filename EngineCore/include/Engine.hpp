@@ -16,6 +16,7 @@ namespace Engine
 	class AssetManager;
 	class ImageObject;
 	class Object;
+
 	namespace Rendering
 	{
 		class Window;
@@ -23,9 +24,8 @@ namespace Engine
 
 	namespace Scripting
 	{
-		class LuaScriptExecutor;
-		class LuaScript;
-	} // namespace Scripting
+		class ILuaScript;
+	}
 
 	struct EngineConfig
 	{
@@ -48,9 +48,6 @@ namespace Engine
 	private:
 		std::string config_path;
 
-		// Window
-		// uint_fast16_t framerate_target = 0;
-
 		double last_delta_time = 0.0;
 
 		std::unique_ptr<EngineConfig> config;
@@ -58,7 +55,6 @@ namespace Engine
 		// Engine parts
 		std::shared_ptr<Logging::Logger> logger;
 		std::shared_ptr<AssetManager> asset_manager;
-		Scripting::LuaScriptExecutor* script_executor			   = nullptr;
 		Rendering::Vulkan::VulkanRenderingEngine* rendering_engine = nullptr;
 
 		// Event handler storage

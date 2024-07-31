@@ -19,7 +19,7 @@
 #define LOGPFX_CLASS_TEXTURE_FACTORY		 "[TXTR_F ] "
 #define LOGPFX_CLASS_ASSET_MANAGER			 "[ASSET_M] "
 #define LOGPFX_LUA_MAPPED					 "[LUA    ] "
-#define LOGPFX_LUA_SCRIPT_EXECUTOR			 "[LUAEXEC] "
+#define LOGPFX_LUA_SCRIPT					 "[SCRIPT ] "
 
 #define LOGPFX_NONE "[ ? ? ? ] "
 

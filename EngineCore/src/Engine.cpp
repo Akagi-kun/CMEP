@@ -1,4 +1,3 @@
-// #include <cassert>
 #include "Engine.hpp"
 
 #include "Assets/AssetManager.hpp"
@@ -8,8 +7,7 @@
 #include "Rendering/Vulkan/VulkanRenderingEngine.hpp"
 #include "Rendering/Vulkan/VulkanStructDefs.hpp"
 
-#include "Scripting/LuaScript.hpp"
-#include "Scripting/LuaScriptExecutor.hpp"
+#include "Scripting/ILuaScript.hpp"
 
 #include "Factories/ObjectFactory.hpp"
 
@@ -251,7 +249,7 @@ namespace Engine
 		this->scene_manager->GetSceneCurrent()->AddObject("_axis", object);
 
 		// Pre-make ON_UPDATE event so we don't have to create it over and over again in hot loop
-		auto premade_on_update_event = EventHandling::Event(this, EventHandling::EventType::ON_UPDATE);
+		auto on_update_event = EventHandling::Event(this, EventHandling::EventType::ON_UPDATE);
 
 		this->logger->SimpleLog(
 			Logging::LogLevel::Debug1,
@@ -268,8 +266,8 @@ namespace Engine
 		static constexpr double nano_to_sec = 1e9;
 		static constexpr double sec_to_msec = 1e3;
 
-		double average_runtime_event = 0.00;
-		uint64_t average_idx		 = 0;
+		double average_event_total	 = 0.00;
+		uint64_t average_event_count = 0;
 
 		auto prev_clock = std::chrono::steady_clock::now();
 
@@ -280,13 +278,11 @@ namespace Engine
 			const double delta_time = static_cast<double>((next_clock - prev_clock).count()) / nano_to_sec;
 			this->last_delta_time	= delta_time;
 
-			// Update deltaTime of premade ON_UPDATE event and fire it
-			premade_on_update_event.delta_time = delta_time;
-
 			this->HandleInput(delta_time);
 
 			// Check return code of FireEvent (events should return non-zero codes as failure)
-			const auto ret = this->FireEvent(premade_on_update_event);
+			on_update_event.delta_time = delta_time;
+			const auto ret			   = this->FireEvent(on_update_event);
 			if (ret != 0)
 			{
 				this->logger->SimpleLog(
@@ -296,8 +292,6 @@ namespace Engine
 				);
 				break;
 			}
-
-			// SpinSleep(0.005);
 
 			const auto event_clock = std::chrono::steady_clock::now();
 
@@ -319,8 +313,8 @@ namespace Engine
 
 			const auto time_sum = event_time + draw_time + poll_time;
 
-			average_runtime_event += event_time;
-			average_idx++;
+			average_event_total += event_time;
+			average_event_count++;
 
 			if (event_time > 12.0 || time_sum > 19.0 || time_sum < 8.0)
 			{
@@ -350,7 +344,7 @@ namespace Engine
 		this->logger->SimpleLog(
 			Logging::LogLevel::Debug2,
 			LOGPFX_CURRENT "Closing engine (eventtime avg %lf)",
-			average_runtime_event / static_cast<double>(average_idx)
+			average_event_total / static_cast<double>(average_event_count)
 		);
 	}
 
@@ -371,10 +365,8 @@ namespace Engine
 		{
 			try
 			{
-				sum += this->script_executor->CallIntoScript(
-					Scripting::ExecuteType::EVENT_HANDLER,
-					handler->second.first,
-					handler->second.second,
+				sum += handler->second.first->CallFunction(
+					/* Scripting::ExecuteType::EVENT_HANDLER,  */ handler->second.second,
 					&event
 				);
 			}
@@ -407,11 +399,7 @@ namespace Engine
 
 		this->scene_manager.reset();
 
-		delete this->script_executor;
-
 		this->asset_manager.reset();
-
-		// this->rendering_engine->Cleanup();
 
 		delete this->rendering_engine;
 	}
@@ -443,14 +431,9 @@ namespace Engine
 			throw;
 		}
 
-		// return;
 		// Order matters here due to interdependency
 
-		this->script_executor = new Scripting::LuaScriptExecutor(this);
-
 		this->asset_manager = std::make_shared<AssetManager>(this);
-
-		this->asset_manager->lua_executor = this->script_executor;
 
 		this->scene_manager = std::make_shared<SceneManager>(this);
 	}
@@ -463,8 +446,6 @@ namespace Engine
 		this->rendering_engine =
 			new Rendering::Vulkan::VulkanRenderingEngine(this, this->config->window.size, this->config->window.title);
 		this->rendering_engine->SetRenderCallback(Engine::RenderCallback);
-
-		// return;
 
 		this->scene_manager->SetSceneLoadPrefix(this->config->scene_path);
 		this->scene_manager->LoadScene(this->config->default_scene);
@@ -492,8 +473,6 @@ namespace Engine
 			on_init_event_ret
 		);
 
-		// return;
-
 		if (on_init_event_ret != 0)
 		{
 			return;
@@ -518,11 +497,11 @@ namespace Engine
 		this->config_path = std::move(path);
 	}
 	/*
-		void Engine::RegisterEventHandler(
-			EventHandling::EventType event_type, std::function<int(EventHandling::Event&)> function
-		)
-		{
-			this->event_handlers.emplace(event_type, function);
-		}
+	void Engine::RegisterEventHandler(
+		EventHandling::EventType event_type, std::function<int(EventHandling::Event&)> function
+	)
+	{
+		this->event_handlers.emplace(event_type, function);
+	}
 	*/
 } // namespace Engine
