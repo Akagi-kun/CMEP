@@ -23,12 +23,20 @@ namespace Engine::Rendering
 
 			this->generator_script->CallFunction("GENERATOR_FUNCTION", &generated_mesh);
 
-			// Create context
-			std::copy(generated_mesh.begin(), generated_mesh.end(), std::back_inserter(this->mesh));
+			if (!generated_mesh.empty())
+			{
+				// Create context
+				std::copy(generated_mesh.begin(), generated_mesh.end(), std::back_inserter(this->mesh));
 
-			this->context = MeshBuildContext();
-			this->context.RebuildVBO(this->renderer, this->mesh);
-			this->needs_rebuild = false;
+				this->context = MeshBuildContext();
+				this->context.RebuildVBO(this->renderer, this->mesh);
+				this->needs_rebuild = false;
+			}
+			else
+			{
+				// Renderers shall skip the render if there are no vertices
+				this->context.vbo_vert_count = 0;
+			}
 		}
 	}
 } // namespace Engine::Rendering

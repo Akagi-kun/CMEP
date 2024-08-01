@@ -2,8 +2,9 @@
 
 #include "Rendering/Vulkan/VulkanStructDefs.hpp"
 
-#include "lua.h"
+#include "lua.hpp"
 
+#include <concurrencysal.h>
 #include <stdexcept>
 #include <string>
 
@@ -13,64 +14,88 @@ namespace Engine::Scripting
 	{
 		auto* mesh = static_cast<std::vector<Rendering::RenderingVertex>*>(data);
 
-		uint_fast32_t idx = 0;
-		bool is_done	  = false;
+		lua_State* coroutine = lua_newthread(state);
+		lua_getglobal(coroutine, function.c_str());
+
+		/* for (int i = 0; i <= lua_gettop(coroutine); i++)
+		{
+			// Print type of every element on stack
+			printf("%u %u\n", i, lua_type(coroutine, i));
+		} */
+
+		int last_ret = LUA_OK;
 		do
 		{
-			this->InitializeCall(function);
+			last_ret = lua_resume(coroutine, 0);
 
-			// Push index and call lua
-			lua_pushinteger(state, idx);
-
-			// TODO: This should yield instead of returning every value
-			int return_value = lua_pcall(state, 1, 2, -3);
-			if (return_value != LUA_OK)
+			if (last_ret != LUA_YIELD)
 			{
-				throw std::runtime_error(
-					"Calling generator resulted in non-zero value " + std::to_string(return_value)
-				);
+				if (last_ret != LUA_OK)
+				{
+					using namespace std::string_literals;
+
+					throw std::runtime_error(
+						"Exception executing generator script! Error: "s + lua_tostring(coroutine, -1)
+					);
+				}
+
+				return 0;
 			}
 
-			is_done = (lua_toboolean(state, -2) != 0);
-
-			if (is_done)
-			{
-				break;
-			}
-
-			if (lua_istable(state, -1))
+			if (lua_istable(coroutine, -1))
 			{
 				glm::vec3 vertex{};
+				glm::vec3 color{};
+				glm::vec2 texcoord{};
 
-				lua_rawgeti(state, -1, 1);
-				vertex.x = static_cast<float>(lua_tonumber(state, -1));
+				lua_rawgeti(coroutine, -1, 1);
+				vertex.x = static_cast<float>(lua_tonumber(coroutine, -1));
 
-				lua_rawgeti(state, -2, 2);
-				vertex.y = static_cast<float>(lua_tonumber(state, -1));
+				lua_rawgeti(coroutine, -2, 2);
+				vertex.y = static_cast<float>(lua_tonumber(coroutine, -1));
 
-				lua_rawgeti(state, -3, 3);
-				vertex.z = static_cast<float>(lua_tonumber(state, -1));
+				lua_rawgeti(coroutine, -3, 3);
+				vertex.z = static_cast<float>(lua_tonumber(coroutine, -1));
+				lua_pop(coroutine, 3);
 
-				lua_pop(state, 4);
+				lua_rawgeti(coroutine, -2, 1);
+				color.r = static_cast<float>(lua_tonumber(coroutine, -1));
 
-				mesh->push_back(Rendering::RenderingVertex{vertex, glm::vec3(1.0, 1.0, 0.0)});
+				lua_rawgeti(coroutine, -3, 2);
+				color.g = static_cast<float>(lua_tonumber(coroutine, -1));
 
-				this->logger->SimpleLog(
+				lua_rawgeti(coroutine, -4, 3);
+				color.b = static_cast<float>(lua_tonumber(coroutine, -1));
+				lua_pop(coroutine, 3);
+
+				lua_rawgeti(coroutine, -3, 1);
+				texcoord.x = static_cast<float>(lua_tonumber(coroutine, -1));
+
+				lua_rawgeti(coroutine, -4, 2);
+				texcoord.y = static_cast<float>(lua_tonumber(coroutine, -1));
+
+				lua_pop(coroutine, 2);
+
+				mesh->push_back(Rendering::RenderingVertex{vertex, color, texcoord});
+
+				/* this->logger->SimpleLog(
 					Logging::LogLevel::Debug3,
-					"Generated vertex [%u] = { %f, %f, %f }",
-					idx,
+					"Generated vertex [i] = vertex{ %f, %f, %f }, color{ %f, %f, %f }",
+					// idx,
 					static_cast<double>(vertex.x),
 					static_cast<double>(vertex.y),
-					static_cast<double>(vertex.z)
-				);
+					static_cast<double>(vertex.z),
+					static_cast<double>(color.r),
+					static_cast<double>(color.g),
+					static_cast<double>(color.b)
+				); */
 			}
 			else
 			{
 				throw std::invalid_argument("Expected table got " + std::to_string(lua_type(state, -1)));
 			}
 
-			idx++;
-		} while (idx < 128);
+		} while (last_ret == LUA_YIELD);
 
 		return 0;
 	}

@@ -54,7 +54,7 @@ onKeyDown = function(event)
 
 	local scene_manager = event.engine:GetSceneManager()
 
-	local moveSpeed = 7.0 * event.deltaTime;
+	local moveSpeed = 10.0 * event.deltaTime;
 	  
 	local camera_h, camera_v = scene_manager:GetCameraHVRotation();
 
@@ -123,6 +123,10 @@ local deltaTime_count = 0
 local deltaTime_max = 0.0
 local deltaTime_min = 2000.0
 
+local chunks_x = 2
+local chunks_z = 2
+local chunks = {}
+
 -- ON_UPDATE event
 -- 
 -- called every frame
@@ -171,12 +175,15 @@ end
 -- perform initialization here
 --
 onInit = function(event)
-	
 	-- Get managers
 	local asset_manager = event.engine:GetAssetManager()
 	local scene_manager = event.engine:GetSceneManager()
 	local scene = scene_manager:GetSceneCurrent();
 
+	-- Set-up camera
+	scene_manager:SetCameraTransform(-2.0, 6.8, 4.7)
+	scene_manager:SetCameraHVRotation(114.0, 224.8)
+	
 	-- Create frametime counter and add it to scene
 	local object0 = engine.CreateSceneObject(asset_manager, "renderer_2d/text", "text", {
 		{"font", "myfont"}, {"text", "avg: \nmin: \nmax: "}
@@ -192,33 +199,35 @@ onInit = function(event)
 	object1:SetSize(24, 24, 1.0)
 	scene:AddObject("_debug_info2", object1)
 
---[[ 	local object2 = engine.CreateSceneObject(asset_manager, "renderer_3d/text", "text", {
-		{"font", "myfont"}, {"text", "TEST TEXT"}
-	})
-	object2:SetPosition(0.5, 0.3, 0.0)
-	object2:SetSize(128, 128, 1.0)
-	object2:SetRotation(0, -135, 180)
-	scene:AddObject("test3d", object2)
- ]]
-	local object3 = engine.CreateSceneObject(asset_manager, "renderer_3d/sprite", "sprite", {
-		{"texture", "sprite0"}
-	})
-	object3:SetPosition(-2.0, 1.0, 0.0)
-	object3:SetSize(1.0, 1.0, 1.0)
-	object3:SetRotation(0, -100, 180)
-	scene:AddObject("test3dsprite", object3)
+	--local object3 = engine.CreateSceneObject(asset_manager, "renderer_3d/sprite", "sprite", {
+	--	{"texture", "sprite0"}
+	--})
+	--object3:SetPosition(-2.0, 1.0, 0.0)
+	--object3:SetSize(1, 1, 1)
+	--object3:SetRotation(0, -100, 180)
+	--scene:AddObject("test3dsprite", object3)
 
-	local object4 = engine.CreateSceneObject(asset_manager, "renderer_3d/generator", "color", {
-		{"texture", "sprite0"}, {"script", "testgen"}
-	})
-	object4:SetPosition(0.0, 1.0, 0.0)
-	object4:SetSize(1.0, 1.0, 1.0)
-	object4:SetRotation(0, 0, 0)
-	scene:AddObject("testgenerator", object4)
+	for chunk_x = 0, chunks_x do
+		chunks[chunk_x + 1] = {}
+		for chunk_z = 0, chunks_z do
+			local chunk_obj = engine.CreateSceneObject(asset_manager, "renderer_3d/generator", "sprite", {
+				{"texture", "atlas"}, {"script", "testgen"}
+			})
+			chunk_obj:SetPosition(chunk_x * 16, 0.0, chunk_z * 16)
+			chunk_obj:SetSize(1, 1, 1)
+			chunk_obj:SetRotation(0, 0, 0)
+			scene:AddObject(string.format("chunk_%u_%u", chunk_x, chunk_z), chunk_obj)
+			chunks[chunk_x + 1][chunk_z + 1] = chunk_obj
+		end
+	end
 
-	-- Set-up camera
-	scene_manager:SetCameraTransform(-3.0, 2.3, 4.7)
-	scene_manager:SetCameraHVRotation(114.0, 194.8)
+	--local object4 = engine.CreateSceneObject(asset_manager, "renderer_3d/generator", "sprite", {
+	--	{"texture", "atlas"}, {"script", "testgen"}
+	--})
+	--object4:SetPosition(0.0, 0.0, 0.0)
+	--object4:SetSize(0.5, 0.5, 0.5)
+	--object4:SetRotation(0, 0, 0)
+	--scene:AddObject("testgenerator", object4)
 
 	return 0
 end

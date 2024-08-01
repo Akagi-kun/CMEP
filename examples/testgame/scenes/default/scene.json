@@ -56,6 +56,13 @@
             "name": "sprite0",
             "location": "textures/test.png",
             "sampling_mode": "clamp"
+        },
+        {
+            "type": "texture",
+            "name": "atlas",
+            "location": "textures/atlas.png",
+            "sampling_mode": "clamp",
+            "filtering": "nearest"
         }
     ]
 }

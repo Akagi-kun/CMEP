@@ -117,7 +117,7 @@ namespace Engine::Scripting
 		}
 
 		std::filesystem::path require_origin = with_script->GetPath();
-		std::string require_origin_str		 = require_origin.remove_filename().string();
+		std::string require_origin_str		 = require_origin.remove_filename().parent_path().string();
 
 		using namespace std::literals;
 		// Check whether this works on other systems
