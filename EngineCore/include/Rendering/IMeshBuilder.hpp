@@ -16,6 +16,8 @@ namespace Engine::Rendering
 		MeshBuildContext context = {};
 		Vulkan::VulkanRenderingEngine* renderer;
 
+		glm::vec3 world_pos;
+
 	public:
 		IMeshBuilder() = delete;
 		IMeshBuilder(Engine* engine);
@@ -34,6 +36,11 @@ namespace Engine::Rendering
 		{
 			this->needs_rebuild = true;
 			(void)(data);
+		}
+
+		void SupplyWorldPosition(const glm::vec3& with_world_position)
+		{
+			this->world_pos = with_world_position;
 		}
 
 		virtual void Build() = 0;

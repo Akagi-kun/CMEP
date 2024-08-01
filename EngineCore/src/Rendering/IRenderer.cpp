@@ -68,8 +68,8 @@ namespace Engine::Rendering
 		if (this->mesh_builder->NeedsRebuild())
 		{
 			this->mesh_builder->Build();
-			this->mesh_context = this->mesh_builder->GetContext();
 		}
+		this->mesh_context = this->mesh_builder->GetContext();
 
 		// Render only if VBO non-empty
 		if (this->mesh_context.vbo_vert_count > 0)

@@ -73,6 +73,13 @@ namespace Engine::Rendering
 			this->screen		   = with_screen;
 
 			this->has_updated_matrices = false;
+
+			this->mesh_builder->SupplyWorldPosition(with_transform.pos + with_parent_transform.pos);
+		}
+
+		void ForceBuild()
+		{
+			this->mesh_builder->Build();
 		}
 
 		void Render(VkCommandBuffer command_buffer, uint32_t current_frame);

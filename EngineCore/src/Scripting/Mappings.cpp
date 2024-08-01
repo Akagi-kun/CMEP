@@ -51,7 +51,18 @@ namespace Engine::Scripting::Mappings
 
 #pragma endregion
 
-#pragma region Renderer supply
+#pragma region Renderer functions
+
+		static int RendererForceBuild(lua_State* state)
+		{
+			CMEP_LUACHECK_FN_ARGC(state, 1)
+
+			auto* renderer = static_cast<Rendering::IRenderer*>(lua_touserdata(state, 1));
+
+			renderer->ForceBuild();
+
+			return 0;
+		}
 
 		static int RendererSupplyText(lua_State* state)
 		{
@@ -180,6 +191,7 @@ namespace Engine::Scripting::Mappings
 	std::unordered_map<std::string, lua_CFunction> mappings = {
 		CMEP_LUAMAPPING_DEFINE(RendererSupplyText),
 		CMEP_LUAMAPPING_DEFINE(RendererSupplyTexture),
+		CMEP_LUAMAPPING_DEFINE(RendererForceBuild),
 
 		CMEP_LUAMAPPING_DEFINE(CreateSceneObject)
 	};

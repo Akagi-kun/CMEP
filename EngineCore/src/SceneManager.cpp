@@ -109,7 +109,7 @@ namespace Engine
 	glm::mat4 SceneManager::GetProjectionMatrix(Rendering::ScreenSize screen) const
 	{
 		static constexpr float nearplane = 0.1f;
-		static constexpr float farplane	 = 100.0f;
+		static constexpr float farplane	 = 1000.0f;
 
 		return glm::perspective<float>(
 			glm::radians(this->field_of_vision),

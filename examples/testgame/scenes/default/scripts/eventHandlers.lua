@@ -54,7 +54,7 @@ onKeyDown = function(event)
 
 	local scene_manager = event.engine:GetSceneManager()
 
-	local moveSpeed = 10.0 * event.deltaTime;
+	local moveSpeed = 25.0 * event.deltaTime;
 	  
 	local camera_h, camera_v = scene_manager:GetCameraHVRotation();
 
@@ -123,8 +123,9 @@ local deltaTime_count = 0
 local deltaTime_max = 0.0
 local deltaTime_min = 2000.0
 
-local chunks_x = 2
-local chunks_z = 2
+local render_distance = 4
+local chunks_x = render_distance
+local chunks_z = render_distance
 local chunks = {}
 
 -- ON_UPDATE event
@@ -207,27 +208,28 @@ onInit = function(event)
 	--object3:SetRotation(0, -100, 180)
 	--scene:AddObject("test3dsprite", object3)
 
-	for chunk_x = 0, chunks_x do
-		chunks[chunk_x + 1] = {}
-		for chunk_z = 0, chunks_z do
+	for chunk_z = -chunks_z, chunks_z do
+		chunks[chunk_z] = {}
+		for chunk_x = -chunks_x, chunks_x do
 			local chunk_obj = engine.CreateSceneObject(asset_manager, "renderer_3d/generator", "sprite", {
 				{"texture", "atlas"}, {"script", "testgen"}
 			})
-			chunk_obj:SetPosition(chunk_x * 16, 0.0, chunk_z * 16)
+			chunk_obj:SetPosition((chunk_x - 1) * 16, 0.0, (chunk_z - 1) * 16)
 			chunk_obj:SetSize(1, 1, 1)
 			chunk_obj:SetRotation(0, 0, 0)
-			scene:AddObject(string.format("chunk_%u_%u", chunk_x, chunk_z), chunk_obj)
-			chunks[chunk_x + 1][chunk_z + 1] = chunk_obj
+			scene:AddObject(string.format("chunk_%i_%i", chunk_x, chunk_z), chunk_obj)
+			--engine.RendererForceBuild(chunk_obj.renderer)
+			chunks[chunk_z][chunk_x] = chunk_obj
 		end
 	end
 
-	--local object4 = engine.CreateSceneObject(asset_manager, "renderer_3d/generator", "sprite", {
-	--	{"texture", "atlas"}, {"script", "testgen"}
-	--})
-	--object4:SetPosition(0.0, 0.0, 0.0)
-	--object4:SetSize(0.5, 0.5, 0.5)
-	--object4:SetRotation(0, 0, 0)
-	--scene:AddObject("testgenerator", object4)
+--	local chunk_obj = engine.CreateSceneObject(asset_manager, "renderer_3d/generator", "sprite", {
+--		{"texture", "atlas"}, {"script", "testgen"}
+--	})
+--	chunk_obj:SetPosition(0, 0, 0)
+--	chunk_obj:SetSize(1, 1, 1)
+--	chunk_obj:SetRotation(0, 0, 0)
+--	scene:AddObject(string.format("chunk_%i_%i", 0, 0), chunk_obj)
 
 	return 0
 end

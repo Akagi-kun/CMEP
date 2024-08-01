@@ -21,7 +21,9 @@ namespace Engine::Rendering
 		{
 			std::vector<RenderingVertex> generated_mesh;
 
-			this->generator_script->CallFunction("GENERATOR_FUNCTION", &generated_mesh);
+			std::array<void*, 2> generator_data = {&generated_mesh, &(this->world_pos)};
+
+			this->generator_script->CallFunction("GENERATOR_FUNCTION", &generator_data);
 
 			if (!generated_mesh.empty())
 			{
