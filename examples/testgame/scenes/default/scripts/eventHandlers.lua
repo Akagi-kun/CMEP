@@ -209,7 +209,7 @@ onInit = function(event)
 	--object3:SetRotation(0, -100, 180)
 	--scene:AddObject("test3dsprite", object3)
 
-	for chunk_z = -chunks_z, chunks_z, 1 do
+--[[ 	for chunk_z = -chunks_z, chunks_z, 1 do
 		chunks[chunk_z] = {}
 		for chunk_x = -chunks_x, chunks_x, 1 do
 			local chunk_obj = engine.CreateSceneObject(asset_manager, "renderer_3d/generator", "sprite", {
@@ -221,15 +221,15 @@ onInit = function(event)
 			scene:AddObject(string.format("chunk_%i_%i", chunk_x, chunk_z), chunk_obj)
 			chunks[chunk_z][chunk_x] = chunk_obj
 		end
-	end
+	end ]]
 
---	local chunk_obj = engine.CreateSceneObject(asset_manager, "renderer_3d/generator", "sprite", {
---		{"texture", "atlas"}, {"script", "testgen"}
---	})
---	chunk_obj:SetPosition(0, 0, 0)
---	chunk_obj:SetSize(1, 1, 1)
---	chunk_obj:SetRotation(0, 0, 0)
---	scene:AddObject(string.format("chunk_%i_%i", 0, 0), chunk_obj)
+	local chunk_obj = engine.CreateSceneObject(asset_manager, "renderer_3d/generator", "sprite", {
+		{"texture", "atlas"}, {"script", "testgen"}
+	})
+	chunk_obj:SetPosition(0, 0, 0)
+	chunk_obj:SetSize(1, 1, 1)
+	chunk_obj:SetRotation(0, 0, 0)
+	scene:AddObject(string.format("chunk_%i_%i", 0, 0), chunk_obj)
 
 	return 0
 end
