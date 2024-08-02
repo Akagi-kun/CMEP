@@ -34,13 +34,6 @@ namespace Engine::Rendering::Vulkan
 		void MapMemory();
 		void UnmapMemory();
 
-		void BufferCopy(
-			VBuffer* with_src,
-			VkDeviceSize with_region_size,
-			VkDeviceSize with_src_offset = 0,
-			VkDeviceSize with_dst_offset = 0
-		);
-
 		void MemoryCopy(const void* with_data, size_t with_size)
 		{
 			this->MapMemory();

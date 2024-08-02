@@ -62,7 +62,11 @@ namespace Engine
 
 		static void SpinSleep(double seconds);
 
-		static void RenderCallback(VkCommandBuffer command_buffer, uint32_t current_frame, Engine* engine);
+		static void RenderCallback(
+			Rendering::Vulkan::VCommandBuffer* command_buffer,
+			uint32_t current_frame,
+			Engine* engine
+		);
 
 		static void ErrorCallback(int code, const char* message);
 		static void OnWindowFocusCallback(GLFWwindow* window, int focused);

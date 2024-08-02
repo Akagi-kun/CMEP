@@ -10,6 +10,6 @@ namespace Engine::Scripting
 		int InternalCall(const std::string& function, void* data) override;
 
 	public:
-		using ILuaScript::ILuaScript;
+		GeneratorLuaScript(Engine* with_engine, std::string with_path);
 	};
 } // namespace Engine::Scripting

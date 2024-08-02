@@ -18,13 +18,13 @@ namespace Engine
 {
 	Scene::~Scene()
 	{
-		this->logger->SimpleLog(Logging::LogLevel::Debug1, LOGPFX_CURRENT "Destructor called");
+		this->logger->SimpleLog(Logging::LogLevel::Debug2, LOGPFX_CURRENT "Destructor called");
 
 		this->templates.clear();
 
 		for (auto& [name, ptr] : this->objects)
 		{
-			this->logger->SimpleLog(Logging::LogLevel::Debug2, LOGPFX_CURRENT "Deleting object '%s'", name.c_str());
+			this->logger->SimpleLog(Logging::LogLevel::Debug3, LOGPFX_CURRENT "Deleting object '%s'", name.c_str());
 			delete ptr;
 		}
 

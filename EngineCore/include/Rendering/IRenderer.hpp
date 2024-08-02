@@ -82,6 +82,6 @@ namespace Engine::Rendering
 			this->mesh_builder->Build();
 		}
 
-		void Render(VkCommandBuffer command_buffer, uint32_t current_frame);
+		void Render(Vulkan::VCommandBuffer* command_buffer, uint32_t current_frame);
 	};
 } // namespace Engine::Rendering

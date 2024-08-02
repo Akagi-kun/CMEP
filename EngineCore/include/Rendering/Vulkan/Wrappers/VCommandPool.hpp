@@ -18,6 +18,8 @@ namespace Engine::Rendering::Vulkan
 
 		~VCommandPool();
 
+		[[nodiscard]] VCommandBuffer* AllocateCommandBuffer();
+
 		[[nodiscard]] VkCommandPool& GetNativeHandle()
 		{
 			assert(this->native_handle != VK_NULL_HANDLE && "This command pool has no valid native handle!");

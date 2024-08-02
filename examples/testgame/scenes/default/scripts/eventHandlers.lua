@@ -1,12 +1,13 @@
+require("config")
+
 -- Debugging data
 local deltaTime_accum = 0.0
 local deltaTime_count = 0
 local deltaTime_max = 0.0
 local deltaTime_min = 2000.0
 
-local render_distance = 4
-local chunks_x = render_distance
-local chunks_z = render_distance
+local chunks_x = config.render_distance
+local chunks_z = config.render_distance
 local chunks = {}
 
 -- ON_MOUSEMOVED event
@@ -136,7 +137,7 @@ end
 -- and is the period between the last onUpdate and the current one
 --
 onUpdate = function(event)
-
+	--return 0
 	deltaTime_accum = deltaTime_accum + event.deltaTime
 
 	deltaTime_max = math.max(deltaTime_max, event.deltaTime)
@@ -182,7 +183,7 @@ onInit = function(event)
 	local scene = scene_manager:GetSceneCurrent();
 
 	-- Set-up camera
-	scene_manager:SetCameraTransform(-2.0, 6.8, 4.7)
+	scene_manager:SetCameraTransform(-2.0, 20.8, 4.7)
 	scene_manager:SetCameraHVRotation(114.0, 224.8)
 	
 	-- Create frametime counter and add it to scene
@@ -208,9 +209,9 @@ onInit = function(event)
 	--object3:SetRotation(0, -100, 180)
 	--scene:AddObject("test3dsprite", object3)
 
-	for chunk_z = -chunks_z, chunks_z do
+	for chunk_z = -chunks_z, chunks_z, 1 do
 		chunks[chunk_z] = {}
-		for chunk_x = -chunks_x, chunks_x do
+		for chunk_x = -chunks_x, chunks_x, 1 do
 			local chunk_obj = engine.CreateSceneObject(asset_manager, "renderer_3d/generator", "sprite", {
 				{"texture", "atlas"}, {"script", "testgen"}
 			})
@@ -218,7 +219,6 @@ onInit = function(event)
 			chunk_obj:SetSize(1, 1, 1)
 			chunk_obj:SetRotation(0, 0, 0)
 			scene:AddObject(string.format("chunk_%i_%i", chunk_x, chunk_z), chunk_obj)
-			--engine.RendererForceBuild(chunk_obj.renderer)
 			chunks[chunk_z][chunk_x] = chunk_obj
 		end
 	end

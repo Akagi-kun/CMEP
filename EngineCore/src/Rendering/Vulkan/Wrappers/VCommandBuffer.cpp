@@ -1,7 +1,7 @@
 #include "Rendering/Vulkan/Wrappers/VCommandBuffer.hpp"
 
 #include "Rendering/Vulkan/VDeviceManager.hpp"
-#include "Rendering/Vulkan/Wrappers/VCommandPool.hpp"
+#include "Rendering/Vulkan/Wrappers/VBuffer.hpp"
 
 #include "vulkan/vulkan_core.h"
 
@@ -9,12 +9,12 @@
 
 namespace Engine::Rendering::Vulkan
 {
-	VCommandBuffer::VCommandBuffer(VDeviceManager* const with_device_manager, VCommandPool* from_pool)
+	VCommandBuffer::VCommandBuffer(VDeviceManager* const with_device_manager, VkCommandPool from_pool)
 		: HoldsVulkanDevice(with_device_manager), owning_pool(from_pool)
 	{
 		VkCommandBufferAllocateInfo alloc_info{};
 		alloc_info.sType			  = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
-		alloc_info.commandPool		  = from_pool->GetNativeHandle();
+		alloc_info.commandPool		  = from_pool;
 		alloc_info.level			  = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
 		alloc_info.commandBufferCount = 1;
 
@@ -28,12 +28,7 @@ namespace Engine::Rendering::Vulkan
 
 	VCommandBuffer::~VCommandBuffer()
 	{
-		vkFreeCommandBuffers(
-			this->device_manager->GetLogicalDevice(),
-			this->owning_pool->GetNativeHandle(),
-			1,
-			&this->native_handle
-		);
+		vkFreeCommandBuffers(this->device_manager->GetLogicalDevice(), this->owning_pool, 1, &this->native_handle);
 	}
 
 	void VCommandBuffer::BeginCmdBuffer(VkCommandBufferUsageFlags usage_flags)
@@ -65,19 +60,30 @@ namespace Engine::Rendering::Vulkan
 		lambda(this);
 
 		this->EndCmdBuffer();
-		this->GraphicsQueueSubmit();
+		this->QueueSubmit(this->device_manager->GetGraphicsQueue());
 
 		vkQueueWaitIdle(this->device_manager->GetGraphicsQueue());
 	}
 
-	void VCommandBuffer::GraphicsQueueSubmit()
+	void VCommandBuffer::QueueSubmit(VkQueue to_queue)
 	{
 		VkSubmitInfo submit_info{};
 		submit_info.sType			   = VK_STRUCTURE_TYPE_SUBMIT_INFO;
 		submit_info.commandBufferCount = 1;
 		submit_info.pCommandBuffers	   = &this->native_handle;
 
-		vkQueueSubmit(this->device_manager->GetGraphicsQueue(), 1, &submit_info, VK_NULL_HANDLE);
+		vkQueueSubmit(to_queue, 1, &submit_info, VK_NULL_HANDLE);
+	}
+
+	void VCommandBuffer::BufferCopy(VBuffer* from_buffer, VBuffer* to_buffer, std::vector<VkBufferCopy> regions)
+	{
+		vkCmdCopyBuffer(
+			this->native_handle,
+			from_buffer->GetNativeHandle(),
+			to_buffer->GetNativeHandle(),
+			regions.size(),
+			regions.data()
+		);
 	}
 
 } // namespace Engine::Rendering::Vulkan

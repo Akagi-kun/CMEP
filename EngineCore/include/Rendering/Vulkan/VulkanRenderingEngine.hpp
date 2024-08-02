@@ -61,7 +61,7 @@ namespace Engine::Rendering::Vulkan
 		std::shared_ptr<VDeviceManager> device_manager;
 
 		// External callback for rendering
-		std::function<void(VkCommandBuffer, uint32_t, Engine*)> external_callback;
+		std::function<void(Vulkan::VCommandBuffer*, uint32_t, Engine*)> external_callback;
 
 		// VkFormat functions
 		VkFormat FindVulkanSupportedFormat(
@@ -100,11 +100,11 @@ namespace Engine::Rendering::Vulkan
 
 		// Engine functions
 		void DrawFrame();
-		void SetRenderCallback(std::function<void(VkCommandBuffer, uint32_t, Engine*)> callback);
+		void SetRenderCallback(std::function<void(Vulkan::VCommandBuffer*, uint32_t, Engine*)> callback);
 
 		// Buffer functions
-		VBuffer* CreateVulkanVertexBufferFromData(std::vector<RenderingVertex> vertices);
-		VBuffer* CreateVulkanStagingBufferWithData(void* data, VkDeviceSize data_size);
+		VBuffer* CreateVulkanVertexBufferFromData(const std::vector<RenderingVertex>& vertices);
+		VBuffer* CreateVulkanStagingBufferWithData(const void* data, VkDeviceSize data_size);
 
 		// Image functions
 		void CopyVulkanBufferToImage(VkBuffer buffer, VkImage image, uint32_t width, uint32_t height);

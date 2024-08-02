@@ -1,21 +1,15 @@
 require("perlin")
 require("dynagen_defs")
+require("config")
 
 local map = {}
-local map_size_x = 16
-local map_size_z = 16
-local map_size_y = 32
-
-local noise_intensity = 10
-local noise_layer = 0.0
-local floor_level = 8
 
 local calculateMapOffsetZ = function(z)
-	return (map_size_x * z)
+	return (config.chunk_size_x * z)
 end
 
 local calculateMapOffset = function(x, y, z)
-	return x + (calculateMapOffsetZ(z - 1)) + (calculateMapOffsetZ(map_size_z)) * (y - 1)
+	return x + (calculateMapOffsetZ(z - 1)) + (calculateMapOffsetZ(config.chunk_size_z)) * (y - 1)
 end
 
 local generateTree = function(x, y, z)
@@ -41,13 +35,13 @@ local generateTree = function(x, y, z)
 			0, 0, 0, 0, 0,
 			0, 0, 0, 0, 0,
 		},
-		--{
-		--	0, 5, 5, 5, 0,
-		--	5, 5, 5, 5, 5,
-		--	5, 5, 6, 5, 5,
-		--	5, 5, 5, 5, 5,
-		--	0, 5, 5, 5, 0,
-		--},
+		{
+			0, 5, 5, 5, 0,
+			5, 5, 5, 5, 5,
+			5, 5, 6, 5, 5,
+			5, 5, 5, 5, 5,
+			0, 5, 5, 5, 0,
+		},
 		--{
 		--	0, 5, 5, 5, 0,
 		--	5, 5, 5, 5, 5,
@@ -85,17 +79,17 @@ end
 
 -- Map generation
 local generateMap = function(world_x, world_y, world_z)
-	for map_pos_x = 1, map_size_x do
-		for map_pos_z = 1, map_size_z do
-			local noise_raw = perlin:noise((map_pos_x + world_x) / map_size_x, noise_layer, (map_pos_z + world_z) / map_size_z)
+	for map_pos_x = 1, config.chunk_size_x do
+		for map_pos_z = 1, config.chunk_size_z do
+			local noise_raw = perlin:noise((map_pos_x + world_x) / config.chunk_size_x, noise_layer, (map_pos_z + world_z) / config.chunk_size_z)
 
-			for map_pos_y = 1, map_size_y do
+			for map_pos_y = 1, config.chunk_size_y do
 				local offset = calculateMapOffset(map_pos_x, map_pos_y, map_pos_z)
 
 --				map[offset] = 1
 
-				local noise_adjusted = math.floor((noise_raw + 1) * noise_intensity)
-				local randomY = noise_adjusted + floor_level
+				local noise_adjusted = math.floor((noise_raw + 1) * config.noise_intensity)
+				local randomY = noise_adjusted + config.floor_level
 
 				if map[offset] == nil then
 					if map_pos_y < randomY then
@@ -108,7 +102,7 @@ local generateMap = function(world_x, world_y, world_z)
 						end
 					else
 						map[offset] = 0
-						if (map[offset - calculateMapOffsetZ(map_size_z)] == 2 and math.random(360) > 358) then
+						if (map[offset - calculateMapOffsetZ(config.chunk_size_z)] == 2 and math.random(360) > 358) then
 							generateTree(map_pos_x, map_pos_y, map_pos_z)
 						end
 					end
@@ -146,7 +140,7 @@ local faceYielder = function(value, face, x_off, z_off, y_off)
 				local modified_u = ((1 / block_type_count) * u) + ((value - 1) / block_type_count)
 				local modified_v = ((1 / block_textures) * v) + (use_texture / block_textures)
 
-				coroutine.yield({modified_u, modified_v}, colors[face], {x, y, z})
+				coroutine.yield(modified_u, modified_v, colors[face], x, y, z)
 			end
 		end
 	end
@@ -157,61 +151,62 @@ GENERATOR_FUNCTION = function(world_x, world_y, world_z)
 
 	generateMap(world_x, world_y, world_z)
 	
-	for map_pos_y = 1, map_size_y do
-		for map_pos_z = 1, map_size_z do
-			for map_pos_x = 1, map_size_x do
+	for map_pos_y = 1, config.chunk_size_y do
+		for map_pos_z = 1, config.chunk_size_z do
+			for map_pos_x = 1, config.chunk_size_x do
 
 				local offset = calculateMapOffset(map_pos_x, map_pos_y, map_pos_z)
 
 				local map_val = map[offset]
 
-				local map_next_x = 0
-				if map_pos_x < map_size_x then map_next_x = map[offset + 1] end
-
-				local map_prev_x = 0
-				if map_pos_x > 1 then map_prev_x = map[offset - 1] end
-
-				local map_next_z = 0
-				if map_pos_z < map_size_z then map_next_z = map[offset + map_size_x] end
-
-				local map_prev_z = 0
-				if map_pos_z > 1 then map_prev_z = map[offset - map_size_x] end
-
-				local map_next_y = 0
-				if map_pos_y < map_size_y then map_next_y = map[offset + calculateMapOffsetZ(map_size_z)] end
-
-				local map_prev_y = 0
-				if map_pos_y > 1 then map_prev_y = map[offset - calculateMapOffsetZ(map_size_z)] end
-
 				-- if current block is solid, check for boundaries
-				if map_val ~= 0 then 
-					-- if current and next Y (vertical) position differ (block boundary)
-					if map_val ~= map_next_y then
+				if map_val ~= 0 then
+
+					local map_next_x = 0
+					if map_pos_x < config.chunk_size_x then map_next_x = map[offset + 1] end
+
+					local map_prev_x = 0
+					if map_pos_x > 1 then map_prev_x = map[offset - 1] end
+
+					local map_next_z = 0
+					if map_pos_z < config.chunk_size_z then map_next_z = map[offset + config.chunk_size_x] end
+
+					local map_prev_z = 0
+					if map_pos_z > 1 then map_prev_z = map[offset - config.chunk_size_x] end
+
+					local map_next_y = 0
+					if map_pos_y < config.chunk_size_y then map_next_y = map[offset + calculateMapOffsetZ(config.chunk_size_z)] end
+
+					local map_prev_y = 0
+					if map_pos_y > 1 then map_prev_y = map[offset - calculateMapOffsetZ(config.chunk_size_z)] end
+
+					-- if current and next Y (vertical) position has air (block boundary)
+					if map_next_y == 0 then
 						faceYielder(map_val, dynagen_defs.faces.YPOS, map_pos_x, map_pos_z, map_pos_y)
 					end
 
-					-- if current and previous Y (vertical) position differ (block boundary)
-					if map_val ~= map_prev_y then
+					-- if previous Y (vertical) position has air (block boundary)
+					if map_prev_y == 0 then
 						faceYielder(map_val, dynagen_defs.faces.YNEG, map_pos_x, map_pos_z, map_pos_y)
 					end
 
-					-- if current and next Z position differ (block boundary)
-					if map_val ~= map_next_z then
+					-- if next Z position has air (block boundary)
+					if map_next_z == 0 then
 						faceYielder(map_val, dynagen_defs.faces.ZPOS, map_pos_x, map_pos_z, map_pos_y)
 					end
 
-					-- if current and previous Z position differ (block boundary)
-					if map_val ~= map_prev_z then
+					-- if previous Z position has air (block boundary)
+					if map_prev_z == 0 then
 						faceYielder(map_val, dynagen_defs.faces.ZNEG, map_pos_x, map_pos_z, map_pos_y)
 					end
 
-					-- if current and next X position differ (block boundary)
-					if map_val ~= map_next_x then
+					-- if next X position has air (block boundary)
+					if map_next_x == 0 then
 						faceYielder(map_val, dynagen_defs.faces.XPOS, map_pos_x, map_pos_z, map_pos_y)
 					end
 
-					-- if current and last X position differ (block boundary)
-					if map_val ~= map_prev_x then
+					-- if last X position has air (block boundary)
+					if map_prev_x == 0 then
 						faceYielder(map_val, dynagen_defs.faces.XNEG, map_pos_x, map_pos_z, map_pos_y)
 					end
 				end

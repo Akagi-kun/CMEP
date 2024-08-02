@@ -3,6 +3,7 @@
 #include "Rendering/Vulkan/VDeviceManager.hpp"
 #include "Rendering/Vulkan/Wrappers/HoldsVulkanDevice.hpp"
 #include "Rendering/Vulkan/Wrappers/VCommandBuffer.hpp"
+#include "Rendering/Vulkan/Wrappers/VCommandPool.hpp"
 
 #include "vulkan/vulkan_core.h"
 
@@ -118,21 +119,25 @@ namespace Engine::Rendering::Vulkan
 			throw std::invalid_argument("Unsupported layout transition!");
 		}
 
-		VCommandBuffer(this->device_manager, this->device_manager->GetCommandPool())
-			.RecordCmds([&](VCommandBuffer* with_buffer) {
-				vkCmdPipelineBarrier(
-					with_buffer->GetNativeHandle(),
-					source_stage,
-					destination_stage,
-					0,
-					0,
-					nullptr,
-					0,
-					nullptr,
-					1,
-					&barrier
-				);
-			});
+		auto* command_buffer = this->device_manager->GetCommandPool()->AllocateCommandBuffer();
+
+		// VCommandBuffer(this->device_manager, this->device_manager->GetCommandPool())
+		command_buffer->RecordCmds([&](VCommandBuffer* with_buffer) {
+			vkCmdPipelineBarrier(
+				with_buffer->GetNativeHandle(),
+				source_stage,
+				destination_stage,
+				0,
+				0,
+				nullptr,
+				0,
+				nullptr,
+				1,
+				&barrier
+			);
+		});
+
+		delete command_buffer;
 
 		this->current_layout = new_layout;
 	}

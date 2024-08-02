@@ -20,6 +20,7 @@
 #include "vulkan/vulkan_core.h"
 
 #include <chrono>
+#include <cstdint>
 #include <exception>
 #include <fstream>
 #include <memory>
@@ -209,7 +210,11 @@ namespace Engine
 		}
 	}
 
-	void Engine::RenderCallback(VkCommandBuffer command_buffer, uint32_t current_frame, Engine* engine)
+	void Engine::RenderCallback(
+		Rendering::Vulkan::VCommandBuffer* command_buffer,
+		uint32_t current_frame,
+		Engine* engine
+	)
 	{
 		auto& current_scene = engine->scene_manager->GetSceneCurrent();
 
@@ -238,6 +243,12 @@ namespace Engine
 
 	void Engine::EngineLoop()
 	{
+		static constexpr double nano_to_msec = 1e6;
+		static constexpr double nano_to_sec	 = 1e9;
+		static constexpr double sec_to_msec	 = 1e3;
+
+		auto& scene = this->scene_manager->GetSceneCurrent();
+
 		// TODO: Remove this!
 		// Create axis object
 		auto* object = Factories::ObjectFactory::CreateSceneObject<Rendering::Renderer3D, Rendering::AxisMeshBuilder>(
@@ -246,7 +257,7 @@ namespace Engine
 			{}
 		);
 
-		this->scene_manager->GetSceneCurrent()->AddObject("_axis", object);
+		scene->AddObject("_axis", object);
 
 		// Pre-make ON_UPDATE event so we don't have to create it over and over again in hot loop
 		auto on_update_event = EventHandling::Event(this, EventHandling::EventType::ON_UPDATE);
@@ -258,13 +269,27 @@ namespace Engine
 			this->config->framerate_target == 0 ? " (VSYNC)" : ""
 		);
 
+		auto build_clock = std::chrono::steady_clock::now();
+
+		this->logger->SimpleLog(Logging::LogLevel::Info, "Starting scene build");
+		for (const auto& [name, object] : scene->GetAllObjects())
+		{
+			this->logger->SimpleLog(Logging::LogLevel::Debug1, "Building object '%s'", name.c_str());
+			object->GetRenderer()->ForceBuild();
+		}
+
+		auto scene_build_time = static_cast<double>((std::chrono::steady_clock::now() - build_clock).count()) /
+								nano_to_msec;
+
+		this->logger->SimpleLog(
+			Logging::LogLevel::Info,
+			"Scene build finished in %lums",
+			static_cast<uint_fast32_t>(scene_build_time)
+		);
+
 		// Show window
 		Rendering::GLFWwindowData glfw_window = this->rendering_engine->GetWindow();
 		glfwShowWindow(glfw_window.native_handle);
-
-		// static constexpr double nano_to_msec = 1e6;
-		static constexpr double nano_to_sec = 1e9;
-		static constexpr double sec_to_msec = 1e3;
 
 		double average_event_total	 = 0.00;
 		uint64_t average_event_count = 0;
@@ -365,10 +390,7 @@ namespace Engine
 		{
 			try
 			{
-				sum += handler->second.first->CallFunction(
-					/* Scripting::ExecuteType::EVENT_HANDLER,  */ handler->second.second,
-					&event
-				);
+				sum += handler->second.first->CallFunction(handler->second.second, &event);
 			}
 			catch (std::runtime_error& e)
 			{

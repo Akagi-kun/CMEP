@@ -1,6 +1,7 @@
 #include "Rendering/Vulkan/Wrappers/VCommandPool.hpp"
 
 #include "Rendering/Vulkan/VDeviceManager.hpp"
+#include "Rendering/Vulkan/Wrappers/VCommandBuffer.hpp"
 
 #include <stdexcept>
 
@@ -27,4 +28,10 @@ namespace Engine::Rendering::Vulkan
 
 		vkDestroyCommandPool(logical_device, this->native_handle, nullptr);
 	}
+
+	[[nodiscard]] VCommandBuffer* VCommandPool::AllocateCommandBuffer()
+	{
+		return new VCommandBuffer(this->device_manager, this->native_handle);
+	}
+
 } // namespace Engine::Rendering::Vulkan

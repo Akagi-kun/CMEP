@@ -14,12 +14,15 @@
 
 namespace Engine::Scripting
 {
-	/* static void ProfilerCallback(void* data, lua_State* state, int samples, int vmstate)
+	static void ProfilerCallback(void* data, lua_State* state, int samples, int vmstate)
 	{
+		(void)(samples);
+
 		auto* cast_data = static_cast<ScriptPerfState*>(data);
 
-		size_t dump_len		   = 0;
-		const char* stack_dump = luaJIT_profile_dumpstack(state, "fZ;", 5, &dump_len);
+		size_t dump_len						 = 0;
+		static constexpr uint_fast16_t depth = 5;
+		const char* stack_dump				 = luaJIT_profile_dumpstack(state, "fZ;", depth, &dump_len);
 
 		printf("Stack:\n'");
 
@@ -54,7 +57,7 @@ namespace Engine::Scripting
 				break;
 			}
 		}
-	} */
+	}
 
 #pragma region Static functions
 
@@ -196,17 +199,32 @@ namespace Engine::Scripting
 		return 0;
 	}
 
+	void ILuaScript::InitializeCall(const std::string& function)
+	{
+		// Clear stack
+		lua_settop(state, 0);
+
+		// Push error handler
+		lua_pushcfunction(state, LuaErrorHandler);
+
+		// Get start function
+		lua_getglobal(state, function.c_str());
+	}
+
 #pragma region Public functions
 
-	ILuaScript::ILuaScript(Engine* with_engine, /* ILuaScript* executor, */ std::string with_path)
-		: InternalEngineObject(with_engine), path(std::move(with_path))
+	ILuaScript::ILuaScript(Engine* with_engine, std::string with_path, bool with_enable_profiling)
+		: InternalEngineObject(with_engine), enable_profiling(with_enable_profiling), path(std::move(with_path))
 	{
 		this->state = luaL_newstate();
 		luaL_openlibs(this->state);
 
 		this->profiler_state = new ScriptPerfState();
 
-		// luaJIT_profile_start(this->state, "fl", &ProfilerCallback, this->profiler_state);
+		if (with_enable_profiling)
+		{
+			luaJIT_profile_start(this->state, "fl", &ProfilerCallback, this->profiler_state);
+		}
 
 		int return_code = this->LoadAndCompileScript();
 		if (return_code != 0)
@@ -219,32 +237,21 @@ namespace Engine::Scripting
 
 	ILuaScript::~ILuaScript()
 	{
-		/*
-		luaJIT_profile_stop(this->state);
+		if (this->enable_profiling)
+		{
+			luaJIT_profile_stop(this->state);
 
-		printf(
-			"Profiling result:\n E:%i N:%i I:%i\n",
-			this->profiler_state->engine_count,
-			this->profiler_state->native_count,
-			this->profiler_state->interpreted_count
-		);
-		*/
+			printf(
+				"Profiling result:\n E:%i N:%i I:%i\n",
+				this->profiler_state->engine_count,
+				this->profiler_state->native_count,
+				this->profiler_state->interpreted_count
+			);
+		}
 
 		delete this->profiler_state;
 
 		lua_close(this->state);
-	}
-
-	void ILuaScript::InitializeCall(const std::string& function)
-	{
-		// Clear stack
-		lua_settop(state, 0);
-
-		// Push error handler
-		lua_pushcfunction(state, LuaErrorHandler);
-
-		// Get start function
-		lua_getglobal(state, function.c_str());
 	}
 
 	int ILuaScript::CallFunction(const std::string& function, void* data)

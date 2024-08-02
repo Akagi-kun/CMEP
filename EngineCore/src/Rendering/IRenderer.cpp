@@ -1,6 +1,7 @@
 #include "Rendering/IRenderer.hpp"
 
 #include "Rendering/Vulkan/VDeviceManager.hpp"
+#include "Rendering/Vulkan/Wrappers/VCommandBuffer.hpp"
 #include "Rendering/Vulkan/Wrappers/VSampledImage.hpp"
 
 #include "Engine.hpp"
@@ -52,7 +53,7 @@ namespace Engine::Rendering
 		}
 	}
 
-	void IRenderer::Render(VkCommandBuffer command_buffer, uint32_t current_frame)
+	void IRenderer::Render(Vulkan::VCommandBuffer* command_buffer, uint32_t current_frame)
 	{
 		if (!this->has_updated_matrices)
 		{
@@ -76,13 +77,19 @@ namespace Engine::Rendering
 		{
 			this->pipeline->GetUniformBuffer(current_frame)->MemoryCopy(&this->matrix_data, sizeof(RendererMatrixData));
 
-			this->pipeline->BindPipeline(command_buffer, current_frame);
+			this->pipeline->BindPipeline(command_buffer->GetNativeHandle(), current_frame);
 
 			VkBuffer vertex_buffers[] = {this->mesh_context.vbo->GetNativeHandle()};
 			VkDeviceSize offsets[]	  = {0};
-			vkCmdBindVertexBuffers(command_buffer, 0, 1, vertex_buffers, offsets);
+			vkCmdBindVertexBuffers(command_buffer->GetNativeHandle(), 0, 1, vertex_buffers, offsets);
 
-			vkCmdDraw(command_buffer, static_cast<uint32_t>(this->mesh_context.vbo_vert_count), 1, 0, 0);
+			vkCmdDraw(
+				command_buffer->GetNativeHandle(),
+				static_cast<uint32_t>(this->mesh_context.vbo_vert_count),
+				1,
+				0,
+				0
+			);
 		}
 	}
 

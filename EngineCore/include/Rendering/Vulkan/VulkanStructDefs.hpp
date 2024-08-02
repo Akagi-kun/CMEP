@@ -13,6 +13,13 @@
 
 namespace Engine::Rendering
 {
+	struct GLFWwindowData
+	{
+		GLFWwindow* native_handle;
+		ScreenSize size;
+		std::string title;
+	};
+
 	struct QueueFamilyIndices
 	{
 		std::optional<uint32_t> graphics_family;
@@ -22,13 +29,6 @@ namespace Engine::Rendering
 		{
 			return graphics_family.has_value() && present_family.has_value();
 		}
-	};
-
-	struct GLFWwindowData
-	{
-		GLFWwindow* native_handle;
-		ScreenSize size;
-		std::string title;
 	};
 
 	struct SwapChainSupportDetails
@@ -69,7 +69,17 @@ namespace Engine::Rendering
 		glm::vec2 texcoord{};
 		glm::vec3 normal{};
 
-		static VkVertexInputBindingDescription GetBindingDescription()
+		RenderingVertex(
+			const glm::vec3 with_pos,
+			const glm::vec3 with_color	  = {},
+			const glm::vec2 with_texcoord = {},
+			const glm::vec3 with_normal	  = {}
+		)
+			: pos(with_pos), color(with_color), texcoord(with_texcoord), normal(with_normal)
+		{
+		}
+
+		static constexpr VkVertexInputBindingDescription GetBindingDescription()
 		{
 			VkVertexInputBindingDescription binding_description{};
 
@@ -80,7 +90,7 @@ namespace Engine::Rendering
 			return binding_description;
 		}
 
-		static std::array<VkVertexInputAttributeDescription, 4> GetAttributeDescriptions()
+		static constexpr std::array<VkVertexInputAttributeDescription, 4> GetAttributeDescriptions()
 		{
 			std::array<VkVertexInputAttributeDescription, 4> attribute_descriptions{};
 

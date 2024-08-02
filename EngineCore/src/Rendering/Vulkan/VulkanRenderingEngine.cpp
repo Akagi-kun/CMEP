@@ -77,7 +77,7 @@ namespace Engine::Rendering::Vulkan
 		// vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, this->graphics_pipeline_default->pipeline);
 		if (this->external_callback)
 		{
-			this->external_callback(command_buf_handle, current_frame, this->owner_engine);
+			this->external_callback(command_buffer, current_frame, this->owner_engine);
 		}
 
 		vkCmdEndRenderPass(command_buf_handle);
@@ -210,7 +210,9 @@ namespace Engine::Rendering::Vulkan
 		// Create command buffers
 		for (auto& vk_command_buffer : this->command_buffers)
 		{
-			vk_command_buffer = new VCommandBuffer(this->device_manager.get(), this->device_manager->GetCommandPool());
+			vk_command_buffer = this->device_manager->GetCommandPool()->AllocateCommandBuffer();
+			// vk_command_buffer = new VCommandBuffer(this->device_manager.get(),
+			// this->device_manager->GetCommandPool());
 		}
 
 		this->CreateMultisampledColorResources();
@@ -368,7 +370,9 @@ namespace Engine::Rendering::Vulkan
 		}
 	}
 
-	void VulkanRenderingEngine::SetRenderCallback(std::function<void(VkCommandBuffer, uint32_t, Engine*)> callback)
+	void VulkanRenderingEngine::SetRenderCallback(
+		std::function<void(Vulkan::VCommandBuffer*, uint32_t, Engine*)> callback
+	)
 	{
 		this->external_callback = std::move(callback);
 	}
@@ -477,7 +481,7 @@ namespace Engine::Rendering::Vulkan
 
 	// Buffers
 
-	VBuffer* VulkanRenderingEngine::CreateVulkanVertexBufferFromData(std::vector<RenderingVertex> vertices)
+	VBuffer* VulkanRenderingEngine::CreateVulkanVertexBufferFromData(const std::vector<RenderingVertex>& vertices)
 	{
 		VkDeviceSize buffer_size = sizeof(vertices[0]) * vertices.size();
 
@@ -492,14 +496,17 @@ namespace Engine::Rendering::Vulkan
 		);
 
 		// Copy into final buffer
-		vertex_buffer->BufferCopy(staging_buffer, buffer_size);
+		this->command_buffers.at(this->current_frame)
+			->BufferCopy(staging_buffer, vertex_buffer, {VkBufferCopy{0, 0, buffer_size}});
+
+		// vertex_buffer->BufferCopy(staging_buffer, buffer_size);
 
 		delete staging_buffer;
 
 		return vertex_buffer;
 	}
 
-	VBuffer* VulkanRenderingEngine::CreateVulkanStagingBufferWithData(void* data, VkDeviceSize data_size)
+	VBuffer* VulkanRenderingEngine::CreateVulkanStagingBufferWithData(const void* data, VkDeviceSize data_size)
 	{
 		VBuffer* staging_buffer;
 
@@ -522,7 +529,8 @@ namespace Engine::Rendering::Vulkan
 
 	void VulkanRenderingEngine::CopyVulkanBufferToImage(VkBuffer buffer, VkImage image, uint32_t width, uint32_t height)
 	{
-		VCommandBuffer command_buffer(this->device_manager.get(), this->device_manager->GetCommandPool());
+		// VCommandBuffer command_buffer(this->device_manager.get(), this->device_manager->GetCommandPool());
+		VCommandBuffer* command_buffer = this->device_manager->GetCommandPool()->AllocateCommandBuffer();
 
 		VkBufferImageCopy region{};
 		region.bufferOffset		 = 0;
@@ -537,7 +545,7 @@ namespace Engine::Rendering::Vulkan
 		region.imageOffset = {0, 0, 0};
 		region.imageExtent = {width, height, 1};
 
-		command_buffer.RecordCmds([&](VCommandBuffer* with_buf) {
+		command_buffer->RecordCmds([&](VCommandBuffer* with_buf) {
 			vkCmdCopyBufferToImage(
 				with_buf->GetNativeHandle(),
 				buffer,
@@ -547,5 +555,7 @@ namespace Engine::Rendering::Vulkan
 				&region
 			);
 		});
+
+		delete command_buffer;
 	}
 } // namespace Engine::Rendering::Vulkan

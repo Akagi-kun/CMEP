@@ -1,7 +1,6 @@
 #include "Rendering/Vulkan/Wrappers/VBuffer.hpp"
 
 #include "Rendering/Vulkan/VDeviceManager.hpp"
-#include "Rendering/Vulkan/Wrappers/VCommandBuffer.hpp"
 
 #include "vulkan/vulkan_core.h"
 
@@ -74,30 +73,5 @@ namespace Engine::Rendering::Vulkan
 
 		// ensure mapped_data is never non-null when not mapped
 		this->mapped_data = nullptr;
-	}
-
-	void VBuffer::BufferCopy(
-		VBuffer* with_src,
-		VkDeviceSize with_region_size,
-		VkDeviceSize with_src_offset,
-		VkDeviceSize with_dst_offset
-	)
-	{
-		VCommandBuffer command_buffer(this->device_manager, this->device_manager->GetCommandPool());
-
-		command_buffer.RecordCmds([&](VCommandBuffer* with_buf) {
-			VkBufferCopy copy_region{};
-			copy_region.srcOffset = with_src_offset;
-			copy_region.dstOffset = with_dst_offset;
-			copy_region.size	  = with_region_size;
-
-			vkCmdCopyBuffer(
-				with_buf->GetNativeHandle(),
-				with_src->GetNativeHandle(),
-				this->native_handle,
-				1,
-				&copy_region
-			);
-		});
 	}
 } // namespace Engine::Rendering::Vulkan
