@@ -6,19 +6,17 @@ local map_size_x = 16
 local map_size_z = 16
 local map_size_y = 32
 
+local noise_intensity = 10
+local noise_layer = 0.0
+local floor_level = 8
+
 local calculateMapOffsetZ = function(z)
 	return (map_size_x * z)
 end
 
-local map_z_offset = calculateMapOffsetZ(map_size_z)
-
 local calculateMapOffset = function(x, y, z)
-	return x + (calculateMapOffsetZ(z - 1)) + (map_z_offset) * (y - 1)
+	return x + (calculateMapOffsetZ(z - 1)) + (calculateMapOffsetZ(map_size_z)) * (y - 1)
 end
-
-local noise_intensity = 10
-local noise_layer = 0.0
-local floor_level = 8
 
 local generateTree = function(x, y, z)
 	local tree_def = {
@@ -110,7 +108,7 @@ local generateMap = function(world_x, world_y, world_z)
 						end
 					else
 						map[offset] = 0
-						if (map[offset - map_z_offset] == 2 and math.random(360) > 358) then
+						if (map[offset - calculateMapOffsetZ(map_size_z)] == 2 and math.random(360) > 358) then
 							generateTree(map_pos_x, map_pos_y, map_pos_z)
 						end
 					end
@@ -145,8 +143,8 @@ local faceYielder = function(value, face, x_off, z_off, y_off)
 				z = z + z_off - 1
 				y = y + y_off - 1
 
-				local modified_u = (1 / block_type_count * u) + ((value - 1) / block_type_count)
-				local modified_v = (1 / block_textures * v) + (use_texture / block_textures)
+				local modified_u = ((1 / block_type_count) * u) + ((value - 1) / block_type_count)
+				local modified_v = ((1 / block_textures) * v) + (use_texture / block_textures)
 
 				coroutine.yield({modified_u, modified_v}, colors[face], {x, y, z})
 			end
@@ -180,10 +178,10 @@ GENERATOR_FUNCTION = function(world_x, world_y, world_z)
 				if map_pos_z > 1 then map_prev_z = map[offset - map_size_x] end
 
 				local map_next_y = 0
-				if map_pos_y < map_size_y then map_next_y = map[offset + map_z_offset] end
+				if map_pos_y < map_size_y then map_next_y = map[offset + calculateMapOffsetZ(map_size_z)] end
 
 				local map_prev_y = 0
-				if map_pos_y > 1 then map_prev_y = map[offset - map_z_offset] end
+				if map_pos_y > 1 then map_prev_y = map[offset - calculateMapOffsetZ(map_size_z)] end
 
 				-- if current block is solid, check for boundaries
 				if map_val ~= 0 then 

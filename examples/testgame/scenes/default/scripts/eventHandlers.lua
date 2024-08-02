@@ -1,3 +1,14 @@
+-- Debugging data
+local deltaTime_accum = 0.0
+local deltaTime_count = 0
+local deltaTime_max = 0.0
+local deltaTime_min = 2000.0
+
+local render_distance = 4
+local chunks_x = render_distance
+local chunks_z = render_distance
+local chunks = {}
+
 -- ON_MOUSEMOVED event
 -- 
 -- this event is called when the mouse moved
@@ -116,17 +127,6 @@ end
 onKeyUp = function(event)
 	return 0
 end
-
--- Debugging data
-local deltaTime_accum = 0.0
-local deltaTime_count = 0
-local deltaTime_max = 0.0
-local deltaTime_min = 2000.0
-
-local render_distance = 4
-local chunks_x = render_distance
-local chunks_z = render_distance
-local chunks = {}
 
 -- ON_UPDATE event
 -- 

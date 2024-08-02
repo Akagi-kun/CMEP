@@ -13,8 +13,6 @@ namespace Engine::Scripting
 	{
 		auto* generator_data = static_cast<std::array<void*, 2>*>(data);
 
-		// this->LoadAndCompileScript();
-
 		auto* mesh		= static_cast<std::vector<Rendering::RenderingVertex>*>(generator_data->at(0));
 		auto* world_pos = static_cast<glm::vec3*>(generator_data->at(1));
 
@@ -29,7 +27,7 @@ namespace Engine::Scripting
 		/* for (int i = 0; i <= lua_gettop(coroutine); i++)
 		{
 			// Print type of every element on stack
-			printf("%u %u\n", i, lua_type(coroutine, i));
+			printf("%u %s\n", i, lua_typename(coroutine, i));
 		} */
 
 		int last_ret = LUA_OK;
