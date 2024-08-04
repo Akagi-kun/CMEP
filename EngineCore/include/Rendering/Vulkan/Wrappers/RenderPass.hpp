@@ -4,8 +4,6 @@
 #include "framework.hpp"
 #include "vulkan/vulkan_core.h"
 
-#include <corecrt_wstdio.h>
-
 namespace Engine::Rendering::Vulkan
 {
 	class RenderPass final : HoldsVulkanDevice
