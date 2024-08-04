@@ -3,8 +3,10 @@
 #include "Rendering/IRenderer.hpp"
 #include "Rendering/Vulkan/VDeviceManager.hpp"
 #include "Rendering/Vulkan/VulkanRenderingEngine.hpp"
+#include "Rendering/Vulkan/VulkanStructDefs.hpp"
 #include "Rendering/Vulkan/Wrappers/HoldsVMA.hpp"
 #include "Rendering/Vulkan/Wrappers/HoldsVulkanDevice.hpp"
+#include "Rendering/Vulkan/Wrappers/RenderPass.hpp"
 #include "Rendering/Vulkan/Wrappers/VShaderModule.hpp"
 
 #include "Engine.hpp"
@@ -15,7 +17,7 @@ namespace Engine::Rendering::Vulkan
 	VPipeline::VPipeline(
 		VDeviceManager* with_device_manager,
 		VulkanPipelineSettings& settings,
-		VkRenderPass with_render_pass
+		RenderPass* with_render_pass
 	)
 		: HoldsVulkanDevice(with_device_manager), HoldsVMA(with_device_manager->GetVmaAllocator())
 	{
@@ -26,7 +28,8 @@ namespace Engine::Rendering::Vulkan
 		assert(!settings.shader.empty() && "A valid shader for this pipeline is required!");
 
 		// Vertex stage
-		auto vert_shader_module = VShaderModule(this->device_manager, shader_path, settings.shader + "_vert.spv");
+		auto vert_shader_module =
+			VShaderModule(this->device_manager, shader_path, std::string(settings.shader) + +"_vert.spv");
 
 		VkPipelineShaderStageCreateInfo vert_shader_stage_info{};
 		vert_shader_stage_info.sType  = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
@@ -35,7 +38,8 @@ namespace Engine::Rendering::Vulkan
 		vert_shader_stage_info.pName  = "main";
 
 		// Fragment stage
-		auto frag_shader_module = VShaderModule(this->device_manager, shader_path, settings.shader + "_frag.spv");
+		auto frag_shader_module =
+			VShaderModule(this->device_manager, shader_path, std::string(settings.shader) + "_frag.spv");
 
 		VkPipelineShaderStageCreateInfo frag_shader_stage_info{};
 		frag_shader_stage_info.sType  = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
@@ -64,6 +68,14 @@ namespace Engine::Rendering::Vulkan
 		/************************************/
 		// this->CreateVulkanDescriptorSetLayout(pipeline, settings.descriptor_layout_settings);
 
+		// Binding 0 of vertex shader always must be uniform buffer
+		settings.descriptor_layout_settings.push_back(VulkanDescriptorLayoutSettings{
+			0,
+			1,
+			VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
+			VK_SHADER_STAGE_VERTEX_BIT,
+		});
+
 		std::vector<VkDescriptorSetLayoutBinding> bindings	= {};
 		std::vector<VkDescriptorBindingFlags> binding_flags = {};
 
@@ -72,7 +84,7 @@ namespace Engine::Rendering::Vulkan
 			VkDescriptorSetLayoutBinding new_binding{};
 			new_binding.binding			   = setting.binding;
 			new_binding.descriptorCount	   = setting.descriptor_count;
-			new_binding.descriptorType	   = setting.types;
+			new_binding.descriptorType	   = setting.type;
 			new_binding.stageFlags		   = setting.stage_flags;
 			new_binding.pImmutableSamplers = nullptr;
 
@@ -121,30 +133,30 @@ namespace Engine::Rendering::Vulkan
 		VkPipelineViewportStateCreateInfo viewport_state{};
 		viewport_state.sType		 = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
 		viewport_state.viewportCount = 1;
-		viewport_state.pViewports	 = &settings.viewport;
+		viewport_state.pViewports	 = VulkanPipelineSettings::GetViewportSettings(settings.extent);
 		viewport_state.scissorCount	 = 1;
 		viewport_state.pScissors	 = &settings.scissor;
-
-		settings.color_blending.pAttachments = &settings.color_blend_attachment;
 
 		VkGraphicsPipelineCreateInfo pipeline_info{};
 		pipeline_info.sType				  = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
 		pipeline_info.stageCount		  = 2;
 		pipeline_info.pStages			  = shader_stages;
 		pipeline_info.pVertexInputState	  = &vertex_input_info;
-		pipeline_info.pInputAssemblyState = &settings.input_assembly;
+		pipeline_info.pInputAssemblyState = VulkanPipelineSettings::GetInputAssemblySettings(settings.input_topology);
 		pipeline_info.pViewportState	  = &viewport_state;
-		pipeline_info.pRasterizationState = &settings.rasterizer;
-		pipeline_info.pMultisampleState	  = &settings.multisampling;
-		pipeline_info.pDepthStencilState  = nullptr; // Optional
-		pipeline_info.pColorBlendState	  = &settings.color_blending;
-		pipeline_info.pDynamicState		  = &dynamic_state;
-		pipeline_info.layout			  = this->pipeline_layout;
-		pipeline_info.pDepthStencilState  = &settings.depth_stencil;
-		pipeline_info.renderPass		  = with_render_pass;
-		pipeline_info.subpass			  = 0;
-		pipeline_info.basePipelineHandle  = VK_NULL_HANDLE; // Optional
-		pipeline_info.basePipelineIndex	  = -1;				// Optional
+		pipeline_info.pRasterizationState = VulkanPipelineSettings::GetRasterizerSettings();
+		pipeline_info.pMultisampleState	  = VulkanPipelineSettings::GetMultisamplingSettings(
+			  this->device_manager->GetMSAASampleCount()
+		  );
+		pipeline_info.pDepthStencilState = nullptr; // Optional
+		pipeline_info.pColorBlendState	 = VulkanPipelineSettings::GetColorBlendSettings();
+		pipeline_info.pDynamicState		 = &dynamic_state;
+		pipeline_info.layout			 = this->pipeline_layout;
+		pipeline_info.pDepthStencilState = VulkanPipelineSettings::GetDepthStencilSettings();
+		pipeline_info.renderPass		 = with_render_pass->native_handle;
+		pipeline_info.subpass			 = 0;
+		pipeline_info.basePipelineHandle = VK_NULL_HANDLE; // Optional
+		pipeline_info.basePipelineIndex	 = -1;			   // Optional
 
 		if (vkCreateGraphicsPipelines(
 				logical_device,
@@ -186,7 +198,7 @@ namespace Engine::Rendering::Vulkan
 		for (size_t i = 0; i < settings.descriptor_layout_settings.size(); i++)
 		{
 			VkDescriptorPoolSize pool_size{};
-			pool_size.type			  = settings.descriptor_layout_settings[i].types;
+			pool_size.type			  = settings.descriptor_layout_settings[i].type;
 			pool_size.descriptorCount = VulkanRenderingEngine::GetMaxFramesInFlight() *
 										settings.descriptor_layout_settings[i].descriptor_count;
 
@@ -237,6 +249,30 @@ namespace Engine::Rendering::Vulkan
 			throw std::runtime_error("failed to allocate descriptor sets!");
 		}
 		/************************************/
+
+		/************************************/
+		// Update binding 0 to point to matrix buffer
+
+		std::array<VkDescriptorBufferInfo, VulkanRenderingEngine::GetMaxFramesInFlight()> descriptor_buffer_infos{};
+		std::array<VkWriteDescriptorSet, VulkanRenderingEngine::GetMaxFramesInFlight()> descriptor_writes{};
+
+		for (uint32_t frame_idx = 0; frame_idx < Vulkan::VulkanRenderingEngine::GetMaxFramesInFlight(); frame_idx++)
+		{
+			descriptor_buffer_infos[frame_idx].buffer = this->uniform_buffers[frame_idx]->GetNativeHandle();
+			descriptor_buffer_infos[frame_idx].offset = 0;
+			descriptor_buffer_infos[frame_idx].range  = sizeof(RendererMatrixData);
+
+			descriptor_writes[frame_idx].sType			 = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+			// descriptor_writes[frame_idx].dstSet			 = nullptr;
+			descriptor_writes[frame_idx].dstBinding		 = 0;
+			descriptor_writes[frame_idx].dstArrayElement = 0;
+			descriptor_writes[frame_idx].descriptorType	 = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+			descriptor_writes[frame_idx].descriptorCount = 1;
+			descriptor_writes[frame_idx].pBufferInfo	 = &(descriptor_buffer_infos[frame_idx]);
+		}
+
+		this->UpdateDescriptorSets(descriptor_writes);
+		/************************************/
 	}
 
 	VPipeline::~VPipeline()
@@ -255,6 +291,26 @@ namespace Engine::Rendering::Vulkan
 
 		vkDestroyPipeline(logical_device, this->native_handle, nullptr);
 		vkDestroyPipelineLayout(logical_device, this->pipeline_layout, nullptr);
+	}
+
+	void VPipeline::UpdateDescriptorSets(
+		const std::array<VkWriteDescriptorSet, VulkanRenderingEngine::GetMaxFramesInFlight()>& writes
+	)
+	{
+		std::array<VkWriteDescriptorSet, VulkanRenderingEngine::GetMaxFramesInFlight()> local_copy = writes;
+
+		for (uint32_t idx = 0; idx < local_copy.size(); idx++)
+		{
+			local_copy[idx].dstSet = this->GetDescriptorSet(idx);
+		}
+
+		vkUpdateDescriptorSets(
+			device_manager->GetLogicalDevice(),
+			static_cast<uint32_t>(local_copy.size()),
+			local_copy.data(),
+			0,
+			nullptr
+		);
 	}
 
 	void VPipeline::BindPipeline(VkCommandBuffer with_command_buffer, uint32_t current_frame)

@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Rendering/Vulkan/VulkanRenderingEngine.hpp"
 #include "Rendering/Vulkan/VulkanStructDefs.hpp"
 #include "Rendering/Vulkan/Wrappers/HoldsVMA.hpp"
 #include "Rendering/Vulkan/Wrappers/HoldsVulkanDevice.hpp"
@@ -21,17 +22,21 @@ namespace Engine::Rendering::Vulkan
 		std::vector<VkDescriptorSet> descriptor_sets;
 
 	public:
-		VPipeline(VDeviceManager* with_device_manager, VulkanPipelineSettings& settings, VkRenderPass with_render_pass);
+		VPipeline(VDeviceManager* with_device_manager, VulkanPipelineSettings& settings, RenderPass* with_render_pass);
 		~VPipeline();
+
+		void UpdateDescriptorSets(
+			const std::array<VkWriteDescriptorSet, VulkanRenderingEngine::GetMaxFramesInFlight()>& writes
+		);
 
 		[[nodiscard]] VBuffer* GetUniformBuffer(uint32_t current_frame)
 		{
-			return this->uniform_buffers.at(current_frame);
+			return this->uniform_buffers[current_frame];
 		}
 
 		[[nodiscard]] VkDescriptorSet GetDescriptorSet(uint32_t current_frame)
 		{
-			return this->descriptor_sets.at(current_frame);
+			return this->descriptor_sets[current_frame];
 		}
 
 		void BindPipeline(VkCommandBuffer with_command_buffer, uint32_t current_frame);

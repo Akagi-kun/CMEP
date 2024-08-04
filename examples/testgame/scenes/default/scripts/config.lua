@@ -1,6 +1,6 @@
 config = {
     -- Number of chunks to render in every direction
-    render_distance = 6,
+    render_distance = 2,
 
     -- Noise multiplier
     noise_intensity = 10,
@@ -8,6 +8,8 @@ config = {
 
     -- Offset of noise from 0
     floor_level = 8,
+
+    tree_generation_chance = 80, -- 360
 
     -- Chunk size
     chunk_size_x = 16,

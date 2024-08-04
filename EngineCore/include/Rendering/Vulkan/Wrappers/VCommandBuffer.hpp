@@ -29,11 +29,15 @@ namespace Engine::Rendering::Vulkan
 
 		void QueueSubmit(VkQueue to_queue);
 
-		void BufferCopy(VBuffer* from_buffer, VBuffer* to_buffer, std::vector<VkBufferCopy> regions);
+		void BufferBufferCopy(VBuffer* from_buffer, VBuffer* to_buffer, std::vector<VkBufferCopy> regions);
+		void BufferImageCopy(VBuffer* from_buffer, VImage* to_image);
 
 		[[nodiscard]] VkCommandBuffer& GetNativeHandle()
 		{
 			return this->native_handle;
 		}
+
+		void BeginRenderPass(const VkRenderPassBeginInfo* with_info);
+		void EndRenderPass();
 	};
 } // namespace Engine::Rendering::Vulkan

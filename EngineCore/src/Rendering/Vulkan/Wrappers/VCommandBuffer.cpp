@@ -2,6 +2,7 @@
 
 #include "Rendering/Vulkan/VDeviceManager.hpp"
 #include "Rendering/Vulkan/Wrappers/VBuffer.hpp"
+#include "Rendering/Vulkan/Wrappers/VImage.hpp"
 
 #include "vulkan/vulkan_core.h"
 
@@ -57,6 +58,7 @@ namespace Engine::Rendering::Vulkan
 		// TODO: Check if we should really pass non-zero here
 		this->BeginCmdBuffer(VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT);
 
+		// TODO: Don't pass this here
 		lambda(this);
 
 		this->EndCmdBuffer();
@@ -75,15 +77,57 @@ namespace Engine::Rendering::Vulkan
 		vkQueueSubmit(to_queue, 1, &submit_info, VK_NULL_HANDLE);
 	}
 
-	void VCommandBuffer::BufferCopy(VBuffer* from_buffer, VBuffer* to_buffer, std::vector<VkBufferCopy> regions)
+	void VCommandBuffer::BufferBufferCopy(VBuffer* from_buffer, VBuffer* to_buffer, std::vector<VkBufferCopy> regions)
 	{
-		vkCmdCopyBuffer(
-			this->native_handle,
-			from_buffer->GetNativeHandle(),
-			to_buffer->GetNativeHandle(),
-			regions.size(),
-			regions.data()
-		);
+		this->RecordCmds([&](VCommandBuffer* handle) {
+			vkCmdCopyBuffer(
+				handle->native_handle,
+				from_buffer->GetNativeHandle(),
+				to_buffer->GetNativeHandle(),
+				static_cast<uint32_t>(regions.size()),
+				regions.data()
+			);
+		});
+	}
+
+	void VCommandBuffer::BufferImageCopy(VBuffer* from_buffer, VImage* to_image)
+	{
+		VImageSize image_size = to_image->GetSize();
+
+		// Sane defaults
+		VkBufferImageCopy region{};
+		region.bufferOffset		 = 0;
+		region.bufferRowLength	 = 0;
+		region.bufferImageHeight = 0;
+
+		region.imageSubresource.aspectMask	   = VK_IMAGE_ASPECT_COLOR_BIT;
+		region.imageSubresource.mipLevel	   = 0;
+		region.imageSubresource.baseArrayLayer = 0;
+		region.imageSubresource.layerCount	   = 1;
+
+		region.imageOffset = {0, 0, 0};
+		region.imageExtent = {image_size.x, image_size.y, 1};
+
+		this->RecordCmds([&](VCommandBuffer* with_buf) {
+			vkCmdCopyBufferToImage(
+				with_buf->GetNativeHandle(),
+				from_buffer->GetNativeHandle(),
+				to_image->GetNativeHandle(),
+				VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+				1,
+				&region
+			);
+		});
+	}
+
+	void VCommandBuffer::BeginRenderPass(const VkRenderPassBeginInfo* with_info)
+	{
+		vkCmdBeginRenderPass(this->native_handle, with_info, VK_SUBPASS_CONTENTS_INLINE);
+	}
+
+	void VCommandBuffer::EndRenderPass()
+	{
+		vkCmdEndRenderPass(this->native_handle);
 	}
 
 } // namespace Engine::Rendering::Vulkan

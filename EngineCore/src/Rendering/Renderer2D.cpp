@@ -3,13 +3,14 @@
 #include "Assets/Font.hpp"
 #include "Assets/Texture.hpp"
 #include "Rendering/IRenderer.hpp"
-#include "Rendering/Vulkan/VDeviceManager.hpp"
+#include "Rendering/Vulkan/VulkanStructDefs.hpp"
 #include "Rendering/Vulkan/Wrappers/VPipeline.hpp"
 #include "Rendering/framework.hpp"
 
 #include "Logging/Logging.hpp"
 
 #include "Engine.hpp"
+#include "vulkan/vulkan_core.h"
 
 #include <cassert>
 #include <glm/gtc/matrix_transform.hpp>
@@ -23,17 +24,11 @@ namespace Engine::Rendering
 	{
 		Vulkan::VulkanRenderingEngine* renderer = this->owner_engine->GetRenderingEngine();
 
-		VulkanPipelineSettings pipeline_settings  = renderer->GetVulkanDefaultPipelineSettings();
-		pipeline_settings.input_assembly.topology = this->mesh_builder->GetSupportedTopology();
-
-		pipeline_settings.shader = this->pipeline_name;
-
-		pipeline_settings.descriptor_layout_settings.push_back(VulkanDescriptorLayoutSettings{
-			0,
-			1,
-			VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
-			VK_SHADER_STAGE_VERTEX_BIT,
-		});
+		VulkanPipelineSettings pipeline_settings{
+			renderer->GetSwapchainExtent(),
+			this->pipeline_name,
+			this->mesh_builder->GetSupportedTopology()
+		};
 
 		pipeline_settings.descriptor_layout_settings.push_back(VulkanDescriptorLayoutSettings{
 			1,
@@ -44,28 +39,6 @@ namespace Engine::Rendering
 
 		this->pipeline =
 			new Vulkan::VPipeline(renderer->GetDeviceManager(), pipeline_settings, renderer->GetRenderPass());
-
-		auto* device_manager = renderer->GetDeviceManager();
-
-		// Update descriptor set for matrices
-		for (uint32_t i = 0; i < Vulkan::VulkanRenderingEngine::GetMaxFramesInFlight(); i++)
-		{
-			VkDescriptorBufferInfo buffer_info{};
-			buffer_info.buffer = this->pipeline->GetUniformBuffer(i)->GetNativeHandle();
-			buffer_info.offset = 0;
-			buffer_info.range  = sizeof(RendererMatrixData);
-
-			VkWriteDescriptorSet uniform_buffer_set = {};
-			uniform_buffer_set.sType				= VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-			uniform_buffer_set.dstSet				= this->pipeline->GetDescriptorSet(i);
-			uniform_buffer_set.dstBinding			= 0;
-			uniform_buffer_set.dstArrayElement		= 0;
-			uniform_buffer_set.descriptorType		= VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-			uniform_buffer_set.descriptorCount		= 1;
-			uniform_buffer_set.pBufferInfo			= &buffer_info;
-
-			vkUpdateDescriptorSets(device_manager->GetLogicalDevice(), 1, &uniform_buffer_set, 0, nullptr);
-		}
 	}
 
 	Renderer2D::~Renderer2D()

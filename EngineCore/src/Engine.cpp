@@ -292,7 +292,7 @@ namespace Engine
 		glfwShowWindow(glfw_window.native_handle);
 
 		double average_event_total	 = 0.00;
-		uint64_t average_event_count = 0;
+		uint64_t average_event_count = 1;
 
 		auto prev_clock = std::chrono::steady_clock::now();
 
@@ -341,7 +341,9 @@ namespace Engine
 			average_event_total += event_time;
 			average_event_count++;
 
-			if (event_time > 12.0 || time_sum > 19.0 || time_sum < 8.0)
+			constexpr double limits[] = {12.0, 19.0, 8.0};
+
+			if (event_time > limits[0] || time_sum > limits[1] || time_sum < limits[2])
 			{
 				this->logger->SimpleLog(
 					Logging::LogLevel::Warning,
@@ -489,7 +491,7 @@ namespace Engine
 		static constexpr double nano_to_msec = 1.e6;
 		double total = static_cast<double>((std::chrono::steady_clock::now() - start).count()) / nano_to_msec;
 		this->logger->SimpleLog(
-			Logging::LogLevel::Debug1,
+			Logging::LogLevel::Info,
 			LOGPFX_CURRENT "Handling ON_INIT took %.3lf ms total and returned %i",
 			total,
 			on_init_event_ret

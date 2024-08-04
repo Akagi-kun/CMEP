@@ -27,7 +27,7 @@ namespace Engine::Rendering::Vulkan
 			VkDeviceSize with_size,
 			VkBufferUsageFlags with_usage,
 			VkMemoryPropertyFlags with_properties,
-			VmaAllocationCreateFlags with_vma_alloc_flags
+			VmaAllocationCreateFlags with_vma_alloc_flags = 0
 		);
 		~VBuffer();
 

@@ -2,6 +2,49 @@ require("perlin")
 require("dynagen_defs")
 require("config")
 
+--[[ local tracemap = {}
+function trace (event)
+	local info = debug.getinfo(2)
+	local source = info.source
+	local func_name = string.format("(%s)%s", info.what, info.name)
+	local line = info.linedefined
+
+	if tracemap[source] == nil then tracemap[source] = {} end
+	local tracemap_local = tracemap[source]
+
+	if tracemap_local[line] == nil then
+		tracemap_local[line] = {1, func_name}
+	else
+		tracemap_local[line][1] = tracemap_local[line][1] + 1
+	end
+	--local s = debug.getinfo(2, "S").short_src
+	--print(s .. ":" .. line)
+end
+
+function print_trace()
+	print("Starting trace...")
+	for key, table in pairs(tracemap) do
+		for i, val in pairs(table) do
+			if val ~= nil then
+				print(string.format("%s:%i fn %s %u", key, i, val[2], val[1]))
+			end
+		end
+	end
+end
+
+debug.sethook(trace, "lc", 1) ]]
+
+local block_types = {
+	STONE = 1,
+	GRASS = 2,
+	DIRT = 3,
+	MISSING = 4,
+	LEAVES = 5,
+	WOOD = 6
+}
+local block_type_count = 8
+local block_textures = 2
+
 local map = {}
 
 local calculateMapOffsetZ = function(z)
@@ -13,56 +56,58 @@ local calculateMapOffset = function(x, y, z)
 end
 
 local generateTree = function(x, y, z)
+	local leaves = block_types.LEAVES
+	local wood = block_types.WOOD
 	local tree_def = {
 		{
-			0, 0, 0, 0, 0,
-			0, 0, 0, 0, 0,
-			0, 0, 6, 0, 0,
-			0, 0, 0, 0, 0,
-			0, 0, 0, 0, 0,
+			0, 0, 0, 	0, 0,
+			0, 0, 0, 	0, 0,
+			0, 0, wood, 0, 0,
+			0, 0, 0, 	0, 0,
+			0, 0, 0, 	0, 0,
 		},
 		{
-			0, 0, 0, 0, 0,
-			0, 0, 0, 0, 0,
-			0, 0, 6, 0, 0,
-			0, 0, 0, 0, 0,
-			0, 0, 0, 0, 0,
+			0, 0, 0, 	0, 0,
+			0, 0, 0, 	0, 0,
+			0, 0, wood, 0, 0,
+			0, 0, 0, 	0, 0,
+			0, 0, 0, 	0, 0,
 		},
 		{
-			0, 0, 0, 0, 0,
-			0, 0, 0, 0, 0,
-			0, 0, 6, 0, 0,
-			0, 0, 0, 0, 0,
-			0, 0, 0, 0, 0,
+			0, 0, 0, 	0, 0,
+			0, 0, 0, 	0, 0,
+			0, 0, wood, 0, 0,
+			0, 0, 0, 	0, 0,
+			0, 0, 0, 	0, 0,
 		},
 		{
-			0, 5, 5, 5, 0,
-			5, 5, 5, 5, 5,
-			5, 5, 6, 5, 5,
-			5, 5, 5, 5, 5,
-			0, 5, 5, 5, 0,
+			0, 5, 5, 	5, 0,
+			5, 5, 5, 	5, 5,
+			5, 5, wood, 5, 5,
+			5, 5, 5, 	5, 5,
+			0, 5, 5, 	5, 0,
 		},
-		--{
-		--	0, 5, 5, 5, 0,
-		--	5, 5, 5, 5, 5,
-		--	5, 5, 6, 5, 5,
-		--	5, 5, 5, 5, 5,
-		--	0, 5, 5, 5, 0,
-		--},
-		--{
-		--	0, 0, 0, 0, 0,
-		--	0, 5, 5, 5, 0,
-		--	0, 5, 5, 5, 0,
-		--	0, 5, 5, 5, 0,
-		--	0, 0, 0, 0, 0,
-		--},
-		--{
-		--	0, 0, 0, 0, 0,
-		--	0, 0, 5, 0, 0,
-		--	0, 5, 5, 5, 0,
-		--	0, 0, 5, 0, 0,
-		--	0, 0, 0, 0, 0,
-		--}
+		{
+			0, 		leaves, leaves, leaves, 0,
+			leaves, leaves, leaves, leaves, leaves,
+			leaves, leaves, wood, 	leaves, leaves,
+			leaves, leaves, leaves, leaves, leaves,
+			0, 		leaves, leaves, leaves, 0,
+		},
+		{
+			0, 0, 		0, 		0,		0,
+			0, leaves,	leaves, leaves, 0,
+			0, leaves,	leaves, leaves, 0,
+			0, leaves,	leaves, leaves, 0,
+			0, 0, 		0, 		0, 		0,
+		},
+		{
+			0, 0, 		0, 		0, 		0,
+			0, 0, 		leaves, 0, 		0,
+			0, leaves,	leaves, leaves, 0,
+			0, 0, 		leaves, 0, 		0,
+			0, 0, 		0, 		0, 		0,
+		}
 	}
 
 	for idx = 1, #tree_def do
@@ -94,15 +139,18 @@ local generateMap = function(world_x, world_y, world_z)
 				if map[offset] == nil then
 					if map_pos_y < randomY then
 						if (randomY - map_pos_y - 1) < 1 then
-							map[offset] = 2
+							map[offset] = block_types.GRASS
 						elseif (randomY - map_pos_y - 1) < 3 then
-							map[offset] = 3
+							map[offset] = block_types.DIRT
 						else
-							map[offset] = 1
+							map[offset] = block_types.STONE
 						end
 					else
 						map[offset] = 0
-						if (map[offset - calculateMapOffsetZ(config.chunk_size_z)] == 2 and math.random(360) > 358) then
+						if (map[offset - calculateMapOffsetZ(config.chunk_size_z)] == 2
+							and math.random(config.tree_generation_chance) > (config.tree_generation_chance - 2)
+							and map_pos_x > 2 and map_pos_x < (config.chunk_size_x - 1)
+							and map_pos_z > 2 and map_pos_z < (config.chunk_size_z - 1)) then
 							generateTree(map_pos_x, map_pos_y, map_pos_z)
 						end
 					end
@@ -113,9 +161,6 @@ local generateMap = function(world_x, world_y, world_z)
 end
 
 -- Mesh generation
-local block_type_count = 6
-local block_textures = 2
-
 local faceYielder = function(value, face, x_off, z_off, y_off)
 	if value ~= nil then
 		local colors = {
@@ -137,10 +182,14 @@ local faceYielder = function(value, face, x_off, z_off, y_off)
 				z = z + z_off - 1
 				y = y + y_off - 1
 
-				local modified_u = ((1 / block_type_count) * u) + ((value - 1) / block_type_count)
-				local modified_v = ((1 / block_textures) * v) + (use_texture / block_textures)
+				-- ((size of 1 texture in atlas) * uv coord) + (offset from first texture) 
+				local modified_u = ((0.985/ block_type_count) * u)
+				local modified_v = ((0.985 / block_textures) * v)
 
-				coroutine.yield(modified_u, modified_v, colors[face], x, y, z)
+				local offset_u = modified_u + ((value - 1) / block_type_count) + 0.0009375
+				local offset_v = modified_v + (use_texture / block_textures) + 0.0009375
+
+				coroutine.yield(offset_u, offset_v, colors[face], x, y, z)
 			end
 		end
 	end
@@ -213,4 +262,6 @@ GENERATOR_FUNCTION = function(world_x, world_y, world_z)
 			end
 		end
 	end
+	--print_trace()
+	--debug.sethook()
 end

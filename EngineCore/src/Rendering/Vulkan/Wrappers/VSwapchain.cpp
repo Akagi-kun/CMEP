@@ -1,8 +1,12 @@
 #include "Rendering/Vulkan/Wrappers/VSwapchain.hpp"
 
 #include "Rendering/Vulkan/VDeviceManager.hpp"
+#include "Rendering/Vulkan/VulkanRenderingEngine.hpp"
 #include "Rendering/Vulkan/VulkanUtilities.hpp"
 #include "Rendering/Vulkan/Wrappers/HoldsVulkanDevice.hpp"
+#include "Rendering/Vulkan/Wrappers/RenderPass.hpp"
+#include "Rendering/Vulkan/Wrappers/VCommandBuffer.hpp"
+#include "Rendering/Vulkan/Wrappers/VImage.hpp"
 
 namespace Engine::Rendering::Vulkan
 {
@@ -99,11 +103,70 @@ namespace Engine::Rendering::Vulkan
 				throw std::runtime_error("Failed to create swapchain image view!");
 			}
 		}
+
+		VkFormat depth_format = VulkanRenderingEngine::FindVulkanSupportedDepthFormat(
+			this->device_manager->GetPhysicalDevice()
+		);
+		VkFormat color_format = this->GetImageFormat();
+
+		this->depth_buffer = new VImage(
+			this->device_manager,
+			{this->extent.width, this->extent.height},
+			this->device_manager->GetMSAASampleCount(),
+			depth_format,
+			VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT,
+			VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT
+		);
+		this->depth_buffer->AddImageView(VK_IMAGE_ASPECT_DEPTH_BIT);
+
+		this->multisampled_color_image = new VImage(
+			this->device_manager,
+			{this->extent.width, this->extent.height},
+			this->device_manager->GetMSAASampleCount(),
+			color_format,
+			VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT,
+			VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT
+		);
+		this->multisampled_color_image->AddImageView(VK_IMAGE_ASPECT_COLOR_BIT);
+
+		this->render_pass = new RenderPass(this->device_manager, this->image_format);
+
+		this->framebuffers.resize(image_view_handles.size());
+
+		for (size_t i = 0; i < image_view_handles.size(); i++)
+		{
+			std::array<VkImageView, 3> attachments = {
+				this->multisampled_color_image->GetNativeViewHandle(),
+				this->depth_buffer->GetNativeViewHandle(),
+				image_view_handles[i]
+			};
+
+			VkFramebufferCreateInfo framebuffer_info{};
+			framebuffer_info.sType			 = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
+			framebuffer_info.renderPass		 = this->render_pass->native_handle;
+			framebuffer_info.attachmentCount = static_cast<uint32_t>(attachments.size());
+			framebuffer_info.pAttachments	 = attachments.data();
+			framebuffer_info.width			 = this->extent.width;
+			framebuffer_info.height			 = this->extent.height;
+			framebuffer_info.layers			 = 1;
+
+			VkDevice logical_device = this->device_manager->GetLogicalDevice();
+
+			if (vkCreateFramebuffer(logical_device, &framebuffer_info, nullptr, &this->framebuffers[i]) != VK_SUCCESS)
+			{
+				throw std::runtime_error("failed to create framebuffer!");
+			}
+		}
 	}
 
 	VSwapchain::~VSwapchain()
 	{
 		VkDevice logical_device = this->device_manager->GetLogicalDevice();
+
+		for (auto* framebuffer : this->framebuffers)
+		{
+			vkDestroyFramebuffer(logical_device, framebuffer, nullptr);
+		}
 
 		for (auto* image_view : this->image_view_handles)
 		{
@@ -111,5 +174,30 @@ namespace Engine::Rendering::Vulkan
 		}
 
 		vkDestroySwapchainKHR(logical_device, this->native_handle, nullptr);
+
+		delete multisampled_color_image;
+		delete depth_buffer;
+
+		delete render_pass;
 	}
+
+	void VSwapchain::BeginRenderPass(VCommandBuffer* with_buffer, size_t image_index)
+	{
+		VkRenderPassBeginInfo render_pass_info{};
+		render_pass_info.sType			   = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+		render_pass_info.renderPass		   = this->render_pass->native_handle;
+		render_pass_info.framebuffer	   = this->framebuffers[image_index];
+		render_pass_info.renderArea.offset = {0, 0};
+		render_pass_info.renderArea.extent = this->extent;
+
+		std::array<VkClearValue, 2> clear_values{};
+		clear_values[0].color		 = {{0.0f, 0.0f, 0.0f, 1.0f}}; // TODO: configurable
+		clear_values[1].depthStencil = {1.0f, 0};
+
+		render_pass_info.clearValueCount = 2;
+		render_pass_info.pClearValues	 = clear_values.data();
+
+		with_buffer->BeginRenderPass(&render_pass_info);
+	}
+
 } // namespace Engine::Rendering::Vulkan

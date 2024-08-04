@@ -1,10 +1,11 @@
 #include "Rendering/IRenderer.hpp"
 
-#include "Rendering/Vulkan/VDeviceManager.hpp"
+#include "Assets/Texture.hpp"
+#include "Rendering/Vulkan/VulkanRenderingEngine.hpp"
 #include "Rendering/Vulkan/Wrappers/VCommandBuffer.hpp"
 #include "Rendering/Vulkan/Wrappers/VSampledImage.hpp"
 
-#include "Engine.hpp"
+#include "vulkan/vulkan_core.h"
 
 namespace Engine::Rendering
 {
@@ -12,44 +13,34 @@ namespace Engine::Rendering
 	{
 		this->has_updated_descriptors = true;
 
-		auto* renderer		 = this->owner_engine->GetRenderingEngine();
-		auto* device_manager = renderer->GetDeviceManager();
-
 		if (this->texture)
 		{
+			Vulkan::VulkanRenderingEngine::per_frame_array<VkDescriptorImageInfo> descriptor_image_infos{};
+
+			/* std::array<VkDescriptorImageInfo, Vulkan::VulkanRenderingEngine::GetMaxFramesInFlight()>
+				descriptor_image_infos{}; */
+			Vulkan::VulkanRenderingEngine::per_frame_array<VkWriteDescriptorSet> descriptor_writes{};
+
 			Vulkan::VSampledImage* texture_image = this->texture->GetTextureImage();
 
 			for (uint32_t i = 0; i < Vulkan::VulkanRenderingEngine::GetMaxFramesInFlight(); i++)
 			{
-				std::array<VkWriteDescriptorSet, 1> descriptor_writes{};
+				descriptor_image_infos[i].imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+				descriptor_image_infos[i].imageView	  = texture_image->GetNativeViewHandle();
+				descriptor_image_infos[i].sampler	  = texture_image->texture_sampler;
 
-				VkDescriptorImageInfo image_info{};
-				image_info.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-				image_info.imageView   = texture_image->GetNativeViewHandle();
-				image_info.sampler	   = texture_image->texture_sampler;
-
-				VkWriteDescriptorSet& texture_set0 = descriptor_writes[0];
-				texture_set0.sType				   = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-				texture_set0.dstSet				   = pipeline->GetDescriptorSet(i);
-				texture_set0.dstBinding			   = 1;
-				texture_set0.dstArrayElement	   = 0;
-				texture_set0.descriptorType		   = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-				texture_set0.descriptorCount	   = 1;
-				texture_set0.pImageInfo			   = &image_info;
+				descriptor_writes[i].sType			 = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+				descriptor_writes[i].dstSet			 = this->pipeline->GetDescriptorSet(i);
+				descriptor_writes[i].dstBinding		 = 1;
+				descriptor_writes[i].dstArrayElement = 0;
+				descriptor_writes[i].descriptorType	 = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+				descriptor_writes[i].descriptorCount = 1;
+				descriptor_writes[i].pImageInfo		 = &(descriptor_image_infos[i]);
 
 				// TODO: Add support for additional textures?
-
-				if (!descriptor_writes.empty())
-				{
-					vkUpdateDescriptorSets(
-						device_manager->GetLogicalDevice(),
-						static_cast<uint32_t>(descriptor_writes.size()),
-						descriptor_writes.data(),
-						0,
-						nullptr
-					);
-				}
 			}
+
+			this->pipeline->UpdateDescriptorSets(descriptor_writes);
 		}
 	}
 

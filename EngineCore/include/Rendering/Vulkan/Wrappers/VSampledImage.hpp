@@ -2,6 +2,8 @@
 
 #include "Rendering/Vulkan/Wrappers/VImage.hpp"
 
+#include "vulkan/vulkan_core.h"
+
 namespace Engine::Rendering::Vulkan
 {
 	class VSampledImage : public VImage
@@ -15,14 +17,14 @@ namespace Engine::Rendering::Vulkan
 
 		VSampledImage(
 			VDeviceManager* with_device_manager,
-			VImageSize size,
+			VImageSize with_size,
 			VkSampleCountFlagBits num_samples,
 			VkFormat format,
-			VkImageTiling tiling,
 			VkImageUsageFlags usage,
 			VkMemoryPropertyFlags properties,
 			VkFilter with_filter,
-			VkSamplerAddressMode with_address_mode
+			VkSamplerAddressMode with_address_mode,
+			VkImageTiling with_tiling = VK_IMAGE_TILING_OPTIMAL
 		);
 
 		~VSampledImage();

@@ -5,6 +5,7 @@
 #include "HoldsVMA.hpp"
 #include "HoldsVulkanDevice.hpp"
 #include "framework.hpp"
+#include "vulkan/vulkan_core.h"
 
 #include <cassert>
 
@@ -22,15 +23,17 @@ namespace Engine::Rendering::Vulkan
 		VkImage native_handle		   = VK_NULL_HANDLE;
 		VkImageView native_view_handle = VK_NULL_HANDLE;
 
+		VImageSize size{};
+
 	public:
 		VImage(
 			VDeviceManager* with_device_manager,
-			VImageSize size,
+			VImageSize with_size,
 			VkSampleCountFlagBits num_samples,
 			VkFormat format,
-			VkImageTiling tiling,
 			VkImageUsageFlags usage,
-			VkMemoryPropertyFlags properties
+			VkMemoryPropertyFlags properties,
+			VkImageTiling with_tiling = VK_IMAGE_TILING_OPTIMAL
 		);
 		~VImage();
 
@@ -48,6 +51,11 @@ namespace Engine::Rendering::Vulkan
 		[[nodiscard]] VkImageView& GetNativeViewHandle()
 		{
 			return this->native_view_handle;
+		}
+
+		[[nodiscard]] VImageSize GetSize() const noexcept
+		{
+			return this->size;
 		}
 	};
 } // namespace Engine::Rendering::Vulkan

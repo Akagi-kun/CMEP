@@ -7,6 +7,10 @@
 #include "lodepng.h"
 #pragma warning(pop)
 
+#include "Rendering/Vulkan/VDeviceManager.hpp"
+#include "Rendering/Vulkan/Wrappers/VCommandBuffer.hpp"
+#include "Rendering/Vulkan/Wrappers/VCommandPool.hpp"
+
 #include "Factories/TextureFactory.hpp"
 
 #include "Engine.hpp"
@@ -28,12 +32,7 @@ namespace Engine::Factories
 		FILE* file = fopen(path.c_str(), "rb");
 		if (file == nullptr)
 		{
-			this->logger->SimpleLog(
-				Logging::LogLevel::Exception,
-				LOGPFX_CURRENT "File %s could not be found, initializing texture not possible!",
-				path.c_str()
-			);
-			throw std::runtime_error("Could not find texture!");
+			throw std::runtime_error("Could not find texture '" + path + "'!");
 		}
 
 		this->logger
@@ -120,8 +119,7 @@ namespace Engine::Factories
 				renderer->GetDeviceManager(),
 				static_cast<size_t>(memory_size),
 				VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
-				VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
-				0
+				VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT
 			);
 		}
 		else
@@ -141,7 +139,6 @@ namespace Engine::Factories
 				{xsize, ysize},
 				VK_SAMPLE_COUNT_1_BIT,
 				VK_FORMAT_R8G8B8A8_UNORM,
-				VK_IMAGE_TILING_OPTIMAL,
 				VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
 				VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
 				filtering,			 // Filter for both mag and min
@@ -151,12 +148,11 @@ namespace Engine::Factories
 			// Transfer image layout to compatible with transfers
 			texture_data->texture_image->TransitionImageLayout(VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
 
-			renderer->CopyVulkanBufferToImage(
-				used_staging_buffer->GetNativeHandle(),
-				texture_data->texture_image->GetNativeHandle(),
-				static_cast<uint32_t>(xsize),
-				static_cast<uint32_t>(ysize)
-			);
+			auto* command_buffer = device_manager->GetCommandPool()->AllocateCommandBuffer();
+
+			command_buffer->BufferImageCopy(used_staging_buffer, texture_data->texture_image);
+
+			delete command_buffer;
 
 			// Transfer image layout to compatible with rendering
 			texture_data->texture_image->TransitionImageLayout(VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);

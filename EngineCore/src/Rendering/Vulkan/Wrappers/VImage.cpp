@@ -4,6 +4,7 @@
 #include "Rendering/Vulkan/Wrappers/HoldsVulkanDevice.hpp"
 #include "Rendering/Vulkan/Wrappers/VCommandBuffer.hpp"
 #include "Rendering/Vulkan/Wrappers/VCommandPool.hpp"
+#include "Rendering/Vulkan/Wrappers/framework.hpp"
 
 #include "vulkan/vulkan_core.h"
 
@@ -13,14 +14,15 @@ namespace Engine::Rendering::Vulkan
 {
 	VImage::VImage(
 		VDeviceManager* const with_device_manager,
-		VImageSize size,
+		VImageSize with_size,
 		VkSampleCountFlagBits num_samples,
 		VkFormat format,
-		VkImageTiling tiling,
 		VkImageUsageFlags usage,
-		VkMemoryPropertyFlags properties
+		VkMemoryPropertyFlags properties,
+		VkImageTiling tiling
 	)
-		: HoldsVulkanDevice(with_device_manager), HoldsVMA(with_device_manager->GetVmaAllocator()), image_format(format)
+		: HoldsVulkanDevice(with_device_manager), HoldsVMA(with_device_manager->GetVmaAllocator()),
+		  image_format(format), size(with_size)
 	{
 
 		VkImageCreateInfo image_info{};

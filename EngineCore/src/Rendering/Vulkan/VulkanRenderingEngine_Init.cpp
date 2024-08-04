@@ -73,143 +73,14 @@ namespace Engine::Rendering::Vulkan
 		// Clean up old swap chain
 		this->CleanupVulkanSwapChain();
 
-		delete this->multisampled_color_image;
-		delete this->vk_depth_buffer;
-
 		// Create a new swap chain
 		this->CreateVulkanSwapChain();
-		this->CreateVulkanDepthResources();
-		this->CreateMultisampledColorResources();
-		this->CreateVulkanFramebuffers();
 	}
 
 	void VulkanRenderingEngine::CleanupVulkanSwapChain()
 	{
-		VkDevice logical_device = this->device_manager->GetLogicalDevice();
-
-		for (auto* framebuffer : this->vk_swap_chain_framebuffers)
-		{
-			vkDestroyFramebuffer(logical_device, framebuffer, nullptr);
-		}
-
 		delete this->swapchain;
 		this->swapchain = nullptr;
-	}
-
-	void VulkanRenderingEngine::CreateVulkanRenderPass()
-	{
-		VkAttachmentDescription color_attachment{};
-		color_attachment.format			= this->swapchain->GetImageFormat();
-		color_attachment.samples		= this->device_manager->GetMSAASampleCount();
-		color_attachment.loadOp			= VK_ATTACHMENT_LOAD_OP_CLEAR;
-		color_attachment.storeOp		= VK_ATTACHMENT_STORE_OP_DONT_CARE;
-		color_attachment.stencilLoadOp	= VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-		color_attachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-		color_attachment.initialLayout	= VK_IMAGE_LAYOUT_UNDEFINED;
-		color_attachment.finalLayout	= VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-
-		VkAttachmentDescription depth_attachment{};
-		depth_attachment.format			= this->FindVulkanSupportedDepthFormat();
-		depth_attachment.samples		= this->device_manager->GetMSAASampleCount();
-		depth_attachment.loadOp			= VK_ATTACHMENT_LOAD_OP_CLEAR;
-		depth_attachment.storeOp		= VK_ATTACHMENT_STORE_OP_DONT_CARE;
-		depth_attachment.stencilLoadOp	= VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-		depth_attachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-		depth_attachment.initialLayout	= VK_IMAGE_LAYOUT_UNDEFINED;
-		depth_attachment.finalLayout	= VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
-
-		VkAttachmentDescription color_attachment_resolve{};
-		color_attachment_resolve.format			= this->swapchain->GetImageFormat();
-		color_attachment_resolve.samples		= VK_SAMPLE_COUNT_1_BIT;
-		color_attachment_resolve.loadOp			= VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-		color_attachment_resolve.storeOp		= VK_ATTACHMENT_STORE_OP_STORE;
-		color_attachment_resolve.stencilLoadOp	= VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-		color_attachment_resolve.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-		color_attachment_resolve.initialLayout	= VK_IMAGE_LAYOUT_UNDEFINED;
-		color_attachment_resolve.finalLayout	= VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
-
-		VkAttachmentReference color_attachment_ref{};
-		color_attachment_ref.attachment = 0;
-		color_attachment_ref.layout		= VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-
-		VkAttachmentReference depth_attachment_ref{};
-		depth_attachment_ref.attachment = 1;
-		depth_attachment_ref.layout		= VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
-
-		VkAttachmentReference color_attachment_resolve_ref{};
-		color_attachment_resolve_ref.attachment = 2;
-		color_attachment_resolve_ref.layout		= VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-
-		VkSubpassDescription subpass{};
-		subpass.pipelineBindPoint		= VK_PIPELINE_BIND_POINT_GRAPHICS;
-		subpass.colorAttachmentCount	= 1;
-		subpass.pColorAttachments		= &color_attachment_ref;
-		subpass.pDepthStencilAttachment = &depth_attachment_ref;
-		subpass.pResolveAttachments		= &color_attachment_resolve_ref;
-
-		std::array<VkAttachmentDescription, 3> attachments =
-			{color_attachment, depth_attachment, color_attachment_resolve};
-
-		VkSubpassDependency dependency{};
-		dependency.srcSubpass	= VK_SUBPASS_EXTERNAL;
-		dependency.dstSubpass	= 0;
-		dependency.srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT |
-								  VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
-		dependency.srcAccessMask = 0;
-		dependency.dstStageMask	 = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT |
-								  VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
-		dependency.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
-
-		VkRenderPassCreateInfo render_pass_info{};
-		render_pass_info.sType			 = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
-		render_pass_info.attachmentCount = static_cast<uint32_t>(attachments.size());
-		render_pass_info.pAttachments	 = attachments.data();
-		render_pass_info.subpassCount	 = 1;
-		render_pass_info.pSubpasses		 = &subpass;
-		render_pass_info.dependencyCount = 1;
-		render_pass_info.pDependencies	 = &dependency;
-
-		VkDevice logical_device = this->device_manager->GetLogicalDevice();
-
-		if (vkCreateRenderPass(logical_device, &render_pass_info, nullptr, &this->vk_render_pass) != VK_SUCCESS)
-		{
-			this->logger->SimpleLog(Logging::LogLevel::Error, LOGPFX_CURRENT "Vulkan failed creating render pass");
-			throw std::runtime_error("failed to create render pass!");
-		}
-	}
-
-	void VulkanRenderingEngine::CreateVulkanFramebuffers()
-	{
-		auto& image_view_handles = this->swapchain->GetImageViewHandles();
-
-		this->vk_swap_chain_framebuffers.resize(image_view_handles.size());
-
-		for (size_t i = 0; i < image_view_handles.size(); i++)
-		{
-			std::array<VkImageView, 3> attachments = {
-				this->multisampled_color_image->GetNativeViewHandle(),
-				this->vk_depth_buffer->GetNativeViewHandle(),
-				image_view_handles[i]
-			};
-
-			VkFramebufferCreateInfo framebuffer_info{};
-			framebuffer_info.sType			 = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
-			framebuffer_info.renderPass		 = this->vk_render_pass;
-			framebuffer_info.attachmentCount = static_cast<uint32_t>(attachments.size());
-			framebuffer_info.pAttachments	 = attachments.data();
-			framebuffer_info.width			 = this->swapchain->GetExtent().width;
-			framebuffer_info.height			 = this->swapchain->GetExtent().height;
-			framebuffer_info.layers			 = 1;
-
-			VkDevice logical_device = this->device_manager->GetLogicalDevice();
-
-			if (vkCreateFramebuffer(logical_device, &framebuffer_info, nullptr, &this->vk_swap_chain_framebuffers[i]) !=
-				VK_SUCCESS)
-			{
-				this->logger->SimpleLog(Logging::LogLevel::Error, LOGPFX_CURRENT "Vulkan failed creating framebuffers");
-				throw std::runtime_error("failed to create framebuffer!");
-			}
-		}
 	}
 
 	void VulkanRenderingEngine::CreateVulkanSyncObjects()
@@ -239,37 +110,4 @@ namespace Engine::Rendering::Vulkan
 		}
 	}
 
-	void VulkanRenderingEngine::CreateVulkanDepthResources()
-	{
-		VkFormat depth_format = this->FindVulkanSupportedDepthFormat();
-
-		this->vk_depth_buffer = new VImage(
-			this->device_manager.get(),
-			{this->swapchain->GetExtent().width, this->swapchain->GetExtent().height},
-			this->device_manager->GetMSAASampleCount(),
-			depth_format,
-			VK_IMAGE_TILING_OPTIMAL,
-			VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT,
-			VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT
-		);
-
-		this->vk_depth_buffer->AddImageView(VK_IMAGE_ASPECT_DEPTH_BIT);
-	}
-
-	void VulkanRenderingEngine::CreateMultisampledColorResources()
-	{
-		VkFormat color_format = this->swapchain->GetImageFormat();
-
-		this->multisampled_color_image = new VImage(
-			this->device_manager.get(),
-			{this->swapchain->GetExtent().width, this->swapchain->GetExtent().height},
-			this->device_manager->GetMSAASampleCount(),
-			color_format,
-			VK_IMAGE_TILING_OPTIMAL,
-			VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT,
-			VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT
-		);
-
-		this->multisampled_color_image->AddImageView(VK_IMAGE_ASPECT_COLOR_BIT);
-	}
 } // namespace Engine::Rendering::Vulkan

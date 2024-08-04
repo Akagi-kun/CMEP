@@ -8,17 +8,17 @@ namespace Engine::Rendering::Vulkan
 {
 	VSampledImage::VSampledImage(
 		VDeviceManager* const with_device_manager,
-		VImageSize size,
+		VImageSize with_size,
 		VkSampleCountFlagBits num_samples,
 		VkFormat format,
-		VkImageTiling tiling,
 		VkImageUsageFlags usage,
 		VkMemoryPropertyFlags properties,
 		VkFilter with_filter,
-		VkSamplerAddressMode with_address_mode
+		VkSamplerAddressMode with_address_mode,
+		VkImageTiling with_tiling
 	)
-		: VImage(with_device_manager, size, num_samples, format, tiling, usage, properties), use_filter(with_filter),
-		  use_address_mode(with_address_mode)
+		: VImage(with_device_manager, with_size, num_samples, format, usage, properties, with_tiling),
+		  use_filter(with_filter), use_address_mode(with_address_mode)
 	{
 		VkSamplerCreateInfo sampler_info{};
 		sampler_info.sType	   = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;

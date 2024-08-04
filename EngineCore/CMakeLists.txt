@@ -45,6 +45,7 @@ set(SRC_FILES
 	src/Rendering/Vulkan/Wrappers/VPipeline.cpp
 	src/Rendering/Vulkan/Wrappers/VImage.cpp
 	src/Rendering/Vulkan/Wrappers/VSampledImage.cpp
+	src/Rendering/Vulkan/Wrappers/RenderPass.cpp
 	src/Rendering/Vulkan/Wrappers/VSwapchain.cpp
 	src/Rendering/Vulkan/Wrappers/VBuffer.cpp
 	src/Rendering/Vulkan/Wrappers/VCommandPool.cpp

@@ -43,21 +43,7 @@ namespace Engine::Rendering::Vulkan
 
 		auto& command_buf_handle = command_buffer->GetNativeHandle();
 
-		VkRenderPassBeginInfo render_pass_info{};
-		render_pass_info.sType			   = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-		render_pass_info.renderPass		   = this->vk_render_pass;
-		render_pass_info.framebuffer	   = this->vk_swap_chain_framebuffers[image_index];
-		render_pass_info.renderArea.offset = {0, 0};
-		render_pass_info.renderArea.extent = this->swapchain->GetExtent();
-
-		std::array<VkClearValue, 2> clear_values{};
-		clear_values[0].color		 = {{0.0f, 0.0f, 0.0f, 1.0f}}; // TODO: configurable
-		clear_values[1].depthStencil = {1.0f, 0};
-
-		render_pass_info.clearValueCount = 2;
-		render_pass_info.pClearValues	 = clear_values.data();
-
-		vkCmdBeginRenderPass(command_buf_handle, &render_pass_info, VK_SUBPASS_CONTENTS_INLINE);
+		this->swapchain->BeginRenderPass(command_buffer, image_index);
 
 		VkViewport viewport{};
 		viewport.x		  = 0.0f;
@@ -74,13 +60,12 @@ namespace Engine::Rendering::Vulkan
 		vkCmdSetScissor(command_buf_handle, 0, 1, &scissor);
 
 		// Perform actual render
-		// vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, this->graphics_pipeline_default->pipeline);
 		if (this->external_callback)
 		{
 			this->external_callback(command_buffer, current_frame, this->owner_engine);
 		}
 
-		vkCmdEndRenderPass(command_buf_handle);
+		command_buffer->EndRenderPass();
 
 		command_buffer->EndCmdBuffer();
 	}
@@ -125,6 +110,7 @@ namespace Engine::Rendering::Vulkan
 	}
 
 	VkFormat VulkanRenderingEngine::FindVulkanSupportedFormat(
+		VkPhysicalDevice with_device,
 		const std::vector<VkFormat>& candidates,
 		VkImageTiling tiling,
 		VkFormatFeatureFlags features
@@ -133,7 +119,7 @@ namespace Engine::Rendering::Vulkan
 		for (VkFormat format : candidates)
 		{
 			VkFormatProperties props;
-			vkGetPhysicalDeviceFormatProperties(this->device_manager->GetPhysicalDevice(), format, &props);
+			vkGetPhysicalDeviceFormatProperties(with_device, format, &props);
 
 			if (tiling == VK_IMAGE_TILING_LINEAR && (props.linearTilingFeatures & features) == features)
 			{
@@ -146,13 +132,13 @@ namespace Engine::Rendering::Vulkan
 			}
 		}
 
-		this->logger->SimpleLog(Logging::LogLevel::Exception, LOGPFX_CURRENT "Failed to find supported vkFormat");
 		throw std::runtime_error("failed to find supported vkFormat!");
 	}
 
-	VkFormat VulkanRenderingEngine::FindVulkanSupportedDepthFormat()
+	VkFormat VulkanRenderingEngine::FindVulkanSupportedDepthFormat(VkPhysicalDevice with_device)
 	{
-		return this->FindVulkanSupportedFormat(
+		return FindVulkanSupportedFormat(
+			with_device,
 			{VK_FORMAT_D32_SFLOAT, VK_FORMAT_D32_SFLOAT_S8_UINT, VK_FORMAT_D24_UNORM_S8_UINT},
 			VK_IMAGE_TILING_OPTIMAL,
 			VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT
@@ -205,7 +191,7 @@ namespace Engine::Rendering::Vulkan
 		this->device_manager = std::make_shared<VDeviceManager>(this->owner_engine, this->window.native_handle);
 
 		this->CreateVulkanSwapChain();
-		this->CreateVulkanRenderPass();
+		// this->CreateVulkanRenderPass();
 
 		// Create command buffers
 		for (auto& vk_command_buffer : this->command_buffers)
@@ -215,9 +201,9 @@ namespace Engine::Rendering::Vulkan
 			// this->device_manager->GetCommandPool());
 		}
 
-		this->CreateMultisampledColorResources();
-		this->CreateVulkanDepthResources();
-		this->CreateVulkanFramebuffers();
+		// this->CreateMultisampledColorResources();
+		// this->CreateVulkanDepthResources();
+		//  this->CreateVulkanFramebuffers();
 		this->CreateVulkanSyncObjects();
 	}
 
@@ -231,8 +217,8 @@ namespace Engine::Rendering::Vulkan
 
 		this->CleanupVulkanSwapChain();
 
-		delete this->multisampled_color_image;
-		delete this->vk_depth_buffer;
+		// delete this->multisampled_color_image;
+		// delete this->vk_depth_buffer;
 
 		for (size_t i = 0; i < VulkanRenderingEngine::max_frames_in_flight; i++)
 		{
@@ -248,7 +234,7 @@ namespace Engine::Rendering::Vulkan
 
 		this->logger->SimpleLog(Logging::LogLevel::Debug3, LOGPFX_CURRENT "Cleaning up default vulkan pipeline");
 
-		vkDestroyRenderPass(logical_device, this->vk_render_pass, nullptr);
+		// vkDestroyRenderPass(logical_device, this->vk_render_pass, nullptr);
 
 		// Destroy device
 		this->device_manager.reset();
@@ -390,99 +376,27 @@ namespace Engine::Rendering::Vulkan
 
 	// Pipelines
 
-	VulkanPipelineSettings VulkanRenderingEngine::GetVulkanDefaultPipelineSettings()
+	/* VulkanPipelineSettings VulkanRenderingEngine::GetVulkanDefaultPipelineSettings()
 	{
-		VkPipelineInputAssemblyStateCreateInfo input_assembly{};
-		input_assembly.sType				  = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
-		input_assembly.topology				  = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
-		input_assembly.primitiveRestartEnable = VK_FALSE;
-
-		VkViewport viewport{};
-		viewport.x		  = 0.0f;
-		viewport.y		  = 0.0f;
-		viewport.width	  = static_cast<float>(this->swapchain->GetExtent().width);
-		viewport.height	  = static_cast<float>(this->swapchain->GetExtent().height);
-		viewport.minDepth = 0.0f;
-		viewport.maxDepth = 1.0f;
-
-		VkRect2D scissor{};
-		scissor.offset = {0, 0};
-		scissor.extent = this->swapchain->GetExtent();
-
-		VkPipelineRasterizationStateCreateInfo rasterizer{};
-		rasterizer.sType				   = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
-		rasterizer.depthClampEnable		   = VK_FALSE;
-		rasterizer.rasterizerDiscardEnable = VK_FALSE;
-		rasterizer.polygonMode			   = VK_POLYGON_MODE_FILL;
-		rasterizer.lineWidth			   = 1.0f;
-		rasterizer.cullMode				   = VK_CULL_MODE_FRONT_BIT;
-		rasterizer.frontFace			   = VK_FRONT_FACE_CLOCKWISE;
-		rasterizer.depthBiasEnable		   = VK_FALSE;
-		rasterizer.depthBiasConstantFactor = 0.0f; // Optional
-		rasterizer.depthBiasClamp		   = 0.0f; // Optional
-		rasterizer.depthBiasSlopeFactor	   = 0.0f; // Optional
-
-		VkPipelineMultisampleStateCreateInfo multisampling{};
-		multisampling.sType					= VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;
-		multisampling.sampleShadingEnable	= VK_FALSE;
-		multisampling.rasterizationSamples	= this->device_manager->GetMSAASampleCount();
-		multisampling.minSampleShading		= 1.0f;		// Optional
-		multisampling.pSampleMask			= nullptr;	// Optional
-		multisampling.alphaToCoverageEnable = VK_FALSE; // Optional
-		multisampling.alphaToOneEnable		= VK_FALSE; // Optional
-
-		VkPipelineColorBlendAttachmentState color_blend_attachment{};
-		color_blend_attachment.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT |
-												VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
-		color_blend_attachment.blendEnable		   = VK_TRUE;
-		color_blend_attachment.srcColorBlendFactor = VK_BLEND_FACTOR_SRC_ALPHA;
-		color_blend_attachment.dstColorBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
-		color_blend_attachment.colorBlendOp		   = VK_BLEND_OP_ADD;
-		color_blend_attachment.srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE;
-		color_blend_attachment.dstAlphaBlendFactor = VK_BLEND_FACTOR_ZERO;
-		color_blend_attachment.alphaBlendOp		   = VK_BLEND_OP_ADD;
-
-		VkPipelineColorBlendStateCreateInfo color_blending{};
-		color_blending.sType			 = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
-		color_blending.logicOpEnable	 = VK_FALSE;
-		color_blending.logicOp			 = VK_LOGIC_OP_COPY;
-		color_blending.attachmentCount	 = 1;
-		color_blending.pAttachments		 = &color_blend_attachment;
-		color_blending.blendConstants[0] = 0.0f; // Optional
-		color_blending.blendConstants[1] = 0.0f; // Optional
-		color_blending.blendConstants[2] = 0.0f; // Optional
-		color_blending.blendConstants[3] = 0.0f; // Optional
-
-		VkPipelineDepthStencilStateCreateInfo depth_stencil{};
-		depth_stencil.sType					= VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
-		depth_stencil.depthTestEnable		= VK_TRUE;
-		depth_stencil.depthWriteEnable		= VK_TRUE;
-		depth_stencil.depthCompareOp		= VK_COMPARE_OP_LESS;
-		depth_stencil.depthBoundsTestEnable = VK_FALSE;
-		depth_stencil.minDepthBounds		= 0.0f; // Optional
-		depth_stencil.maxDepthBounds		= 1.0f; // Optional
-		depth_stencil.stencilTestEnable		= VK_FALSE;
-		depth_stencil.front					= {}; // Optional
-		depth_stencil.back					= {}; // Optional
+		// VkRect2D scissor{};
+		// scissor.offset = {0, 0};
+		// scissor.extent = this->swapchain->GetExtent();
 
 		VulkanPipelineSettings default_settings{};
-		default_settings.input_assembly				= input_assembly;
-		default_settings.viewport					= viewport;
-		default_settings.scissor					= scissor;
-		default_settings.rasterizer					= rasterizer;
-		default_settings.multisampling				= multisampling;
-		default_settings.color_blend_attachment		= color_blend_attachment;
-		default_settings.color_blending				= color_blending;
-		default_settings.depth_stencil				= depth_stencil;
+		default_settings.extent						= this->swapchain->GetExtent();
+		// default_settings.input_topology				= VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
+		// default_settings.scissor					= scissor;
 		default_settings.descriptor_layout_settings = {};
 
 		return default_settings;
-	}
+	} */
 
 	// Buffers
 
 	VBuffer* VulkanRenderingEngine::CreateVulkanVertexBufferFromData(const std::vector<RenderingVertex>& vertices)
 	{
+		VCommandBuffer* command_buffer = this->device_manager->GetCommandPool()->AllocateCommandBuffer();
+
 		VkDeviceSize buffer_size = sizeof(vertices[0]) * vertices.size();
 
 		auto* staging_buffer = this->CreateVulkanStagingBufferWithData(vertices.data(), buffer_size);
@@ -491,17 +405,14 @@ namespace Engine::Rendering::Vulkan
 			this->device_manager.get(),
 			buffer_size,
 			VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
-			VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
-			0
+			VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT
 		);
 
 		// Copy into final buffer
-		this->command_buffers.at(this->current_frame)
-			->BufferCopy(staging_buffer, vertex_buffer, {VkBufferCopy{0, 0, buffer_size}});
-
-		// vertex_buffer->BufferCopy(staging_buffer, buffer_size);
+		command_buffer->BufferBufferCopy(staging_buffer, vertex_buffer, {VkBufferCopy{0, 0, buffer_size}});
 
 		delete staging_buffer;
+		delete command_buffer;
 
 		return vertex_buffer;
 	}
@@ -514,48 +425,12 @@ namespace Engine::Rendering::Vulkan
 			this->device_manager.get(),
 			data_size,
 			VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
-			VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
-			0
+			VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT
 		);
 
-		staging_buffer->MapMemory();
-		memcpy(staging_buffer->mapped_data, data, static_cast<size_t>(data_size));
-		staging_buffer->UnmapMemory();
+		staging_buffer->MemoryCopy(data, data_size);
 
 		return staging_buffer;
 	}
 
-	// Image functions
-
-	void VulkanRenderingEngine::CopyVulkanBufferToImage(VkBuffer buffer, VkImage image, uint32_t width, uint32_t height)
-	{
-		// VCommandBuffer command_buffer(this->device_manager.get(), this->device_manager->GetCommandPool());
-		VCommandBuffer* command_buffer = this->device_manager->GetCommandPool()->AllocateCommandBuffer();
-
-		VkBufferImageCopy region{};
-		region.bufferOffset		 = 0;
-		region.bufferRowLength	 = 0;
-		region.bufferImageHeight = 0;
-
-		region.imageSubresource.aspectMask	   = VK_IMAGE_ASPECT_COLOR_BIT;
-		region.imageSubresource.mipLevel	   = 0;
-		region.imageSubresource.baseArrayLayer = 0;
-		region.imageSubresource.layerCount	   = 1;
-
-		region.imageOffset = {0, 0, 0};
-		region.imageExtent = {width, height, 1};
-
-		command_buffer->RecordCmds([&](VCommandBuffer* with_buf) {
-			vkCmdCopyBufferToImage(
-				with_buf->GetNativeHandle(),
-				buffer,
-				image,
-				VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
-				1,
-				&region
-			);
-		});
-
-		delete command_buffer;
-	}
 } // namespace Engine::Rendering::Vulkan

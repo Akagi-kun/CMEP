@@ -31,6 +31,7 @@ namespace Engine::Rendering::Vulkan
 	// Rendering stack related
 	class VSwapchain;
 	class VPipeline;
+	class RenderPass;
 
 	// Buffer related
 	class VBuffer;

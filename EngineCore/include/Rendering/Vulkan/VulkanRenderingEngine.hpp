@@ -3,6 +3,7 @@
 #include "Rendering/Transform.hpp"
 #include "Rendering/Vulkan/VulkanStructDefs.hpp"
 #include "Rendering/Vulkan/Wrappers/VBuffer.hpp"
+#include "Rendering/Vulkan/Wrappers/VSwapchain.hpp"
 #include "Rendering/Vulkan/Wrappers/framework.hpp"
 
 #include "InternalEngineObject.hpp"
@@ -43,11 +44,7 @@ namespace Engine::Rendering::Vulkan
 		VSwapchain* swapchain = nullptr;
 
 		// Framebuffers
-		std::vector<VkFramebuffer> vk_swap_chain_framebuffers;
-		// Multisampling
-		VImage* multisampled_color_image = nullptr;
-		// Depth buffers
-		VImage* vk_depth_buffer			 = nullptr;
+		// std::vector<VkFramebuffer> vk_swap_chain_framebuffers;
 
 		// Command buffers
 		std::array<VCommandBuffer*, max_frames_in_flight> command_buffers;
@@ -55,7 +52,7 @@ namespace Engine::Rendering::Vulkan
 		// Synchronisation
 		std::array<VSyncObjects, max_frames_in_flight> sync_objects;
 
-		VkRenderPass vk_render_pass = VK_NULL_HANDLE;
+		// VkRenderPass vk_render_pass = VK_NULL_HANDLE;
 
 		// Device manager
 		std::shared_ptr<VDeviceManager> device_manager;
@@ -63,13 +60,6 @@ namespace Engine::Rendering::Vulkan
 		// External callback for rendering
 		std::function<void(Vulkan::VCommandBuffer*, uint32_t, Engine*)> external_callback;
 
-		// VkFormat functions
-		VkFormat FindVulkanSupportedFormat(
-			const std::vector<VkFormat>& candidates,
-			VkImageTiling tiling,
-			VkFormatFeatureFlags features
-		);
-		VkFormat FindVulkanSupportedDepthFormat();
 		bool DoesVulkanFormatHaveStencilComponent(VkFormat format);
 
 		// Swap chain functions
@@ -82,11 +72,8 @@ namespace Engine::Rendering::Vulkan
 
 		// Init functions
 		void CreateVulkanSwapChain();
-		void CreateVulkanRenderPass();
-		void CreateVulkanFramebuffers();
+		// void CreateVulkanRenderPass();
 		void CreateVulkanSyncObjects();
-		void CreateVulkanDepthResources();
-		void CreateMultisampledColorResources();
 
 	public:
 		VulkanRenderingEngine(Engine* with_engine, ScreenSize with_window_size, std::string title);
@@ -106,11 +93,7 @@ namespace Engine::Rendering::Vulkan
 		VBuffer* CreateVulkanVertexBufferFromData(const std::vector<RenderingVertex>& vertices);
 		VBuffer* CreateVulkanStagingBufferWithData(const void* data, VkDeviceSize data_size);
 
-		// Image functions
-		void CopyVulkanBufferToImage(VkBuffer buffer, VkImage image, uint32_t width, uint32_t height);
-
-		// Pipeline functions
-		VulkanPipelineSettings GetVulkanDefaultPipelineSettings();
+		template <typename value_type> using per_frame_array = std::array<value_type, max_frames_in_flight>;
 
 		// Getters
 		[[nodiscard]] VDeviceManager* GetDeviceManager()
@@ -118,20 +101,35 @@ namespace Engine::Rendering::Vulkan
 			return this->device_manager.get();
 		}
 
-		[[nodiscard]] GLFWwindowData GetWindow() const
+		[[nodiscard]] const GLFWwindowData& GetWindow() const
 		{
 			return this->window;
 		}
 
-		[[nodiscard]] VkRenderPass GetRenderPass()
+		// TODO: Remove this!
+		[[nodiscard]] RenderPass* GetRenderPass()
 		{
-			return this->vk_render_pass;
+			return this->swapchain->GetRenderPass();
 		}
 
-		[[nodiscard]] static uint32_t GetMaxFramesInFlight()
+		[[nodiscard]] static constexpr uint32_t GetMaxFramesInFlight()
 		{
 			return VulkanRenderingEngine::max_frames_in_flight;
 		}
+
+		[[nodiscard]] VkExtent2D GetSwapchainExtent() const
+		{
+			return this->swapchain->GetExtent();
+		}
+
+		// VkFormat functions
+		[[nodiscard]] static VkFormat FindVulkanSupportedFormat(
+			VkPhysicalDevice with_device,
+			const std::vector<VkFormat>& candidates,
+			VkImageTiling tiling,
+			VkFormatFeatureFlags features
+		);
+		[[nodiscard]] static VkFormat FindVulkanSupportedDepthFormat(VkPhysicalDevice with_device);
 
 		void SyncDeviceWaitIdle();
 

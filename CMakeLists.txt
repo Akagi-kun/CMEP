@@ -22,7 +22,7 @@ if(MSVC)
 	add_compile_options($<$<CONFIG:Debug>:/Od>)
 
 	# Release only
-	add_compile_options($<$<CONFIG:Release>:/O2>)
+	add_compile_options($<$<CONFIG:Release>:/O1>)
 
 else()
 	add_compile_options(-g)
@@ -33,7 +33,7 @@ else()
 	add_compile_options($<$<CONFIG:Debug>:-g3>)
 
 	# Release only
-	add_compile_options($<$<CONFIG:Release>:-O2>)
+	add_compile_options($<$<CONFIG:Release>:-O1>)
 
 endif()
 
