@@ -1,23 +1,14 @@
 #pragma once
 
-#include "Rendering/Transform.hpp"
-
 #include <memory>
 #include <string>
 #include <utility>
+#include <variant>
 
 namespace Engine::Rendering
 {
 	class Font;
 	class Texture;
-	class Mesh;
-
-	struct RendererTransformUpdate
-	{
-		Transform current;
-		Transform parent;
-		ScreenSize screen;
-	};
 
 	enum class RendererSupplyDataType : uint8_t
 	{
@@ -34,21 +25,15 @@ namespace Engine::Rendering
 
 	struct RendererSupplyData
 	{
+		using payload_type = std::variant<std::weak_ptr<void>, std::string>;
+
 		RendererSupplyDataType type = RendererSupplyDataType::MIN_ENUM;
+		payload_type payload;
 
-		std::shared_ptr<void> payload_ptr = nullptr;
-		std::string payload_string;
-
-		RendererSupplyData(RendererSupplyDataType with_type, std::shared_ptr<void> data)
+		RendererSupplyData(RendererSupplyDataType with_type, payload_type data)
 		{
-			this->type		  = with_type;
-			this->payload_ptr = std::move(data);
-		}
-
-		RendererSupplyData(RendererSupplyDataType with_type, std::string data)
-		{
-			this->type			 = with_type;
-			this->payload_string = std::move(data);
+			this->type	  = with_type;
+			this->payload = std::move(data);
 		}
 	};
 } // namespace Engine::Rendering

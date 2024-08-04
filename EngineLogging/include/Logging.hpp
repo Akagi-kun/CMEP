@@ -1,16 +1,13 @@
 #pragma once
 
-#include <cstdio>
-#include <map>
-#include <mutex>
-#include <string>
-#include <vector>
-
 #include "PlatformSemantics.hpp"
+
+#include <cstdio>
+#include <string>
 
 namespace Logging
 {
-	enum class LogLevel
+	enum class LogLevel : uint8_t
 	{
 		Debug3	  = 0,
 		Debug2	  = 1,
@@ -20,7 +17,16 @@ namespace Logging
 		Error	  = 5,
 		Exception = 6
 	};
+} // namespace Logging
 
+#ifdef ENGINELOGGING_LIBRARY_IMPLEMENTATION
+
+#	include <map>
+#	include <mutex>
+#	include <vector>
+
+namespace Logging
+{
 	struct LoggerInternalMapping
 	{
 		LogLevel min_level;
@@ -35,7 +41,19 @@ namespace Logging
 		std::map<uint16_t, std::string> threadid_name_map;
 		std::mutex thread_mutex;
 	};
+} // namespace Logging
 
+#else
+
+namespace Logging
+{
+	struct LoggerInternalState;
+}
+
+#endif
+
+namespace Logging
+{
 	class CMEP_EXPORT_CLASS Logger
 	{
 	private:

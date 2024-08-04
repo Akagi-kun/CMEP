@@ -18,9 +18,6 @@ set(SRC_FILES
 	src/Factories/ObjectFactory.cpp
 	src/Factories/FontFactory.cpp
 
-	src/Logging/ConsoleColors.cpp
-	src/Logging/Logging.cpp
-
 	src/Assets/AssetManager.cpp
 	src/Assets/Font.cpp
 	src/Assets/Texture.cpp
@@ -86,24 +83,20 @@ else()
 		)
 endif()
 
+list(APPEND STATIC_LIBRARIES EngineLogging)
+
 add_library(EngineCore SHARED ${SRC_FILES})
 
-if(MSVC)
-# TODO: Remove /wd4996 after deprecation fixes
-	target_compile_options(EngineCore PRIVATE /std:c++17 /W3 /WX /wd4996 /wd4068)
-else()
-	target_compile_options(EngineCore PRIVATE -std=c++17 -Wall -Wno-unknown-pragmas -Wno-nullability -Wno-nullability-completeness) # -Wextra -Wpedantic -Werror
-endif()
+target_compile_features(EngineCore PUBLIC cxx_std_17)
+#set_target_properties(EngineCore PROPERTIES CXX_STANDARD_REQUIRED ON)
+#set_target_properties(EngineCore PROPERTIES CXX_EXTENSIONS OFF)
+
+target_compile_options(EngineCore PRIVATE ${ENGINE_COMPILE_OPTIONS})
 
 target_link_directories(EngineCore PUBLIC ../build)
 
-if((WIN32 OR UNIX) AND NOT APPLE)
-	target_link_directories(EngineCore PUBLIC ../external/lua-prebuilt)
-elseif(APPLE)
-	target_link_directories(EngineCore PUBLIC ../external/lua-5.4.6/src)
-endif()
-
 target_include_directories(EngineCore PUBLIC include
+											 ../EngineLogging/export_include
 											 ../external/luajit/src
 											 ../external/glfw/include
 											 ../external/nlohmann-json/single_include

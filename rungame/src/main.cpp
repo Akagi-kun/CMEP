@@ -7,6 +7,8 @@
 #	include <Windows.h>
 #endif
 
+#include "Logging/Logging.hpp"
+
 #include "EngineCore.hpp"
 
 #if defined(_MSC_VER)

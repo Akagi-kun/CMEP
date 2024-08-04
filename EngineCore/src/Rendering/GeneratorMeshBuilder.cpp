@@ -11,7 +11,10 @@ namespace Engine::Rendering
 	{
 		if (data.type == RendererSupplyDataType::SCRIPT)
 		{
-			this->generator_script = std::static_pointer_cast<Scripting::ILuaScript>(data.payload_ptr);
+			const auto& payload_ref = std::get<std::weak_ptr<void>>(data.payload);
+			assert(!payload_ref.expired() && "Cannot lock expired payload!");
+
+			this->generator_script = std::static_pointer_cast<Scripting::ILuaScript>(payload_ref.lock());
 		}
 	}
 

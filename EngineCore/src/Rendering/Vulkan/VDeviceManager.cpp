@@ -9,6 +9,7 @@
 
 #include <cstdint>
 #include <cstring>
+#include <map>
 #include <memory>
 #include <set>
 #include <stdexcept>

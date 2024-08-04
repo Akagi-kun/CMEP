@@ -54,14 +54,20 @@ namespace Engine::Rendering
 		{
 			case RendererSupplyDataType::FONT:
 			{
-				auto font_cast				  = std::static_pointer_cast<Font>(data.payload_ptr);
+				const auto& payload_ref = std::get<std::weak_ptr<void>>(data.payload);
+				assert(!payload_ref.expired() && "Cannot lock expired payload!");
+
+				auto font_cast				  = std::static_pointer_cast<Font>(payload_ref.lock());
 				this->texture				  = font_cast->GetPageTexture(0);
 				this->has_updated_descriptors = false;
 				break;
 			}
 			case RendererSupplyDataType::TEXTURE:
 			{
-				this->texture				  = std::static_pointer_cast<Texture>(data.payload_ptr);
+				const auto& payload_ref = std::get<std::weak_ptr<void>>(data.payload);
+				assert(!payload_ref.expired() && "Cannot lock expired payload!");
+
+				this->texture				  = std::static_pointer_cast<Texture>(payload_ref.lock());
 				this->has_updated_descriptors = false;
 				break;
 			}

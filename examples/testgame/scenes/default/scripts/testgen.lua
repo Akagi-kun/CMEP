@@ -38,12 +38,14 @@ local block_types = {
 	STONE = 1,
 	GRASS = 2,
 	DIRT = 3,
-	MISSING = 4,
+	WOOD = 4,
 	LEAVES = 5,
-	WOOD = 6
+	MISSING = 6
 }
 local block_type_count = 8
 local block_textures = 2
+
+local texture_pixels = { x = 8, y = 8 }
 
 local map = {}
 
@@ -182,12 +184,15 @@ local faceYielder = function(value, face, x_off, z_off, y_off)
 				z = z + z_off - 1
 				y = y + y_off - 1
 
-				-- ((size of 1 texture in atlas) * uv coord) + (offset from first texture) 
-				local modified_u = ((0.985/ block_type_count) * u)
-				local modified_v = ((0.985 / block_textures) * v)
+				local u_ratio = 0.9 / block_type_count
+				local v_ratio = 0.9 / block_textures
 
-				local offset_u = modified_u + ((value - 1) / block_type_count) + 0.0009375
-				local offset_v = modified_v + (use_texture / block_textures) + 0.0009375
+				-- ((size of 1 texture in atlas) * uv coord) + (offset from first texture) 
+				local modified_u = (u_ratio * u)
+				local modified_v = (v_ratio * v)
+
+				local offset_u = modified_u + ((value - 1) / block_type_count) + (u_ratio / texture_pixels.x / 3)
+				local offset_v = modified_v + (use_texture / block_textures) + (v_ratio / texture_pixels.y / 3)
 
 				coroutine.yield(offset_u, offset_v, colors[face], x, y, z)
 			end

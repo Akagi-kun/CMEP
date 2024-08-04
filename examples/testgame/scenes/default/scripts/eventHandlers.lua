@@ -223,6 +223,8 @@ onInit = function(event)
 		end
 	end
 
+	print("Hi!")
+
 --[[ 	local chunk_obj = engine.CreateSceneObject(asset_manager, "renderer_3d/generator", "sprite", {
 		{"texture", "atlas"}, {"script", "testgen"}
 	})

@@ -16,12 +16,17 @@ namespace Engine::Rendering
 		{
 			case RendererSupplyDataType::FONT:
 			{
-				this->font = std::static_pointer_cast<Font>(data.payload_ptr);
+				const auto& payload_ref = std::get<std::weak_ptr<void>>(data.payload);
+				assert(!payload_ref.expired() && "Cannot lock expired payload!");
+
+				this->font = std::static_pointer_cast<Font>(payload_ref.lock());
 				break;
 			}
 			case RendererSupplyDataType::TEXT:
 			{
-				this->text.assign(data.payload_string);
+				const auto& payload_ref = std::get<std::string>(data.payload);
+
+				this->text.assign(payload_ref);
 				break;
 			}
 			default:

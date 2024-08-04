@@ -12,6 +12,13 @@ set(LIBRARY_OUTPUT_PATH ${VAR_BUILD_DIRECTORY} CACHE PATH "Build directory" FORC
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_DEBUG ${VAR_BUILD_DIRECTORY} CACHE PATH "Build directory" FORCE)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE ${VAR_BUILD_DIRECTORY} CACHE PATH "Build directory" FORCE)
 
+if(MSVC)
+# TODO: Remove /wd4996 after deprecation fixes
+	set(ENGINE_COMPILE_OPTIONS /std:c++17 /W3 /WX /wd4996 /wd4068)
+else()
+	set(ENGINE_COMPILE_OPTIONS -std=c++17 -Wall -Wno-unknown-pragmas -Wno-nullability -Wno-nullability-completeness) # -Wextra -Wpedantic -Werror
+endif()
+
 # Global compile options
 if(MSVC)
 	add_compile_options(/MP /EHs /Zi)
@@ -38,6 +45,8 @@ else()
 endif()
 
 add_subdirectory(external)
+
+add_subdirectory(EngineLogging)
 
 add_subdirectory(EngineCore)
 add_dependencies(EngineCore glfw)

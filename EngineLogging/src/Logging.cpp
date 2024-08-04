@@ -1,6 +1,7 @@
-#include "Logging/Logging.hpp"
+#define ENGINELOGGING_LIBRARY_IMPLEMENTATION
+#include "Logging.hpp"
 
-#include "Logging/ConsoleColors.hpp"
+#include "ConsoleColors.hpp"
 
 #include <chrono>
 #include <cstdarg>
@@ -9,7 +10,7 @@
 
 // Prefixes for logging messages
 #define LOGPFX_CURRENT LOGPFX_CLASS_LOGGER
-#include "Logging/LoggingPrefix.hpp"
+#include "LoggingPrefix.hpp"
 
 static const char* level_to_color_table[] = {
 	Logging::Console::GRAY_FG,

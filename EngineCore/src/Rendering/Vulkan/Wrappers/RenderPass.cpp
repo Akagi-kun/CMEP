@@ -7,6 +7,7 @@
 #include "vulkan/vulkan_core.h"
 
 #include <array>
+#include <stdexcept>
 
 namespace Engine::Rendering::Vulkan
 {

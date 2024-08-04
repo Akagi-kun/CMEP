@@ -19,19 +19,22 @@ else()
 		glfw
 		)
 endif()
+list(APPEND STATIC_LIBRARIES EngineLogging)
 
 add_executable(rungame ${SRC_FILES})
 
-if(MSVC)
-# TODO: Remove /wd4996 after deprecation fixes
-	target_compile_options(rungame PRIVATE /std:c++17 /W3 /WX)
-else()
-	target_compile_options(rungame PRIVATE -std=c++17 -Wall -Wextra -Wno-unknown-pragmas) # -Wpedantic -Werror
-endif()
+target_compile_options(rungame PRIVATE ${ENGINE_COMPILE_OPTIONS})
+#if(MSVC)
+## TODO: Remove /wd4996 after deprecation fixes
+#	target_compile_options(rungame PRIVATE /std:c++17 /W3 /WX)
+#else()
+#	target_compile_options(rungame PRIVATE -std=c++17 -Wall -Wextra -Wno-unknown-pragmas) # -Wpedantic -Werror
+#endif()
 
 target_link_directories(rungame PUBLIC ../build)
 
 target_include_directories(rungame PUBLIC include
+										  ../EngineLogging/export_include
 										  ../external/luajit/src
 										  ../external/glfw/include
 										  ../external/nlohmann-json/single_include
