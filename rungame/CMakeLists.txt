@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.10)
+cmake_minimum_required(VERSION 3.12)
 project(CMEP CXX)
 
 set(SRC_FILES
@@ -23,13 +23,11 @@ list(APPEND STATIC_LIBRARIES EngineLogging)
 
 add_executable(rungame ${SRC_FILES})
 
+target_compile_features(rungame PUBLIC cxx_std_17)
+set_target_properties(rungame PROPERTIES CXX_STANDARD_REQUIRED ON)
+set_target_properties(rungame PROPERTIES CXX_EXTENSIONS OFF)
+
 target_compile_options(rungame PRIVATE ${ENGINE_COMPILE_OPTIONS})
-#if(MSVC)
-## TODO: Remove /wd4996 after deprecation fixes
-#	target_compile_options(rungame PRIVATE /std:c++17 /W3 /WX)
-#else()
-#	target_compile_options(rungame PRIVATE -std=c++17 -Wall -Wextra -Wno-unknown-pragmas) # -Wpedantic -Werror
-#endif()
 
 target_link_directories(rungame PUBLIC ../build)
 
