@@ -4,6 +4,7 @@
 #include "Rendering/AxisMeshBuilder.hpp"
 #include "Rendering/IRenderer.hpp"
 #include "Rendering/Renderer3D.hpp"
+#include "Rendering/Vulkan/PipelineManager.hpp"
 #include "Rendering/Vulkan/VulkanRenderingEngine.hpp"
 #include "Rendering/Vulkan/VulkanStructDefs.hpp"
 
@@ -413,17 +414,19 @@ namespace Engine
 		return this->last_delta_time;
 	}
 
-	Engine::Engine(std::shared_ptr<Logging::Logger>& with_logger) noexcept : logger(with_logger)
+	Engine::Engine(std::shared_ptr<Logging::Logger>& with_logger) : logger(with_logger)
 	{
 	}
 
-	Engine::~Engine() noexcept
+	Engine::~Engine()
 	{
 		this->logger->SimpleLog(Logging::LogLevel::Info, LOGPFX_CURRENT "Destructor called");
 
 		this->scene_manager.reset();
 
 		this->asset_manager.reset();
+
+		this->pipeline_manager.reset();
 
 		delete this->rendering_engine;
 	}
@@ -470,6 +473,9 @@ namespace Engine
 		this->rendering_engine =
 			new Rendering::Vulkan::VulkanRenderingEngine(this, this->config->window.size, this->config->window.title);
 		this->rendering_engine->SetRenderCallback(Engine::RenderCallback);
+
+		this->pipeline_manager =
+			std::make_shared<Rendering::Vulkan::PipelineManager>(this, this->rendering_engine->GetDeviceManager());
 
 		this->scene_manager->SetSceneLoadPrefix(this->config->scene_path);
 		this->scene_manager->LoadScene(this->config->default_scene);

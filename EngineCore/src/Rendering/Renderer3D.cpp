@@ -15,34 +15,10 @@
 
 namespace Engine::Rendering
 {
-	Renderer3D::Renderer3D(Engine* engine, IMeshBuilder* with_builder, std::string_view with_pipeline_program)
+	/* Renderer3D::Renderer3D(Engine* engine, IMeshBuilder* with_builder, std::string_view with_pipeline_program)
 		: IRenderer(engine, with_builder, with_pipeline_program)
 	{
-		Vulkan::VulkanRenderingEngine* renderer = this->owner_engine->GetRenderingEngine();
-
-		VulkanPipelineSettings pipeline_settings{
-			renderer->GetSwapchainExtent(),
-			this->pipeline_name,
-			this->mesh_builder->GetSupportedTopology()
-		};
-
-		pipeline_settings.descriptor_layout_settings.push_back(VulkanDescriptorLayoutSettings{
-			1,
-			1,
-			VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
-			VK_SHADER_STAGE_FRAGMENT_BIT
-		});
-
-		this->pipeline =
-			new Vulkan::VPipeline(renderer->GetDeviceManager(), pipeline_settings, renderer->GetRenderPass());
-	}
-
-	Renderer3D::~Renderer3D()
-	{
-		this->logger->SimpleLog(Logging::LogLevel::Debug3, "Cleaning up Renderer3D");
-
-		delete this->pipeline;
-	}
+	} */
 
 	void Renderer3D::SupplyData(const RendererSupplyData& data)
 	{

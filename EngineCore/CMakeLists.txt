@@ -32,6 +32,8 @@ set(SRC_FILES
 	src/Rendering/SpriteMeshBuilder.cpp
 	src/Rendering/GeneratorMeshBuilder.cpp
 	
+	src/Rendering/Vulkan/PipelineManager.cpp
+
 	src/Rendering/Vulkan/VmaImplementation.cpp
 
 	src/Rendering/Vulkan/VDeviceManager.cpp

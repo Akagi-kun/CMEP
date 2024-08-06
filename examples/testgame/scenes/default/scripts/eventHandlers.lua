@@ -215,7 +215,7 @@ onInit = function(event)
 			local chunk_obj = engine.CreateSceneObject(asset_manager, "renderer_3d/generator", "sprite", {
 				{"texture", "atlas"}, {"script", "testgen"}
 			})
-			chunk_obj:SetPosition((chunk_x - 1) * 16, 0.0, (chunk_z - 1) * 16)
+			chunk_obj:SetPosition((chunk_x - 1) * config.chunk_size_x, 0.0, (chunk_z - 1) * config.chunk_size_y)
 			chunk_obj:SetSize(1, 1, 1)
 			chunk_obj:SetRotation(0, 0, 0)
 			scene:AddObject(string.format("chunk_%i_%i", chunk_x, chunk_z), chunk_obj)

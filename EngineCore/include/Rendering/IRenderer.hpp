@@ -2,6 +2,7 @@
 
 #include "Rendering/IMeshBuilder.hpp"
 #include "Rendering/Transform.hpp"
+#include "Rendering/Vulkan/PipelineManager.hpp"
 #include "Rendering/Vulkan/Wrappers/VPipeline.hpp"
 
 #include "InternalEngineObject.hpp"
@@ -22,6 +23,9 @@ namespace Engine::Rendering
 	// Interface for Renderers
 	class IRenderer : public InternalEngineObject
 	{
+	private:
+		VulkanPipelineSettings settings;
+
 	protected:
 		Transform transform;
 		Transform parent_transform;
@@ -30,6 +34,8 @@ namespace Engine::Rendering
 		// Renderer configuration
 		std::string_view pipeline_name;
 		Vulkan::VPipeline* pipeline = nullptr;
+		size_t pipeline_user_index	= 0;
+		std::shared_ptr<Vulkan::PipelineManager> pipeline_manager;
 
 		IMeshBuilder* mesh_builder = nullptr;
 		MeshBuildContext mesh_context{};
@@ -46,14 +52,18 @@ namespace Engine::Rendering
 		bool has_updated_matrices = false;
 
 	public:
-		IRenderer(Engine* with_engine, IMeshBuilder* with_builder, std::string_view with_pipeline_program)
-			: InternalEngineObject(with_engine), pipeline_name(with_pipeline_program), mesh_builder(with_builder)
-		{
-		}
+		IRenderer(
+			Engine* with_engine,
+			IMeshBuilder* with_builder,
+			// Vulkan::PipelineManager* with_pipeline_manager,
+			std::string_view with_pipeline_program
+		);
 		virtual ~IRenderer()
 		{
 			delete this->mesh_builder;
 			this->mesh_builder = nullptr;
+
+			// delete this->pipeline;
 		}
 
 		// Renderers shall implement this to get textures, fonts etc.

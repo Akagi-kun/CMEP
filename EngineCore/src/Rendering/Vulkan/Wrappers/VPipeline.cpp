@@ -16,7 +16,7 @@ namespace Engine::Rendering::Vulkan
 {
 	VPipeline::VPipeline(
 		VDeviceManager* with_device_manager,
-		VulkanPipelineSettings& settings,
+		VulkanPipelineSettings settings,
 		RenderPass* with_render_pass
 	)
 		: HoldsVulkanDevice(with_device_manager), HoldsVMA(with_device_manager->GetVmaAllocator())
@@ -173,26 +173,28 @@ namespace Engine::Rendering::Vulkan
 		/************************************/
 		// this->CreateVulkanUniformBuffers(pipeline);
 
-		VkDeviceSize buffer_size = sizeof(RendererMatrixData);
+		/* VkDeviceSize buffer_size = sizeof(RendererMatrixData);
 
-		this->uniform_buffers.resize(VulkanRenderingEngine::GetMaxFramesInFlight());
+		this->uniform_buffers.resize(1);
 
 		for (size_t i = 0; i < VulkanRenderingEngine::GetMaxFramesInFlight(); i++)
 		{
-			this->uniform_buffers[i] = new VBuffer(
+			this->uniform_buffers[0][i] = new VBuffer(
 				this->device_manager,
 				buffer_size,
 				VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
 				VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
 				0
 			);
-		}
+		} */
+
+		// this->AllocateNewUniformBuffers();
 		/************************************/
 
 		/************************************/
 		// this->CreateVulkanDescriptorPool(pipeline, settings.descriptor_layout_settings);
 
-		std::vector<VkDescriptorPoolSize> pool_sizes{};
+		// std::vector<VkDescriptorPoolSize> pool_sizes{};
 
 		pool_sizes.resize(settings.descriptor_layout_settings.size());
 		for (size_t i = 0; i < settings.descriptor_layout_settings.size(); i++)
@@ -205,7 +207,7 @@ namespace Engine::Rendering::Vulkan
 			pool_sizes[i] = pool_size;
 		}
 
-		VkDescriptorPoolCreateInfo pool_info{};
+		/* VkDescriptorPoolCreateInfo pool_info{};
 		pool_info.sType			= VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
 		pool_info.poolSizeCount = static_cast<uint32_t>(pool_sizes.size());
 		pool_info.pPoolSizes	= pool_sizes.data();
@@ -219,13 +221,13 @@ namespace Engine::Rendering::Vulkan
 			) != VK_SUCCESS)
 		{
 			throw std::runtime_error("failed to create descriptor pool!");
-		}
+		} */
 		/************************************/
 
 		/************************************/
 		// this->CreateVulkanDescriptorSets(pipeline);
 
-		std::vector<VkDescriptorSetLayout> layouts(
+		/* std::vector<VkDescriptorSetLayout> layouts(
 			VulkanRenderingEngine::GetMaxFramesInFlight(),
 			this->descriptor_set_layout
 		);
@@ -236,34 +238,37 @@ namespace Engine::Rendering::Vulkan
 		alloc_info.descriptorSetCount = VulkanRenderingEngine::GetMaxFramesInFlight();
 		alloc_info.pSetLayouts		  = layouts.data();
 
-		this->descriptor_sets.resize(VulkanRenderingEngine::GetMaxFramesInFlight());
+		this->descriptor_sets.emplace_back(); //.resize(VulkanRenderingEngine::GetMaxFramesInFlight());
 
 		VkResult create_result = vkAllocateDescriptorSets(
 			this->device_manager->GetLogicalDevice(),
 			&alloc_info,
-			this->descriptor_sets.data()
+			this->descriptor_sets[0].data()
 		);
 
 		if (create_result != VK_SUCCESS)
 		{
 			throw std::runtime_error("failed to allocate descriptor sets!");
-		}
+		} */
+
+		// this->AllocateNewDescriptorSets();
+		this->AllocateNewUserData();
 		/************************************/
 
 		/************************************/
 		// Update binding 0 to point to matrix buffer
 
-		std::array<VkDescriptorBufferInfo, VulkanRenderingEngine::GetMaxFramesInFlight()> descriptor_buffer_infos{};
-		std::array<VkWriteDescriptorSet, VulkanRenderingEngine::GetMaxFramesInFlight()> descriptor_writes{};
+		/* VulkanRenderingEngine::per_frame_array<VkDescriptorBufferInfo> descriptor_buffer_infos{};
+		VulkanRenderingEngine::per_frame_array<VkWriteDescriptorSet> descriptor_writes{};
 
 		for (uint32_t frame_idx = 0; frame_idx < Vulkan::VulkanRenderingEngine::GetMaxFramesInFlight(); frame_idx++)
 		{
-			descriptor_buffer_infos[frame_idx].buffer = this->uniform_buffers[frame_idx]->GetNativeHandle();
+			descriptor_buffer_infos[frame_idx].buffer = this->user_data[0].uniform_buffers[frame_idx]->GetNativeHandle(
+			);
 			descriptor_buffer_infos[frame_idx].offset = 0;
 			descriptor_buffer_infos[frame_idx].range  = sizeof(RendererMatrixData);
 
 			descriptor_writes[frame_idx].sType			 = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-			// descriptor_writes[frame_idx].dstSet			 = nullptr;
 			descriptor_writes[frame_idx].dstBinding		 = 0;
 			descriptor_writes[frame_idx].dstArrayElement = 0;
 			descriptor_writes[frame_idx].descriptorType	 = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
@@ -271,7 +276,7 @@ namespace Engine::Rendering::Vulkan
 			descriptor_writes[frame_idx].pBufferInfo	 = &(descriptor_buffer_infos[frame_idx]);
 		}
 
-		this->UpdateDescriptorSets(descriptor_writes);
+		this->UpdateDescriptorSets(descriptor_writes); */
 		/************************************/
 	}
 
@@ -281,27 +286,150 @@ namespace Engine::Rendering::Vulkan
 
 		vkDeviceWaitIdle(logical_device);
 
-		for (auto& uniform_buffer : this->uniform_buffers)
+		for (auto& data_ref : this->user_data)
 		{
-			delete uniform_buffer;
+			for (auto* uniform_buffer : data_ref.uniform_buffers)
+			{
+				delete uniform_buffer;
+			}
+
+			vkDestroyDescriptorPool(logical_device, data_ref.with_pool, nullptr);
 		}
 
-		vkDestroyDescriptorPool(logical_device, this->descriptor_pool, nullptr);
 		vkDestroyDescriptorSetLayout(logical_device, this->descriptor_set_layout, nullptr);
 
 		vkDestroyPipeline(logical_device, this->native_handle, nullptr);
 		vkDestroyPipelineLayout(logical_device, this->pipeline_layout, nullptr);
 	}
 
+	void VPipeline::AllocateNewDescriptorPool(VPipeline::UserData& data_ref)
+	{
+		// std::vector<VkDescriptorPoolSize> pool_sizes{};
+
+		/* pool_sizes.resize(settings.descriptor_layout_settings.size());
+		for (size_t i = 0; i < settings.descriptor_layout_settings.size(); i++)
+		{
+			VkDescriptorPoolSize pool_size{};
+			pool_size.type			  = settings.descriptor_layout_settings[i].type;
+			pool_size.descriptorCount = VulkanRenderingEngine::GetMaxFramesInFlight() *
+										settings.descriptor_layout_settings[i].descriptor_count;
+
+			pool_sizes[i] = pool_size;
+		} */
+
+		VkDescriptorPoolCreateInfo pool_info{};
+		pool_info.sType			= VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
+		pool_info.poolSizeCount = static_cast<uint32_t>(pool_sizes.size());
+		pool_info.pPoolSizes	= pool_sizes.data();
+		pool_info.maxSets		= VulkanRenderingEngine::GetMaxFramesInFlight();
+
+		if (vkCreateDescriptorPool(
+				this->device_manager->GetLogicalDevice(),
+				&pool_info,
+				nullptr,
+				&(data_ref.with_pool)
+			) != VK_SUCCESS)
+		{
+			throw std::runtime_error("failed to create descriptor pool!");
+		}
+	}
+
+	void VPipeline::AllocateNewUniformBuffers(VulkanRenderingEngine::per_frame_array<VBuffer*>& buffer_ref)
+	{
+		static constexpr VkDeviceSize buffer_size = sizeof(RendererMatrixData);
+
+		// size_t user_index = uniform_buffers.size();
+		//  this->uniform_buffers.emplace_back();
+
+		for (size_t i = 0; i < VulkanRenderingEngine::GetMaxFramesInFlight(); i++)
+		{
+			buffer_ref[i] = new VBuffer(
+				this->device_manager,
+				buffer_size,
+				VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
+				VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
+				0
+			);
+		}
+
+		// return user_index;
+	}
+
+	void VPipeline::AllocateNewDescriptorSets(VPipeline::UserData& data_ref)
+	{
+		std::vector<VkDescriptorSetLayout> layouts(
+			VulkanRenderingEngine::GetMaxFramesInFlight(),
+			this->descriptor_set_layout
+		);
+
+		VkDescriptorSetAllocateInfo alloc_info{};
+		alloc_info.sType			  = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+		alloc_info.descriptorPool	  = data_ref.with_pool;
+		alloc_info.descriptorSetCount = VulkanRenderingEngine::GetMaxFramesInFlight();
+		alloc_info.pSetLayouts		  = layouts.data();
+
+		// size_t user_index = descriptor_sets.size();
+		// this->descriptor_sets.emplace_back(); //.resize(VulkanRenderingEngine::GetMaxFramesInFlight());
+
+		VkResult create_result = vkAllocateDescriptorSets(
+			this->device_manager->GetLogicalDevice(),
+			&alloc_info,
+			data_ref.descriptor_sets.data()
+		);
+
+		if (create_result != VK_SUCCESS)
+		{
+			throw std::runtime_error("failed to allocate descriptor sets!");
+		}
+
+		// return user_index;
+	}
+
+	size_t VPipeline::AllocateNewUserData()
+	{
+		size_t user_index = user_data.size();
+		user_data.emplace_back();
+
+		auto& allocated_user_data = user_data[user_index];
+
+		this->AllocateNewUniformBuffers(allocated_user_data.uniform_buffers);
+		this->AllocateNewDescriptorPool(allocated_user_data);
+		this->AllocateNewDescriptorSets(allocated_user_data);
+
+		// Set up binding 0 to point to uniform buffers
+		VulkanRenderingEngine::per_frame_array<VkDescriptorBufferInfo> descriptor_buffer_infos{};
+		VulkanRenderingEngine::per_frame_array<VkWriteDescriptorSet> descriptor_writes{};
+
+		for (uint32_t frame_idx = 0; frame_idx < Vulkan::VulkanRenderingEngine::GetMaxFramesInFlight(); frame_idx++)
+		{
+			descriptor_buffer_infos[frame_idx].buffer = allocated_user_data.uniform_buffers[frame_idx]->GetNativeHandle(
+			);
+			descriptor_buffer_infos[frame_idx].offset = 0;
+			descriptor_buffer_infos[frame_idx].range  = sizeof(RendererMatrixData);
+
+			descriptor_writes[frame_idx].sType			 = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+			descriptor_writes[frame_idx].dstBinding		 = 0;
+			descriptor_writes[frame_idx].dstArrayElement = 0;
+			descriptor_writes[frame_idx].descriptorType	 = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+			descriptor_writes[frame_idx].descriptorCount = 1;
+			descriptor_writes[frame_idx].pBufferInfo	 = &(descriptor_buffer_infos[frame_idx]);
+		}
+
+		this->UpdateDescriptorSets(user_index, descriptor_writes);
+
+		return user_index;
+	}
+
 	void VPipeline::UpdateDescriptorSets(
-		const std::array<VkWriteDescriptorSet, VulkanRenderingEngine::GetMaxFramesInFlight()>& writes
+		size_t user_index,
+		const VulkanRenderingEngine::per_frame_array<VkWriteDescriptorSet>& writes
 	)
 	{
-		std::array<VkWriteDescriptorSet, VulkanRenderingEngine::GetMaxFramesInFlight()> local_copy = writes;
+		VulkanRenderingEngine::per_frame_array<VkWriteDescriptorSet> local_copy = writes;
 
-		for (uint32_t idx = 0; idx < local_copy.size(); idx++)
+		for (uint32_t frame = 0; frame < local_copy.size(); frame++)
 		{
-			local_copy[idx].dstSet = this->GetDescriptorSet(idx);
+			local_copy[frame].dstSet = this->GetDescriptorSet(user_index, frame);
 		}
 
 		vkUpdateDescriptorSets(
@@ -313,7 +441,7 @@ namespace Engine::Rendering::Vulkan
 		);
 	}
 
-	void VPipeline::BindPipeline(VkCommandBuffer with_command_buffer, uint32_t current_frame)
+	void VPipeline::BindPipeline(size_t user_index, VkCommandBuffer with_command_buffer, uint32_t current_frame)
 	{
 		vkCmdBindDescriptorSets(
 			with_command_buffer,
@@ -321,7 +449,7 @@ namespace Engine::Rendering::Vulkan
 			this->pipeline_layout,
 			0,
 			1,
-			&this->descriptor_sets[current_frame],
+			&this->user_data[user_index].descriptor_sets[current_frame],
 			0,
 			nullptr
 		);

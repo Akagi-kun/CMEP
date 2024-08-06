@@ -9,8 +9,8 @@ namespace Engine::Rendering
 	class Renderer2D final : public IRenderer
 	{
 	public:
-		Renderer2D(Engine* engine, IMeshBuilder* with_builder, std::string_view with_pipeline_program);
-		~Renderer2D() override;
+		using IRenderer::IRenderer;
+		// Renderer2D(Engine* engine, IMeshBuilder* with_builder, std::string_view with_pipeline_program);
 
 		void SupplyData(const RendererSupplyData& data) override;
 

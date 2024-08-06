@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Rendering/Vulkan/PipelineManager.hpp"
 #include "Rendering/Vulkan/VulkanRenderingEngine.hpp"
 
 #include "Logging/Logging.hpp"
@@ -14,12 +15,11 @@
 namespace Engine
 {
 	class AssetManager;
-	class ImageObject;
 	class Object;
 
-	namespace Rendering
+	namespace Rendering::Vulkan
 	{
-		class Window;
+		class PipelineManager;
 	}
 
 	namespace Scripting
@@ -55,7 +55,9 @@ namespace Engine
 		// Engine parts
 		std::shared_ptr<Logging::Logger> logger;
 		std::shared_ptr<AssetManager> asset_manager;
+
 		Rendering::Vulkan::VulkanRenderingEngine* rendering_engine = nullptr;
+		std::shared_ptr<Rendering::Vulkan::PipelineManager> pipeline_manager;
 
 		// Event handler storage
 		// std::multimap<EventHandling::EventType, std::function<int(EventHandling::Event&)>> event_handlers;
@@ -88,8 +90,8 @@ namespace Engine
 		double state_mouse_x_pos;
 		double state_mouse_y_pos;
 
-		Engine(std::shared_ptr<Logging::Logger>& logger) noexcept;
-		~Engine() noexcept;
+		Engine(std::shared_ptr<Logging::Logger>& logger);
+		~Engine();
 
 		void Init();
 		void Run();
@@ -123,6 +125,10 @@ namespace Engine
 		[[nodiscard]] std::weak_ptr<AssetManager> GetAssetManager() noexcept
 		{
 			return this->asset_manager;
+		}
+		[[nodiscard]] std::shared_ptr<Rendering::Vulkan::PipelineManager> GetVulkanPipelineManager()
+		{
+			return this->pipeline_manager;
 		}
 		[[nodiscard]] Rendering::Vulkan::VulkanRenderingEngine* GetRenderingEngine() noexcept
 		{

@@ -1,24 +1,61 @@
 #include "Rendering/IRenderer.hpp"
 
 #include "Assets/Texture.hpp"
+#include "Rendering/SupplyData.hpp"
+#include "Rendering/Vulkan/PipelineManager.hpp"
 #include "Rendering/Vulkan/VulkanRenderingEngine.hpp"
 #include "Rendering/Vulkan/Wrappers/VCommandBuffer.hpp"
+#include "Rendering/Vulkan/Wrappers/VPipeline.hpp"
 #include "Rendering/Vulkan/Wrappers/VSampledImage.hpp"
 
+#include "Engine.hpp"
 #include "vulkan/vulkan_core.h"
 
 namespace Engine::Rendering
 {
+	IRenderer::IRenderer(
+		Engine* with_engine,
+		IMeshBuilder* with_builder,
+		// Vulkan::PipelineManager* with_pipeline_manager,
+		std::string_view with_pipeline_program
+	)
+		: InternalEngineObject(with_engine), pipeline_name(with_pipeline_program),
+		  pipeline_manager(with_engine->GetVulkanPipelineManager()), mesh_builder(with_builder)
+	{
+		Vulkan::VulkanRenderingEngine* renderer = this->owner_engine->GetRenderingEngine();
+
+		this->settings =
+			{renderer->GetSwapchainExtent(), this->pipeline_name, this->mesh_builder->GetSupportedTopology()};
+
+		this->settings.descriptor_layout_settings.push_back(VulkanDescriptorLayoutSettings{
+			1,
+			1,
+			VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
+			VK_SHADER_STAGE_FRAGMENT_BIT
+		});
+
+		this->pipeline = nullptr;
+		// pipeline_manager->GetPipeline(pipeline_settings);
+		//  this->pipeline =	new Vulkan::VPipeline(renderer->GetDeviceManager(), pipeline_settings,
+		//  renderer->GetRenderPass());
+	}
+
 	void IRenderer::UpdateDescriptorSets()
 	{
 		this->has_updated_descriptors = true;
 
+		auto extended_settings = Vulkan::ExtendedPipelineSettings{settings};
+		if (texture)
+		{
+			extended_settings.supply_data.emplace_back(RendererSupplyDataType::TEXTURE, this->texture);
+		}
+		auto pipeline_result	  = this->pipeline_manager->GetPipeline(extended_settings);
+		this->pipeline_user_index = std::get<size_t>(pipeline_result);
+		this->pipeline			  = std::get<Vulkan::VPipeline*>(pipeline_result);
+
 		if (this->texture)
 		{
 			Vulkan::VulkanRenderingEngine::per_frame_array<VkDescriptorImageInfo> descriptor_image_infos{};
-
-			/* std::array<VkDescriptorImageInfo, Vulkan::VulkanRenderingEngine::GetMaxFramesInFlight()>
-				descriptor_image_infos{}; */
 			Vulkan::VulkanRenderingEngine::per_frame_array<VkWriteDescriptorSet> descriptor_writes{};
 
 			Vulkan::VSampledImage* texture_image = this->texture->GetTextureImage();
@@ -30,7 +67,7 @@ namespace Engine::Rendering
 				descriptor_image_infos[i].sampler	  = texture_image->texture_sampler;
 
 				descriptor_writes[i].sType			 = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-				descriptor_writes[i].dstSet			 = this->pipeline->GetDescriptorSet(i);
+				descriptor_writes[i].dstSet			 = this->pipeline->GetDescriptorSet(0, i);
 				descriptor_writes[i].dstBinding		 = 1;
 				descriptor_writes[i].dstArrayElement = 0;
 				descriptor_writes[i].descriptorType	 = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
@@ -40,7 +77,8 @@ namespace Engine::Rendering
 				// TODO: Add support for additional textures?
 			}
 
-			this->pipeline->UpdateDescriptorSets(descriptor_writes);
+			// TODO: Update using single VkWriteDescriptorSet?
+			this->pipeline->UpdateDescriptorSets(this->pipeline_user_index, descriptor_writes);
 		}
 	}
 
@@ -66,9 +104,10 @@ namespace Engine::Rendering
 		// Render only if VBO non-empty
 		if (this->mesh_context.vbo_vert_count > 0)
 		{
-			this->pipeline->GetUniformBuffer(current_frame)->MemoryCopy(&this->matrix_data, sizeof(RendererMatrixData));
+			this->pipeline->GetUniformBuffer(this->pipeline_user_index, current_frame)
+				->MemoryCopy(&this->matrix_data, sizeof(RendererMatrixData));
 
-			this->pipeline->BindPipeline(command_buffer->GetNativeHandle(), current_frame);
+			this->pipeline->BindPipeline(this->pipeline_user_index, command_buffer->GetNativeHandle(), current_frame);
 
 			VkBuffer vertex_buffers[] = {this->mesh_context.vbo->GetNativeHandle()};
 			VkDeviceSize offsets[]	  = {0};

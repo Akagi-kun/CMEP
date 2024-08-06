@@ -10,7 +10,6 @@
 #include <array>
 #include <optional>
 #include <string>
-#include <utility>
 #include <vector>
 
 namespace Engine::Rendering
@@ -46,18 +45,23 @@ namespace Engine::Rendering
 		uint32_t descriptor_count;
 		VkDescriptorType type;
 		VkShaderStageFlags stage_flags;
+
+		bool operator==(const VulkanDescriptorLayoutSettings& other) const
+		{
+			return (binding == other.binding) && (descriptor_count == other.descriptor_count) && (type == other.type) &&
+				   (stage_flags == other.stage_flags);
+		}
 	};
 
 	struct VulkanPipelineSettings
 	{
-
-		const VkPrimitiveTopology input_topology;
-		const VkExtent2D extent;
-		const std::string_view shader;
+		VkPrimitiveTopology input_topology;
+		VkExtent2D extent;
+		std::string shader;
 		VkRect2D scissor;
 		std::vector<VulkanDescriptorLayoutSettings> descriptor_layout_settings;
 
-		VulkanPipelineSettings() = delete;
+		VulkanPipelineSettings() = default;
 		VulkanPipelineSettings(
 			const VkExtent2D with_extent,
 			const std::string_view with_shader,
@@ -66,6 +70,47 @@ namespace Engine::Rendering
 			: input_topology(with_topology), extent(with_extent), shader(with_shader),
 			  scissor(VkRect2D{{0, 0}, with_extent})
 		{
+		}
+
+		bool operator==(const VulkanPipelineSettings& other) const
+		{
+			bool topo_match = (input_topology == other.input_topology);
+
+			bool extent_match = ((extent.width == other.extent.width) && (extent.height == other.extent.height));
+
+			bool shader_match = (shader == other.shader);
+
+			bool scissor_match = (scissor.extent.width == other.scissor.extent.width) &&
+								 (scissor.extent.height == other.scissor.extent.height) &&
+								 (scissor.offset.x == other.scissor.offset.x) &&
+								 (scissor.offset.y == other.scissor.offset.y);
+
+			// If this results in false, the final value will also have to be false
+			bool settings_match = descriptor_layout_settings.size() == other.descriptor_layout_settings.size();
+
+			// O(pow(N, 2))
+			for (const auto& setting : descriptor_layout_settings)
+			{
+				// Check every value of other for a match of value in this
+				bool tmp_bool = false;
+				for (const auto& other_setting : other.descriptor_layout_settings)
+				{
+					if (setting == other_setting)
+					{
+						tmp_bool = true;
+						break;
+					}
+				}
+
+				// If a match was not found, result has to be false
+				if (!tmp_bool)
+				{
+					settings_match = false;
+					break;
+				}
+			}
+
+			return topo_match && extent_match && shader_match && scissor_match && settings_match;
 		}
 
 		static VkPipelineInputAssemblyStateCreateInfo* GetInputAssemblySettings(
