@@ -15,11 +15,6 @@
 
 namespace Engine::Rendering
 {
-	/* Renderer3D::Renderer3D(Engine* engine, IMeshBuilder* with_builder, std::string_view with_pipeline_program)
-		: IRenderer(engine, with_builder, with_pipeline_program)
-	{
-	} */
-
 	void Renderer3D::SupplyData(const RendererSupplyData& data)
 	{
 		switch (data.type)

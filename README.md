@@ -31,7 +31,7 @@ or
 
 Optionally you can also build manually by directly invoking cmake (not recommended):
 ```
-cmake .
+cmake -DCMAKE_BUILD_TYPE=<CONFIG> .
 cmake --build . --target rungame --config <CONFIG>
 ```
 > Note: that although the configuration can be omitted here, it is not recommended as the default depends on build system used
@@ -53,7 +53,7 @@ To start the engine use the `rungame` executable. This is located under the `./b
 
 ### Dependencies
 This project depends on:
-- Lua programming language
+- LuaJIT and the Lua programming language
 - GLFW library
 - lodepng
 - tinyobjloader

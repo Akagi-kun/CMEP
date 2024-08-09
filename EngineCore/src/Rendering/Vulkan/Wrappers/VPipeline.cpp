@@ -171,30 +171,7 @@ namespace Engine::Rendering::Vulkan
 		}
 
 		/************************************/
-		// this->CreateVulkanUniformBuffers(pipeline);
-
-		/* VkDeviceSize buffer_size = sizeof(RendererMatrixData);
-
-		this->uniform_buffers.resize(1);
-
-		for (size_t i = 0; i < VulkanRenderingEngine::GetMaxFramesInFlight(); i++)
-		{
-			this->uniform_buffers[0][i] = new VBuffer(
-				this->device_manager,
-				buffer_size,
-				VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
-				VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
-				0
-			);
-		} */
-
-		// this->AllocateNewUniformBuffers();
-		/************************************/
-
-		/************************************/
 		// this->CreateVulkanDescriptorPool(pipeline, settings.descriptor_layout_settings);
-
-		// std::vector<VkDescriptorPoolSize> pool_sizes{};
 
 		pool_sizes.resize(settings.descriptor_layout_settings.size());
 		for (size_t i = 0; i < settings.descriptor_layout_settings.size(); i++)
@@ -207,76 +184,7 @@ namespace Engine::Rendering::Vulkan
 			pool_sizes[i] = pool_size;
 		}
 
-		/* VkDescriptorPoolCreateInfo pool_info{};
-		pool_info.sType			= VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
-		pool_info.poolSizeCount = static_cast<uint32_t>(pool_sizes.size());
-		pool_info.pPoolSizes	= pool_sizes.data();
-		pool_info.maxSets		= VulkanRenderingEngine::GetMaxFramesInFlight();
-
-		if (vkCreateDescriptorPool(
-				this->device_manager->GetLogicalDevice(),
-				&pool_info,
-				nullptr,
-				&(this->descriptor_pool)
-			) != VK_SUCCESS)
-		{
-			throw std::runtime_error("failed to create descriptor pool!");
-		} */
-		/************************************/
-
-		/************************************/
-		// this->CreateVulkanDescriptorSets(pipeline);
-
-		/* std::vector<VkDescriptorSetLayout> layouts(
-			VulkanRenderingEngine::GetMaxFramesInFlight(),
-			this->descriptor_set_layout
-		);
-
-		VkDescriptorSetAllocateInfo alloc_info{};
-		alloc_info.sType			  = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
-		alloc_info.descriptorPool	  = this->descriptor_pool;
-		alloc_info.descriptorSetCount = VulkanRenderingEngine::GetMaxFramesInFlight();
-		alloc_info.pSetLayouts		  = layouts.data();
-
-		this->descriptor_sets.emplace_back(); //.resize(VulkanRenderingEngine::GetMaxFramesInFlight());
-
-		VkResult create_result = vkAllocateDescriptorSets(
-			this->device_manager->GetLogicalDevice(),
-			&alloc_info,
-			this->descriptor_sets[0].data()
-		);
-
-		if (create_result != VK_SUCCESS)
-		{
-			throw std::runtime_error("failed to allocate descriptor sets!");
-		} */
-
-		// this->AllocateNewDescriptorSets();
-		this->AllocateNewUserData();
-		/************************************/
-
-		/************************************/
-		// Update binding 0 to point to matrix buffer
-
-		/* VulkanRenderingEngine::per_frame_array<VkDescriptorBufferInfo> descriptor_buffer_infos{};
-		VulkanRenderingEngine::per_frame_array<VkWriteDescriptorSet> descriptor_writes{};
-
-		for (uint32_t frame_idx = 0; frame_idx < Vulkan::VulkanRenderingEngine::GetMaxFramesInFlight(); frame_idx++)
-		{
-			descriptor_buffer_infos[frame_idx].buffer = this->user_data[0].uniform_buffers[frame_idx]->GetNativeHandle(
-			);
-			descriptor_buffer_infos[frame_idx].offset = 0;
-			descriptor_buffer_infos[frame_idx].range  = sizeof(RendererMatrixData);
-
-			descriptor_writes[frame_idx].sType			 = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-			descriptor_writes[frame_idx].dstBinding		 = 0;
-			descriptor_writes[frame_idx].dstArrayElement = 0;
-			descriptor_writes[frame_idx].descriptorType	 = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-			descriptor_writes[frame_idx].descriptorCount = 1;
-			descriptor_writes[frame_idx].pBufferInfo	 = &(descriptor_buffer_infos[frame_idx]);
-		}
-
-		this->UpdateDescriptorSets(descriptor_writes); */
+		// this->AllocateNewUserData();
 		/************************************/
 	}
 

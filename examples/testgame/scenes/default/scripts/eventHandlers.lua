@@ -1,4 +1,7 @@
-require("config")
+local config = require("config")
+local ffi = require("ffi")
+local game_defs = require("game_defs")
+require("perlin")
 
 -- Debugging data
 local deltaTime_accum = 0.0
@@ -9,6 +12,164 @@ local deltaTime_min = 2000.0
 local chunks_x = config.render_distance
 local chunks_z = config.render_distance
 local chunks = {}
+
+ffi.cdef[[
+void *malloc( size_t size );
+]]
+
+local calculateMapOffset = function(x, y, z)
+	return (z - 1) + ((y - 1) * config.chunk_size_x * config.chunk_size_z) + ((x - 1) * config.chunk_size_z)
+end
+
+local generateTree = function(map_data, x, y, z)
+	local leaves = game_defs.block_types.LEAVES
+	local wood = game_defs.block_types.WOOD
+	local tree_def = {
+		{
+			0, 0, 0, 	0, 0,
+			0, 0, 0, 	0, 0,
+			0, 0, wood, 0, 0,
+			0, 0, 0, 	0, 0,
+			0, 0, 0, 	0, 0,
+		},
+		{
+			0, 0, 0, 	0, 0,
+			0, 0, 0, 	0, 0,
+			0, 0, wood, 0, 0,
+			0, 0, 0, 	0, 0,
+			0, 0, 0, 	0, 0,
+		},
+		{
+			0, 0, 0, 	0, 0,
+			0, 0, 0, 	0, 0,
+			0, 0, wood, 0, 0,
+			0, 0, 0, 	0, 0,
+			0, 0, 0, 	0, 0,
+		},
+		{
+			0, 5, 5, 	5, 0,
+			5, 5, 5, 	5, 5,
+			5, 5, wood, 5, 5,
+			5, 5, 5, 	5, 5,
+			0, 5, 5, 	5, 0,
+		},
+		{
+			0, 		leaves, leaves, leaves, 0,
+			leaves, leaves, leaves, leaves, leaves,
+			leaves, leaves, wood, 	leaves, leaves,
+			leaves, leaves, leaves, leaves, leaves,
+			0, 		leaves, leaves, leaves, 0,
+		},
+		{
+			0, 0, 		0, 		0,		0,
+			0, leaves,	leaves, leaves, 0,
+			0, leaves,	leaves, leaves, 0,
+			0, leaves,	leaves, leaves, 0,
+			0, 0, 		0, 		0, 		0,
+		},
+		{
+			0, 0, 		0, 		0, 		0,
+			0, 0, 		leaves, 0, 		0,
+			0, leaves,	leaves, leaves, 0,
+			0, 0, 		leaves, 0, 		0,
+			0, 0, 		0, 		0, 		0,
+		}
+	}
+
+	for y_layer = 1, #tree_def do
+		for x_off = -2, 2 do
+			for z_off = -2, 2 do
+				local value = tree_def[y_layer][x_off + 3 + (z_off + 2) * 5]
+
+				if value ~= 0 then
+					local offset = calculateMapOffset(x + x_off, y + y_layer, z + z_off)
+					map_data[offset] = value
+				end
+			end
+		end
+	end
+end
+
+terrain_generator = function(...)
+	local xpos = select(1, ...)
+	local zpos = select(2, ...)
+
+--	local noise_val = perlin:noise(xpos / config.chunk_size_x, config.noise_layer, zpos / config.chunk_size_z)
+
+	local map_data = ffi.C.malloc(ffi.sizeof("uint8_t") * config.chunk_size_x * config.chunk_size_y * config.chunk_size_z)
+	local cast_map_data = ffi.cast("uint8_t*", map_data)
+
+	local tree_placement_data = {}
+
+	for x = 1, config.chunk_size_x do
+		for z = 1, config.chunk_size_z do
+			local noise_raw = perlin:noise((x + xpos) / config.chunk_size_x, config.noise_layer, (z + zpos) / config.chunk_size_z)
+
+--			cast_data[(z - 1) + ((x - 1) * config.chunk_size_z)] = noise_raw
+
+			local noise_adjusted = math.floor((noise_raw + 1) * config.noise_intensity)
+			local random_y = noise_adjusted + config.floor_level
+
+			for y = 1, config.chunk_size_y do
+				local offset = calculateMapOffset(x, y, z)-- (z - 1) + ((y - 1) * config.chunk_size_x * config.chunk_size_z) + ((x - 1) * config.chunk_size_z)
+
+				-- Primary terrain generator step
+				if y > random_y then
+					cast_map_data[offset] = game_defs.block_types.AIR
+				else
+					if y == random_y then
+						cast_map_data[offset] = game_defs.block_types.GRASS
+						
+						-- Tree placement selector
+						if (math.random(config.tree_generation_chance) > (config.tree_generation_chance - 2)
+							and x > 2 and x < (config.chunk_size_x - 1)
+							and z > 2 and z < (config.chunk_size_z - 1)) then
+							table.insert(tree_placement_data, {x, y, z})
+						end
+					else
+						if y > (random_y - 3) then
+							cast_map_data[offset] = game_defs.block_types.DIRT
+						else
+							cast_map_data[offset] = game_defs.block_types.STONE
+						end
+					end
+				end
+			end
+		end
+	end
+
+	-- Places trees at selected positions
+	for tree_k, tree_v in ipairs(tree_placement_data) do
+		generateTree(cast_map_data, tree_v[1], tree_v[2], tree_v[3])
+	end
+
+	--print(xpos, zpos, noise_val)
+
+	return --[[ cast_data, ]] cast_map_data
+end
+
+check_chunks_loaded = function(asset_manager, scene)
+	for chunk_x = -chunks_x, chunks_x, 1 do
+		if chunks[chunk_x] == nil then chunks[chunk_x] = {} end
+		for chunk_z = -chunks_z, chunks_z, 1 do
+			if chunks[chunk_x][chunk_z] == nil then
+--				print(chunk_x, chunk_z);
+
+				local chunk_obj = engine.CreateSceneObject(asset_manager, "renderer_3d/generator", "terrain", {
+					{"texture", "atlas"}, {"generator_script", "testgen"}, {"generator_supplier", "script0/terrain_generator"}
+				})
+				chunk_obj:SetPosition((chunk_x) * config.chunk_size_x, 0.0, (chunk_z) * config.chunk_size_z)
+				chunk_obj:SetSize(1, 1, 1)
+				chunk_obj:SetRotation(0, 0, 0)
+				scene:AddObject(string.format("chunk_%i_%i", chunk_x, chunk_z), chunk_obj)
+				engine.RendererForceBuild(chunk_obj.renderer)
+				chunks[chunk_x][chunk_z] = chunk_obj
+
+				coroutine.yield()
+			end
+		end
+	end
+end
 
 -- ON_MOUSEMOVED event
 -- 
@@ -129,6 +290,8 @@ onKeyUp = function(event)
 	return 0
 end
 
+load_chunks_coro = coroutine.create(check_chunks_loaded)
+
 -- ON_UPDATE event
 -- 
 -- called every frame
@@ -148,6 +311,10 @@ onUpdate = function(event)
 	local asset_manager = event.engine:GetAssetManager()
 	local scene_manager = event.engine:GetSceneManager()
 	local scene = scene_manager:GetSceneCurrent()
+
+	--[[ if coroutine.status(load_chunks_coro) ~= "dead" then
+		coroutine.resume(load_chunks_coro, asset_manager, scene)
+	end ]]
 
 	-- Updates frametime counter, recommend to leave this here for debugging purposes
 	if deltaTime_accum >= 1.0 then
@@ -183,7 +350,7 @@ onInit = function(event)
 	local scene = scene_manager:GetSceneCurrent();
 
 	-- Set-up camera
-	scene_manager:SetCameraTransform(-2.0, 26.8, 4.7)
+	scene_manager:SetCameraTransform(-2.0, 65.8, 4.7)
 	scene_manager:SetCameraHVRotation(114.0, 224.8)
 	
 	-- Create frametime counter and add it to scene
@@ -209,24 +376,24 @@ onInit = function(event)
 	--object3:SetRotation(0, -100, 180)
 	--scene:AddObject("test3dsprite", object3)
 
-	for chunk_z = -chunks_z, chunks_z, 1 do
-		chunks[chunk_z] = {}
-		for chunk_x = -chunks_x, chunks_x, 1 do
-			local chunk_obj = engine.CreateSceneObject(asset_manager, "renderer_3d/generator", "sprite", {
-				{"texture", "atlas"}, {"script", "testgen"}
+	for chunk_x = -chunks_x, chunks_x, 1 do
+		chunks[chunk_x] = {}
+		for chunk_z = -chunks_z, chunks_z, 1 do
+			local chunk_obj = engine.CreateSceneObject(asset_manager, "renderer_3d/generator", "terrain", {
+				{"texture", "atlas"}, {"generator_script", "testgen"}, {"generator_supplier", "script0/terrain_generator"}
 			})
-			chunk_obj:SetPosition((chunk_x - 1) * config.chunk_size_x, 0.0, (chunk_z - 1) * config.chunk_size_y)
+			chunk_obj:SetPosition((chunk_x) * config.chunk_size_x, 0.0, (chunk_z) * config.chunk_size_z)
 			chunk_obj:SetSize(1, 1, 1)
 			chunk_obj:SetRotation(0, 0, 0)
 			scene:AddObject(string.format("chunk_%i_%i", chunk_x, chunk_z), chunk_obj)
-			chunks[chunk_z][chunk_x] = chunk_obj
+			chunks[chunk_x][chunk_z] = chunk_obj
 		end
 	end
 
 	print("Hi!")
 
---[[ 	local chunk_obj = engine.CreateSceneObject(asset_manager, "renderer_3d/generator", "sprite", {
-		{"texture", "atlas"}, {"script", "testgen"}
+--[[ 	local chunk_obj = engine.CreateSceneObject(asset_manager, "renderer_3d/generator", "terrain", {
+		{"texture", "atlas"}, {"generator_script", "testgen"}, {"generator_supplier", "script0/terrain_generator"}
 	})
 	chunk_obj:SetPosition(16, 0, 0)
 	chunk_obj:SetSize(1, 1, 1)

@@ -6,6 +6,7 @@
 #include "EnumStringConvertor.hpp"
 #include "Object.hpp"
 
+#include <any>
 #include <stdexcept>
 #include <string>
 
@@ -84,7 +85,7 @@ namespace Engine::Factories::ObjectFactory
 		AssetManager* asset_manager,
 		std::vector<Rendering::RendererSupplyData>& into_vector,
 		EnumStringConvertor<Rendering::RendererSupplyDataType> of_type,
-		const std::string& with_value
+		std::any with_value
 	);
 
 } // namespace Engine::Factories::ObjectFactory

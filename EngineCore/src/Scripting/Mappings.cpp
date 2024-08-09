@@ -14,11 +14,12 @@
 #include "EnumStringConvertor.hpp"
 #include "KVPairHelper.hpp"
 #include "lauxlib.h"
+#include "lua.h"
 #include "lua.hpp"
 
 // Prefixes for logging messages
 #define LOGPFX_CURRENT LOGPFX_LUA_MAPPED
-#include "Logging/LoggingPrefix.hpp"
+#include "Logging/LoggingPrefix.hpp" // IWYU pragma: keep
 
 #undef CMEP_LUAMAPPING_DEFINE
 #define CMEP_LUAMAPPING_DEFINE(mapping) {#mapping, Functions::mapping}
@@ -118,9 +119,9 @@ namespace Engine::Scripting::Mappings
 				}
 
 				lua_rawgeti(state, -1, 1);
-				lua_rawgeti(state, -2, 2);
+				EnumStringConvertor<Rendering::RendererSupplyDataType> type = std::string(lua_tostring(state, -1));
 
-				std::string type  = lua_tostring(state, -2);
+				lua_rawgeti(state, -2, 2);
 				std::string value = lua_tostring(state, -1);
 
 				Factories::ObjectFactory::PushSupplyData(asset_manager, supply_data, type, value);

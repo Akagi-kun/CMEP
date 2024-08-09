@@ -1,4 +1,4 @@
-dynagen_defs = {
+return {
 	faces = {
 		XPOS = 1,
 		XNEG = 2,

@@ -15,11 +15,6 @@
 
 namespace Engine::Rendering
 {
-	/* Renderer2D::Renderer2D(Engine* engine, IMeshBuilder* with_builder, std::string_view with_pipeline_program)
-		: IRenderer(engine, with_builder, with_pipeline_program)
-	{
-	} */
-
 	void Renderer2D::SupplyData(const RendererSupplyData& data)
 	{
 		switch (data.type)

@@ -3,8 +3,6 @@
 #include "InternalEngineObject.hpp"
 #include "lua.hpp"
 
-// #include "Scripting/lualib/lua.hpp"
-
 #include <string>
 
 namespace Engine::Scripting
@@ -17,6 +15,9 @@ namespace Engine::Scripting
 		int interpreted_count = 0;
 		int engine_count	  = 0;
 	};
+
+	std::string UnwindStack(lua_State* of_state);
+	int LuaErrorHandler(lua_State* state);
 
 	class ILuaScript : public InternalEngineObject
 	{

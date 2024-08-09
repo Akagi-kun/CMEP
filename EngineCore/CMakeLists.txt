@@ -50,6 +50,8 @@ set(SRC_FILES
 	src/Rendering/Vulkan/Wrappers/VCommandPool.cpp
 	src/Rendering/Vulkan/Wrappers/VCommandBuffer.cpp
 	
+	src/Scripting/CrossStateFunctionCall.cpp
+	
 	src/Scripting/ILuaScript.cpp
 	src/Scripting/EventLuaScript.cpp
 	src/Scripting/GeneratorLuaScript.cpp

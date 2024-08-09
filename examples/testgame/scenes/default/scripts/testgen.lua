@@ -1,6 +1,7 @@
-require("perlin")
-require("dynagen_defs")
-require("config")
+local dynagen_defs = require("dynagen_defs")
+local config = require("config")
+local gamedefs = require("game_defs")
+--require("perlin")
 
 --[[ local tracemap = {}
 function trace (event)
@@ -34,19 +35,6 @@ end
 
 debug.sethook(trace, "lc", 1) ]]
 
-local block_types = {
-	STONE = 1,
-	GRASS = 2,
-	DIRT = 3,
-	WOOD = 4,
-	LEAVES = 5,
-	MISSING = 6
-}
-local block_type_count = 8
-local block_textures = 2
-
-local texture_pixels = { x = 8, y = 8 }
-
 local map = {}
 
 local calculateMapOffsetZ = function(z)
@@ -57,9 +45,9 @@ local calculateMapOffset = function(x, y, z)
 	return x + (calculateMapOffsetZ(z - 1)) + (calculateMapOffsetZ(config.chunk_size_z)) * (y - 1)
 end
 
-local generateTree = function(x, y, z)
-	local leaves = block_types.LEAVES
-	local wood = block_types.WOOD
+--[[ local generateTree = function(x, y, z)
+	local leaves = gamedefs.block_types.LEAVES
+	local wood = gamedefs.block_types.WOOD
 	local tree_def = {
 		{
 			0, 0, 0, 	0, 0,
@@ -122,41 +110,52 @@ local generateTree = function(x, y, z)
 			end
 		end
 	end
-end
+end ]]
+
+--local tblpack = function(...)
+--    return {n = select("#", ...), ...}
+--end
+
+local ffi = require("ffi")
 
 -- Map generation
-local generateMap = function(world_x, world_y, world_z)
+local generateMap = function(supplier, world_x, world_y, world_z)
+	local map_data = supplier(world_x, world_z)
+	local cast_map_data = ffi.cast("uint8_t*", map_data)
+	
 	for map_pos_x = 1, config.chunk_size_x do
+
 		for map_pos_z = 1, config.chunk_size_z do
-			local noise_raw = perlin:noise((map_pos_x + world_x) / config.chunk_size_x, noise_layer, (map_pos_z + world_z) / config.chunk_size_z)
 
 			for map_pos_y = 1, config.chunk_size_y do
 				local offset = calculateMapOffset(map_pos_x, map_pos_y, map_pos_z)
 
+				map[offset] = cast_map_data[(map_pos_z - 1) + ((map_pos_y - 1) * config.chunk_size_x * config.chunk_size_z) + ((map_pos_x - 1) * config.chunk_size_z)]
+
 --				map[offset] = 1
 
-				local noise_adjusted = math.floor((noise_raw + 1) * config.noise_intensity)
-				local randomY = noise_adjusted + config.floor_level
-
-				if map[offset] == nil then
-					if map_pos_y < randomY then
-						if (randomY - map_pos_y - 1) < 1 then
-							map[offset] = block_types.GRASS
-						elseif (randomY - map_pos_y - 1) < 3 then
-							map[offset] = block_types.DIRT
-						else
-							map[offset] = block_types.STONE
-						end
-					else
-						map[offset] = 0
-						if (map[offset - calculateMapOffsetZ(config.chunk_size_z)] == 2
-							and math.random(config.tree_generation_chance) > (config.tree_generation_chance - 2)
-							and map_pos_x > 2 and map_pos_x < (config.chunk_size_x - 1)
-							and map_pos_z > 2 and map_pos_z < (config.chunk_size_z - 1)) then
-							generateTree(map_pos_x, map_pos_y, map_pos_z)
-						end
-					end
-				end
+--				local noise_adjusted = math.floor((noise_raw + 1) * config.noise_intensity)
+--				local randomY = noise_adjusted + config.floor_level
+--
+--				if map[offset] == nil then
+--					if map_pos_y < randomY then
+--						if (randomY - map_pos_y - 1) < 1 then
+--							map[offset] = gamedefs.block_types.GRASS
+--						elseif (randomY - map_pos_y - 1) < 3 then
+--							map[offset] = gamedefs.block_types.DIRT
+--						else
+--							map[offset] = gamedefs.block_types.STONE
+--						end
+--					else
+--						map[offset] = 0
+--						if (map[offset - calculateMapOffsetZ(config.chunk_size_z)] == 2
+--							and math.random(config.tree_generation_chance) > (config.tree_generation_chance - 2)
+--							and map_pos_x > 2 and map_pos_x < (config.chunk_size_x - 1)
+--							and map_pos_z > 2 and map_pos_z < (config.chunk_size_z - 1)) then
+--							generateTree(map_pos_x, map_pos_y, map_pos_z)
+--						end
+--					end
+--				end
 			end
 		end
 	end
@@ -165,13 +164,13 @@ end
 -- Mesh generation
 local faceYielder = function(value, face, x_off, z_off, y_off)
 	if value ~= nil then
-		local colors = {
+		local normals = {
 			{1, 0, 0},
-			{1, 0, 0},
+			{-1, 0, 0},
 			{0, 1, 0},
-			{0, 1, 0},
+			{0, -1, 0},
 			{0, 0, 1},
-			{0, 0, 1}
+			{0, 0, -1}
 		}
 
 		local face_textures = { 1, 1, 0, 0, 1, 1 }
@@ -184,26 +183,29 @@ local faceYielder = function(value, face, x_off, z_off, y_off)
 				z = z + z_off - 1
 				y = y + y_off - 1
 
-				local u_ratio = 0.9 / block_type_count
-				local v_ratio = 0.9 / block_textures
+				local u_ratio = 0.9 / gamedefs.block_type_count
+				local v_ratio = 0.9 / gamedefs.block_textures
 
 				-- ((size of 1 texture in atlas) * uv coord) + (offset from first texture) 
 				local modified_u = (u_ratio * u)
 				local modified_v = (v_ratio * v)
 
-				local offset_u = modified_u + ((value - 1) / block_type_count) + (u_ratio / texture_pixels.x / 3)
-				local offset_v = modified_v + (use_texture / block_textures) + (v_ratio / texture_pixels.y / 3)
+				local offset_u = modified_u + ((value - 1) / gamedefs.block_type_count) + (u_ratio / gamedefs.texture_pixels.x / 3)
+				local offset_v = modified_v + (use_texture / gamedefs.block_textures) + (v_ratio / gamedefs.texture_pixels.y / 3)
 
-				coroutine.yield(offset_u, offset_v, colors[face], x, y, z)
+				coroutine.yield(offset_u, offset_v, normals[face], {0, 0, 0}, x, y, z)
 			end
 		end
 	end
 end
 
-GENERATOR_FUNCTION = function(world_x, world_y, world_z)
+GENERATOR_FUNCTION = function(supplier, world_x, world_y, world_z)
 	map = {}
 
-	generateMap(world_x, world_y, world_z)
+	--print(supplier)
+	--print(supplier())
+
+	generateMap(supplier, world_x, world_y, world_z)
 	
 	for map_pos_y = 1, config.chunk_size_y do
 		for map_pos_z = 1, config.chunk_size_z do
@@ -267,6 +269,6 @@ GENERATOR_FUNCTION = function(world_x, world_y, world_z)
 			end
 		end
 	end
-	--print_trace()
-	--debug.sethook()
+--	--print_trace()
+--	--debug.sethook()
 end

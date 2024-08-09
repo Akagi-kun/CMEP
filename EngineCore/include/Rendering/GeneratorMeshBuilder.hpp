@@ -4,12 +4,16 @@
 
 #include "Scripting/ILuaScript.hpp"
 
+#include "SupplyData.hpp"
+
 namespace Engine::Rendering
 {
 	class GeneratorMeshBuilder final : public IMeshBuilder
 	{
 	private:
 		std::shared_ptr<Scripting::ILuaScript> generator_script;
+
+		GeneratorSupplierData generator_supplier;
 
 	public:
 		using IMeshBuilder::IMeshBuilder;

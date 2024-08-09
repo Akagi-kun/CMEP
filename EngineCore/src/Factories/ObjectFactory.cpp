@@ -6,10 +6,13 @@
 #include "Rendering/Renderer2D.hpp"
 #include "Rendering/Renderer3D.hpp"
 #include "Rendering/SpriteMeshBuilder.hpp"
+#include "Rendering/SupplyData.hpp"
 #include "Rendering/TextMeshBuilder.hpp"
 
 #include "EnumStringConvertor.hpp"
+#include "KVPairHelper.hpp"
 
+#include <any>
 #include <cassert>
 #include <stdexcept>
 
@@ -90,36 +93,57 @@ namespace Engine::Factories::ObjectFactory
 		AssetManager* asset_manager,
 		std::vector<Rendering::RendererSupplyData>& into_vector,
 		EnumStringConvertor<Rendering::RendererSupplyDataType> of_type,
-		const std::string& with_value
+		std::any with_value
 	)
 	{
-		switch (of_type)
+		if (with_value.has_value())
 		{
-			case Rendering::RendererSupplyDataType::TEXTURE:
+			switch (of_type)
 			{
-				into_vector.emplace_back(of_type, asset_manager->GetTexture(with_value));
-				break;
-			}
-			case Rendering::RendererSupplyDataType::FONT:
-			{
-				into_vector.emplace_back(of_type, asset_manager->GetFont(with_value));
-				break;
-			}
-			case Rendering::RendererSupplyDataType::TEXT:
-			{
-				into_vector.emplace_back(of_type, with_value);
-				break;
-			}
-			case Rendering::RendererSupplyDataType::SCRIPT:
-			{
-				into_vector.emplace_back(of_type, asset_manager->GetLuaScript(with_value));
-				break;
-			}
-			default:
-			{
-				throw std::invalid_argument("RendererSupplyDataType is unknown, invalid or missing!");
+				case Rendering::RendererSupplyDataType::TEXTURE:
+				{
+					into_vector.emplace_back(
+						of_type,
+						asset_manager->GetTexture(std::any_cast<std::string>(with_value))
+					);
+					return;
+				}
+				case Rendering::RendererSupplyDataType::FONT:
+				{
+					into_vector.emplace_back(of_type, asset_manager->GetFont(std::any_cast<std::string>(with_value)));
+					return;
+				}
+				case Rendering::RendererSupplyDataType::TEXT:
+				{
+					into_vector.emplace_back(of_type, std::any_cast<std::string>(with_value));
+					return;
+				}
+				case Rendering::RendererSupplyDataType::GENERATOR_SCRIPT:
+				{
+					into_vector.emplace_back(
+						of_type,
+						asset_manager->GetLuaScript(std::any_cast<std::string>(with_value))
+					);
+					return;
+				}
+				case Rendering::RendererSupplyDataType::GENERATOR_SUPPLIER:
+				{
+					const auto [key, val] = Utility::SplitKVPair(std::any_cast<std::string>(with_value), "/");
+
+					into_vector.emplace_back(
+						of_type,
+						Rendering::GeneratorSupplierData{asset_manager->GetLuaScript(key), val}
+					);
+					return;
+				}
+				default:
+				{
+					throw std::invalid_argument("RendererSupplyDataType is unknown, invalid or missing!");
+				}
 			}
 		}
+
+		throw std::invalid_argument("Cannot PushSupplyData without a value to push! (std::any::has_value() is false)");
 	}
 
 } // namespace Engine::Factories::ObjectFactory

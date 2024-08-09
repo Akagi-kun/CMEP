@@ -1,5 +1,9 @@
 #pragma once
 
+#include "Scripting/ILuaScript.hpp"
+
+#include "lua.hpp"
+
 #include <cassert>
 #include <memory>
 #include <string>
@@ -15,18 +19,31 @@ namespace Engine::Rendering
 	{
 		MIN_ENUM = 0x00,
 
-		TEXTURE = 1,
-		SCRIPT	= 2,
-		FONT	= 3,
+		// weak_ptr<void>
+		TEXTURE			 = 1,
+		GENERATOR_SCRIPT = 2,
+		FONT			 = 3,
 
+		// NO lua_State*
+		// YES weak_ptr<void>
+		GENERATOR_SUPPLIER = 16,
+
+		// std::string
 		TEXT = 32,
 
 		MAX_ENUM = 0xFF
 	};
 
+	struct GeneratorSupplierData
+	{
+		// lua_State* state;
+		std::weak_ptr<Scripting::ILuaScript> script;
+		std::string name;
+	};
+
 	struct RendererSupplyData
 	{
-		using payload_type = std::variant<std::weak_ptr<void>, std::string>;
+		using payload_type = std::variant<std::weak_ptr<void>, std::string, GeneratorSupplierData>;
 
 		RendererSupplyDataType type = RendererSupplyDataType::MIN_ENUM;
 		payload_type payload;

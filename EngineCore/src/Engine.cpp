@@ -252,13 +252,16 @@ namespace Engine
 
 		// TODO: Remove this!
 		// Create axis object
-		auto* object = Factories::ObjectFactory::CreateSceneObject<Rendering::Renderer3D, Rendering::AxisMeshBuilder>(
-			this,
-			"axis",
-			{}
-		);
+		{
+			auto* object =
+				Factories::ObjectFactory::CreateSceneObject<Rendering::Renderer3D, Rendering::AxisMeshBuilder>(
+					this,
+					"axis",
+					{}
+				);
 
-		scene->AddObject("_axis", object);
+			scene->AddObject("_axis", object);
+		}
 
 		// Pre-make ON_UPDATE event so we don't have to create it over and over again in hot loop
 		auto on_update_event = EventHandling::Event(this, EventHandling::EventType::ON_UPDATE);
@@ -275,7 +278,7 @@ namespace Engine
 		this->logger->SimpleLog(Logging::LogLevel::Info, "Starting scene build");
 		for (const auto& [name, object] : scene->GetAllObjects())
 		{
-			this->logger->SimpleLog(Logging::LogLevel::Debug1, "Building object '%s'", name.c_str());
+			this->logger->SimpleLog(Logging::LogLevel::Debug1, LOGPFX_CURRENT "Building object '%s'", name.c_str());
 			object->GetRenderer()->ForceBuild();
 		}
 
@@ -284,7 +287,7 @@ namespace Engine
 
 		this->logger->SimpleLog(
 			Logging::LogLevel::Info,
-			"Scene build finished in %lums",
+			LOGPFX_CURRENT "Scene build finished in %lums",
 			static_cast<uint_fast32_t>(scene_build_time)
 		);
 
@@ -399,7 +402,7 @@ namespace Engine
 			{
 				this->logger->SimpleLog(
 					Logging::LogLevel::Exception,
-					"Caught exception trying to fire event '%u'! e.what(): %s",
+					LOGPFX_CURRENT "Caught exception trying to fire event '%u'! e.what(): %s",
 					event.event_type,
 					e.what()
 				);

@@ -1,7 +1,9 @@
 #include "Scripting/GeneratorLuaScript.hpp"
 
+#include "Rendering/SupplyData.hpp"
 #include "Rendering/Vulkan/VulkanStructDefs.hpp"
 
+#include "Scripting/CrossStateFunctionCall.hpp"
 #include "Scripting/ILuaScript.hpp"
 
 #include "lua.hpp"
@@ -19,14 +21,21 @@ namespace Engine::Scripting
 
 	int GeneratorLuaScript::InternalCall(const std::string& function, void* data)
 	{
-		auto* generator_data = static_cast<std::array<void*, 2>*>(data);
+		auto* generator_data = static_cast<std::array<void*, 3>*>(data);
 
 		auto* mesh		= static_cast<std::vector<Rendering::RenderingVertex>*>(generator_data->at(0));
-		auto* world_pos = static_cast<glm::vec3*>(generator_data->at(1));
+		auto* supplier	= static_cast<Rendering::GeneratorSupplierData*>(generator_data->at(1));
+		auto* world_pos = static_cast<glm::vec3*>(generator_data->at(2));
 
 		lua_State* coroutine = lua_newthread(state);
-
 		lua_getglobal(coroutine, function.c_str());
+
+		if (auto locked_supplier = supplier->script.lock())
+		{
+			auto* state_ptr = locked_supplier->GetState();
+
+			CrossStateFunctionCall::PushFunction(&(state_ptr), supplier->name, coroutine);
+		}
 
 		lua_pushnumber(coroutine, static_cast<lua_Number>(world_pos->x));
 		lua_pushnumber(coroutine, static_cast<lua_Number>(world_pos->y));
@@ -41,7 +50,7 @@ namespace Engine::Scripting
 		int last_ret = LUA_OK;
 		do
 		{
-			last_ret = lua_resume(coroutine, 3);
+			last_ret = lua_resume(coroutine, 4);
 
 			if (last_ret != LUA_YIELD)
 			{
@@ -49,49 +58,45 @@ namespace Engine::Scripting
 				{
 					using namespace std::string_literals;
 
-					throw std::runtime_error(
-						"Exception executing generator script! Error: "s + lua_tostring(coroutine, -1)
-					);
+					throw std::runtime_error("Exception executing generator script! lua_resume error: "s
+												 .append(std::to_string(last_ret))
+												 .append(UnwindStack(coroutine)));
 				}
 
 				return 0;
 			}
 
-			// if (lua_istable(coroutine, -1))
-			//{
 			glm::vec3 vertex{};
 			glm::vec3 color{};
+			glm::vec3 normal{};
 			glm::vec2 texcoord{};
 
-			// lua_rawgeti(coroutine, -1, 1);
 			vertex.x = static_cast<float>(lua_tonumber(coroutine, -3));
-
-			// lua_rawgeti(coroutine, -2, 2);
 			vertex.y = static_cast<float>(lua_tonumber(coroutine, -2));
-
-			// lua_rawgeti(coroutine, -3, 3);
 			vertex.z = static_cast<float>(lua_tonumber(coroutine, -1));
 			lua_pop(coroutine, 3);
 
 			lua_rawgeti(coroutine, -1, 1);
 			color.r = static_cast<float>(lua_tonumber(coroutine, -1));
-
 			lua_rawgeti(coroutine, -2, 2);
 			color.g = static_cast<float>(lua_tonumber(coroutine, -1));
-
 			lua_rawgeti(coroutine, -3, 3);
 			color.b = static_cast<float>(lua_tonumber(coroutine, -1));
 			lua_pop(coroutine, 4);
 
-			// lua_rawgeti(coroutine, -7, 1);
+			lua_rawgeti(coroutine, -1, 1);
+			normal.x = static_cast<float>(lua_tonumber(coroutine, -1));
+			lua_rawgeti(coroutine, -2, 2);
+			normal.y = static_cast<float>(lua_tonumber(coroutine, -1));
+			lua_rawgeti(coroutine, -3, 3);
+			normal.z = static_cast<float>(lua_tonumber(coroutine, -1));
+			lua_pop(coroutine, 4);
+
 			texcoord.x = static_cast<float>(lua_tonumber(coroutine, -2));
-
-			// lua_rawgeti(coroutine, -8, 2);
 			texcoord.y = static_cast<float>(lua_tonumber(coroutine, -1));
-
 			lua_pop(coroutine, 2);
 
-			mesh->emplace_back(vertex, color, texcoord);
+			mesh->emplace_back(vertex, color, texcoord, normal);
 
 			/* this->logger->SimpleLog(
 				Logging::LogLevel::Debug3,
@@ -104,11 +109,6 @@ namespace Engine::Scripting
 				static_cast<double>(color.g),
 				static_cast<double>(color.b)
 			); */
-			//}
-			// else
-			//{
-			//	throw std::invalid_argument("Expected table got " + std::to_string(lua_type(state, -1)));
-			//}
 
 		} while (last_ret == LUA_YIELD);
 

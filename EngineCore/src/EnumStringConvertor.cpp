@@ -60,6 +60,7 @@ namespace Engine
 		{"texture"sv, value_type::TEXTURE},
 		{"font"sv, value_type::FONT},
 		{"text"sv, value_type::TEXT},
-		{"script"sv, value_type::SCRIPT}
+		{"generator_script"sv, value_type::GENERATOR_SCRIPT},
+		{"generator_supplier"sv, value_type::GENERATOR_SUPPLIER}
 	};
 } // namespace Engine

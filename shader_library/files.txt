@@ -6,3 +6,5 @@ text_frag.glsl
 text_vert.glsl
 color_frag.glsl
 color_vert.glsl
+terrain_frag.glsl
+terrain_vert.glsl

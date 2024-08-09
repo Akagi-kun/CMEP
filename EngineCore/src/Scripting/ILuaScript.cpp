@@ -3,9 +3,12 @@
 #include "Scripting/Mappings.hpp"
 
 #include "EventHandling.hpp"
+#include "lua.h"
 
 #include <filesystem>
+#include <sstream>
 #include <stdexcept>
+#include <string>
 #include <utility>
 
 // Prefixes for logging messages
@@ -61,6 +64,58 @@ namespace Engine::Scripting
 
 #pragma region Static functions
 
+	std::string UnwindStack(lua_State* of_state)
+	{
+		std::string error_msg = "\n--- BEGIN LUA STACK UNWIND ---\n\nError that caused this stack unwind:\n";
+
+		std::istringstream caused_by(lua_tostring(of_state, -1));
+
+		std::string line;
+		while (std::getline(caused_by, line))
+		{
+			error_msg.append("\t").append(line).append("\n");
+		}
+		error_msg.append("\n");
+
+		int caller_level = 0;
+		while (true)
+		{
+			lua_Debug activation_record = {};
+
+			if (lua_getstack(of_state, caller_level, &activation_record) != 1)
+			{
+				break;
+			}
+
+			lua_getinfo(of_state, "nS", &activation_record);
+
+			if (caller_level > 0)
+			{
+				error_msg.append("called by ");
+			}
+			else
+			{
+				error_msg.append("thrown by ");
+			}
+
+			error_msg.append(activation_record.source)
+				.append(":")
+				.append(std::to_string(activation_record.linedefined))
+				.append("\n");
+
+			caller_level++;
+		}
+
+		if (caller_level == 0)
+		{
+			error_msg.append("could not unwind stack for this error");
+		}
+
+		error_msg.append("\n--- END LUA STACK UNWIND ---\n");
+
+		return error_msg;
+	}
+
 	// Register C callback functions from mappings
 	static void RegisterCallbacks(lua_State* state, const std::shared_ptr<Logging::Logger>& logger)
 	{
@@ -103,7 +158,7 @@ namespace Engine::Scripting
 		}
 		catch (std::exception& e)
 		{
-			return luaL_error(state, "Wrapper caught exception! e.what(): %s", e.what());
+			return luaL_error(state, "Exception wrapper caught exception! e.what(): %s", e.what());
 		}
 		catch (...)
 		{
@@ -137,7 +192,7 @@ namespace Engine::Scripting
 		lua_pop(state, 1);
 	}
 
-	static int LuaErrorHandler(lua_State* state)
+	int LuaErrorHandler(lua_State* state)
 	{
 		// We can handle errors here if necessary
 		//
