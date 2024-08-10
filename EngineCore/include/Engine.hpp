@@ -76,7 +76,7 @@ namespace Engine
 		static void CursorEnterLeaveCallback(GLFWwindow* window, int entered);
 		static void OnKeyEventCallback(GLFWwindow* window, int key, int scancode, int action, int mods);
 
-		void HandleInput(double delta_time) noexcept;
+		void HandleInput(double delta_time);
 
 		void EngineLoop();
 

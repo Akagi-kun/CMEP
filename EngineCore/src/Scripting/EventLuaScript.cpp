@@ -6,6 +6,18 @@
 
 namespace Engine::Scripting
 {
+	void EventLuaScript::InitializeCall(const std::string& function)
+	{
+		// Clear stack
+		lua_settop(state, 0);
+
+		// Push error handler
+		lua_pushcfunction(state, LuaErrorHandler);
+
+		// Get start function
+		lua_getglobal(state, function.c_str());
+	}
+
 	int EventLuaScript::InternalCall(const std::string& function, void* data)
 	{
 		this->InitializeCall(function);

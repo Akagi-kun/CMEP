@@ -33,6 +33,6 @@ namespace Engine
 		[[nodiscard]] Object* FindObject(const std::string& name);
 		void RemoveObject(const std::string& name);
 
-		void LoadTemplatedObject(std::string name, Factories::ObjectFactory::ObjectTemplate object);
+		void LoadTemplatedObject(const std::string& name, Factories::ObjectFactory::ObjectTemplate object);
 	};
 } // namespace Engine

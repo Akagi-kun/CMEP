@@ -12,7 +12,7 @@
 
 // Prefixes for logging messages
 #define LOGPFX_CURRENT LOGPFX_CLASS_SCENE
-#include "Logging/LoggingPrefix.hpp"
+#include "Logging/LoggingPrefix.hpp" // IWYU pragma: keep
 
 namespace Engine
 {
@@ -96,7 +96,7 @@ namespace Engine
 		}
 	}
 
-	void Scene::LoadTemplatedObject(std::string name, Factories::ObjectFactory::ObjectTemplate object)
+	void Scene::LoadTemplatedObject(const std::string& name, Factories::ObjectFactory::ObjectTemplate object)
 	{
 		this->templates.emplace(name, object);
 	}

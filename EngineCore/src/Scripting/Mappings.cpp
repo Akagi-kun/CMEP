@@ -2,7 +2,7 @@
 
 #include "Assets/AssetManager.hpp"
 #include "Assets/Texture.hpp"
-#include "Rendering/Renderer2D.hpp"
+#include "Rendering/Renderers/Renderer.hpp"
 #include "Rendering/SupplyData.hpp"
 
 #include "Scripting/API/LuaFactories.hpp"

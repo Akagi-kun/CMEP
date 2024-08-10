@@ -4,7 +4,7 @@
 
 namespace Engine::Utility
 {
-	inline std::tuple<std::string, std::string> SplitKVPair(const std::string& from_string, std::string_view delimiter)
+	inline std::pair<std::string, std::string> SplitKVPair(const std::string& from_string, std::string_view delimiter)
 	{
 		// Get position of delimiter in entry
 		const size_t delimiter_begin = from_string.find(delimiter);

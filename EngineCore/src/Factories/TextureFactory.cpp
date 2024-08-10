@@ -2,6 +2,7 @@
 
 #include <cstddef>
 #include <cstdint>
+#include <stdexcept>
 
 #pragma warning(push, 2)
 #include "lodepng.h"
@@ -17,7 +18,7 @@
 
 // Prefixes for logging messages
 #define LOGPFX_CURRENT LOGPFX_CLASS_TEXTURE_FACTORY
-#include "Logging/LoggingPrefix.hpp"
+#include "Logging/LoggingPrefix.hpp" // IWYU pragma: keep
 
 namespace Engine::Factories
 {
@@ -128,45 +129,49 @@ namespace Engine::Factories
 			used_staging_buffer = staging_buffer;
 		}
 
-		if (auto* device_manager = renderer->GetDeviceManager())
+		auto* device_manager = renderer->GetDeviceManager();
+		if (device_manager == nullptr)
 		{
-			used_staging_buffer->MapMemory();
-
-			memcpy(used_staging_buffer->mapped_data, raw_data.data(), static_cast<size_t>(memory_size));
-
-			texture_data->texture_image = new Rendering::Vulkan::VSampledImage(
-				device_manager,
-				{xsize, ysize},
-				VK_SAMPLE_COUNT_1_BIT,
-				VK_FORMAT_R8G8B8A8_UNORM,
-				VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
-				VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
-				filtering,			 // Filter for both mag and min
-				sampler_address_mode // sampler address mode
-			);
-
-			// Transfer image layout to compatible with transfers
-			texture_data->texture_image->TransitionImageLayout(VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
-
-			auto* command_buffer = device_manager->GetCommandPool()->AllocateCommandBuffer();
-
-			command_buffer->BufferImageCopy(used_staging_buffer, texture_data->texture_image);
-
-			delete command_buffer;
-
-			// Transfer image layout to compatible with rendering
-			texture_data->texture_image->TransitionImageLayout(VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
-
-			// Unmap staging memory and cleanup buffer if we created it here
-			used_staging_buffer->UnmapMemory();
-
-			if (staging_buffer == nullptr)
-			{
-				delete used_staging_buffer;
-			}
-
-			texture_data->texture_image->AddImageView();
+			throw std::runtime_error("Renderer returned a nullptr for DeviceManager!");
 		}
+
+		used_staging_buffer->MapMemory();
+
+		memcpy(used_staging_buffer->mapped_data, raw_data.data(), static_cast<size_t>(memory_size));
+
+		texture_data->texture_image = new Rendering::Vulkan::VSampledImage(
+			device_manager,
+			{xsize, ysize},
+			VK_SAMPLE_COUNT_1_BIT,
+			VK_FORMAT_R8G8B8A8_UNORM,
+			VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
+			VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
+			filtering,			 // Filter for both mag and min
+			sampler_address_mode // sampler address mode
+		);
+
+		// Transfer image layout to compatible with transfers
+		texture_data->texture_image->TransitionImageLayout(VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
+
+		auto* command_buffer = device_manager->GetCommandPool()->AllocateCommandBuffer();
+
+		command_buffer->BufferImageCopy(used_staging_buffer, texture_data->texture_image);
+
+		delete command_buffer;
+
+		// Transfer image layout to compatible with rendering
+		texture_data->texture_image->TransitionImageLayout(VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+
+		// Unmap staging memory and cleanup buffer if we created it here
+		used_staging_buffer->UnmapMemory();
+
+		if (staging_buffer == nullptr)
+		{
+			delete used_staging_buffer;
+		}
+
+		texture_data->texture_image->AddImageView();
+
 		return 0;
 	}
 } // namespace Engine::Factories

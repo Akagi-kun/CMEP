@@ -1,4 +1,4 @@
-#include "Rendering/TextMeshBuilder.hpp"
+#include "Rendering/MeshBuilders/TextMeshBuilder.hpp"
 
 #include "Assets/Font.hpp"
 #include "Assets/Texture.hpp"

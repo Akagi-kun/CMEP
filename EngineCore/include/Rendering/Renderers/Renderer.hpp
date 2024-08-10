@@ -1,14 +1,13 @@
 #pragma once
 
-#include "Rendering/IMeshBuilder.hpp"
+#include "Rendering/MeshBuilders/IMeshBuilder.hpp"
+#include "Rendering/MeshBuilders/MeshBuildContext.hpp"
+#include "Rendering/SupplyData.hpp"
 #include "Rendering/Transform.hpp"
 #include "Rendering/Vulkan/PipelineManager.hpp"
 #include "Rendering/Vulkan/Wrappers/VPipeline.hpp"
 
 #include "InternalEngineObject.hpp"
-#include "MeshBuildContext.hpp"
-#include "SupplyData.hpp"
-#include "Transform.hpp"
 
 #include <cstdint>
 
@@ -62,12 +61,10 @@ namespace Engine::Rendering
 		{
 			delete this->mesh_builder;
 			this->mesh_builder = nullptr;
-
-			// delete this->pipeline;
 		}
 
 		// Renderers shall implement this to get textures, fonts etc.
-		virtual void SupplyData(const RendererSupplyData& data) = 0;
+		void SupplyData(const RendererSupplyData& data);
 
 		// Renderers shall implement this to update their matrix_data
 		virtual void UpdateMatrices() = 0;
@@ -93,5 +90,21 @@ namespace Engine::Rendering
 		}
 
 		void Render(Vulkan::VCommandBuffer* command_buffer, uint32_t current_frame);
+	};
+
+	class Renderer3D final : public IRenderer
+	{
+	public:
+		using IRenderer::IRenderer;
+
+		void UpdateMatrices() override;
+	};
+
+	class Renderer2D final : public IRenderer
+	{
+	public:
+		using IRenderer::IRenderer;
+
+		void UpdateMatrices() override;
 	};
 } // namespace Engine::Rendering

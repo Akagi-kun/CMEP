@@ -5,12 +5,12 @@
 
 #include "Logging/Logging.hpp"
 
-#include <assert.h>
+#include <cassert>
 #include <string>
 
 // Prefixes for logging messages
 #define LOGPFX_CURRENT LOGPFX_CLASS_FONT
-#include "Logging/LoggingPrefix.hpp"
+#include "Logging/LoggingPrefix.hpp" // IWYU pragma: keep
 
 namespace Engine::Rendering
 {

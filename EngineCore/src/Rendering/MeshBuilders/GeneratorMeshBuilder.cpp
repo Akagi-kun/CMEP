@@ -1,4 +1,4 @@
-#include "Rendering/GeneratorMeshBuilder.hpp"
+#include "Rendering/MeshBuilders/GeneratorMeshBuilder.hpp"
 
 #include "Rendering/SupplyData.hpp"
 

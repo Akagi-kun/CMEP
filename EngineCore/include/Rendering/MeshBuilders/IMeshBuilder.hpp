@@ -1,9 +1,10 @@
 #pragma once
 
+#include "Rendering/MeshBuilders/MeshBuildContext.hpp"
+#include "Rendering/SupplyData.hpp"
+#include "Rendering/Vulkan/VulkanRenderingEngine.hpp"
+
 #include "InternalEngineObject.hpp"
-#include "MeshBuildContext.hpp"
-#include "SupplyData.hpp"
-#include "Vulkan/VulkanRenderingEngine.hpp"
 
 namespace Engine::Rendering
 {

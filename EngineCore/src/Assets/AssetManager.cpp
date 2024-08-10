@@ -10,7 +10,7 @@
 
 // Prefixes for logging messages
 #define LOGPFX_CURRENT LOGPFX_CLASS_ASSET_MANAGER
-#include "Logging/LoggingPrefix.hpp"
+#include "Logging/LoggingPrefix.hpp" // IWYU pragma: keep
 
 namespace Engine
 {
@@ -42,7 +42,7 @@ namespace Engine
 
 #pragma region Adding Assets
 	void AssetManager::AddTexture(
-		std::string name,
+		const std::string& name,
 		const std::string& path,
 		Rendering::Texture_InitFiletype filetype,
 		VkFilter filtering,
@@ -67,7 +67,7 @@ namespace Engine
 		this->fonts.emplace(name, std::move(font));
 	}
 
-	void AssetManager::AddLuaScript(const std::string& name, std::shared_ptr<Scripting::ILuaScript> script)
+	void AssetManager::AddLuaScript(const std::string& name, const std::shared_ptr<Scripting::ILuaScript>& script)
 	{
 		this->luascripts.emplace(name, script);
 	}

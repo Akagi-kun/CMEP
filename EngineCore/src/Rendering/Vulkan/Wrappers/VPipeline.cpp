@@ -1,6 +1,6 @@
 #include "Rendering/Vulkan/Wrappers/VPipeline.hpp"
 
-#include "Rendering/IRenderer.hpp"
+#include "Rendering/Renderers/Renderer.hpp"
 #include "Rendering/Vulkan/VDeviceManager.hpp"
 #include "Rendering/Vulkan/VulkanRenderingEngine.hpp"
 #include "Rendering/Vulkan/VulkanStructDefs.hpp"

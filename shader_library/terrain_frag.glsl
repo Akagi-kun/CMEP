@@ -19,8 +19,12 @@ void main() {
 
 	if(fragNormal.y > 0)
 	{
-		finalColor *= 1.2;
+		finalColor.rgb *= 1.2;
 	}
+    else if(fragNormal.y < 0)
+    {
+        finalColor.rgb *= 0.8;
+    }
 
     outColor = finalColor;
 }

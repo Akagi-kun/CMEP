@@ -1,4 +1,4 @@
-#include "Rendering/IMeshBuilder.hpp"
+#include "Rendering/MeshBuilders/IMeshBuilder.hpp"
 
 #include "Engine.hpp"
 

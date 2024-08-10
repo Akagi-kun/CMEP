@@ -1,13 +1,11 @@
 #include "Factories/ObjectFactory.hpp"
 
 #include "Assets/AssetManager.hpp"
-#include "Rendering/AxisMeshBuilder.hpp"
-#include "Rendering/GeneratorMeshBuilder.hpp"
-#include "Rendering/Renderer2D.hpp"
-#include "Rendering/Renderer3D.hpp"
-#include "Rendering/SpriteMeshBuilder.hpp"
+#include "Rendering/MeshBuilders/AxisMeshBuilder.hpp"
+#include "Rendering/MeshBuilders/GeneratorMeshBuilder.hpp"
+#include "Rendering/MeshBuilders/SpriteMeshBuilder.hpp"
+#include "Rendering/MeshBuilders/TextMeshBuilder.hpp"
 #include "Rendering/SupplyData.hpp"
-#include "Rendering/TextMeshBuilder.hpp"
 
 #include "EnumStringConvertor.hpp"
 #include "KVPairHelper.hpp"
@@ -28,21 +26,31 @@ namespace Engine::Factories::ObjectFactory
 		{
 			case RendererType::RENDERER_2D:
 			{
+				using r_type = Rendering::Renderer2D;
 				switch (with_mesh_builder)
 				{
 					case MeshBuilderType::SPRITE:
 					{
-						return CreateSceneObject<Rendering::Renderer2D, Rendering::SpriteMeshBuilder>;
+						using mb_type = Rendering::SpriteMeshBuilder;
+						static_assert(mb_type::supports_2d);
+
+						return CreateSceneObject<r_type, mb_type>;
 					}
 					case MeshBuilderType::TEXT:
 					{
-						return CreateSceneObject<Rendering::Renderer2D, Rendering::TextMeshBuilder>;
+						using mb_type = Rendering::TextMeshBuilder;
+						static_assert(mb_type::supports_2d);
+
+						return CreateSceneObject<r_type, mb_type>;
 					}
 					// Axis is not compatible with 2D rendering
-					// case MeshBuilderType::AXIS:
-					//{
-					//	return CreateSceneObject<Rendering::Renderer2D, Rendering::AxisMeshBuilder>;
-					// }
+					/* case MeshBuilderType::AXIS:
+					{
+						using mb_type = Rendering::AxisMeshBuilder;
+						static_assert(mb_type::supports_2d); // Fails
+
+						return CreateSceneObject<r_type, mb_type>;
+					} */
 					default:
 					{
 						throw std::invalid_argument("Invalid mesh builder type!");
@@ -51,23 +59,36 @@ namespace Engine::Factories::ObjectFactory
 			}
 			case RendererType::RENDERER_3D:
 			{
+				using r_type = Rendering::Renderer3D;
 				switch (with_mesh_builder)
 				{
 					case MeshBuilderType::SPRITE:
 					{
-						return CreateSceneObject<Rendering::Renderer3D, Rendering::SpriteMeshBuilder>;
+						using mb_type = Rendering::SpriteMeshBuilder;
+						static_assert(mb_type::supports_3d);
+
+						return CreateSceneObject<r_type, mb_type>;
 					}
 					case MeshBuilderType::TEXT:
 					{
-						return CreateSceneObject<Rendering::Renderer3D, Rendering::TextMeshBuilder>;
+						using mb_type = Rendering::TextMeshBuilder;
+						static_assert(mb_type::supports_3d);
+
+						return CreateSceneObject<r_type, mb_type>;
 					}
 					case MeshBuilderType::AXIS:
 					{
-						return CreateSceneObject<Rendering::Renderer3D, Rendering::AxisMeshBuilder>;
+						using mb_type = Rendering::AxisMeshBuilder;
+						static_assert(mb_type::supports_3d);
+
+						return CreateSceneObject<r_type, mb_type>;
 					}
 					case MeshBuilderType::GENERATOR:
 					{
-						return CreateSceneObject<Rendering::Renderer3D, Rendering::GeneratorMeshBuilder>;
+						using mb_type = Rendering::GeneratorMeshBuilder;
+						static_assert(mb_type::supports_3d);
+
+						return CreateSceneObject<r_type, mb_type>;
 					}
 					default:
 					{

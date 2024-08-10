@@ -28,5 +28,8 @@ namespace Engine::Rendering
 		{
 			return VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
 		}
+
+		static constexpr bool supports_2d = true;
+		static constexpr bool supports_3d = true;
 	};
 } // namespace Engine::Rendering

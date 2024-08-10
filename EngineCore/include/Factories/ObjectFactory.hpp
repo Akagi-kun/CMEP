@@ -36,8 +36,8 @@ namespace Engine::Factories::ObjectFactory
 
 	struct ObjectTemplate
 	{
-		EnumStringConvertor<RendererType> with_renderer		   = RendererType::MIN_ENUM;
-		EnumStringConvertor<MeshBuilderType> with_mesh_builder = MeshBuilderType::MIN_ENUM;
+		EnumStringConvertor<RendererType> with_renderer;
+		EnumStringConvertor<MeshBuilderType> with_mesh_builder;
 		std::string with_shader;
 		std::vector<Rendering::RendererSupplyData> supply_list;
 	};

@@ -18,6 +18,7 @@ namespace Engine
 
 		std::optional<value_type> value;
 
+		EnumStringConvertor() = default;
 		EnumStringConvertor(value_type from) : value(from)
 		{
 		}

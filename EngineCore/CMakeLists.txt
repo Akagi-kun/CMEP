@@ -22,15 +22,13 @@ set(SRC_FILES
 	src/Assets/Font.cpp
 	src/Assets/Texture.cpp
 
-	src/Rendering/IRenderer.cpp
-	src/Rendering/Renderer2D.cpp
-	src/Rendering/Renderer3D.cpp
-
-	src/Rendering/IMeshBuilder.cpp
-	src/Rendering/TextMeshBuilder.cpp
-	src/Rendering/AxisMeshBuilder.cpp
-	src/Rendering/SpriteMeshBuilder.cpp
-	src/Rendering/GeneratorMeshBuilder.cpp
+	src/Rendering/Renderers/Renderer.cpp
+	
+	src/Rendering/MeshBuilders/IMeshBuilder.cpp
+	src/Rendering/MeshBuilders/AxisMeshBuilder.cpp
+	src/Rendering/MeshBuilders/TextMeshBuilder.cpp
+	src/Rendering/MeshBuilders/SpriteMeshBuilder.cpp
+	src/Rendering/MeshBuilders/GeneratorMeshBuilder.cpp
 	
 	src/Rendering/Vulkan/PipelineManager.cpp
 

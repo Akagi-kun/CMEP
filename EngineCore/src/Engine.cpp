@@ -1,9 +1,8 @@
 #include "Engine.hpp"
 
 #include "Assets/AssetManager.hpp"
-#include "Rendering/AxisMeshBuilder.hpp"
-#include "Rendering/IRenderer.hpp"
-#include "Rendering/Renderer3D.hpp"
+#include "Rendering/MeshBuilders/AxisMeshBuilder.hpp"
+#include "Rendering/Renderers/Renderer.hpp"
 #include "Rendering/Vulkan/PipelineManager.hpp"
 #include "Rendering/Vulkan/VulkanRenderingEngine.hpp"
 #include "Rendering/Vulkan/VulkanStructDefs.hpp"
@@ -18,7 +17,6 @@
 #include "Object.hpp"
 #include "buildinfo.hpp"
 #include "nlohmann/json.hpp"
-#include "vulkan/vulkan_core.h"
 
 #include <chrono>
 #include <cstdint>
@@ -30,7 +28,7 @@
 
 // Prefixes for logging messages
 #define LOGPFX_CURRENT LOGPFX_CLASS_ENGINE
-#include "Logging/LoggingPrefix.hpp"
+#include "Logging/LoggingPrefix.hpp" // IWYU pragma: keep
 
 namespace Engine
 {
@@ -78,7 +76,7 @@ namespace Engine
 		}
 	}
 
-	void Engine::HandleInput(const double delta_time) noexcept
+	void Engine::HandleInput(const double delta_time)
 	{
 		Rendering::GLFWwindowData windowdata = this->rendering_engine->GetWindow();
 

@@ -16,13 +16,17 @@
 
 // Prefixes for logging messages
 #define LOGPFX_CURRENT LOGPFX_CLASS_VULKAN_DEVICE_MANAGER
-#include "Logging/LoggingPrefix.hpp"
+#include "Logging/LoggingPrefix.hpp" // IWYU pragma: keep
 
 namespace Engine::Rendering::Vulkan
 {
 
 #pragma region Debugging callbacks
 
+	// NOLINTBEGIN(readability-identifier-naming)
+	// these functions do not follow our naming conventions
+	// their names are as specified by vulkan
+	//
 	VKAPI_ATTR static VkBool32 VKAPI_CALL VulkanDebugCallback(
 		VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
 		VkDebugUtilsMessageTypeFlagsEXT messageType,
@@ -81,6 +85,8 @@ namespace Engine::Rendering::Vulkan
 			func(instance, debugMessenger, pAllocator);
 		}
 	}
+	//
+	// NOLINTEND(readability-identifier-naming)
 
 #pragma endregion
 
@@ -130,7 +136,7 @@ namespace Engine::Rendering::Vulkan
 	void VDeviceManager::InitVMA()
 	{
 		VmaAllocatorCreateInfo allocator_create_info = {};
-		allocator_create_info.vulkanApiVersion		 = VK_API_VERSION_1_1;
+		allocator_create_info.vulkanApiVersion		 = VK_API_VERSION_1_1; // NOLINT
 		allocator_create_info.physicalDevice		 = this->vk_physical_device;
 		allocator_create_info.device				 = this->vk_logical_device;
 		allocator_create_info.instance				 = this->vk_instance;
@@ -142,6 +148,8 @@ namespace Engine::Rendering::Vulkan
 
 	void VDeviceManager::InitVulkanInstance()
 	{
+		// NOLINTBEGIN(*old-style-cast) Suppress warnings for VK_API macros
+		//
 		// Application information
 		VkApplicationInfo app_info{};
 		app_info.sType				= VK_STRUCTURE_TYPE_APPLICATION_INFO;
@@ -150,6 +158,8 @@ namespace Engine::Rendering::Vulkan
 		app_info.pEngineName		= "CMEP EngineCore";
 		app_info.engineVersion		= VK_MAKE_VERSION(1, 0, 0);
 		app_info.apiVersion			= VK_API_VERSION_1_1;
+		//
+		// NOLINTEND(*old-style-cast)
 
 		// Check validation layer support
 		if (this->enable_vk_validation_layers && !this->CheckVulkanValidationLayers())
@@ -381,6 +391,11 @@ namespace Engine::Rendering::Vulkan
 			throw std::runtime_error("Vulkan: failed to create logical device!");
 		}
 
+		if (!this->graphics_queue_indices.IsComplete())
+		{
+			throw std::runtime_error("Graphics indices are not complete!");
+		}
+
 		// Get queue handles
 		vkGetDeviceQueue(
 			this->vk_logical_device,
@@ -500,7 +515,10 @@ namespace Engine::Rendering::Vulkan
 
 		int16_t score = 0;
 
-		// Discrete GPUs have a significant performance advantage
+		// Suppress magic numbers since it doesnt make sense here
+		// NOLINTBEGIN(readability-magic-numbers)
+		//
+		// Naive scoring to favor usually-more-performant devices
 		switch (device_properties.deviceType)
 		{
 			case VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU:
@@ -519,6 +537,7 @@ namespace Engine::Rendering::Vulkan
 				score += 5;
 				break;
 		}
+		// NOLINTEND(readability-magic-numbers)
 
 		QueueFamilyIndices indices = this->FindVulkanQueueFamilies(device);
 

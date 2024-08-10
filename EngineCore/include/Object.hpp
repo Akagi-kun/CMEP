@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Rendering/IRenderer.hpp"
+#include "Rendering/Renderers/Renderer.hpp"
 #include "Rendering/Transform.hpp"
 
 #include "InternalEngineObject.hpp"

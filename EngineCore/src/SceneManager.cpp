@@ -1,6 +1,6 @@
 #include "SceneManager.hpp"
 
-#include "Rendering/IRenderer.hpp"
+#include "Rendering/Renderers/Renderer.hpp"
 #include "Rendering/Transform.hpp"
 
 #include "Logging/Logging.hpp"
@@ -14,7 +14,7 @@
 
 // Prefixes for logging messages
 #define LOGPFX_CURRENT LOGPFX_CLASS_SCENE_MANAGER
-#include "Logging/LoggingPrefix.hpp"
+#include "Logging/LoggingPrefix.hpp" // IWYU pragma: keep
 
 namespace Engine
 {

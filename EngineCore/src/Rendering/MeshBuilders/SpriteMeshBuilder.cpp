@@ -1,4 +1,4 @@
-#include "Rendering/SpriteMeshBuilder.hpp"
+#include "Rendering/MeshBuilders/SpriteMeshBuilder.hpp"
 
 #include <iterator>
 

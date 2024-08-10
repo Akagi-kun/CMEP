@@ -13,7 +13,7 @@
 
 // Prefixes for logging messages
 #define LOGPFX_CURRENT LOGPFX_LUA_SCRIPT
-#include "Logging/LoggingPrefix.hpp"
+#include "Logging/LoggingPrefix.hpp" // IWYU pragma: keep
 
 namespace Engine::Scripting
 {
@@ -254,18 +254,6 @@ namespace Engine::Scripting
 		return 0;
 	}
 
-	void ILuaScript::InitializeCall(const std::string& function)
-	{
-		// Clear stack
-		lua_settop(state, 0);
-
-		// Push error handler
-		lua_pushcfunction(state, LuaErrorHandler);
-
-		// Get start function
-		lua_getglobal(state, function.c_str());
-	}
-
 #pragma region Public functions
 
 	ILuaScript::ILuaScript(Engine* with_engine, std::string with_path, bool with_enable_profiling)
@@ -316,8 +304,7 @@ namespace Engine::Scripting
 
 		if (errcall != LUA_OK)
 		{
-			const char* errormsg = "";
-			errormsg			 = lua_tostring(state, -1);
+			const char* errormsg = lua_tostring(state, -1);
 
 			this->logger->SimpleLog(
 				Logging::LogLevel::Warning,

@@ -36,7 +36,7 @@ namespace Engine
 		~AssetManager();
 
 		void AddTexture(
-			std::string name,
+			const std::string& name,
 			const std::string& path,
 			Rendering::Texture_InitFiletype filetype,
 			VkFilter filtering				  = VK_FILTER_LINEAR,
@@ -44,7 +44,7 @@ namespace Engine
 		);
 		void AddFont(const std::string& name, const std::string& path);
 
-		void AddLuaScript(const std::string& name, std::shared_ptr<Scripting::ILuaScript> script);
+		void AddLuaScript(const std::string& name, const std::shared_ptr<Scripting::ILuaScript>& script);
 
 		std::shared_ptr<Rendering::Texture> GetTexture(const std::string& name);
 		std::shared_ptr<Rendering::Font> GetFont(const std::string& name);

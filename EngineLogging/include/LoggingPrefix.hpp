@@ -32,6 +32,6 @@
 
 // Prefixes for logging messages
 #define LOGPFX_CURRENT __DESIRED_LOGPFX__
-#include "LoggingPrefix.hpp"
+#include "Logging/LoggingPrefix.hpp"
 
 */

@@ -1,10 +1,10 @@
 #include "Object.hpp"
 
-#include "Rendering/IRenderer.hpp"
+#include "Rendering/Renderers/Renderer.hpp"
 
 // Prefixes for logging messages
 #define LOGPFX_CURRENT LOGPFX_CLASS_OBJECT
-#include "Logging/LoggingPrefix.hpp"
+#include "Logging/LoggingPrefix.hpp" // IWYU pragma: keep
 
 namespace Engine
 {

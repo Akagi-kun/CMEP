@@ -1,10 +1,10 @@
 #pragma once
 
-#include "Rendering/IMeshBuilder.hpp"
+#include "Rendering/SupplyData.hpp"
 
 #include "Scripting/ILuaScript.hpp"
 
-#include "SupplyData.hpp"
+#include "IMeshBuilder.hpp"
 
 namespace Engine::Rendering
 {
@@ -27,5 +27,8 @@ namespace Engine::Rendering
 		{
 			return VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
 		}
+
+		static constexpr bool supports_2d = true;
+		static constexpr bool supports_3d = true;
 	};
 } // namespace Engine::Rendering

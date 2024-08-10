@@ -90,7 +90,7 @@ namespace Engine::Scripting::API
 
 			if (auto locked_asset_manager = asset_manager.lock())
 			{
-				locked_asset_manager->AddTexture(std::move(name), path, Rendering::Texture_InitFiletype::FILE_PNG);
+				locked_asset_manager->AddTexture(name, path, Rendering::Texture_InitFiletype::FILE_PNG);
 
 				return 1;
 			}
