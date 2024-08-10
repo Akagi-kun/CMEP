@@ -8,17 +8,17 @@
 
 namespace Engine::Rendering::Vulkan
 {
-	class VCommandPool : public HoldsVulkanDevice
+	class CommandPool : public HoldsVulkanDevice
 	{
 	protected:
 		VkCommandPool native_handle = VK_NULL_HANDLE;
 
 	public:
-		VCommandPool(VDeviceManager* with_device_manager);
+		CommandPool(DeviceManager* with_device_manager);
 
-		~VCommandPool();
+		~CommandPool();
 
-		[[nodiscard]] VCommandBuffer* AllocateCommandBuffer();
+		[[nodiscard]] CommandBuffer* AllocateCommandBuffer();
 
 		[[nodiscard]] VkCommandPool& GetNativeHandle()
 		{

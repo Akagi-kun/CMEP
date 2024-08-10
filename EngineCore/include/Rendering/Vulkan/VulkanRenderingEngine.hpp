@@ -2,8 +2,8 @@
 
 #include "Rendering/Transform.hpp"
 #include "Rendering/Vulkan/VulkanStructDefs.hpp"
-#include "Rendering/Vulkan/Wrappers/VBuffer.hpp"
-#include "Rendering/Vulkan/Wrappers/VSwapchain.hpp"
+#include "Rendering/Vulkan/Wrappers/Buffer.hpp"
+#include "Rendering/Vulkan/Wrappers/Swapchain.hpp"
 #include "Rendering/Vulkan/Wrappers/framework.hpp"
 
 #include "InternalEngineObject.hpp"
@@ -41,13 +41,13 @@ namespace Engine::Rendering::Vulkan
 		bool framebuffer_resized = false;
 
 		// Swap chain data
-		VSwapchain* swapchain = nullptr;
+		Swapchain* swapchain = nullptr;
 
 		// Framebuffers
 		// std::vector<VkFramebuffer> vk_swap_chain_framebuffers;
 
 		// Command buffers
-		std::array<VCommandBuffer*, max_frames_in_flight> command_buffers;
+		std::array<CommandBuffer*, max_frames_in_flight> command_buffers;
 
 		// Synchronisation
 		std::array<VSyncObjects, max_frames_in_flight> sync_objects;
@@ -55,10 +55,10 @@ namespace Engine::Rendering::Vulkan
 		// VkRenderPass vk_render_pass = VK_NULL_HANDLE;
 
 		// Device manager
-		std::shared_ptr<VDeviceManager> device_manager;
+		std::shared_ptr<DeviceManager> device_manager;
 
 		// External callback for rendering
-		std::function<void(Vulkan::VCommandBuffer*, uint32_t, Engine*)> external_callback;
+		std::function<void(Vulkan::CommandBuffer*, uint32_t, Engine*)> external_callback;
 
 		bool DoesVulkanFormatHaveStencilComponent(VkFormat format);
 
@@ -68,7 +68,7 @@ namespace Engine::Rendering::Vulkan
 		void CleanupVulkanSwapChain();
 
 		// Command buffer functions
-		void RecordVulkanCommandBuffer(VCommandBuffer* command_buffer, uint32_t image_index);
+		void RecordVulkanCommandBuffer(CommandBuffer* command_buffer, uint32_t image_index);
 
 		// Init functions
 		void CreateVulkanSwapChain();
@@ -87,16 +87,16 @@ namespace Engine::Rendering::Vulkan
 
 		// Engine functions
 		void DrawFrame();
-		void SetRenderCallback(std::function<void(Vulkan::VCommandBuffer*, uint32_t, Engine*)> callback);
+		void SetRenderCallback(std::function<void(Vulkan::CommandBuffer*, uint32_t, Engine*)> callback);
 
 		// Buffer functions
-		VBuffer* CreateVulkanVertexBufferFromData(const std::vector<RenderingVertex>& vertices);
-		VBuffer* CreateVulkanStagingBufferWithData(const void* data, VkDeviceSize data_size);
+		Buffer* CreateVulkanVertexBufferFromData(const std::vector<RenderingVertex>& vertices);
+		Buffer* CreateVulkanStagingBufferWithData(const void* data, VkDeviceSize data_size);
 
 		template <typename value_type> using per_frame_array = std::array<value_type, max_frames_in_flight>;
 
 		// Getters
-		[[nodiscard]] VDeviceManager* GetDeviceManager()
+		[[nodiscard]] DeviceManager* GetDeviceManager()
 		{
 			return this->device_manager.get();
 		}

@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Rendering/Transform.hpp"
-#include "Rendering/Vulkan/Wrappers/VSampledImage.hpp"
+#include "Rendering/Vulkan/Wrappers/SampledImage.hpp"
 
 #include "InternalEngineObject.hpp"
 
@@ -23,8 +23,8 @@ namespace Engine::Rendering
 	{
 		std::vector<unsigned char> data;
 		TextureSize size;
-		int color_fmt						 = 4;
-		Vulkan::VSampledImage* texture_image = nullptr;
+		int color_fmt						= 4;
+		Vulkan::SampledImage* texture_image = nullptr;
 	};
 
 	class Texture final : public InternalEngineObject
@@ -46,7 +46,7 @@ namespace Engine::Rendering
 			return this->data->data;
 		}
 
-		[[nodiscard]] Vulkan::VSampledImage* GetTextureImage() const noexcept
+		[[nodiscard]] Vulkan::SampledImage* GetTextureImage() const noexcept
 		{
 			return this->data->texture_image;
 		}

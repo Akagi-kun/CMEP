@@ -210,7 +210,7 @@ namespace Engine
 	}
 
 	void Engine::RenderCallback(
-		Rendering::Vulkan::VCommandBuffer* command_buffer,
+		Rendering::Vulkan::CommandBuffer* command_buffer,
 		uint32_t current_frame,
 		Engine* engine
 	)

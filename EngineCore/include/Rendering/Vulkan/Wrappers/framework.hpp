@@ -12,27 +12,27 @@ namespace Engine::Rendering::Vulkan
 	class HoldsVMA;
 
 	// Command related
-	class VCommandPool;
-	class VCommandBuffer;
+	class CommandPool;
+	class CommandBuffer;
 
 	// Render management
-	class VDeviceManager;
+	class DeviceManager;
 	class VulkanRenderingEngine;
 
 	// Image related
-	class VImage;
-	class VSampledImage;
-	struct VImageSize
+	class Image;
+	class SampledImage;
+	struct ImageSize
 	{
 		uint32_t x;
 		uint32_t y;
 	};
 
 	// Rendering stack related
-	class VSwapchain;
-	class VPipeline;
+	class Swapchain;
+	class Pipeline;
 	class RenderPass;
 
 	// Buffer related
-	class VBuffer;
+	class Buffer;
 } // namespace Engine::Rendering::Vulkan

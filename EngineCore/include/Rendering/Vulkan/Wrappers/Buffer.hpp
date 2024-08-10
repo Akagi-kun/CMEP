@@ -10,7 +10,7 @@
 
 namespace Engine::Rendering::Vulkan
 {
-	class VBuffer : public HoldsVulkanDevice, public HoldsVMA
+	class Buffer : public HoldsVulkanDevice, public HoldsVMA
 	{
 	protected:
 		VkBuffer native_handle;
@@ -22,14 +22,14 @@ namespace Engine::Rendering::Vulkan
 	public:
 		void* mapped_data = nullptr;
 
-		VBuffer(
-			VDeviceManager* with_device_manager,
+		Buffer(
+			DeviceManager* with_device_manager,
 			VkDeviceSize with_size,
 			VkBufferUsageFlags with_usage,
 			VkMemoryPropertyFlags with_properties,
 			VmaAllocationCreateFlags with_vma_alloc_flags = 0
 		);
-		~VBuffer();
+		~Buffer();
 
 		void MapMemory();
 		void UnmapMemory();

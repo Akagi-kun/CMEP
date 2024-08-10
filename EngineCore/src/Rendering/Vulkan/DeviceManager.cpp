@@ -1,6 +1,6 @@
-#include "Rendering/Vulkan/VDeviceManager.hpp"
+#include "Rendering/Vulkan/DeviceManager.hpp"
 
-#include "Rendering/Vulkan/Wrappers/VCommandPool.hpp"
+#include "Rendering/Vulkan/Wrappers/CommandPool.hpp"
 
 #include "Logging/Logging.hpp"
 
@@ -92,13 +92,13 @@ namespace Engine::Rendering::Vulkan
 
 #pragma region Constructor/Destructor
 
-	VDeviceManager::VDeviceManager(Engine* with_engine, GLFWwindow* new_window) : InternalEngineObject(with_engine)
+	DeviceManager::DeviceManager(Engine* with_engine, GLFWwindow* new_window) : InternalEngineObject(with_engine)
 	{
 		this->window = new_window;
 
 		this->InitVulkanInstance();
 
-		if (glfwCreateWindowSurface(this->vk_instance, this->window, nullptr, &this->vk_surface) != VK_SUCCESS)
+		if (glfwCreateWindowSurface(this->instance, this->window, nullptr, &this->vk_surface) != VK_SUCCESS)
 		{
 			throw std::runtime_error("glfw failed to create window surface!");
 		}
@@ -108,45 +108,45 @@ namespace Engine::Rendering::Vulkan
 
 		this->InitVMA();
 
-		this->vk_command_pool = new VCommandPool(this);
+		this->command_pool = new CommandPool(this);
 	}
 
-	VDeviceManager::~VDeviceManager()
+	DeviceManager::~DeviceManager()
 	{
 		this->logger->SimpleLog(Logging::LogLevel::Info, LOGPFX_CURRENT "Cleaning up");
 
 		vmaDestroyAllocator(this->vma_allocator);
 
-		delete this->vk_command_pool;
+		delete this->command_pool;
 
-		vkDestroySurfaceKHR(this->vk_instance, this->vk_surface, nullptr);
-		vkDestroyDevice(this->vk_logical_device, nullptr);
+		vkDestroySurfaceKHR(this->instance, this->vk_surface, nullptr);
+		vkDestroyDevice(this->logical_device, nullptr);
 		if (this->enable_vk_validation_layers)
 		{
-			DestroyDebugUtilsMessengerEXT(this->vk_instance, this->vk_debug_messenger, nullptr);
+			DestroyDebugUtilsMessengerEXT(this->instance, this->vk_debug_messenger, nullptr);
 		}
 
-		vkDestroyInstance(this->vk_instance, nullptr);
+		vkDestroyInstance(this->instance, nullptr);
 	}
 
 #pragma endregion
 
 #pragma region Internal init functions
 
-	void VDeviceManager::InitVMA()
+	void DeviceManager::InitVMA()
 	{
 		VmaAllocatorCreateInfo allocator_create_info = {};
 		allocator_create_info.vulkanApiVersion		 = VK_API_VERSION_1_1; // NOLINT
-		allocator_create_info.physicalDevice		 = this->vk_physical_device;
-		allocator_create_info.device				 = this->vk_logical_device;
-		allocator_create_info.instance				 = this->vk_instance;
+		allocator_create_info.physicalDevice		 = this->physical_device;
+		allocator_create_info.device				 = this->logical_device;
+		allocator_create_info.instance				 = this->instance;
 
 		vmaCreateAllocator(&allocator_create_info, &(this->vma_allocator));
 
 		this->logger->SimpleLog(Logging::LogLevel::Debug1, LOGPFX_CURRENT "VMA created");
 	}
 
-	void VDeviceManager::InitVulkanInstance()
+	void DeviceManager::InitVulkanInstance()
 	{
 		// NOLINTBEGIN(*old-style-cast) Suppress warnings for VK_API macros
 		//
@@ -202,7 +202,7 @@ namespace Engine::Rendering::Vulkan
 		}
 
 		// Create an instance
-		if (vkCreateInstance(&create_info, nullptr, &(this->vk_instance)) != VK_SUCCESS)
+		if (vkCreateInstance(&create_info, nullptr, &(this->instance)) != VK_SUCCESS)
 		{
 			throw std::runtime_error("Could not create Vulkan instance");
 		}
@@ -224,7 +224,7 @@ namespace Engine::Rendering::Vulkan
 			debug_messenger_create_info.pUserData		= this;
 
 			if (CreateDebugUtilsMessengerEXT(
-					this->vk_instance,
+					this->instance,
 					&debug_messenger_create_info,
 					nullptr,
 					&(this->vk_debug_messenger)
@@ -237,12 +237,12 @@ namespace Engine::Rendering::Vulkan
 		}
 	}
 
-	void VDeviceManager::InitVulkanDevice()
+	void DeviceManager::InitVulkanDevice()
 	{
 		this->logger->SimpleLog(Logging::LogLevel::Debug2, LOGPFX_CURRENT "Initializing vulkan device");
 		// Get physical device count
 		uint32_t device_count = 0;
-		vkEnumeratePhysicalDevices(this->vk_instance, &device_count, nullptr);
+		vkEnumeratePhysicalDevices(this->instance, &device_count, nullptr);
 
 		// Check if there are any Vulkan-supporting devices
 		if (device_count == 0)
@@ -252,7 +252,7 @@ namespace Engine::Rendering::Vulkan
 
 		// Get all Vulkan-supporting devices
 		std::vector<VkPhysicalDevice> physical_devices(device_count);
-		vkEnumeratePhysicalDevices(this->vk_instance, &device_count, physical_devices.data());
+		vkEnumeratePhysicalDevices(this->instance, &device_count, physical_devices.data());
 
 		// sorted map of scored devices
 		std::multimap<int, VkPhysicalDevice> candidates;
@@ -267,18 +267,18 @@ namespace Engine::Rendering::Vulkan
 		if (candidates.rbegin()->first > 0)
 		{
 			// It is suitable
-			this->vk_physical_device = candidates.rbegin()->second;
-			this->msaa_samples		 = this->GetMaxUsableSampleCount();
+			this->physical_device = candidates.rbegin()->second;
+			this->msaa_samples	  = this->GetMaxUsableSampleCount();
 			this->logger->SimpleLog(Logging::LogLevel::Info, LOGPFX_CURRENT "Using MSAAx%u", this->msaa_samples);
 		}
 
-		if (this->vk_physical_device == VK_NULL_HANDLE)
+		if (this->physical_device == VK_NULL_HANDLE)
 		{
 			throw std::runtime_error("No physical device found!");
 		}
 
 		VkPhysicalDeviceProperties device_properties;
-		vkGetPhysicalDeviceProperties(this->vk_physical_device, &device_properties);
+		vkGetPhysicalDeviceProperties(this->physical_device, &device_properties);
 
 		this->logger->SimpleLog(
 			Logging::LogLevel::Info,
@@ -287,7 +287,7 @@ namespace Engine::Rendering::Vulkan
 		);
 	}
 
-	bool VDeviceManager::CheckVulkanValidationLayers()
+	bool DeviceManager::CheckVulkanValidationLayers()
 	{
 		// Get supported validation layer count
 		uint32_t layer_count;
@@ -321,9 +321,9 @@ namespace Engine::Rendering::Vulkan
 		return true;
 	}
 
-	void VDeviceManager::CreateVulkanLogicalDevice()
+	void DeviceManager::CreateVulkanLogicalDevice()
 	{
-		this->graphics_queue_indices = this->FindVulkanQueueFamilies(this->vk_physical_device);
+		this->graphics_queue_indices = this->FindVulkanQueueFamilies(this->physical_device);
 
 		// Vector of queue creation structs
 		std::vector<VkDeviceQueueCreateInfo> queue_create_infos;
@@ -357,7 +357,7 @@ namespace Engine::Rendering::Vulkan
 
 		VkPhysicalDeviceFeatures2 device_features2{};
 		device_features2.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2;
-		vkGetPhysicalDeviceFeatures2(this->vk_physical_device, &device_features2);
+		vkGetPhysicalDeviceFeatures2(this->physical_device, &device_features2);
 		device_features2.pNext = &device_robustness_features;
 
 		// Logical device creation information
@@ -385,7 +385,7 @@ namespace Engine::Rendering::Vulkan
 		}
 
 		// Create logical device
-		VkResult result = vkCreateDevice(this->vk_physical_device, &create_info, nullptr, &this->vk_logical_device);
+		VkResult result = vkCreateDevice(this->physical_device, &create_info, nullptr, &this->logical_device);
 		if (result != VK_SUCCESS)
 		{
 			throw std::runtime_error("Vulkan: failed to create logical device!");
@@ -398,16 +398,16 @@ namespace Engine::Rendering::Vulkan
 
 		// Get queue handles
 		vkGetDeviceQueue(
-			this->vk_logical_device,
+			this->logical_device,
 			this->graphics_queue_indices.graphics_family.value(),
 			0,
-			&this->vk_graphics_queue
+			&this->graphics_queue
 		);
 		vkGetDeviceQueue(
-			this->vk_logical_device,
+			this->logical_device,
 			this->graphics_queue_indices.present_family.value(),
 			0,
-			&this->vk_present_queue
+			&this->present_queue
 		);
 	}
 
@@ -415,7 +415,7 @@ namespace Engine::Rendering::Vulkan
 
 #pragma region Internal device functions
 
-	SwapChainSupportDetails VDeviceManager::QueryVulkanSwapChainSupport(VkPhysicalDevice device)
+	SwapChainSupportDetails DeviceManager::QueryVulkanSwapChainSupport(VkPhysicalDevice device)
 	{
 		SwapChainSupportDetails details;
 
@@ -447,7 +447,7 @@ namespace Engine::Rendering::Vulkan
 		return details;
 	}
 
-	bool VDeviceManager::CheckVulkanDeviceExtensionSupport(VkPhysicalDevice device)
+	bool DeviceManager::CheckVulkanDeviceExtensionSupport(VkPhysicalDevice device)
 	{
 		uint32_t extension_count;
 		vkEnumerateDeviceExtensionProperties(device, nullptr, &extension_count, nullptr);
@@ -471,7 +471,7 @@ namespace Engine::Rendering::Vulkan
 		return required_extensions.empty();
 	}
 
-	QueueFamilyIndices VDeviceManager::FindVulkanQueueFamilies(VkPhysicalDevice device)
+	QueueFamilyIndices DeviceManager::FindVulkanQueueFamilies(VkPhysicalDevice device)
 	{
 		QueueFamilyIndices indices;
 
@@ -503,7 +503,7 @@ namespace Engine::Rendering::Vulkan
 		return indices;
 	}
 
-	int16_t VDeviceManager::CheckVulkanPhysicalDeviceScore(VkPhysicalDevice device)
+	int16_t DeviceManager::CheckVulkanPhysicalDeviceScore(VkPhysicalDevice device)
 	{
 		// Physical device properties
 		VkPhysicalDeviceProperties device_properties;
@@ -597,10 +597,10 @@ namespace Engine::Rendering::Vulkan
 		return score;
 	}
 
-	VkSampleCountFlagBits VDeviceManager::GetMaxUsableSampleCount()
+	VkSampleCountFlagBits DeviceManager::GetMaxUsableSampleCount()
 	{
 		VkPhysicalDeviceProperties physical_device_properties;
-		vkGetPhysicalDeviceProperties(this->vk_physical_device, &physical_device_properties);
+		vkGetPhysicalDeviceProperties(this->physical_device, &physical_device_properties);
 
 		// Check which sample counts are supported by the framebuffers
 		VkSampleCountFlags counts = physical_device_properties.limits.framebufferColorSampleCounts &

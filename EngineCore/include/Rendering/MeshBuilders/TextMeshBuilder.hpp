@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Rendering/Transform.hpp"
-#include "Rendering/Vulkan/Wrappers/VSampledImage.hpp"
+#include "Rendering/Vulkan/Wrappers/SampledImage.hpp"
 
 #include "IMeshBuilder.hpp"
 
@@ -13,7 +13,7 @@ namespace Engine::Rendering
 
 		std::string text;
 
-		Vulkan::VSampledImage* texture_image = nullptr;
+		Vulkan::SampledImage* texture_image = nullptr;
 
 		std::shared_ptr<Rendering::Font> font = nullptr;
 

@@ -9,15 +9,15 @@
 
 namespace Engine::Rendering::Vulkan
 {
-	class VCommandBuffer final : public HoldsVulkanDevice
+	class CommandBuffer final : public HoldsVulkanDevice
 	{
 	private:
 		VkCommandPool owning_pool	  = nullptr;
 		VkCommandBuffer native_handle = VK_NULL_HANDLE;
 
 	public:
-		VCommandBuffer(VDeviceManager* with_device_manager, VkCommandPool from_pool);
-		~VCommandBuffer();
+		CommandBuffer(DeviceManager* with_device_manager, VkCommandPool from_pool);
+		~CommandBuffer();
 
 		void BeginCmdBuffer(VkCommandBufferUsageFlags usage_flags);
 		void EndCmdBuffer();
@@ -25,12 +25,12 @@ namespace Engine::Rendering::Vulkan
 		void ResetBuffer();
 
 		// TODO: Remove this in the future
-		void RecordCmds(std::function<void(VCommandBuffer*)> const& lambda);
+		void RecordCmds(std::function<void(CommandBuffer*)> const& lambda);
 
 		void QueueSubmit(VkQueue to_queue);
 
-		void BufferBufferCopy(VBuffer* from_buffer, VBuffer* to_buffer, std::vector<VkBufferCopy> regions);
-		void BufferImageCopy(VBuffer* from_buffer, VImage* to_image);
+		void BufferBufferCopy(Buffer* from_buffer, Buffer* to_buffer, std::vector<VkBufferCopy> regions);
+		void BufferImageCopy(Buffer* from_buffer, Image* to_image);
 
 		[[nodiscard]] VkCommandBuffer& GetNativeHandle()
 		{

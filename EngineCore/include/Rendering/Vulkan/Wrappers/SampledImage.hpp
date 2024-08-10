@@ -1,12 +1,12 @@
 #pragma once
 
-#include "Rendering/Vulkan/Wrappers/VImage.hpp"
+#include "Rendering/Vulkan/Wrappers/Image.hpp"
 
 #include "vulkan/vulkan_core.h"
 
 namespace Engine::Rendering::Vulkan
 {
-	class VSampledImage : public VImage
+	class SampledImage : public Image
 	{
 	private:
 		VkFilter use_filter;
@@ -15,9 +15,9 @@ namespace Engine::Rendering::Vulkan
 	public:
 		VkSampler texture_sampler;
 
-		VSampledImage(
-			VDeviceManager* with_device_manager,
-			VImageSize with_size,
+		SampledImage(
+			DeviceManager* with_device_manager,
+			ImageSize with_size,
 			VkSampleCountFlagBits num_samples,
 			VkFormat format,
 			VkImageUsageFlags usage,
@@ -27,6 +27,6 @@ namespace Engine::Rendering::Vulkan
 			VkImageTiling with_tiling = VK_IMAGE_TILING_OPTIMAL
 		);
 
-		~VSampledImage();
+		~SampledImage();
 	};
 } // namespace Engine::Rendering::Vulkan

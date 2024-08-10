@@ -8,18 +8,14 @@
 
 namespace Engine::Rendering::Vulkan
 {
-	class VShaderModule final : public HoldsVulkanDevice
+	class ShaderModule final : public HoldsVulkanDevice
 	{
 	private:
 		VkShaderModule native_handle;
 
 	public:
-		VShaderModule(
-			VDeviceManager* with_device_manager,
-			std::filesystem::path with_path,
-			const std::string& filename
-		);
-		~VShaderModule();
+		ShaderModule(DeviceManager* with_device_manager, std::filesystem::path with_path, const std::string& filename);
+		~ShaderModule();
 
 		[[nodiscard]] VkShaderModule GetNativeHandle()
 		{

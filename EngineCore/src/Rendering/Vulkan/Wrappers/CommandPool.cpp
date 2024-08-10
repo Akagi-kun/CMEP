@@ -1,13 +1,13 @@
-#include "Rendering/Vulkan/Wrappers/VCommandPool.hpp"
+#include "Rendering/Vulkan/Wrappers/CommandPool.hpp"
 
-#include "Rendering/Vulkan/VDeviceManager.hpp"
-#include "Rendering/Vulkan/Wrappers/VCommandBuffer.hpp"
+#include "Rendering/Vulkan/DeviceManager.hpp"
+#include "Rendering/Vulkan/Wrappers/CommandBuffer.hpp"
 
 #include <stdexcept>
 
 namespace Engine::Rendering::Vulkan
 {
-	VCommandPool::VCommandPool(VDeviceManager* const with_device_manager) : HoldsVulkanDevice(with_device_manager)
+	CommandPool::CommandPool(DeviceManager* const with_device_manager) : HoldsVulkanDevice(with_device_manager)
 	{
 		VkCommandPoolCreateInfo pool_info{};
 		pool_info.sType			   = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
@@ -22,16 +22,16 @@ namespace Engine::Rendering::Vulkan
 		}
 	}
 
-	VCommandPool::~VCommandPool()
+	CommandPool::~CommandPool()
 	{
 		VkDevice logical_device = this->device_manager->GetLogicalDevice();
 
 		vkDestroyCommandPool(logical_device, this->native_handle, nullptr);
 	}
 
-	[[nodiscard]] VCommandBuffer* VCommandPool::AllocateCommandBuffer()
+	[[nodiscard]] CommandBuffer* CommandPool::AllocateCommandBuffer()
 	{
-		return new VCommandBuffer(this->device_manager, this->native_handle);
+		return new CommandBuffer(this->device_manager, this->native_handle);
 	}
 
 } // namespace Engine::Rendering::Vulkan

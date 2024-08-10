@@ -1,8 +1,8 @@
 #include "Rendering/Vulkan/PipelineManager.hpp"
 
-#include "Rendering/Vulkan/VDeviceManager.hpp"
+#include "Rendering/Vulkan/DeviceManager.hpp"
 #include "Rendering/Vulkan/Wrappers/HoldsVulkanDevice.hpp"
-#include "Rendering/Vulkan/Wrappers/VPipeline.hpp"
+#include "Rendering/Vulkan/Wrappers/Pipeline.hpp"
 
 #include "Engine.hpp"
 
@@ -10,7 +10,7 @@
 
 namespace Engine::Rendering::Vulkan
 {
-	PipelineManager::PipelineManager(Engine* with_engine, VDeviceManager* with_device_manager)
+	PipelineManager::PipelineManager(Engine* with_engine, DeviceManager* with_device_manager)
 		: InternalEngineObject(with_engine), HoldsVulkanDevice(with_device_manager)
 	{
 	}
@@ -25,7 +25,7 @@ namespace Engine::Rendering::Vulkan
 		pipelines.clear();
 	}
 
-	VPipeline* PipelineManager::FindPipeline(const ExtendedPipelineSettings& with_settings)
+	Pipeline* PipelineManager::FindPipeline(const ExtendedPipelineSettings& with_settings)
 	{
 		// O(N)
 		for (const auto& [settings, pipeline_ptr] : this->pipelines)
@@ -44,9 +44,9 @@ namespace Engine::Rendering::Vulkan
 		return nullptr;
 	}
 
-	std::tuple<size_t, VPipeline*> PipelineManager::GetPipeline(const ExtendedPipelineSettings& with_settings)
+	std::tuple<size_t, Pipeline*> PipelineManager::GetPipeline(const ExtendedPipelineSettings& with_settings)
 	{
-		VPipeline* pipeline = /*  nullptr;  */ this->FindPipeline(with_settings);
+		Pipeline* pipeline = /*  nullptr;  */ this->FindPipeline(with_settings);
 
 		if (pipeline != nullptr)
 		{
@@ -64,7 +64,7 @@ namespace Engine::Rendering::Vulkan
 
 		// If no such pipeline is found, allocate new one
 		pipeline =
-			new Vulkan::VPipeline(renderer->GetDeviceManager(), with_settings.short_setting, renderer->GetRenderPass());
+			new Vulkan::Pipeline(renderer->GetDeviceManager(), with_settings.short_setting, renderer->GetRenderPass());
 
 		this->pipelines.emplace_back(with_settings, pipeline);
 

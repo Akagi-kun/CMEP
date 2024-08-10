@@ -34,19 +34,19 @@ set(SRC_FILES
 
 	src/Rendering/Vulkan/VmaImplementation.cpp
 
-	src/Rendering/Vulkan/VDeviceManager.cpp
+	src/Rendering/Vulkan/DeviceManager.cpp
 	src/Rendering/Vulkan/VulkanRenderingEngine.cpp
 	src/Rendering/Vulkan/VulkanRenderingEngine_Init.cpp
 	
-	src/Rendering/Vulkan/Wrappers/VShaderModule.cpp
-	src/Rendering/Vulkan/Wrappers/VPipeline.cpp
-	src/Rendering/Vulkan/Wrappers/VImage.cpp
-	src/Rendering/Vulkan/Wrappers/VSampledImage.cpp
+	src/Rendering/Vulkan/Wrappers/ShaderModule.cpp
+	src/Rendering/Vulkan/Wrappers/Pipeline.cpp
+	src/Rendering/Vulkan/Wrappers/Image.cpp
+	src/Rendering/Vulkan/Wrappers/SampledImage.cpp
 	src/Rendering/Vulkan/Wrappers/RenderPass.cpp
-	src/Rendering/Vulkan/Wrappers/VSwapchain.cpp
-	src/Rendering/Vulkan/Wrappers/VBuffer.cpp
-	src/Rendering/Vulkan/Wrappers/VCommandPool.cpp
-	src/Rendering/Vulkan/Wrappers/VCommandBuffer.cpp
+	src/Rendering/Vulkan/Wrappers/Swapchain.cpp
+	src/Rendering/Vulkan/Wrappers/Buffer.cpp
+	src/Rendering/Vulkan/Wrappers/CommandPool.cpp
+	src/Rendering/Vulkan/Wrappers/CommandBuffer.cpp
 	
 	src/Scripting/CrossStateFunctionCall.cpp
 	

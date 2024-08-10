@@ -9,13 +9,13 @@
 
 namespace Engine::Rendering::Vulkan
 {
-	class VPipeline : public HoldsVulkanDevice, public HoldsVMA
+	class Pipeline : public HoldsVulkanDevice, public HoldsVMA
 	{
 	private:
 		struct UserData
 		{
 			VkDescriptorPool with_pool;
-			VulkanRenderingEngine::per_frame_array<VBuffer*> uniform_buffers;
+			VulkanRenderingEngine::per_frame_array<Buffer*> uniform_buffers;
 			VulkanRenderingEngine::per_frame_array<VkDescriptorSet> descriptor_sets;
 		};
 
@@ -34,12 +34,12 @@ namespace Engine::Rendering::Vulkan
 		//  std::vector<VulkanRenderingEngine::per_frame_array<VkDescriptorSet>> descriptor_sets;
 
 		void AllocateNewDescriptorPool(UserData& data_ref);
-		void AllocateNewUniformBuffers(VulkanRenderingEngine::per_frame_array<VBuffer*>& buffer_ref);
+		void AllocateNewUniformBuffers(VulkanRenderingEngine::per_frame_array<Buffer*>& buffer_ref);
 		void AllocateNewDescriptorSets(UserData& data_ref);
 
 	public:
-		VPipeline(VDeviceManager* with_device_manager, VulkanPipelineSettings settings, RenderPass* with_render_pass);
-		~VPipeline();
+		Pipeline(DeviceManager* with_device_manager, VulkanPipelineSettings settings, RenderPass* with_render_pass);
+		~Pipeline();
 
 		size_t AllocateNewUserData();
 
@@ -48,7 +48,7 @@ namespace Engine::Rendering::Vulkan
 			const std::array<VkWriteDescriptorSet, VulkanRenderingEngine::GetMaxFramesInFlight()>& writes
 		);
 
-		[[nodiscard]] VBuffer* GetUniformBuffer(size_t user_idx, uint32_t current_frame)
+		[[nodiscard]] Buffer* GetUniformBuffer(size_t user_idx, uint32_t current_frame)
 		{
 			return this->user_data[user_idx].uniform_buffers[current_frame];
 		}

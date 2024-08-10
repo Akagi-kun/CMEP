@@ -1,12 +1,12 @@
-#include "Rendering/Vulkan/Wrappers/VShaderModule.hpp"
+#include "Rendering/Vulkan/Wrappers/ShaderModule.hpp"
 
-#include "Rendering/Vulkan/VDeviceManager.hpp"
+#include "Rendering/Vulkan/DeviceManager.hpp"
 #include "Rendering/Vulkan/VulkanUtilities.hpp"
 
 namespace Engine::Rendering::Vulkan
 {
-	VShaderModule::VShaderModule(
-		VDeviceManager* with_device_manager,
+	ShaderModule::ShaderModule(
+		DeviceManager* with_device_manager,
 		std::filesystem::path with_path,
 		const std::string& filename
 	)
@@ -27,7 +27,7 @@ namespace Engine::Rendering::Vulkan
 		}
 	}
 
-	VShaderModule::~VShaderModule()
+	ShaderModule::~ShaderModule()
 	{
 		vkDestroyShaderModule(this->device_manager->GetLogicalDevice(), this->native_handle, nullptr);
 	}

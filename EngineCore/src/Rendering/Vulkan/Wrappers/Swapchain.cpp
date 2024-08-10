@@ -1,16 +1,17 @@
-#include "Rendering/Vulkan/Wrappers/VSwapchain.hpp"
+#include "Rendering/Vulkan/Wrappers/Swapchain.hpp"
 
-#include "Rendering/Vulkan/VDeviceManager.hpp"
+#include "Rendering/Vulkan/DeviceManager.hpp"
 #include "Rendering/Vulkan/VulkanRenderingEngine.hpp"
 #include "Rendering/Vulkan/VulkanUtilities.hpp"
+#include "Rendering/Vulkan/Wrappers/CommandBuffer.hpp"
 #include "Rendering/Vulkan/Wrappers/HoldsVulkanDevice.hpp"
+#include "Rendering/Vulkan/Wrappers/Image.hpp"
 #include "Rendering/Vulkan/Wrappers/RenderPass.hpp"
-#include "Rendering/Vulkan/Wrappers/VCommandBuffer.hpp"
-#include "Rendering/Vulkan/Wrappers/VImage.hpp"
+
 
 namespace Engine::Rendering::Vulkan
 {
-	VSwapchain::VSwapchain(VDeviceManager* const with_device_manager, VkExtent2D with_extent, uint32_t with_count)
+	Swapchain::Swapchain(DeviceManager* const with_device_manager, VkExtent2D with_extent, uint32_t with_count)
 		: HoldsVulkanDevice(with_device_manager), image_format(VK_FORMAT_B8G8R8A8_UNORM), extent(with_extent)
 	{
 		// Query details for support of swapchains
@@ -109,7 +110,7 @@ namespace Engine::Rendering::Vulkan
 		);
 		VkFormat color_format = this->GetImageFormat();
 
-		this->depth_buffer = new VImage(
+		this->depth_buffer = new Image(
 			this->device_manager,
 			{this->extent.width, this->extent.height},
 			this->device_manager->GetMSAASampleCount(),
@@ -119,7 +120,7 @@ namespace Engine::Rendering::Vulkan
 		);
 		this->depth_buffer->AddImageView(VK_IMAGE_ASPECT_DEPTH_BIT);
 
-		this->multisampled_color_image = new VImage(
+		this->multisampled_color_image = new Image(
 			this->device_manager,
 			{this->extent.width, this->extent.height},
 			this->device_manager->GetMSAASampleCount(),
@@ -159,7 +160,7 @@ namespace Engine::Rendering::Vulkan
 		}
 	}
 
-	VSwapchain::~VSwapchain()
+	Swapchain::~Swapchain()
 	{
 		VkDevice logical_device = this->device_manager->GetLogicalDevice();
 
@@ -181,7 +182,7 @@ namespace Engine::Rendering::Vulkan
 		delete render_pass;
 	}
 
-	void VSwapchain::BeginRenderPass(VCommandBuffer* with_buffer, size_t image_index)
+	void Swapchain::BeginRenderPass(CommandBuffer* with_buffer, size_t image_index)
 	{
 		VkRenderPassBeginInfo render_pass_info{};
 		render_pass_info.sType			   = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;

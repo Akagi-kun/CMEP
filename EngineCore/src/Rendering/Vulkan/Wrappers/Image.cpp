@@ -1,20 +1,21 @@
-#include "Rendering/Vulkan/Wrappers/VImage.hpp"
+#include "Rendering/Vulkan/Wrappers/Image.hpp"
 
-#include "Rendering/Vulkan/VDeviceManager.hpp"
+#include "Rendering/Vulkan/DeviceManager.hpp"
+#include "Rendering/Vulkan/Wrappers/CommandBuffer.hpp"
+#include "Rendering/Vulkan/Wrappers/CommandPool.hpp"
 #include "Rendering/Vulkan/Wrappers/HoldsVulkanDevice.hpp"
-#include "Rendering/Vulkan/Wrappers/VCommandBuffer.hpp"
-#include "Rendering/Vulkan/Wrappers/VCommandPool.hpp"
 #include "Rendering/Vulkan/Wrappers/framework.hpp"
 
 #include "vulkan/vulkan_core.h"
 
 #include <stdexcept>
 
+
 namespace Engine::Rendering::Vulkan
 {
-	VImage::VImage(
-		VDeviceManager* const with_device_manager,
-		VImageSize with_size,
+	Image::Image(
+		DeviceManager* const with_device_manager,
+		ImageSize with_size,
 		VkSampleCountFlagBits num_samples,
 		VkFormat format,
 		VkImageUsageFlags usage,
@@ -61,7 +62,7 @@ namespace Engine::Rendering::Vulkan
 		vmaSetAllocationName(this->allocator, this->allocation, "VImage");
 	}
 
-	VImage::~VImage()
+	Image::~Image()
 	{
 		VkDevice logical_device = this->device_manager->GetLogicalDevice();
 
@@ -77,7 +78,7 @@ namespace Engine::Rendering::Vulkan
 		vmaFreeMemory(this->allocator, this->allocation);
 	}
 
-	void VImage::TransitionImageLayout(VkImageLayout new_layout)
+	void Image::TransitionImageLayout(VkImageLayout new_layout)
 	{
 		VkImageMemoryBarrier barrier{};
 		barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
@@ -124,7 +125,7 @@ namespace Engine::Rendering::Vulkan
 		auto* command_buffer = this->device_manager->GetCommandPool()->AllocateCommandBuffer();
 
 		// VCommandBuffer(this->device_manager, this->device_manager->GetCommandPool())
-		command_buffer->RecordCmds([&](VCommandBuffer* with_buffer) {
+		command_buffer->RecordCmds([&](CommandBuffer* with_buffer) {
 			vkCmdPipelineBarrier(
 				with_buffer->GetNativeHandle(),
 				source_stage,
@@ -144,7 +145,7 @@ namespace Engine::Rendering::Vulkan
 		this->current_layout = new_layout;
 	}
 
-	void VImage::AddImageView(VkImageAspectFlags with_aspect_flags)
+	void Image::AddImageView(VkImageAspectFlags with_aspect_flags)
 	{
 		VkImageViewCreateInfo view_info{};
 		view_info.sType							  = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;

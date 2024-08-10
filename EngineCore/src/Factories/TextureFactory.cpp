@@ -8,9 +8,9 @@
 #include "lodepng.h"
 #pragma warning(pop)
 
-#include "Rendering/Vulkan/VDeviceManager.hpp"
-#include "Rendering/Vulkan/Wrappers/VCommandBuffer.hpp"
-#include "Rendering/Vulkan/Wrappers/VCommandPool.hpp"
+#include "Rendering/Vulkan/DeviceManager.hpp"
+#include "Rendering/Vulkan/Wrappers/CommandBuffer.hpp"
+#include "Rendering/Vulkan/Wrappers/CommandPool.hpp"
 
 #include "Factories/TextureFactory.hpp"
 
@@ -24,7 +24,7 @@ namespace Engine::Factories
 {
 	std::shared_ptr<Rendering::Texture> TextureFactory::InitFile(
 		const std::string& path,
-		Rendering::Vulkan::VBuffer* staging_buffer,
+		Rendering::Vulkan::Buffer* staging_buffer,
 		Rendering::Texture_InitFiletype filetype,
 		VkFilter filtering,
 		VkSamplerAddressMode sampler_address_mode
@@ -92,7 +92,7 @@ namespace Engine::Factories
 
 	int TextureFactory::InitRaw(
 		std::unique_ptr<Rendering::TextureData>& texture_data,
-		Rendering::Vulkan::VBuffer* staging_buffer,
+		Rendering::Vulkan::Buffer* staging_buffer,
 		std::vector<unsigned char> raw_data,
 		int color_format,
 		VkFilter filtering,
@@ -111,12 +111,12 @@ namespace Engine::Factories
 
 		Rendering::Vulkan::VulkanRenderingEngine* renderer = this->owner_engine->GetRenderingEngine();
 
-		Rendering::Vulkan::VBuffer* used_staging_buffer = nullptr;
+		Rendering::Vulkan::Buffer* used_staging_buffer = nullptr;
 
 		// If no valid buffer was passed then create one here
 		if (staging_buffer == nullptr)
 		{
-			used_staging_buffer = new Rendering::Vulkan::VBuffer(
+			used_staging_buffer = new Rendering::Vulkan::Buffer(
 				renderer->GetDeviceManager(),
 				static_cast<size_t>(memory_size),
 				VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
@@ -139,7 +139,7 @@ namespace Engine::Factories
 
 		memcpy(used_staging_buffer->mapped_data, raw_data.data(), static_cast<size_t>(memory_size));
 
-		texture_data->texture_image = new Rendering::Vulkan::VSampledImage(
+		texture_data->texture_image = new Rendering::Vulkan::SampledImage(
 			device_manager,
 			{xsize, ysize},
 			VK_SAMPLE_COUNT_1_BIT,

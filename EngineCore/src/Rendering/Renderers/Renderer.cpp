@@ -4,9 +4,9 @@
 #include "Rendering/SupplyData.hpp"
 #include "Rendering/Vulkan/PipelineManager.hpp"
 #include "Rendering/Vulkan/VulkanRenderingEngine.hpp"
-#include "Rendering/Vulkan/Wrappers/VCommandBuffer.hpp"
-#include "Rendering/Vulkan/Wrappers/VPipeline.hpp"
-#include "Rendering/Vulkan/Wrappers/VSampledImage.hpp"
+#include "Rendering/Vulkan/Wrappers/CommandBuffer.hpp"
+#include "Rendering/Vulkan/Wrappers/Pipeline.hpp"
+#include "Rendering/Vulkan/Wrappers/SampledImage.hpp"
 #include "Rendering/framework.hpp"
 
 #include "Engine.hpp"
@@ -84,14 +84,14 @@ namespace Engine::Rendering
 		}
 		auto pipeline_result	  = this->pipeline_manager->GetPipeline(extended_settings);
 		this->pipeline_user_index = std::get<size_t>(pipeline_result);
-		this->pipeline			  = std::get<Vulkan::VPipeline*>(pipeline_result);
+		this->pipeline			  = std::get<Vulkan::Pipeline*>(pipeline_result);
 
 		if (this->texture)
 		{
 			Vulkan::VulkanRenderingEngine::per_frame_array<VkDescriptorImageInfo> descriptor_image_infos{};
 			Vulkan::VulkanRenderingEngine::per_frame_array<VkWriteDescriptorSet> descriptor_writes{};
 
-			Vulkan::VSampledImage* texture_image = this->texture->GetTextureImage();
+			Vulkan::SampledImage* texture_image = this->texture->GetTextureImage();
 
 			for (uint32_t i = 0; i < Vulkan::VulkanRenderingEngine::GetMaxFramesInFlight(); i++)
 			{
@@ -115,7 +115,7 @@ namespace Engine::Rendering
 		}
 	}
 
-	void IRenderer::Render(Vulkan::VCommandBuffer* command_buffer, uint32_t current_frame)
+	void IRenderer::Render(Vulkan::CommandBuffer* command_buffer, uint32_t current_frame)
 	{
 		if (!this->has_updated_matrices)
 		{

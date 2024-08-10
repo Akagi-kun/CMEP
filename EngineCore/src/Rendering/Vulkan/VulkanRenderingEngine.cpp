@@ -1,12 +1,12 @@
 #include "Rendering/Vulkan/VulkanRenderingEngine.hpp"
 
+#include "Rendering/Vulkan/DeviceManager.hpp"
 #include "Rendering/Vulkan/ImportVulkan.hpp"
-#include "Rendering/Vulkan/VDeviceManager.hpp"
-#include "Rendering/Vulkan/Wrappers/VBuffer.hpp"
-#include "Rendering/Vulkan/Wrappers/VCommandBuffer.hpp"
-#include "Rendering/Vulkan/Wrappers/VCommandPool.hpp" // IWYU pragma: keep
-#include "Rendering/Vulkan/Wrappers/VImage.hpp"		  // IWYU pragma: keep
-#include "Rendering/Vulkan/Wrappers/VSwapchain.hpp"
+#include "Rendering/Vulkan/Wrappers/Buffer.hpp"
+#include "Rendering/Vulkan/Wrappers/CommandBuffer.hpp"
+#include "Rendering/Vulkan/Wrappers/CommandPool.hpp" // IWYU pragma: keep
+#include "Rendering/Vulkan/Wrappers/Image.hpp"		 // IWYU pragma: keep
+#include "Rendering/Vulkan/Wrappers/Swapchain.hpp"
 
 #include "Logging/Logging.hpp"
 
@@ -22,7 +22,7 @@
 
 // Prefixes for logging messages
 #define LOGPFX_CURRENT LOGPFX_CLASS_VULKAN_RENDERING_ENGINE
-#include "Logging/LoggingPrefix.hpp"
+#include "Logging/LoggingPrefix.hpp" // IWYU pragma: keep
 
 namespace Engine::Rendering::Vulkan
 {
@@ -37,7 +37,7 @@ namespace Engine::Rendering::Vulkan
 	////////////////////////////////////////////////////////////////////////
 #pragma region Runtime functions
 
-	void VulkanRenderingEngine::RecordVulkanCommandBuffer(VCommandBuffer* command_buffer, uint32_t image_index)
+	void VulkanRenderingEngine::RecordVulkanCommandBuffer(CommandBuffer* command_buffer, uint32_t image_index)
 	{
 		command_buffer->BeginCmdBuffer(0);
 
@@ -188,7 +188,7 @@ namespace Engine::Rendering::Vulkan
 		this->logger
 			->SimpleLog(Logging::LogLevel::Debug1, LOGPFX_CURRENT "%u vulkan extensions supported", extension_count);
 
-		this->device_manager = std::make_shared<VDeviceManager>(this->owner_engine, this->window.native_handle);
+		this->device_manager = std::make_shared<DeviceManager>(this->owner_engine, this->window.native_handle);
 
 		this->CreateVulkanSwapChain();
 		// this->CreateVulkanRenderPass();
@@ -357,7 +357,7 @@ namespace Engine::Rendering::Vulkan
 	}
 
 	void VulkanRenderingEngine::SetRenderCallback(
-		std::function<void(Vulkan::VCommandBuffer*, uint32_t, Engine*)> callback
+		std::function<void(Vulkan::CommandBuffer*, uint32_t, Engine*)> callback
 	)
 	{
 		this->external_callback = std::move(callback);
@@ -393,15 +393,15 @@ namespace Engine::Rendering::Vulkan
 
 	// Buffers
 
-	VBuffer* VulkanRenderingEngine::CreateVulkanVertexBufferFromData(const std::vector<RenderingVertex>& vertices)
+	Buffer* VulkanRenderingEngine::CreateVulkanVertexBufferFromData(const std::vector<RenderingVertex>& vertices)
 	{
-		VCommandBuffer* command_buffer = this->device_manager->GetCommandPool()->AllocateCommandBuffer();
+		CommandBuffer* command_buffer = this->device_manager->GetCommandPool()->AllocateCommandBuffer();
 
 		VkDeviceSize buffer_size = sizeof(vertices[0]) * vertices.size();
 
 		auto* staging_buffer = this->CreateVulkanStagingBufferWithData(vertices.data(), buffer_size);
 
-		auto* vertex_buffer = new VBuffer(
+		auto* vertex_buffer = new Buffer(
 			this->device_manager.get(),
 			buffer_size,
 			VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
@@ -417,11 +417,11 @@ namespace Engine::Rendering::Vulkan
 		return vertex_buffer;
 	}
 
-	VBuffer* VulkanRenderingEngine::CreateVulkanStagingBufferWithData(const void* data, VkDeviceSize data_size)
+	Buffer* VulkanRenderingEngine::CreateVulkanStagingBufferWithData(const void* data, VkDeviceSize data_size)
 	{
-		VBuffer* staging_buffer;
+		Buffer* staging_buffer;
 
-		staging_buffer = new VBuffer(
+		staging_buffer = new Buffer(
 			this->device_manager.get(),
 			data_size,
 			VK_BUFFER_USAGE_TRANSFER_SRC_BIT,

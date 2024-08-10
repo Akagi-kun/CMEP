@@ -11,7 +11,7 @@
 
 namespace Engine::Rendering::Vulkan
 {
-	class VImage : public HoldsVulkanDevice, public HoldsVMA
+	class Image : public HoldsVulkanDevice, public HoldsVMA
 	{
 	private:
 		VmaAllocationInfo allocation_info;
@@ -23,19 +23,19 @@ namespace Engine::Rendering::Vulkan
 		VkImage native_handle		   = VK_NULL_HANDLE;
 		VkImageView native_view_handle = VK_NULL_HANDLE;
 
-		VImageSize size{};
+		ImageSize size{};
 
 	public:
-		VImage(
-			VDeviceManager* with_device_manager,
-			VImageSize with_size,
+		Image(
+			DeviceManager* with_device_manager,
+			ImageSize with_size,
 			VkSampleCountFlagBits num_samples,
 			VkFormat format,
 			VkImageUsageFlags usage,
 			VkMemoryPropertyFlags properties,
 			VkImageTiling with_tiling = VK_IMAGE_TILING_OPTIMAL
 		);
-		~VImage();
+		~Image();
 
 		void TransitionImageLayout(VkImageLayout new_layout);
 
@@ -53,7 +53,7 @@ namespace Engine::Rendering::Vulkan
 			return this->native_view_handle;
 		}
 
-		[[nodiscard]] VImageSize GetSize() const noexcept
+		[[nodiscard]] ImageSize GetSize() const noexcept
 		{
 			return this->size;
 		}

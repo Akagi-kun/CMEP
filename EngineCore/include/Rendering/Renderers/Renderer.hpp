@@ -5,7 +5,7 @@
 #include "Rendering/SupplyData.hpp"
 #include "Rendering/Transform.hpp"
 #include "Rendering/Vulkan/PipelineManager.hpp"
-#include "Rendering/Vulkan/Wrappers/VPipeline.hpp"
+#include "Rendering/Vulkan/Wrappers/Pipeline.hpp"
 
 #include "InternalEngineObject.hpp"
 
@@ -32,8 +32,8 @@ namespace Engine::Rendering
 
 		// Renderer configuration
 		std::string_view pipeline_name;
-		Vulkan::VPipeline* pipeline = nullptr;
-		size_t pipeline_user_index	= 0;
+		Vulkan::Pipeline* pipeline = nullptr;
+		size_t pipeline_user_index = 0;
 		std::shared_ptr<Vulkan::PipelineManager> pipeline_manager;
 
 		IMeshBuilder* mesh_builder = nullptr;
@@ -89,7 +89,7 @@ namespace Engine::Rendering
 			this->mesh_builder->Build();
 		}
 
-		void Render(Vulkan::VCommandBuffer* command_buffer, uint32_t current_frame);
+		void Render(Vulkan::CommandBuffer* command_buffer, uint32_t current_frame);
 	};
 
 	class Renderer3D final : public IRenderer

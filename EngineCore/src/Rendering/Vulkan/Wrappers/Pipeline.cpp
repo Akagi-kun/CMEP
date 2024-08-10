@@ -1,21 +1,21 @@
-#include "Rendering/Vulkan/Wrappers/VPipeline.hpp"
+#include "Rendering/Vulkan/Wrappers/Pipeline.hpp"
 
 #include "Rendering/Renderers/Renderer.hpp"
-#include "Rendering/Vulkan/VDeviceManager.hpp"
+#include "Rendering/Vulkan/DeviceManager.hpp"
 #include "Rendering/Vulkan/VulkanRenderingEngine.hpp"
 #include "Rendering/Vulkan/VulkanStructDefs.hpp"
 #include "Rendering/Vulkan/Wrappers/HoldsVMA.hpp"
 #include "Rendering/Vulkan/Wrappers/HoldsVulkanDevice.hpp"
 #include "Rendering/Vulkan/Wrappers/RenderPass.hpp"
-#include "Rendering/Vulkan/Wrappers/VShaderModule.hpp"
+#include "Rendering/Vulkan/Wrappers/ShaderModule.hpp"
 
 #include "Engine.hpp"
 #include "vulkan/vulkan_core.h"
 
 namespace Engine::Rendering::Vulkan
 {
-	VPipeline::VPipeline(
-		VDeviceManager* with_device_manager,
+	Pipeline::Pipeline(
+		DeviceManager* with_device_manager,
 		VulkanPipelineSettings settings,
 		RenderPass* with_render_pass
 	)
@@ -29,7 +29,7 @@ namespace Engine::Rendering::Vulkan
 
 		// Vertex stage
 		auto vert_shader_module =
-			VShaderModule(this->device_manager, shader_path, std::string(settings.shader) + +"_vert.spv");
+			ShaderModule(this->device_manager, shader_path, std::string(settings.shader) + +"_vert.spv");
 
 		VkPipelineShaderStageCreateInfo vert_shader_stage_info{};
 		vert_shader_stage_info.sType  = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
@@ -39,7 +39,7 @@ namespace Engine::Rendering::Vulkan
 
 		// Fragment stage
 		auto frag_shader_module =
-			VShaderModule(this->device_manager, shader_path, std::string(settings.shader) + "_frag.spv");
+			ShaderModule(this->device_manager, shader_path, std::string(settings.shader) + "_frag.spv");
 
 		VkPipelineShaderStageCreateInfo frag_shader_stage_info{};
 		frag_shader_stage_info.sType  = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
@@ -188,7 +188,7 @@ namespace Engine::Rendering::Vulkan
 		/************************************/
 	}
 
-	VPipeline::~VPipeline()
+	Pipeline::~Pipeline()
 	{
 		VkDevice logical_device = this->device_manager->GetLogicalDevice();
 
@@ -210,7 +210,7 @@ namespace Engine::Rendering::Vulkan
 		vkDestroyPipelineLayout(logical_device, this->pipeline_layout, nullptr);
 	}
 
-	void VPipeline::AllocateNewDescriptorPool(VPipeline::UserData& data_ref)
+	void Pipeline::AllocateNewDescriptorPool(Pipeline::UserData& data_ref)
 	{
 		// std::vector<VkDescriptorPoolSize> pool_sizes{};
 
@@ -242,7 +242,7 @@ namespace Engine::Rendering::Vulkan
 		}
 	}
 
-	void VPipeline::AllocateNewUniformBuffers(VulkanRenderingEngine::per_frame_array<VBuffer*>& buffer_ref)
+	void Pipeline::AllocateNewUniformBuffers(VulkanRenderingEngine::per_frame_array<Buffer*>& buffer_ref)
 	{
 		static constexpr VkDeviceSize buffer_size = sizeof(RendererMatrixData);
 
@@ -251,7 +251,7 @@ namespace Engine::Rendering::Vulkan
 
 		for (size_t i = 0; i < VulkanRenderingEngine::GetMaxFramesInFlight(); i++)
 		{
-			buffer_ref[i] = new VBuffer(
+			buffer_ref[i] = new Buffer(
 				this->device_manager,
 				buffer_size,
 				VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
@@ -263,7 +263,7 @@ namespace Engine::Rendering::Vulkan
 		// return user_index;
 	}
 
-	void VPipeline::AllocateNewDescriptorSets(VPipeline::UserData& data_ref)
+	void Pipeline::AllocateNewDescriptorSets(Pipeline::UserData& data_ref)
 	{
 		std::vector<VkDescriptorSetLayout> layouts(
 			VulkanRenderingEngine::GetMaxFramesInFlight(),
@@ -293,7 +293,7 @@ namespace Engine::Rendering::Vulkan
 		// return user_index;
 	}
 
-	size_t VPipeline::AllocateNewUserData()
+	size_t Pipeline::AllocateNewUserData()
 	{
 		size_t user_index = user_data.size();
 		user_data.emplace_back();
@@ -328,7 +328,7 @@ namespace Engine::Rendering::Vulkan
 		return user_index;
 	}
 
-	void VPipeline::UpdateDescriptorSets(
+	void Pipeline::UpdateDescriptorSets(
 		size_t user_index,
 		const VulkanRenderingEngine::per_frame_array<VkWriteDescriptorSet>& writes
 	)
@@ -349,7 +349,7 @@ namespace Engine::Rendering::Vulkan
 		);
 	}
 
-	void VPipeline::BindPipeline(size_t user_index, VkCommandBuffer with_command_buffer, uint32_t current_frame)
+	void Pipeline::BindPipeline(size_t user_index, VkCommandBuffer with_command_buffer, uint32_t current_frame)
 	{
 		vkCmdBindDescriptorSets(
 			with_command_buffer,

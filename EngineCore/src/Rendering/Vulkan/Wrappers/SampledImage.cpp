@@ -1,14 +1,14 @@
-#include "Rendering/Vulkan/Wrappers/VSampledImage.hpp"
+#include "Rendering/Vulkan/Wrappers/SampledImage.hpp"
 
-#include "Rendering/Vulkan/VDeviceManager.hpp"
+#include "Rendering/Vulkan/DeviceManager.hpp"
 
 #include <stdexcept>
 
 namespace Engine::Rendering::Vulkan
 {
-	VSampledImage::VSampledImage(
-		VDeviceManager* const with_device_manager,
-		VImageSize with_size,
+	SampledImage::SampledImage(
+		DeviceManager* const with_device_manager,
+		ImageSize with_size,
 		VkSampleCountFlagBits num_samples,
 		VkFormat format,
 		VkImageUsageFlags usage,
@@ -17,7 +17,7 @@ namespace Engine::Rendering::Vulkan
 		VkSamplerAddressMode with_address_mode,
 		VkImageTiling with_tiling
 	)
-		: VImage(with_device_manager, with_size, num_samples, format, usage, properties, with_tiling),
+		: Image(with_device_manager, with_size, num_samples, format, usage, properties, with_tiling),
 		  use_filter(with_filter), use_address_mode(with_address_mode)
 	{
 		VkSamplerCreateInfo sampler_info{};
@@ -58,7 +58,7 @@ namespace Engine::Rendering::Vulkan
 		}
 	}
 
-	VSampledImage::~VSampledImage()
+	SampledImage::~SampledImage()
 	{
 		vkDestroySampler(this->device_manager->GetLogicalDevice(), this->texture_sampler, nullptr);
 	}

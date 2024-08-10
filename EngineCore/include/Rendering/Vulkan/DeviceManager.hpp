@@ -8,7 +8,7 @@
 
 namespace Engine::Rendering::Vulkan
 {
-	class VDeviceManager final : public InternalEngineObject
+	class DeviceManager final : public InternalEngineObject
 	{
 	private:
 		// Defaults
@@ -16,8 +16,8 @@ namespace Engine::Rendering::Vulkan
 
 		// Queues
 		QueueFamilyIndices graphics_queue_indices{};
-		VkQueue vk_graphics_queue = VK_NULL_HANDLE;
-		VkQueue vk_present_queue  = VK_NULL_HANDLE;
+		VkQueue graphics_queue = VK_NULL_HANDLE;
+		VkQueue present_queue  = VK_NULL_HANDLE;
 
 		// GLFW window
 		GLFWwindow* window	  = nullptr;
@@ -25,14 +25,14 @@ namespace Engine::Rendering::Vulkan
 		std::string window_title;
 
 		// Vulkan devices
-		VkPhysicalDevice vk_physical_device = VK_NULL_HANDLE;
-		VkDevice vk_logical_device			= VK_NULL_HANDLE;
+		VkPhysicalDevice physical_device = VK_NULL_HANDLE;
+		VkDevice logical_device			 = VK_NULL_HANDLE;
 
 		// Vulkan instance
-		VkInstance vk_instance = VK_NULL_HANDLE;
+		VkInstance instance = VK_NULL_HANDLE;
 
 		// Command buffer pool
-		VCommandPool* vk_command_pool = nullptr;
+		CommandPool* command_pool = nullptr;
 
 		// Vulkan memory allocator
 		VmaAllocator vma_allocator;
@@ -75,17 +75,17 @@ namespace Engine::Rendering::Vulkan
 		void CreateVulkanLogicalDevice();
 
 	public:
-		VDeviceManager(Engine* with_engine, GLFWwindow* new_window);
-		~VDeviceManager();
+		DeviceManager(Engine* with_engine, GLFWwindow* new_window);
+		~DeviceManager();
 
 		[[nodiscard]] const VkPhysicalDevice& GetPhysicalDevice() noexcept
 		{
-			return this->vk_physical_device;
+			return this->physical_device;
 		}
 
 		[[nodiscard]] const VkDevice& GetLogicalDevice() noexcept
 		{
-			return this->vk_logical_device;
+			return this->logical_device;
 		}
 
 		[[nodiscard]] const VmaAllocator& GetVmaAllocator() noexcept
@@ -95,7 +95,7 @@ namespace Engine::Rendering::Vulkan
 
 		[[nodiscard]] const VkInstance& GetInstance() noexcept
 		{
-			return this->vk_instance;
+			return this->instance;
 		}
 
 		[[nodiscard]] const QueueFamilyIndices& GetQueueFamilies() const noexcept
@@ -115,22 +115,22 @@ namespace Engine::Rendering::Vulkan
 
 		[[nodiscard]] const VkQueue& GetGraphicsQueue() noexcept
 		{
-			return this->vk_graphics_queue;
+			return this->graphics_queue;
 		}
 
 		[[nodiscard]] const VkQueue& GetPresentQueue() noexcept
 		{
-			return this->vk_present_queue;
+			return this->present_queue;
 		}
 
-		[[nodiscard]] VCommandPool* GetCommandPool() noexcept
+		[[nodiscard]] CommandPool* GetCommandPool() noexcept
 		{
-			return this->vk_command_pool;
+			return this->command_pool;
 		}
 
 		[[nodiscard]] SwapChainSupportDetails QuerySwapChainSupport()
 		{
-			return this->QueryVulkanSwapChainSupport(this->vk_physical_device);
+			return this->QueryVulkanSwapChainSupport(this->physical_device);
 		}
 
 		// SwapChainSupportDetails QuerySwapChainSupport();

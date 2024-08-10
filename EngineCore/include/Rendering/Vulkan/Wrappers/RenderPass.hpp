@@ -11,11 +11,11 @@ namespace Engine::Rendering::Vulkan
 	private:
 		VkRenderPass native_handle;
 
-		friend class VSwapchain;
-		friend class VPipeline;
+		friend class Swapchain;
+		friend class Pipeline;
 
 	public:
-		RenderPass(VDeviceManager* with_device_manager, VkFormat with_format);
+		RenderPass(DeviceManager* with_device_manager, VkFormat with_format);
 		~RenderPass();
 
 		/* [[nodiscard]] VkRenderPass GetNativeHandle()

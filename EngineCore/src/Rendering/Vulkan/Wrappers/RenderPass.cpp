@@ -1,6 +1,6 @@
 #include "Rendering/Vulkan/Wrappers/RenderPass.hpp"
 
-#include "Rendering/Vulkan/VDeviceManager.hpp"
+#include "Rendering/Vulkan/DeviceManager.hpp"
 #include "Rendering/Vulkan/VulkanRenderingEngine.hpp"
 #include "Rendering/Vulkan/Wrappers/HoldsVulkanDevice.hpp"
 
@@ -11,7 +11,7 @@
 
 namespace Engine::Rendering::Vulkan
 {
-	RenderPass::RenderPass(VDeviceManager* with_device_manager, VkFormat with_format)
+	RenderPass::RenderPass(DeviceManager* with_device_manager, VkFormat with_format)
 		: HoldsVulkanDevice(with_device_manager)
 	{
 		const auto& physical_device = this->device_manager->GetPhysicalDevice();

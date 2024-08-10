@@ -1,8 +1,7 @@
-#include "Rendering/Vulkan/VDeviceManager.hpp"
+#include "Rendering/Vulkan/DeviceManager.hpp"
 #include "Rendering/Vulkan/VulkanRenderingEngine.hpp"
 #include "Rendering/Vulkan/VulkanStructDefs.hpp"
-#include "Rendering/Vulkan/Wrappers/VImage.hpp"
-#include "Rendering/Vulkan/Wrappers/VSwapchain.hpp"
+#include "Rendering/Vulkan/Wrappers/Swapchain.hpp"
 
 #include "Logging/Logging.hpp"
 
@@ -12,7 +11,7 @@
 
 // Prefixes for logging messages
 #define LOGPFX_CURRENT LOGPFX_CLASS_VULKAN_RENDERING_ENGINE
-#include "Logging/LoggingPrefix.hpp"
+#include "Logging/LoggingPrefix.hpp" // IWYU pragma: keep
 
 namespace Engine::Rendering::Vulkan
 {
@@ -31,7 +30,7 @@ namespace Engine::Rendering::Vulkan
 		// uint32_t swapchain_image_count = swap_chain_support.capabilities.minImageCount + 1;
 		// Temporary fix for screen lag
 		// uint32_t swapchain_image_count = 1;
-		uint32_t swapchain_image_count = 3;
+		uint32_t swapchain_image_count = VulkanRenderingEngine::max_frames_in_flight;
 
 		// Check if there is a defined maximum (maxImageCount > 0)
 		// where 0 is a special value meaning no maximum
@@ -47,7 +46,7 @@ namespace Engine::Rendering::Vulkan
 			);
 		}
 
-		this->swapchain = new VSwapchain(this->device_manager.get(), extent, swapchain_image_count);
+		this->swapchain = new Swapchain(this->device_manager.get(), extent, swapchain_image_count);
 
 		this->logger->SimpleLog(Logging::LogLevel::Debug3, LOGPFX_CURRENT "Vulkan swap chain created");
 	}

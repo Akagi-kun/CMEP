@@ -1,12 +1,12 @@
 #pragma once
 
 #include "Rendering/SupplyData.hpp"
-#include "Rendering/Vulkan/VDeviceManager.hpp"
+#include "Rendering/Vulkan/DeviceManager.hpp"
 #include "Rendering/Vulkan/VulkanStructDefs.hpp"
 
 #include "InternalEngineObject.hpp"
 #include "Wrappers/HoldsVulkanDevice.hpp"
-#include "Wrappers/VPipeline.hpp"
+#include "Wrappers/Pipeline.hpp"
 
 #include <utility>
 
@@ -26,14 +26,14 @@ namespace Engine::Rendering::Vulkan
 	class PipelineManager final : public InternalEngineObject, public HoldsVulkanDevice
 	{
 	private:
-		std::vector<std::pair<ExtendedPipelineSettings, VPipeline*>> pipelines;
+		std::vector<std::pair<ExtendedPipelineSettings, Pipeline*>> pipelines;
 
-		VPipeline* FindPipeline(const ExtendedPipelineSettings& with_settings);
+		Pipeline* FindPipeline(const ExtendedPipelineSettings& with_settings);
 
 	public:
-		PipelineManager(Engine* with_engine, VDeviceManager* with_device_manager);
+		PipelineManager(Engine* with_engine, DeviceManager* with_device_manager);
 		~PipelineManager();
 
-		std::tuple<size_t, VPipeline*> GetPipeline(const ExtendedPipelineSettings& with_settings);
+		std::tuple<size_t, Pipeline*> GetPipeline(const ExtendedPipelineSettings& with_settings);
 	};
 } // namespace Engine::Rendering::Vulkan

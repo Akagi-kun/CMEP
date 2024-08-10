@@ -1,7 +1,7 @@
 #pragma once
 
+#include "CommandBuffer.hpp"
 #include "HoldsVulkanDevice.hpp"
-#include "VCommandBuffer.hpp"
 #include "framework.hpp"
 #include "vulkan/vulkan_core.h"
 
@@ -9,7 +9,7 @@
 
 namespace Engine::Rendering::Vulkan
 {
-	class VSwapchain final : public HoldsVulkanDevice
+	class Swapchain final : public HoldsVulkanDevice
 	{
 	private:
 		VkSwapchainKHR native_handle = VK_NULL_HANDLE;
@@ -25,16 +25,15 @@ namespace Engine::Rendering::Vulkan
 		std::vector<VkFramebuffer> framebuffers;
 
 		// Multisampling
-		VImage* multisampled_color_image = nullptr;
+		Image* multisampled_color_image = nullptr;
 		// Depth buffers
-		VImage* depth_buffer			 = nullptr;
+		Image* depth_buffer				= nullptr;
 
 	public:
-		VSwapchain(VDeviceManager* with_device_manager, VkExtent2D with_extent, uint32_t with_count);
+		Swapchain(DeviceManager* with_device_manager, VkExtent2D with_extent, uint32_t with_count);
+		~Swapchain();
 
-		~VSwapchain();
-
-		void BeginRenderPass(VCommandBuffer* with_buffer, size_t image_index);
+		void BeginRenderPass(CommandBuffer* with_buffer, size_t image_index);
 
 		[[nodiscard]] VkSwapchainKHR GetNativeHandle()
 		{

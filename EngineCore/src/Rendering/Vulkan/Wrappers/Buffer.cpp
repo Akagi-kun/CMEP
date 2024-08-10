@@ -1,6 +1,6 @@
-#include "Rendering/Vulkan/Wrappers/VBuffer.hpp"
+#include "Rendering/Vulkan/Wrappers/Buffer.hpp"
 
-#include "Rendering/Vulkan/VDeviceManager.hpp"
+#include "Rendering/Vulkan/DeviceManager.hpp"
 
 #include "vulkan/vulkan_core.h"
 
@@ -8,8 +8,8 @@
 
 namespace Engine::Rendering::Vulkan
 {
-	VBuffer::VBuffer(
-		VDeviceManager* const with_device_manager,
+	Buffer::Buffer(
+		DeviceManager* const with_device_manager,
 		VkDeviceSize with_size,
 		VkBufferUsageFlags with_usage,
 		VkMemoryPropertyFlags with_properties,
@@ -49,13 +49,13 @@ namespace Engine::Rendering::Vulkan
 		vmaSetAllocationName(this->allocator, this->allocation, "VBuffer");
 	}
 
-	VBuffer::~VBuffer()
+	Buffer::~Buffer()
 	{
 		vkDestroyBuffer(this->device_manager->GetLogicalDevice(), this->native_handle, nullptr);
 		vmaFreeMemory(this->allocator, this->allocation);
 	}
 
-	void VBuffer::MapMemory()
+	void Buffer::MapMemory()
 	{
 		vkMapMemory(
 			this->device_manager->GetLogicalDevice(),
@@ -67,7 +67,7 @@ namespace Engine::Rendering::Vulkan
 		);
 	}
 
-	void VBuffer::UnmapMemory()
+	void Buffer::UnmapMemory()
 	{
 		vkUnmapMemory(this->device_manager->GetLogicalDevice(), this->allocation_info.deviceMemory);
 
