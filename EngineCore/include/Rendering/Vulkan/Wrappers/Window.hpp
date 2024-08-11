@@ -1,8 +1,7 @@
 #pragma once
 
 #include "Rendering/Transform.hpp"
-
-#include "GLFW/glfw3.h"
+#include "Rendering/Vulkan/ImportVulkan.hpp"
 
 #include <bitset>
 #include <cstdint>
@@ -41,8 +40,6 @@ namespace Engine::Rendering::Vulkan
 	{
 	public:
 		GLFWwindow* native_handle;
-		std::string title;
-
 		bool is_resized = false;
 
 		bool is_focus	= false;
@@ -64,6 +61,7 @@ namespace Engine::Rendering::Vulkan
 
 	private:
 		ScreenSize size;
+		std::string title;
 
 		static Window* GetWindowPtrFromGLFW(GLFWwindow* window);
 

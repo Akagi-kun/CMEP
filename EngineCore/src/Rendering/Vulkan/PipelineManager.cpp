@@ -65,7 +65,7 @@ namespace Engine::Rendering::Vulkan
 		// If no such pipeline is found, allocate new one
 		pipeline = new Vulkan::Pipeline(
 			renderer->GetDeviceManager(),
-			renderer->GetRenderPass(),
+			renderer->GetSwapchain()->GetRenderPass(),
 			with_settings.short_setting,
 			this->owner_engine->GetShaderPath()
 		);

@@ -184,7 +184,6 @@ namespace Engine::Rendering::Vulkan
 			pool_sizes[i] = pool_size;
 		}
 
-		// this->AllocateNewUserData();
 		/************************************/
 	}
 
@@ -212,19 +211,6 @@ namespace Engine::Rendering::Vulkan
 
 	void Pipeline::AllocateNewDescriptorPool(Pipeline::UserData& data_ref)
 	{
-		// std::vector<VkDescriptorPoolSize> pool_sizes{};
-
-		/* pool_sizes.resize(settings.descriptor_layout_settings.size());
-		for (size_t i = 0; i < settings.descriptor_layout_settings.size(); i++)
-		{
-			VkDescriptorPoolSize pool_size{};
-			pool_size.type			  = settings.descriptor_layout_settings[i].type;
-			pool_size.descriptorCount = VulkanRenderingEngine::GetMaxFramesInFlight() *
-										settings.descriptor_layout_settings[i].descriptor_count;
-
-			pool_sizes[i] = pool_size;
-		} */
-
 		VkDescriptorPoolCreateInfo pool_info{};
 		pool_info.sType			= VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
 		pool_info.poolSizeCount = static_cast<uint32_t>(pool_sizes.size());
@@ -246,9 +232,6 @@ namespace Engine::Rendering::Vulkan
 	{
 		static constexpr VkDeviceSize buffer_size = sizeof(RendererMatrixData);
 
-		// size_t user_index = uniform_buffers.size();
-		//  this->uniform_buffers.emplace_back();
-
 		for (size_t i = 0; i < VulkanRenderingEngine::GetMaxFramesInFlight(); i++)
 		{
 			buffer_ref[i] = new Buffer(
@@ -259,8 +242,6 @@ namespace Engine::Rendering::Vulkan
 				0
 			);
 		}
-
-		// return user_index;
 	}
 
 	void Pipeline::AllocateNewDescriptorSets(Pipeline::UserData& data_ref)
@@ -276,9 +257,6 @@ namespace Engine::Rendering::Vulkan
 		alloc_info.descriptorSetCount = VulkanRenderingEngine::GetMaxFramesInFlight();
 		alloc_info.pSetLayouts		  = layouts.data();
 
-		// size_t user_index = descriptor_sets.size();
-		// this->descriptor_sets.emplace_back(); //.resize(VulkanRenderingEngine::GetMaxFramesInFlight());
-
 		VkResult create_result = vkAllocateDescriptorSets(
 			this->device_manager->GetLogicalDevice(),
 			&alloc_info,
@@ -289,12 +267,11 @@ namespace Engine::Rendering::Vulkan
 		{
 			throw std::runtime_error("failed to allocate descriptor sets!");
 		}
-
-		// return user_index;
 	}
 
 	size_t Pipeline::AllocateNewUserData()
 	{
+		// TODO: Support actually removing userdata
 		size_t user_index = user_data.size();
 		user_data.emplace_back();
 

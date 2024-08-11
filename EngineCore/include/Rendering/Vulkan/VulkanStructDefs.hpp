@@ -1,8 +1,5 @@
 #pragma once
 
-// #include "Rendering/Transform.hpp"
-
-#include "ImportVulkan.hpp"
 #include "glm/vec2.hpp"
 #include "glm/vec3.hpp"
 #include "vulkan/vulkan_core.h"
@@ -14,13 +11,6 @@
 
 namespace Engine::Rendering
 {
-	/* struct GLFWwindowData
-	{
-		GLFWwindow* native_handle;
-		ScreenSize size;
-		std::string title;
-	}; */
-
 	struct QueueFamilyIndices
 	{
 		std::optional<uint32_t> graphics_family;

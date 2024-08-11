@@ -36,24 +36,16 @@ namespace Engine::Rendering::Vulkan
 		// Maximum number of frames in rotation/flight
 		static constexpr uint16_t max_frames_in_flight = 3;
 
-		Window* window = nullptr;
-
-		uint32_t current_frame = 0;
-		// bool framebuffer_resized = false;
-
 		// Swap chain data
-		Swapchain* swapchain = nullptr;
-
-		// Framebuffers
-		// std::vector<VkFramebuffer> vk_swap_chain_framebuffers;
+		Swapchain* swapchain   = nullptr;
+		Window* window		   = nullptr;
+		uint32_t current_frame = 0;
 
 		// Command buffers
 		std::array<CommandBuffer*, max_frames_in_flight> command_buffers;
 
 		// Synchronisation
 		std::array<VSyncObjects, max_frames_in_flight> sync_objects;
-
-		// VkRenderPass vk_render_pass = VK_NULL_HANDLE;
 
 		// Device manager
 		std::shared_ptr<DeviceManager> device_manager;
@@ -109,20 +101,14 @@ namespace Engine::Rendering::Vulkan
 			return this->window;
 		}
 
-		// TODO: Remove this!
-		[[nodiscard]] RenderPass* GetRenderPass()
-		{
-			return this->swapchain->GetRenderPass();
-		}
-
 		[[nodiscard]] static constexpr uint32_t GetMaxFramesInFlight()
 		{
 			return VulkanRenderingEngine::max_frames_in_flight;
 		}
 
-		[[nodiscard]] VkExtent2D GetSwapchainExtent() const
+		[[nodiscard]] Swapchain* GetSwapchain()
 		{
-			return this->swapchain->GetExtent();
+			return this->swapchain;
 		}
 
 		// VkFormat functions

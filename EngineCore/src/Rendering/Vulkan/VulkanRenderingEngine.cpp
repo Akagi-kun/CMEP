@@ -157,7 +157,6 @@ namespace Engine::Rendering::Vulkan
 
 	VulkanRenderingEngine::VulkanRenderingEngine(Engine* with_engine, ScreenSize with_window_size, std::string title)
 		: InternalEngineObject(with_engine)
-	//, window{nullptr, with_window_size, std::move(title)} //, window_title(std::move(title))
 	{
 		// Initialize GLFW
 		if (glfwInit() == GLFW_FALSE)
