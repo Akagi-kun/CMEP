@@ -31,12 +31,9 @@ set(SRC_FILES
 	src/Rendering/MeshBuilders/GeneratorMeshBuilder.cpp
 	
 	src/Rendering/Vulkan/PipelineManager.cpp
-
 	src/Rendering/Vulkan/VmaImplementation.cpp
-
 	src/Rendering/Vulkan/DeviceManager.cpp
 	src/Rendering/Vulkan/VulkanRenderingEngine.cpp
-	src/Rendering/Vulkan/VulkanRenderingEngine_Init.cpp
 	
 	src/Rendering/Vulkan/Wrappers/Window.cpp
 	src/Rendering/Vulkan/Wrappers/ShaderModule.cpp

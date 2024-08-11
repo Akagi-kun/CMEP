@@ -55,11 +55,6 @@ namespace Engine::Rendering::Vulkan
 			return this->extent;
 		}
 
-		[[nodiscard]] VkFramebuffer GetFramebuffer(size_t idx)
-		{
-			return this->framebuffers[idx];
-		}
-
 		[[nodiscard]] RenderPass* GetRenderPass()
 		{
 			return this->render_pass;

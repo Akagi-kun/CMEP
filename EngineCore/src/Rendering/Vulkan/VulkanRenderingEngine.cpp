@@ -42,7 +42,7 @@ namespace Engine::Rendering::Vulkan
 	////////////////////////////////////////////////////////////////////////
 #pragma region Runtime functions
 
-	void VulkanRenderingEngine::RecordVulkanCommandBuffer(CommandBuffer* command_buffer, uint32_t image_index)
+	void VulkanRenderingEngine::RecordFrameRenderCommands(CommandBuffer* command_buffer, uint32_t image_index)
 	{
 		command_buffer->BeginCmdBuffer(0);
 
@@ -154,6 +154,7 @@ namespace Engine::Rendering::Vulkan
 	////////////////////////////////////////////////////////////////////////
 	////////////////////////    Init functions    //////////////////////////
 	////////////////////////////////////////////////////////////////////////
+#pragma region Init functions
 
 	VulkanRenderingEngine::VulkanRenderingEngine(Engine* with_engine, ScreenSize with_window_size, std::string title)
 		: InternalEngineObject(with_engine)
@@ -168,24 +169,14 @@ namespace Engine::Rendering::Vulkan
 		this->logger->SimpleLog(Logging::LogLevel::Info, LOGPFX_CURRENT "GLFW initialized");
 
 		// Create a GLFW window
-		// glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
-		// glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE);
-
-		// Quick hack for i3wm
-		// TODO: Fix i3wm
-		// glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
-
 		this->window = new Window(
 			with_window_size,
 			std::move(title),
 			{
 				{GLFW_VISIBLE, GLFW_FALSE},
-				{GLFW_RESIZABLE, GLFW_TRUE},
+				{GLFW_RESIZABLE, GLFW_FALSE},
 			}
 		);
-
-		// glfwSetWindowUserPointer(this->window->native_handle, this);
-		// glfwSetFramebufferSizeCallback(this->window->native_handle, FramebufferResizeCallback);
 
 		uint32_t extension_count = 0;
 		vkEnumerateInstanceExtensionProperties(nullptr, &extension_count, nullptr);
@@ -232,13 +223,121 @@ namespace Engine::Rendering::Vulkan
 		glfwTerminate();
 	}
 
-	// Rest of section moved to 'VulkanRenderingEngine_Init.cpp'
-	//
+	void VulkanRenderingEngine::CreateVulkanSwapChain()
+	{
+		// Get device and surface Swap Chain capabilities
+		SwapChainSupportDetails swap_chain_support = this->device_manager->QuerySwapChainSupport();
 
+		VkExtent2D extent = this->ChooseVulkanSwapExtent(swap_chain_support.capabilities);
+
+		// Request one image more than is the required minimum
+		// uint32_t swapchain_image_count = swap_chain_support.capabilities.minImageCount + 1;
+		// Temporary fix for screen lag
+		// uint32_t swapchain_image_count = 1;
+		uint32_t swapchain_image_count = VulkanRenderingEngine::max_frames_in_flight;
+
+		// Check if there is a defined maximum (maxImageCount > 0)
+		// where 0 is a special value meaning no maximum
+		//
+		// And if there is a maximum, clamp swap chain length to it
+		if (swap_chain_support.capabilities.maxImageCount > 0 &&
+			swapchain_image_count > swap_chain_support.capabilities.maxImageCount)
+		{
+			swapchain_image_count = swap_chain_support.capabilities.maxImageCount;
+			this->logger->SimpleLog(
+				Logging::LogLevel::Warning,
+				LOGPFX_CURRENT "Swap chain image count limited by maxImageCount capability"
+			);
+		}
+
+		this->swapchain = new Swapchain(this->device_manager.get(), extent, swapchain_image_count);
+
+		this->logger->SimpleLog(Logging::LogLevel::Debug3, LOGPFX_CURRENT "Vulkan swap chain created");
+	}
+
+	void VulkanRenderingEngine::RecreateVulkanSwapChain()
+	{
+		VkDevice logical_device = this->device_manager->GetLogicalDevice();
+
+		// If window is minimized, wait for it to show up again
+		// int width			   = 0;
+		// int height			   = 0;
+		ScreenSize framebuffer = this->window->GetFramebufferSize();
+		// glfwGetFramebufferSize(this->window->native_handle, &width, &height);
+		// while (width == 0 || height == 0)
+		while (framebuffer.x == 0 || framebuffer.y == 0)
+		{
+			framebuffer = this->window->GetFramebufferSize();
+			// glfwGetFramebufferSize(this->window->native_handle, &width, &height);
+			glfwWaitEvents();
+		}
+
+		vkDeviceWaitIdle(logical_device);
+
+		this->logger->SimpleLog(Logging::LogLevel::Debug2, LOGPFX_CURRENT "Recreating vulkan swap chain");
+
+		// Clean up old swap chain
+		this->CleanupVulkanSwapChain();
+		this->CleanupVulkanSyncObjects();
+
+		this->logger->SimpleLog(Logging::LogLevel::Debug3, LOGPFX_CURRENT "Old swap chain cleaned up");
+
+		// Create a new swap chain
+		this->CreateVulkanSwapChain();
+		this->CreateVulkanSyncObjects();
+	}
+
+	void VulkanRenderingEngine::CleanupVulkanSwapChain()
+	{
+		delete this->swapchain;
+
+		this->swapchain = nullptr;
+	}
+
+	void VulkanRenderingEngine::CreateVulkanSyncObjects()
+	{
+		VkSemaphoreCreateInfo semaphore_info{};
+		semaphore_info.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
+
+		VkFenceCreateInfo fence_info{};
+		fence_info.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
+		fence_info.flags = VK_FENCE_CREATE_SIGNALED_BIT;
+
+		VkDevice logical_device = this->device_manager->GetLogicalDevice();
+
+		for (size_t i = 0; i < VulkanRenderingEngine::max_frames_in_flight; i++)
+		{
+			auto& sync_object_frame = this->sync_objects[i];
+
+			if (vkCreateSemaphore(logical_device, &semaphore_info, nullptr, &(sync_object_frame.image_available)) !=
+					VK_SUCCESS ||
+				vkCreateSemaphore(logical_device, &semaphore_info, nullptr, &(sync_object_frame.present_ready)) !=
+					VK_SUCCESS ||
+				vkCreateFence(logical_device, &fence_info, nullptr, &(sync_object_frame.in_flight)) != VK_SUCCESS)
+			{
+				this->logger->SimpleLog(Logging::LogLevel::Error, LOGPFX_CURRENT "Vulkan failed creating sync objects");
+				throw std::runtime_error("failed to create sync objects!");
+			}
+		}
+	}
+
+	void VulkanRenderingEngine::CleanupVulkanSyncObjects()
+	{
+		VkDevice logical_device = this->device_manager->GetLogicalDevice();
+
+		for (auto& sync_object : this->sync_objects)
+		{
+			vkDestroySemaphore(logical_device, sync_object.present_ready, nullptr);
+			vkDestroySemaphore(logical_device, sync_object.image_available, nullptr);
+			vkDestroyFence(logical_device, sync_object.in_flight, nullptr);
+		}
+	}
+#pragma endregion
 	////////////////////////////////////////////////////////////////////////
 	///////////////////////    Public Interface    /////////////////////////
 	////////////////////////////////////////////////////////////////////////
 
+#pragma region Public interface
 	void VulkanRenderingEngine::DrawFrame()
 	{
 		VkDevice logical_device = this->device_manager->GetLogicalDevice();
@@ -292,7 +391,7 @@ namespace Engine::Rendering::Vulkan
 		vkResetCommandBuffer(this->command_buffers[this->current_frame]->GetNativeHandle(), 0);
 
 		// Records render into command buffer
-		this->RecordVulkanCommandBuffer(this->command_buffers[this->current_frame], image_index);
+		this->RecordFrameRenderCommands(this->command_buffers[this->current_frame], image_index);
 
 		VkSubmitInfo submit_info{};
 		submit_info.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
@@ -403,5 +502,6 @@ namespace Engine::Rendering::Vulkan
 
 		return staging_buffer;
 	}
+#pragma endregion
 
 } // namespace Engine::Rendering::Vulkan

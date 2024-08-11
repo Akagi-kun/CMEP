@@ -21,6 +21,12 @@
 
 namespace Engine::Rendering::Vulkan
 {
+#ifndef _DEBUG
+	static constexpr bool enable_vk_validation_layers = false;
+#else
+	static constexpr bool enable_vk_validation_layers = true;
+#	pragma message("Validation layers enabled")
+#endif
 
 #pragma region Debugging callbacks
 
@@ -124,7 +130,7 @@ namespace Engine::Rendering::Vulkan
 
 		vkDestroySurfaceKHR(this->instance, this->vk_surface, nullptr);
 		vkDestroyDevice(this->logical_device, nullptr);
-		if (this->enable_vk_validation_layers)
+		if (enable_vk_validation_layers)
 		{
 			DestroyDebugUtilsMessengerEXT(this->instance, this->vk_debug_messenger, nullptr);
 		}
@@ -165,7 +171,7 @@ namespace Engine::Rendering::Vulkan
 		// NOLINTEND(*old-style-cast)
 
 		// Check validation layer support
-		if (this->enable_vk_validation_layers && !this->CheckVulkanValidationLayers())
+		if (enable_vk_validation_layers && !this->CheckVulkanValidationLayers())
 		{
 			throw std::runtime_error("Validation layers requested but unsupported!");
 		}
@@ -183,7 +189,7 @@ namespace Engine::Rendering::Vulkan
 		std::vector<const char*> vk_extensions(glfw_extensions, glfw_extensions + glfw_extension_count);
 
 		// Enable validation layer extension if it's a debug build
-		if (this->enable_vk_validation_layers)
+		if (enable_vk_validation_layers)
 		{
 			vk_extensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
 		}
@@ -193,7 +199,7 @@ namespace Engine::Rendering::Vulkan
 		create_info.ppEnabledExtensionNames = vk_extensions.data();
 
 		// Enable validation layers if it's a debug build
-		if (this->enable_vk_validation_layers)
+		if (enable_vk_validation_layers)
 		{
 			create_info.enabledLayerCount	= static_cast<uint32_t>(this->vk_validation_layers.size());
 			create_info.ppEnabledLayerNames = this->vk_validation_layers.data();
@@ -212,7 +218,7 @@ namespace Engine::Rendering::Vulkan
 		this->logger->SimpleLog(Logging::LogLevel::Info, LOGPFX_CURRENT "Created a Vulkan instance");
 
 		// If it's a debug build, add a debug callback to Vulkan
-		if (this->enable_vk_validation_layers)
+		if (enable_vk_validation_layers)
 		{
 			this->logger->SimpleLog(Logging::LogLevel::Debug2, LOGPFX_CURRENT "Creating debug messenger");
 			VkDebugUtilsMessengerCreateInfoEXT debug_messenger_create_info{};
@@ -377,7 +383,7 @@ namespace Engine::Rendering::Vulkan
 		create_info.ppEnabledExtensionNames = this->device_extensions.data();
 
 		// Again set validation layers, this part is apparently ignored by modern drivers
-		if (this->enable_vk_validation_layers)
+		if (enable_vk_validation_layers)
 		{
 			create_info.enabledLayerCount	= static_cast<uint32_t>(this->vk_validation_layers.size());
 			create_info.ppEnabledLayerNames = this->vk_validation_layers.data();
@@ -609,8 +615,8 @@ namespace Engine::Rendering::Vulkan
 		VkSampleCountFlags counts = physical_device_properties.limits.framebufferColorSampleCounts &
 									physical_device_properties.limits.framebufferDepthSampleCounts;
 
-		// VkSampleCountFlagBits is a binary value
-		// where each bit represents a choice.
+		// VkSampleCountFlagBits is a bitfield
+		// where each bit represents a single choice.
 		// We can therefore iteratively right-shift it
 		// until the bit matches one enabled in VkSampleCountFlags
 		// (equal to a chain of if/else)

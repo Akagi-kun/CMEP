@@ -22,9 +22,6 @@ namespace Engine::Rendering::Vulkan
 
 		// GLFW window
 		Window* window;
-		/* 	GLFWwindow* window	  = nullptr;
-			unsigned int window_x = 0, window_y = 0;
-			std::string window_title; */
 
 		// Vulkan devices
 		VkPhysicalDevice physical_device = VK_NULL_HANDLE;
@@ -51,11 +48,6 @@ namespace Engine::Rendering::Vulkan
 
 		// Validation layers
 		VkDebugUtilsMessengerEXT vk_debug_messenger = VK_NULL_HANDLE;
-#ifndef _DEBUG
-		const bool enable_vk_validation_layers = false;
-#else
-		const bool enable_vk_validation_layers = true;
-#endif
 
 		// Required validation layers to be supported
 		const std::vector<const char*> vk_validation_layers = {
@@ -134,7 +126,5 @@ namespace Engine::Rendering::Vulkan
 		{
 			return this->QueryVulkanSwapChainSupport(this->physical_device);
 		}
-
-		// SwapChainSupportDetails QuerySwapChainSupport();
 	};
 } // namespace Engine::Rendering::Vulkan

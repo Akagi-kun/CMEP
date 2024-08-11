@@ -61,7 +61,7 @@ namespace Engine::Rendering::Vulkan
 		void CleanupVulkanSwapChain();
 
 		// Command buffer functions
-		void RecordVulkanCommandBuffer(CommandBuffer* command_buffer, uint32_t image_index);
+		void RecordFrameRenderCommands(CommandBuffer* command_buffer, uint32_t image_index);
 
 		// Init functions
 		void CreateVulkanSwapChain();
