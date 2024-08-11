@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Rendering/Transform.hpp"
+// #include "Rendering/Transform.hpp"
 
 #include "ImportVulkan.hpp"
 #include "glm/vec2.hpp"
@@ -14,12 +14,12 @@
 
 namespace Engine::Rendering
 {
-	struct GLFWwindowData
+	/* struct GLFWwindowData
 	{
 		GLFWwindow* native_handle;
 		ScreenSize size;
 		std::string title;
-	};
+	}; */
 
 	struct QueueFamilyIndices
 	{

@@ -1,5 +1,5 @@
 CompileFlags:
-  Add: [-stdlib=libc++, -Wall, -Wextra, -Wpedantic, -Wno-c++98-compat, -Wno-c++98-compat-pedantic, -Wno-switch-enum, -Wswitch, -Wno-date-time, -Wno-global-constructors, -Wno-exit-time-destructors, -Wno-unsafe-buffer-usage, -Wno-cast-function-type-strict]
+  Add: [-stdlib=libc++, -Wall, -Wextra, -Wno-covered-switch-default, -Wpedantic, -Wno-c++98-compat, -Wno-c++98-compat-pedantic, -Wno-switch-enum, -Wswitch, -Wno-date-time, -Wno-global-constructors, -Wno-exit-time-destructors, -Wno-unsafe-buffer-usage, -Wno-cast-function-type-strict]
 If:
   PathMatch: [.*\**.hpp, .*\**.cpp]
   PathExclude: external/.*

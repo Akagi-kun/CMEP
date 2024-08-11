@@ -5,6 +5,7 @@
 
 #include "InternalEngineObject.hpp"
 #include "VulkanStructDefs.hpp"
+#include "Wrappers/Window.hpp"
 
 namespace Engine::Rendering::Vulkan
 {
@@ -20,9 +21,10 @@ namespace Engine::Rendering::Vulkan
 		VkQueue present_queue  = VK_NULL_HANDLE;
 
 		// GLFW window
-		GLFWwindow* window	  = nullptr;
-		unsigned int window_x = 0, window_y = 0;
-		std::string window_title;
+		Window* window;
+		/* 	GLFWwindow* window	  = nullptr;
+			unsigned int window_x = 0, window_y = 0;
+			std::string window_title; */
 
 		// Vulkan devices
 		VkPhysicalDevice physical_device = VK_NULL_HANDLE;
@@ -75,7 +77,7 @@ namespace Engine::Rendering::Vulkan
 		void CreateVulkanLogicalDevice();
 
 	public:
-		DeviceManager(Engine* with_engine, GLFWwindow* new_window);
+		DeviceManager(Engine* with_engine, Window* new_window);
 		~DeviceManager();
 
 		[[nodiscard]] const VkPhysicalDevice& GetPhysicalDevice() noexcept

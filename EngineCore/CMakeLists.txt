@@ -38,6 +38,7 @@ set(SRC_FILES
 	src/Rendering/Vulkan/VulkanRenderingEngine.cpp
 	src/Rendering/Vulkan/VulkanRenderingEngine_Init.cpp
 	
+	src/Rendering/Vulkan/Wrappers/Window.cpp
 	src/Rendering/Vulkan/Wrappers/ShaderModule.cpp
 	src/Rendering/Vulkan/Wrappers/Pipeline.cpp
 	src/Rendering/Vulkan/Wrappers/Image.cpp

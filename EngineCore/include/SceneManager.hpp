@@ -20,7 +20,6 @@ namespace Engine
 		glm::vec2 camera_hv_rotation{}; // Horizontal and Vertical rotation
 
 		static constexpr float initial_fov = 45.0f;
-		float field_of_vision			   = initial_fov;
 
 		// TODO: Remove?
 		glm::vec3 light_position{};
@@ -30,6 +29,8 @@ namespace Engine
 		void OnCameraUpdated();
 
 	public:
+		float field_of_vision = initial_fov;
+
 		SceneManager(Engine* with_engine);
 		~SceneManager();
 

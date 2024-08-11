@@ -1,6 +1,6 @@
 return {
     -- Number of chunks to render in every direction
-    render_distance = 8,
+    render_distance = 12,
 
     -- Noise multiplier
     noise_intensity = 8,
@@ -9,7 +9,7 @@ return {
     -- Offset of noise from 0
     floor_level = 16,
 
-    tree_generation_chance = 80, -- 360
+    tree_generation_chance = 100, -- 360
 
     -- Chunk size
     chunk_size_x = 16,

@@ -71,10 +71,10 @@ namespace Engine
 		);
 
 		static void ErrorCallback(int code, const char* message);
-		static void OnWindowFocusCallback(GLFWwindow* window, int focused);
-		static void CursorPositionCallback(GLFWwindow* window, double xpos, double ypos);
-		static void CursorEnterLeaveCallback(GLFWwindow* window, int entered);
-		static void OnKeyEventCallback(GLFWwindow* window, int key, int scancode, int action, int mods);
+		// static void OnWindowFocusCallback(GLFWwindow* window, int focused);
+		// static void CursorPositionCallback(GLFWwindow* window, double xpos, double ypos);
+		// static void CursorEnterLeaveCallback(GLFWwindow* window, int entered);
+		// static void OnKeyEventCallback(GLFWwindow* window, int key, int scancode, int action, int mods);
 
 		void HandleInput(double delta_time);
 
@@ -85,10 +85,10 @@ namespace Engine
 		std::shared_ptr<SceneManager> scene_manager;
 
 	public:
-		bool state_is_window_in_focus;
-		bool state_is_window_in_content;
-		double state_mouse_x_pos;
-		double state_mouse_y_pos;
+		// bool state_is_window_in_focus;
+		// bool state_is_window_in_content;
+		// double state_mouse_x_pos;
+		// double state_mouse_y_pos;
 
 		Engine(std::shared_ptr<Logging::Logger>& logger);
 		~Engine();

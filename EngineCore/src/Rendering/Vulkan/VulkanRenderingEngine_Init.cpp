@@ -56,29 +56,37 @@ namespace Engine::Rendering::Vulkan
 		VkDevice logical_device = this->device_manager->GetLogicalDevice();
 
 		// If window is minimized, wait for it to show up again
-		int width  = 0;
-		int height = 0;
-		glfwGetFramebufferSize(this->window.native_handle, &width, &height);
-		while (width == 0 || height == 0)
+		// int width			   = 0;
+		// int height			   = 0;
+		ScreenSize framebuffer = this->window->GetFramebufferSize();
+		// glfwGetFramebufferSize(this->window->native_handle, &width, &height);
+		// while (width == 0 || height == 0)
+		while (framebuffer.x == 0 || framebuffer.y == 0)
 		{
-			glfwGetFramebufferSize(this->window.native_handle, &width, &height);
+			framebuffer = this->window->GetFramebufferSize();
+			// glfwGetFramebufferSize(this->window->native_handle, &width, &height);
 			glfwWaitEvents();
 		}
 
 		vkDeviceWaitIdle(logical_device);
 
-		this->logger->SimpleLog(Logging::LogLevel::Debug1, LOGPFX_CURRENT "Recreating vulkan swap chain");
+		this->logger->SimpleLog(Logging::LogLevel::Debug2, LOGPFX_CURRENT "Recreating vulkan swap chain");
 
 		// Clean up old swap chain
 		this->CleanupVulkanSwapChain();
+		this->CleanupVulkanSyncObjects();
+
+		this->logger->SimpleLog(Logging::LogLevel::Debug3, LOGPFX_CURRENT "Old swap chain cleaned up");
 
 		// Create a new swap chain
 		this->CreateVulkanSwapChain();
+		this->CreateVulkanSyncObjects();
 	}
 
 	void VulkanRenderingEngine::CleanupVulkanSwapChain()
 	{
 		delete this->swapchain;
+
 		this->swapchain = nullptr;
 	}
 
@@ -106,6 +114,18 @@ namespace Engine::Rendering::Vulkan
 				this->logger->SimpleLog(Logging::LogLevel::Error, LOGPFX_CURRENT "Vulkan failed creating sync objects");
 				throw std::runtime_error("failed to create sync objects!");
 			}
+		}
+	}
+
+	void VulkanRenderingEngine::CleanupVulkanSyncObjects()
+	{
+		VkDevice logical_device = this->device_manager->GetLogicalDevice();
+
+		for (auto& sync_object : this->sync_objects)
+		{
+			vkDestroySemaphore(logical_device, sync_object.present_ready, nullptr);
+			vkDestroySemaphore(logical_device, sync_object.image_available, nullptr);
+			vkDestroyFence(logical_device, sync_object.in_flight, nullptr);
 		}
 	}
 

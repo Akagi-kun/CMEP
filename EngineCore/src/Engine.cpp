@@ -5,7 +5,6 @@
 #include "Rendering/Renderers/Renderer.hpp"
 #include "Rendering/Vulkan/PipelineManager.hpp"
 #include "Rendering/Vulkan/VulkanRenderingEngine.hpp"
-#include "Rendering/Vulkan/VulkanStructDefs.hpp"
 
 #include "Scripting/ILuaScript.hpp"
 
@@ -78,26 +77,71 @@ namespace Engine
 
 	void Engine::HandleInput(const double delta_time)
 	{
-		Rendering::GLFWwindowData windowdata = this->rendering_engine->GetWindow();
+		auto* window_data		= this->rendering_engine->GetWindow();
+		const auto& screen_size = window_data->GetFramebufferSize();
 
-		static double last_x = static_cast<double>(windowdata.size.x) / 2;
-		static double last_y = static_cast<double>(windowdata.size.y) / 2;
+		static Rendering::Vector2<double> last_pos = {
+			static_cast<double>(screen_size.x) / 2,
+			static_cast<double>(screen_size.y) / 2
+		};
+
+		// static double last_x = static_cast<double>(screen_size.x) / 2;
+		// static double last_y = static_cast<double>(screen_size.y) / 2;
 
 		static constexpr double clamp_difference = 128;
 
-		if (this->state_is_window_in_focus && this->state_is_window_in_content)
+		if (window_data->is_focus && window_data->is_content)
 		{
-			if ((this->state_mouse_x_pos - last_x) != 0.0 || (this->state_mouse_y_pos - last_y) != 0.0)
+			if ((window_data->cursor_position.x - last_pos.x) != 0.0 ||
+				(window_data->cursor_position.y - last_pos.y) != 0.0)
 			{
-				auto event		 = EventHandling::Event(this, EventHandling::EventType::ON_MOUSEMOVED);
-				event.mouse.x	 = std::clamp(this->state_mouse_x_pos - last_x, -clamp_difference, clamp_difference);
-				event.mouse.y	 = std::clamp(this->state_mouse_y_pos - last_y, -clamp_difference, clamp_difference);
+				auto event = EventHandling::Event(this, EventHandling::EventType::ON_MOUSEMOVED);
+
+				event.mouse.x =
+					std::clamp(window_data->cursor_position.x - last_pos.x, -clamp_difference, clamp_difference);
+				event.mouse.y =
+					std::clamp(window_data->cursor_position.y - last_pos.y, -clamp_difference, clamp_difference);
+
 				event.delta_time = delta_time;
 				this->FireEvent(event);
 
-				last_x = this->state_mouse_x_pos;
-				last_y = this->state_mouse_y_pos;
+				last_pos = window_data->cursor_position;
 			}
+		}
+
+		while (!window_data->input_events.empty())
+		{
+			auto& input_event = window_data->input_events.front();
+			// begín
+
+			switch (input_event.type)
+			{
+				case Rendering::Vulkan::InputEvent::KEY_PRESS:
+				case Rendering::Vulkan::InputEvent::KEY_REPEAT:
+				{
+					auto event		 = EventHandling::Event(this, EventHandling::EventType::ON_KEYDOWN);
+					event.keycode	 = static_cast<uint16_t>(input_event.key);
+					event.delta_time = this->GetLastDeltaTime();
+					this->FireEvent(event);
+					break;
+				}
+				case Rendering::Vulkan::InputEvent::KEY_RELEASE:
+				{
+
+					auto event		 = EventHandling::Event(this, EventHandling::EventType::ON_KEYUP);
+					event.keycode	 = static_cast<uint16_t>(input_event.key);
+					event.delta_time = this->GetLastDeltaTime();
+					this->FireEvent(event);
+					break;
+				}
+				default:
+				{
+					throw std::invalid_argument("Unknown input event!");
+				}
+			}
+
+			// end
+			window_data->input_events.pop();
 		}
 	}
 
@@ -135,20 +179,19 @@ namespace Engine
 		this->config->shader_path = data["shader_path"].get<std::string>();
 	}
 
-	void Engine::ErrorCallback(int code, const char* message)
+	/* void Engine::ErrorCallback(int code, const char* message)
 	{
 		printf("GLFW ERROR: %u, %s\n", code, message);
-	}
+	} */
 
-	void Engine::OnWindowFocusCallback(GLFWwindow* window, int focused)
+	/* void Engine::OnWindowFocusCallback(GLFWwindow* window, int focused)
 	{
-		auto* engine =
-			static_cast<Rendering::Vulkan::VulkanRenderingEngine*>(glfwGetWindowUserPointer(window))->GetOwnerEngine();
+		auto* engine = static_cast<Window*>(glfwGetWindowUserPointer(window))->GetOwnerEngine();
 
 		engine->state_is_window_in_focus = (focused != 0);
-	}
+	} */
 
-	void Engine::CursorPositionCallback(GLFWwindow* window, double xpos, double ypos)
+	/* void Engine::CursorPositionCallback(GLFWwindow* window, double xpos, double ypos)
 	{
 		auto* engine =
 			static_cast<Rendering::Vulkan::VulkanRenderingEngine*>(glfwGetWindowUserPointer(window))->GetOwnerEngine();
@@ -163,9 +206,9 @@ namespace Engine
 			engine->state_mouse_x_pos = 0.0;
 			engine->state_mouse_y_pos = 0.0;
 		}
-	}
+	} */
 
-	void Engine::CursorEnterLeaveCallback(GLFWwindow* window, int entered)
+	/* void Engine::CursorEnterLeaveCallback(GLFWwindow* window, int entered)
 	{
 		bool b_entered = (entered != 0);
 
@@ -182,9 +225,9 @@ namespace Engine
 			engine->state_is_window_in_content = false;
 			glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
 		}
-	}
+	} */
 
-	void Engine::OnKeyEventCallback(GLFWwindow* window, int key, int scancode, int action, int mods)
+	/* void Engine::OnKeyEventCallback(GLFWwindow* window, int key, int scancode, int action, int mods)
 	{
 		// Unused
 		(void)(scancode);
@@ -207,7 +250,7 @@ namespace Engine
 			event.delta_time = owner_engine->GetLastDeltaTime();
 			owner_engine->FireEvent(event);
 		}
-	}
+	} */
 
 	void Engine::RenderCallback(
 		Rendering::Vulkan::CommandBuffer* command_buffer,
@@ -290,8 +333,9 @@ namespace Engine
 		);
 
 		// Show window
-		Rendering::GLFWwindowData glfw_window = this->rendering_engine->GetWindow();
-		glfwShowWindow(glfw_window.native_handle);
+		auto* glfw_window = this->rendering_engine->GetWindow();
+		// glfwShowWindow(glfw_window->native_handle);
+		glfw_window->SetVisibility(true);
 
 		double average_event_total	 = 0.00;
 		uint64_t average_event_count = 1;
@@ -299,7 +343,7 @@ namespace Engine
 		auto prev_clock = std::chrono::steady_clock::now();
 
 		// hot loop
-		while (glfwWindowShouldClose(glfw_window.native_handle) == 0)
+		while (glfwWindowShouldClose(glfw_window->native_handle) == 0)
 		{
 			const auto next_clock	= std::chrono::steady_clock::now();
 			const double delta_time = static_cast<double>((next_clock - prev_clock).count()) / nano_to_sec;
@@ -483,12 +527,12 @@ namespace Engine
 		this->scene_manager->SetScene(this->config->default_scene);
 
 		// Set-up GLFW
-		Rendering::GLFWwindowData windowdata = this->rendering_engine->GetWindow();
-		glfwSetWindowFocusCallback(windowdata.native_handle, Engine::OnWindowFocusCallback);
-		glfwSetCursorPosCallback(windowdata.native_handle, Engine::CursorPositionCallback);
-		glfwSetCursorEnterCallback(windowdata.native_handle, Engine::CursorEnterLeaveCallback);
-		glfwSetKeyCallback(windowdata.native_handle, Engine::OnKeyEventCallback);
-		glfwSetErrorCallback(Engine::ErrorCallback);
+		// const auto* windowdata = this->rendering_engine->GetWindow();
+		// glfwSetWindowFocusCallback(windowdata->native_handle, Engine::OnWindowFocusCallback);
+		// glfwSetCursorPosCallback(windowdata->native_handle, Engine::CursorPositionCallback);
+		// glfwSetCursorEnterCallback(windowdata->native_handle, Engine::CursorEnterLeaveCallback);
+		// glfwSetKeyCallback(windowdata->native_handle, Engine::OnKeyEventCallback);
+		// glfwSetErrorCallback(Engine::ErrorCallback);
 
 		// Fire ON_INIT event
 		auto on_init_event	  = EventHandling::Event(this, EventHandling::EventType::ON_INIT);
@@ -520,7 +564,8 @@ namespace Engine
 	void Engine::Stop()
 	{
 		// 1 denotes true here
-		glfwSetWindowShouldClose(this->rendering_engine->GetWindow().native_handle, 1);
+		this->rendering_engine->GetWindow()->SetShouldClose(true);
+		// glfwSetWindowShouldClose(this->rendering_engine->GetWindow()->native_handle, 1);
 	}
 
 	void Engine::ConfigFile(std::string path)

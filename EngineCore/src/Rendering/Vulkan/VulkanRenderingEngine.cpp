@@ -7,6 +7,7 @@
 #include "Rendering/Vulkan/Wrappers/CommandPool.hpp" // IWYU pragma: keep
 #include "Rendering/Vulkan/Wrappers/Image.hpp"		 // IWYU pragma: keep
 #include "Rendering/Vulkan/Wrappers/Swapchain.hpp"
+#include "Rendering/Vulkan/Wrappers/Window.hpp"
 
 #include "Logging/Logging.hpp"
 
@@ -16,8 +17,8 @@
 
 #include <algorithm>
 #include <cstdint>
-#include <cstring>
 #include <stdexcept>
+#include <string>
 #include <utility>
 
 // Prefixes for logging messages
@@ -26,10 +27,14 @@
 
 namespace Engine::Rendering::Vulkan
 {
-	static void FramebufferResizeCallback(GLFWwindow* window, int width, int height)
+	[[noreturn]] static void GlfwErrorCallback(int error, const char* description)
 	{
-		auto* app = reinterpret_cast<VulkanRenderingEngine*>(glfwGetWindowUserPointer(window));
-		app->SignalFramebufferResizeGLFW({static_cast<uint_fast16_t>(width), static_cast<uint_fast16_t>(height)});
+		using namespace std::string_literals;
+
+		throw std::runtime_error("GLFW error handler callback called! Code: '"s.append(std::to_string(error))
+									 .append("'; description: '")
+									 .append(description)
+									 .append("'"));
 	}
 
 	////////////////////////////////////////////////////////////////////////
@@ -79,7 +84,7 @@ namespace Engine::Rendering::Vulkan
 
 		int width;
 		int height;
-		glfwGetFramebufferSize(this->window.native_handle, &width, &height);
+		glfwGetFramebufferSize(this->window->native_handle, &width, &height);
 
 		VkExtent2D actual_extent = {static_cast<uint32_t>(width), static_cast<uint32_t>(height)};
 
@@ -151,36 +156,37 @@ namespace Engine::Rendering::Vulkan
 	////////////////////////////////////////////////////////////////////////
 
 	VulkanRenderingEngine::VulkanRenderingEngine(Engine* with_engine, ScreenSize with_window_size, std::string title)
-		: InternalEngineObject(with_engine),
-		  window{nullptr, with_window_size, std::move(title)} //, window_title(std::move(title))
+		: InternalEngineObject(with_engine)
+	//, window{nullptr, with_window_size, std::move(title)} //, window_title(std::move(title))
 	{
 		// Initialize GLFW
 		if (glfwInit() == GLFW_FALSE)
 		{
 			throw std::runtime_error("GLFW returned GLFW_FALSE on glfwInit!");
 		}
+		glfwSetErrorCallback(GlfwErrorCallback);
+
 		this->logger->SimpleLog(Logging::LogLevel::Info, LOGPFX_CURRENT "GLFW initialized");
 
 		// Create a GLFW window
-		glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
-		glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE);
+		// glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
+		// glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE);
 
 		// Quick hack for i3wm
-		// (this one is likely unnecessary and can be left commented out)
-		// glfwWindowHint(GLFW_FLOATING, GLFW_TRUE);
-		//
 		// TODO: Fix i3wm
-		glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
+		// glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
 
-		this->window.native_handle = glfwCreateWindow(
-			static_cast<int>(this->window.size.x),
-			static_cast<int>(this->window.size.y),
-			this->window.title.c_str(),
-			nullptr, // glfwGetPrimaryMonitor(),
-			nullptr
+		this->window = new Window(
+			with_window_size,
+			std::move(title),
+			{
+				{GLFW_VISIBLE, GLFW_FALSE},
+				{GLFW_RESIZABLE, GLFW_TRUE},
+			}
 		);
-		glfwSetWindowUserPointer(this->window.native_handle, this);
-		glfwSetFramebufferSizeCallback(this->window.native_handle, FramebufferResizeCallback);
+
+		// glfwSetWindowUserPointer(this->window->native_handle, this);
+		// glfwSetFramebufferSizeCallback(this->window->native_handle, FramebufferResizeCallback);
 
 		uint32_t extension_count = 0;
 		vkEnumerateInstanceExtensionProperties(nullptr, &extension_count, nullptr);
@@ -188,22 +194,16 @@ namespace Engine::Rendering::Vulkan
 		this->logger
 			->SimpleLog(Logging::LogLevel::Debug1, LOGPFX_CURRENT "%u vulkan extensions supported", extension_count);
 
-		this->device_manager = std::make_shared<DeviceManager>(this->owner_engine, this->window.native_handle);
+		this->device_manager = std::make_shared<DeviceManager>(this->owner_engine, this->window);
 
 		this->CreateVulkanSwapChain();
-		// this->CreateVulkanRenderPass();
 
 		// Create command buffers
 		for (auto& vk_command_buffer : this->command_buffers)
 		{
 			vk_command_buffer = this->device_manager->GetCommandPool()->AllocateCommandBuffer();
-			// vk_command_buffer = new VCommandBuffer(this->device_manager.get(),
-			// this->device_manager->GetCommandPool());
 		}
 
-		// this->CreateMultisampledColorResources();
-		// this->CreateVulkanDepthResources();
-		//  this->CreateVulkanFramebuffers();
 		this->CreateVulkanSyncObjects();
 	}
 
@@ -216,16 +216,7 @@ namespace Engine::Rendering::Vulkan
 		vkDeviceWaitIdle(logical_device);
 
 		this->CleanupVulkanSwapChain();
-
-		// delete this->multisampled_color_image;
-		// delete this->vk_depth_buffer;
-
-		for (size_t i = 0; i < VulkanRenderingEngine::max_frames_in_flight; i++)
-		{
-			vkDestroySemaphore(logical_device, this->sync_objects[i].present_ready, nullptr);
-			vkDestroySemaphore(logical_device, this->sync_objects[i].image_available, nullptr);
-			vkDestroyFence(logical_device, this->sync_objects[i].in_flight, nullptr);
-		}
+		this->CleanupVulkanSyncObjects();
 
 		for (auto& vk_command_buffer : this->command_buffers)
 		{
@@ -234,13 +225,11 @@ namespace Engine::Rendering::Vulkan
 
 		this->logger->SimpleLog(Logging::LogLevel::Debug3, LOGPFX_CURRENT "Cleaning up default vulkan pipeline");
 
-		// vkDestroyRenderPass(logical_device, this->vk_render_pass, nullptr);
-
 		// Destroy device
 		this->device_manager.reset();
 
 		// Clean up GLFW
-		glfwDestroyWindow(this->window.native_handle);
+		delete window;
 		glfwTerminate();
 	}
 
@@ -278,16 +267,16 @@ namespace Engine::Rendering::Vulkan
 		);
 
 		// If it's necessary to recreate a swap chain
-		if (acquire_result == VK_ERROR_OUT_OF_DATE_KHR || this->framebuffer_resized ||
+		if (acquire_result == VK_ERROR_OUT_OF_DATE_KHR || this->window->is_resized ||
 			acquire_result == VK_SUBOPTIMAL_KHR)
 		{
 			// Increment current_frame (clamp to max_frames_in_flight)
 			// this->current_frame		  = (this->current_frame + 1) % this->max_frames_in_flight;
-			this->framebuffer_resized = false;
+			this->window->is_resized = false;
 
 			this->logger->SimpleLog(
 				Logging::LogLevel::Warning,
-				"acquire_result was VK_ERROR_OUT_OF_DATE_KHR or VK_SUBOPTIMAL_KHR, or framebuffer was resized!"
+				"acquire_result was VK_ERROR_OUT_OF_DATE_KHR, VK_SUBOPTIMAL_KHR, or framebuffer was resized!"
 			);
 
 			this->RecreateVulkanSwapChain();
@@ -368,27 +357,10 @@ namespace Engine::Rendering::Vulkan
 		vkDeviceWaitIdle(this->device_manager->GetLogicalDevice());
 	}
 
-	void VulkanRenderingEngine::SignalFramebufferResizeGLFW(ScreenSize with_size)
+	/* void VulkanRenderingEngine::SignalFramebufferResizeGLFW(ScreenSize with_size)
 	{
 		this->framebuffer_resized = true;
-		this->window.size		  = with_size;
-	}
-
-	// Pipelines
-
-	/* VulkanPipelineSettings VulkanRenderingEngine::GetVulkanDefaultPipelineSettings()
-	{
-		// VkRect2D scissor{};
-		// scissor.offset = {0, 0};
-		// scissor.extent = this->swapchain->GetExtent();
-
-		VulkanPipelineSettings default_settings{};
-		default_settings.extent						= this->swapchain->GetExtent();
-		// default_settings.input_topology				= VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
-		// default_settings.scissor					= scissor;
-		default_settings.descriptor_layout_settings = {};
-
-		return default_settings;
+		this->window->size		  = with_size;
 	} */
 
 	// Buffers

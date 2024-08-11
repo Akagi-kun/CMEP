@@ -35,10 +35,9 @@ namespace Engine
 		}
 	}
 
-	void Object::ScreenSizeInform(unsigned int with_screenx, unsigned int with_screeny) noexcept
+	void Object::ScreenSizeInform(Rendering::ScreenSize with_screen_size) noexcept
 	{
-		this->screen.x = with_screenx;
-		this->screen.y = with_screeny;
+		this->screen = with_screen_size;
 
 		this->UpdateRenderer();
 	}

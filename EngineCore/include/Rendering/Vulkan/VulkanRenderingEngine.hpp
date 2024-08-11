@@ -7,6 +7,7 @@
 #include "Rendering/Vulkan/Wrappers/framework.hpp"
 
 #include "InternalEngineObject.hpp"
+#include "Wrappers/Window.hpp"
 #include "vulkan/vulkan_core.h"
 
 #include <cstdint>
@@ -35,10 +36,10 @@ namespace Engine::Rendering::Vulkan
 		// Maximum number of frames in rotation/flight
 		static constexpr uint16_t max_frames_in_flight = 3;
 
-		GLFWwindowData window{};
+		Window* window = nullptr;
 
-		uint32_t current_frame	 = 0;
-		bool framebuffer_resized = false;
+		uint32_t current_frame = 0;
+		// bool framebuffer_resized = false;
 
 		// Swap chain data
 		Swapchain* swapchain = nullptr;
@@ -75,6 +76,8 @@ namespace Engine::Rendering::Vulkan
 		// void CreateVulkanRenderPass();
 		void CreateVulkanSyncObjects();
 
+		void CleanupVulkanSyncObjects();
+
 	public:
 		VulkanRenderingEngine(Engine* with_engine, ScreenSize with_window_size, std::string title);
 		~VulkanRenderingEngine();
@@ -101,7 +104,7 @@ namespace Engine::Rendering::Vulkan
 			return this->device_manager.get();
 		}
 
-		[[nodiscard]] const GLFWwindowData& GetWindow() const
+		[[nodiscard]] Window* GetWindow() const
 		{
 			return this->window;
 		}

@@ -92,13 +92,14 @@ namespace Engine::Rendering::Vulkan
 
 #pragma region Constructor/Destructor
 
-	DeviceManager::DeviceManager(Engine* with_engine, GLFWwindow* new_window) : InternalEngineObject(with_engine)
+	DeviceManager::DeviceManager(Engine* with_engine, Window* new_window) : InternalEngineObject(with_engine)
 	{
 		this->window = new_window;
 
 		this->InitVulkanInstance();
 
-		if (glfwCreateWindowSurface(this->instance, this->window, nullptr, &this->vk_surface) != VK_SUCCESS)
+		if (glfwCreateWindowSurface(this->instance, this->window->native_handle, nullptr, &this->vk_surface) !=
+			VK_SUCCESS)
 		{
 			throw std::runtime_error("glfw failed to create window surface!");
 		}

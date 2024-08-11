@@ -96,6 +96,7 @@ static int RunEngine(bool verbose)
 		return 2;
 	}
 
+	engine.reset();
 	my_logger->SimpleLog(Logging::LogLevel::Info, "Bye!");
 
 	return 0;

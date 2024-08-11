@@ -1,5 +1,7 @@
 #pragma once
 
+#include "Rendering/Transform.hpp"
+
 #include "EnumStringConvertor.hpp"
 
 #include <cstdint>
@@ -24,22 +26,15 @@ namespace Engine::EventHandling
 		MAX_ENUM = 0xFF,
 	};
 
-	// TODO: Make this a struct
-	class Event final
+	struct Event final
 	{
-	private:
-	public:
 		const EventType event_type;
 		Engine* const raised_from = nullptr;
 
 		double delta_time = 0.0;
 		union {
-			uint16_t keycode = 0; // ON_KEYDOWN/ON_KEYUP events
-			struct
-			{
-				double x;
-				double y;
-			} mouse; // ON_MOUSEMOVED event
+			uint16_t keycode = 0;			  // ON_KEYDOWN/ON_KEYUP events
+			Rendering::Vector2<double> mouse; // ON_MOUSEMOVED event
 		};
 
 		Event(Engine* const with_engine, const EnumStringConvertor<EventType> eventtype)

@@ -48,11 +48,8 @@ namespace Engine::Rendering
 			this->mesh.clear();
 		}
 
-		auto window_data  = this->renderer->GetWindow();
-		this->screen_size = window_data.size; /* {
-			static_cast<uint_fast16_t>(window_data.size.x),
-			static_cast<uint_fast16_t>(window_data.size.y)
-		}; */
+		const auto* window_data = this->renderer->GetWindow();
+		this->screen_size		= window_data->GetFramebufferSize();
 
 		int font_size = std::stoi(*this->font->GetFontInfoParameter("size"));
 

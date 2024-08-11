@@ -27,7 +27,7 @@ namespace Engine
 		using InternalEngineObject::InternalEngineObject;
 		~Object() noexcept;
 
-		void ScreenSizeInform(unsigned int with_screenx, unsigned int with_screeny) noexcept;
+		void ScreenSizeInform(Rendering::ScreenSize with_screen_size) noexcept;
 
 		// TODO: relative functions?
 		void SetPosition(glm::vec3 with_pos) noexcept;
