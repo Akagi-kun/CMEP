@@ -3,15 +3,29 @@
 #include "Logging/Logging.hpp"
 
 #include <memory>
+#include <utility>
 
 namespace Engine
 {
 	class Engine;
 
-	class InternalEngineObject
+	class SupportsLogging
+	{
+	public:
+		using logger_t = std::shared_ptr<Logging::Logger>;
+
+		SupportsLogging() = delete;
+		SupportsLogging(logger_t with_logger) : logger(std::move(with_logger))
+		{
+		}
+
+	protected:
+		logger_t logger;
+	};
+
+	class InternalEngineObject : public SupportsLogging
 	{
 	protected:
-		std::shared_ptr<Logging::Logger> logger;
 		Engine* owner_engine = nullptr;
 
 	public:

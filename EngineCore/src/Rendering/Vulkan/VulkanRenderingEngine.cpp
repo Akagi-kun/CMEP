@@ -194,7 +194,7 @@ namespace Engine::Rendering::Vulkan
 		this->logger
 			->SimpleLog(Logging::LogLevel::Debug1, LOGPFX_CURRENT "%u vulkan extensions supported", extension_count);
 
-		this->device_manager = std::make_shared<DeviceManager>(this->owner_engine, this->window);
+		this->device_manager = std::make_shared<DeviceManager>(this->logger, this->window);
 
 		this->CreateVulkanSwapChain();
 

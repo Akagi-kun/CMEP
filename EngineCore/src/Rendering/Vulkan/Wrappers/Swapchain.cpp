@@ -8,7 +8,6 @@
 #include "Rendering/Vulkan/Wrappers/Image.hpp"
 #include "Rendering/Vulkan/Wrappers/RenderPass.hpp"
 
-
 namespace Engine::Rendering::Vulkan
 {
 	Swapchain::Swapchain(DeviceManager* const with_device_manager, VkExtent2D with_extent, uint32_t with_count)
@@ -115,8 +114,7 @@ namespace Engine::Rendering::Vulkan
 			{this->extent.width, this->extent.height},
 			this->device_manager->GetMSAASampleCount(),
 			depth_format,
-			VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT,
-			VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT
+			VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT
 		);
 		this->depth_buffer->AddImageView(VK_IMAGE_ASPECT_DEPTH_BIT);
 
@@ -125,8 +123,7 @@ namespace Engine::Rendering::Vulkan
 			{this->extent.width, this->extent.height},
 			this->device_manager->GetMSAASampleCount(),
 			color_format,
-			VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT,
-			VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT
+			VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT
 		);
 		this->multisampled_color_image->AddImageView(VK_IMAGE_ASPECT_COLOR_BIT);
 

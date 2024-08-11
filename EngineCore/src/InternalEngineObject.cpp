@@ -4,8 +4,8 @@
 
 namespace Engine
 {
-	InternalEngineObject::InternalEngineObject(Engine* with_engine) : owner_engine(with_engine)
+	InternalEngineObject::InternalEngineObject(Engine* with_engine)
+		: SupportsLogging(with_engine->GetLogger()), owner_engine(with_engine)
 	{
-		this->logger = with_engine->GetLogger();
 	}
 } // namespace Engine

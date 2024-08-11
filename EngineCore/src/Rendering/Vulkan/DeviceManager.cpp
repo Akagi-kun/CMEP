@@ -13,6 +13,7 @@
 #include <memory>
 #include <set>
 #include <stdexcept>
+#include <utility>
 
 // Prefixes for logging messages
 #define LOGPFX_CURRENT LOGPFX_CLASS_VULKAN_DEVICE_MANAGER
@@ -92,7 +93,8 @@ namespace Engine::Rendering::Vulkan
 
 #pragma region Constructor/Destructor
 
-	DeviceManager::DeviceManager(Engine* with_engine, Window* new_window) : InternalEngineObject(with_engine)
+	DeviceManager::DeviceManager(SupportsLogging::logger_t with_logger, Window* new_window)
+		: SupportsLogging(std::move(with_logger))
 	{
 		this->window = new_window;
 

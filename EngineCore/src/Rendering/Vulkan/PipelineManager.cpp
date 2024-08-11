@@ -63,8 +63,12 @@ namespace Engine::Rendering::Vulkan
 		auto* renderer = owner_engine->GetRenderingEngine();
 
 		// If no such pipeline is found, allocate new one
-		pipeline =
-			new Vulkan::Pipeline(renderer->GetDeviceManager(), with_settings.short_setting, renderer->GetRenderPass());
+		pipeline = new Vulkan::Pipeline(
+			renderer->GetDeviceManager(),
+			renderer->GetRenderPass(),
+			with_settings.short_setting,
+			this->owner_engine->GetShaderPath()
+		);
 
 		this->pipelines.emplace_back(with_settings, pipeline);
 

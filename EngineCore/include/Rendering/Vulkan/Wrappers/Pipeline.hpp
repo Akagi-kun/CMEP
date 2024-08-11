@@ -7,6 +7,8 @@
 
 #include "vulkan/vulkan_core.h"
 
+#include <filesystem>
+
 namespace Engine::Rendering::Vulkan
 {
 	class Pipeline : public HoldsVulkanDevice, public HoldsVMA
@@ -38,7 +40,12 @@ namespace Engine::Rendering::Vulkan
 		void AllocateNewDescriptorSets(UserData& data_ref);
 
 	public:
-		Pipeline(DeviceManager* with_device_manager, VulkanPipelineSettings settings, RenderPass* with_render_pass);
+		Pipeline(
+			DeviceManager* with_device_manager,
+			RenderPass* with_render_pass,
+			VulkanPipelineSettings settings,
+			const std::filesystem::path& shader_path
+		);
 		~Pipeline();
 
 		size_t AllocateNewUserData();

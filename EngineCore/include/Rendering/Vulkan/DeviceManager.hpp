@@ -9,7 +9,7 @@
 
 namespace Engine::Rendering::Vulkan
 {
-	class DeviceManager final : public InternalEngineObject
+	class DeviceManager final : public SupportsLogging
 	{
 	private:
 		// Defaults
@@ -77,7 +77,7 @@ namespace Engine::Rendering::Vulkan
 		void CreateVulkanLogicalDevice();
 
 	public:
-		DeviceManager(Engine* with_engine, Window* new_window);
+		DeviceManager(SupportsLogging::logger_t with_logger, Window* new_window);
 		~DeviceManager();
 
 		[[nodiscard]] const VkPhysicalDevice& GetPhysicalDevice() noexcept

@@ -9,21 +9,21 @@
 #include "Rendering/Vulkan/Wrappers/RenderPass.hpp"
 #include "Rendering/Vulkan/Wrappers/ShaderModule.hpp"
 
-#include "Engine.hpp"
 #include "vulkan/vulkan_core.h"
 
 namespace Engine::Rendering::Vulkan
 {
 	Pipeline::Pipeline(
 		DeviceManager* with_device_manager,
+		RenderPass* with_render_pass,
 		VulkanPipelineSettings settings,
-		RenderPass* with_render_pass
+		const std::filesystem::path& shader_path
 	)
 		: HoldsVulkanDevice(with_device_manager), HoldsVMA(with_device_manager->GetVmaAllocator())
 	{
 		const auto& logical_device = this->device_manager->GetLogicalDevice();
 
-		std::string shader_path = this->device_manager->GetOwnerEngine()->GetShaderPath();
+		// std::string shader_path = this->device_manager->GetOwnerEngine()->GetShaderPath();
 
 		assert(!settings.shader.empty() && "A valid shader for this pipeline is required!");
 

@@ -32,8 +32,8 @@ namespace Engine::Rendering::Vulkan
 			VkSampleCountFlagBits num_samples,
 			VkFormat format,
 			VkImageUsageFlags usage,
-			VkMemoryPropertyFlags properties,
-			VkImageTiling with_tiling = VK_IMAGE_TILING_OPTIMAL
+			VkMemoryPropertyFlags properties = VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
+			VkImageTiling with_tiling		 = VK_IMAGE_TILING_OPTIMAL
 		);
 		~Image();
 

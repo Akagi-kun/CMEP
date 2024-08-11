@@ -15,6 +15,9 @@ namespace Engine::Rendering
 
 	template <typename T> struct Vector2
 	{
+		using self_t  = Vector2<T>;
+		using value_t = T;
+
 		T x;
 		T y;
 	};

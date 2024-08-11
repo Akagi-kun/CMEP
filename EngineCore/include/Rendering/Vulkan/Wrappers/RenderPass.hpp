@@ -6,21 +6,11 @@
 
 namespace Engine::Rendering::Vulkan
 {
-	class RenderPass final : HoldsVulkanDevice
+	struct RenderPass final : HoldsVulkanDevice
 	{
-	private:
 		VkRenderPass native_handle;
 
-		friend class Swapchain;
-		friend class Pipeline;
-
-	public:
 		RenderPass(DeviceManager* with_device_manager, VkFormat with_format);
 		~RenderPass();
-
-		/* [[nodiscard]] VkRenderPass GetNativeHandle()
-		{
-			return this->native_handle;
-		} */
 	};
 } // namespace Engine::Rendering::Vulkan

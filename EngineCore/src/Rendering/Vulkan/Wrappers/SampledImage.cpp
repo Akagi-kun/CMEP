@@ -12,9 +12,9 @@ namespace Engine::Rendering::Vulkan
 		VkSampleCountFlagBits num_samples,
 		VkFormat format,
 		VkImageUsageFlags usage,
-		VkMemoryPropertyFlags properties,
 		VkFilter with_filter,
 		VkSamplerAddressMode with_address_mode,
+		VkMemoryPropertyFlags properties,
 		VkImageTiling with_tiling
 	)
 		: Image(with_device_manager, with_size, num_samples, format, usage, properties, with_tiling),
