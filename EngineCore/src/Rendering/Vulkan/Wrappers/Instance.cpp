@@ -9,6 +9,7 @@
 #include "Logging.hpp"
 #include "vulkan/vulkan_core.h"
 
+#include <cstring>
 #include <stdexcept>
 #include <string>
 #include <utility>
@@ -264,7 +265,7 @@ namespace Engine::Rendering::Vulkan
 
 			for (const auto& layer_properties : available_layers)
 			{
-				if (strcmp(layer_name, layer_properties.layerName) == 0)
+				if (std::strcmp(layer_name, layer_properties.layerName) == 0)
 				{
 					layer_found = true;
 					break;

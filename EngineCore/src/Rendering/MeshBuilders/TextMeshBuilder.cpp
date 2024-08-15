@@ -46,7 +46,7 @@ namespace Engine::Rendering
 			this->mesh.clear();
 		}
 
-		const auto* window_data = this->renderer->GetWindow();
+		const auto* window_data = this->renderer->GetInstance()->GetWindow();
 		this->screen_size		= window_data->GetFramebufferSize();
 
 		int font_size = std::stoi(*this->font->GetFontInfoParameter("size"));

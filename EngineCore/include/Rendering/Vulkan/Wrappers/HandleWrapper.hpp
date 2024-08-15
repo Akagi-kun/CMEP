@@ -40,7 +40,7 @@ namespace Engine::Rendering::Vulkan
 
 	protected:
 		static_assert(std::is_pointer<value_t>(), "HandleWrapper can only wrap pointer types");
-		static_assert(!std::is_same<value_t, nullptr_t>(), "nullptr_t is not a valid handle type");
+		static_assert(!std::is_same<value_t, std::nullptr_t>(), "nullptr_t is not a valid handle type");
 
 		value_t native_handle = VK_NULL_HANDLE;
 	};

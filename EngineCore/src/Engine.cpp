@@ -77,7 +77,7 @@ namespace Engine
 
 	void Engine::HandleInput(const double delta_time)
 	{
-		auto* window_data		= this->rendering_engine->GetWindow();
+		auto* window_data		= this->rendering_engine->GetInstance()->GetWindow();
 		const auto& screen_size = window_data->GetFramebufferSize();
 
 		static Rendering::Vector2<double> last_pos = {
@@ -259,7 +259,7 @@ namespace Engine
 		);
 
 		// Show window
-		auto* glfw_window = this->rendering_engine->GetWindow();
+		auto* glfw_window = this->rendering_engine->GetInstance()->GetWindow();
 		// glfwShowWindow(glfw_window->native_handle);
 		glfw_window->SetVisibility(true);
 
@@ -481,7 +481,7 @@ namespace Engine
 	void Engine::Stop()
 	{
 		// 1 denotes true here
-		rendering_engine->GetWindow()->SetShouldClose(true);
+		rendering_engine->GetInstance()->GetWindow()->SetShouldClose(true);
 		// glfwSetWindowShouldClose(this->rendering_engine->GetWindow()->native_handle, 1);
 	}
 

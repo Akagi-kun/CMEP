@@ -179,12 +179,12 @@ namespace Engine::Rendering::Vulkan
 		);
 
 		// If it's necessary to recreate a swap chain
-		if (acquire_result == VK_ERROR_OUT_OF_DATE_KHR || this->GetWindow()->status.is_resized ||
+		if (acquire_result == VK_ERROR_OUT_OF_DATE_KHR || instance->GetWindow()->status.is_resized ||
 			acquire_result == VK_SUBOPTIMAL_KHR)
 		{
 			// Increment current_frame (clamp to max_frames_in_flight)
 			// this->current_frame		  = (this->current_frame + 1) % this->max_frames_in_flight;
-			this->GetWindow()->status.is_resized = false;
+			instance->GetWindow()->status.is_resized = false;
 
 			this->logger->SimpleLog(
 				Logging::LogLevel::Warning,

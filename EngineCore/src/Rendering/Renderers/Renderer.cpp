@@ -26,8 +26,11 @@ namespace Engine::Rendering
 	{
 		Vulkan::VulkanRenderingEngine* renderer = this->owner_engine->GetRenderingEngine();
 
-		settings =
-			{renderer->GetWindow()->GetSwapchain()->GetExtent(), pipeline_name, mesh_builder->GetSupportedTopology()};
+		settings = {
+			renderer->GetInstance()->GetWindow()->GetSwapchain()->GetExtent(),
+			pipeline_name,
+			mesh_builder->GetSupportedTopology()
+		};
 
 		settings.descriptor_layout_settings.push_back(VulkanDescriptorLayoutSettings{
 			1,

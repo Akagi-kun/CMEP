@@ -7,7 +7,6 @@
 
 #include "InternalEngineObject.hpp"
 #include "Wrappers/Instance.hpp"
-#include "Wrappers/Window.hpp"
 #include "vulkan/vulkan_core.h"
 
 #include <cstdint>
@@ -36,10 +35,10 @@ namespace Engine::Rendering::Vulkan
 		Buffer* CreateVulkanStagingBufferWithData(const void* data, VkDeviceSize data_size);
 
 		// Getters
-		[[nodiscard]] Window* GetWindow() const
+		/* [[nodiscard]] Window* GetWindow() const
 		{
 			return instance->GetWindow();
-		}
+		} */
 
 		[[nodiscard]] Instance* GetInstance()
 		{
