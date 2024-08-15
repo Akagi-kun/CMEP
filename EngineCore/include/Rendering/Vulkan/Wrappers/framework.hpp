@@ -8,7 +8,7 @@
 namespace Engine::Rendering::Vulkan
 {
 	// Base classes
-	class HoldsVulkanDevice;
+	class InstanceOwned;
 	class HoldsVMA;
 
 	// Command related
@@ -16,6 +16,11 @@ namespace Engine::Rendering::Vulkan
 	class CommandBuffer;
 
 	// Render management
+	class Instance;
+	class PhysicalDevice;
+	class LogicalDevice;
+	class Queue;
+
 	class DeviceManager;
 	class VulkanRenderingEngine;
 
@@ -32,6 +37,7 @@ namespace Engine::Rendering::Vulkan
 	class Swapchain;
 	class Pipeline;
 	struct RenderPass;
+	struct Surface;
 
 	// Buffer related
 	class Buffer;

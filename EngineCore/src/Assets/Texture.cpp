@@ -8,7 +8,7 @@
 
 // Prefixes for logging messages
 #define LOGPFX_CURRENT LOGPFX_CLASS_TEXTURE
-#include "Logging/LoggingPrefix.hpp"
+#include "Logging/LoggingPrefix.hpp" // IWYU pragma: keep
 
 namespace Engine::Rendering
 {
@@ -23,7 +23,7 @@ namespace Engine::Rendering
 
 		Vulkan::VulkanRenderingEngine* renderer = this->owner_engine->GetRenderingEngine();
 
-		renderer->SyncDeviceWaitIdle();
+		renderer->GetInstance()->GetLogicalDevice()->WaitDeviceIdle();
 
 		delete this->data->texture_image;
 

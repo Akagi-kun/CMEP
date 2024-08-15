@@ -40,8 +40,6 @@ namespace Engine::Rendering
 	{
 		if (this->context.vbo != nullptr)
 		{
-			this->renderer->SyncDeviceWaitIdle();
-
 			delete this->context.vbo;
 
 			this->context.vbo = nullptr;

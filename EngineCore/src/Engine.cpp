@@ -90,7 +90,7 @@ namespace Engine
 
 		static constexpr double clamp_difference = 128;
 
-		if (window_data->is_focus && window_data->is_content)
+		if (window_data->status.is_focus && window_data->status.is_content)
 		{
 			if ((window_data->cursor_position.x - last_pos.x) != 0.0 ||
 				(window_data->cursor_position.y - last_pos.y) != 0.0)
@@ -179,79 +179,6 @@ namespace Engine
 		this->config->shader_path = data["shader_path"].get<std::string>();
 	}
 
-	/* void Engine::ErrorCallback(int code, const char* message)
-	{
-		printf("GLFW ERROR: %u, %s\n", code, message);
-	} */
-
-	/* void Engine::OnWindowFocusCallback(GLFWwindow* window, int focused)
-	{
-		auto* engine = static_cast<Window*>(glfwGetWindowUserPointer(window))->GetOwnerEngine();
-
-		engine->state_is_window_in_focus = (focused != 0);
-	} */
-
-	/* void Engine::CursorPositionCallback(GLFWwindow* window, double xpos, double ypos)
-	{
-		auto* engine =
-			static_cast<Rendering::Vulkan::VulkanRenderingEngine*>(glfwGetWindowUserPointer(window))->GetOwnerEngine();
-
-		if (engine->state_is_window_in_focus)
-		{
-			engine->state_mouse_x_pos = xpos;
-			engine->state_mouse_y_pos = ypos;
-		}
-		else
-		{
-			engine->state_mouse_x_pos = 0.0;
-			engine->state_mouse_y_pos = 0.0;
-		}
-	} */
-
-	/* void Engine::CursorEnterLeaveCallback(GLFWwindow* window, int entered)
-	{
-		bool b_entered = (entered != 0);
-
-		auto* engine =
-			static_cast<Rendering::Vulkan::VulkanRenderingEngine*>(glfwGetWindowUserPointer(window))->GetOwnerEngine();
-
-		if (engine->state_is_window_in_focus)
-		{
-			engine->state_is_window_in_content = b_entered;
-			glfwSetInputMode(window, GLFW_CURSOR, b_entered ? GLFW_CURSOR_DISABLED : GLFW_CURSOR_NORMAL);
-		}
-		else
-		{
-			engine->state_is_window_in_content = false;
-			glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
-		}
-	} */
-
-	/* void Engine::OnKeyEventCallback(GLFWwindow* window, int key, int scancode, int action, int mods)
-	{
-		// Unused
-		(void)(scancode);
-		(void)(mods);
-
-		auto* renderer	   = static_cast<Rendering::Vulkan::VulkanRenderingEngine*>(glfwGetWindowUserPointer(window));
-		auto* owner_engine = renderer->GetOwnerEngine();
-
-		if (action == GLFW_PRESS || action == GLFW_REPEAT)
-		{
-			auto event		 = EventHandling::Event(owner_engine, EventHandling::EventType::ON_KEYDOWN);
-			event.keycode	 = static_cast<uint16_t>(key);
-			event.delta_time = owner_engine->GetLastDeltaTime();
-			owner_engine->FireEvent(event);
-		}
-		else if (action == GLFW_RELEASE)
-		{
-			auto event		 = EventHandling::Event(owner_engine, EventHandling::EventType::ON_KEYUP);
-			event.keycode	 = static_cast<uint16_t>(key);
-			event.delta_time = owner_engine->GetLastDeltaTime();
-			owner_engine->FireEvent(event);
-		}
-	} */
-
 	void Engine::RenderCallback(
 		Rendering::Vulkan::CommandBuffer* command_buffer,
 		uint32_t current_frame,
@@ -260,7 +187,6 @@ namespace Engine
 	{
 		auto& current_scene = engine->scene_manager->GetSceneCurrent();
 
-		//// If was_scene_modified is true here, the scene had been sorted
 		const auto& objects = current_scene->GetAllObjects();
 
 		// engine->logger->SimpleLog(Logging::LogLevel::Info, "Object count: %lu", objects->size());
@@ -343,7 +269,7 @@ namespace Engine
 		auto prev_clock = std::chrono::steady_clock::now();
 
 		// hot loop
-		while (glfwWindowShouldClose(glfw_window->native_handle) == 0)
+		while (!glfw_window->GetShouldClose())
 		{
 			const auto next_clock	= std::chrono::steady_clock::now();
 			const double delta_time = static_cast<double>((next_clock - prev_clock).count()) / nano_to_sec;
@@ -505,9 +431,9 @@ namespace Engine
 
 		// Order matters here due to interdependency
 
-		this->asset_manager = std::make_shared<AssetManager>(this);
+		asset_manager = std::make_shared<AssetManager>(this);
 
-		this->scene_manager = std::make_shared<SceneManager>(this);
+		scene_manager = std::make_shared<SceneManager>(this);
 	}
 
 	void Engine::Run()
@@ -515,24 +441,15 @@ namespace Engine
 		auto start = std::chrono::steady_clock::now();
 
 		// Initialize rendering engine
-		this->rendering_engine =
+		rendering_engine =
 			new Rendering::Vulkan::VulkanRenderingEngine(this, this->config->window.size, this->config->window.title);
-		this->rendering_engine->SetRenderCallback(Engine::RenderCallback);
+		rendering_engine->SetRenderCallback(Engine::RenderCallback);
 
-		this->pipeline_manager =
-			std::make_shared<Rendering::Vulkan::PipelineManager>(this, this->rendering_engine->GetDeviceManager());
+		pipeline_manager = std::make_shared<Rendering::Vulkan::PipelineManager>(this, rendering_engine->GetInstance());
 
-		this->scene_manager->SetSceneLoadPrefix(this->config->scene_path);
-		this->scene_manager->LoadScene(this->config->default_scene);
-		this->scene_manager->SetScene(this->config->default_scene);
-
-		// Set-up GLFW
-		// const auto* windowdata = this->rendering_engine->GetWindow();
-		// glfwSetWindowFocusCallback(windowdata->native_handle, Engine::OnWindowFocusCallback);
-		// glfwSetCursorPosCallback(windowdata->native_handle, Engine::CursorPositionCallback);
-		// glfwSetCursorEnterCallback(windowdata->native_handle, Engine::CursorEnterLeaveCallback);
-		// glfwSetKeyCallback(windowdata->native_handle, Engine::OnKeyEventCallback);
-		// glfwSetErrorCallback(Engine::ErrorCallback);
+		scene_manager->SetSceneLoadPrefix(this->config->scene_path);
+		scene_manager->LoadScene(this->config->default_scene);
+		scene_manager->SetScene(this->config->default_scene);
 
 		// Fire ON_INIT event
 		auto on_init_event	  = EventHandling::Event(this, EventHandling::EventType::ON_INIT);
@@ -564,13 +481,13 @@ namespace Engine
 	void Engine::Stop()
 	{
 		// 1 denotes true here
-		this->rendering_engine->GetWindow()->SetShouldClose(true);
+		rendering_engine->GetWindow()->SetShouldClose(true);
 		// glfwSetWindowShouldClose(this->rendering_engine->GetWindow()->native_handle, 1);
 	}
 
 	void Engine::ConfigFile(std::string path)
 	{
-		this->config_path = std::move(path);
+		config_path = std::move(path);
 	}
 	/*
 	void Engine::RegisterEventHandler(

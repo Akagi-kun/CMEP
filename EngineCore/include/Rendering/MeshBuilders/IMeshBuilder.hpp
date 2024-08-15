@@ -27,8 +27,6 @@ namespace Engine::Rendering
 		{
 			this->logger->SimpleLog(Logging::LogLevel::Debug3, "Cleaning up MeshBuilder");
 
-			this->renderer->SyncDeviceWaitIdle();
-
 			delete this->context.vbo;
 		}
 

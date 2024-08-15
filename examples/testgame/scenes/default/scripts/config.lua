@@ -1,6 +1,6 @@
 return {
     -- Number of chunks to render in every direction
-    render_distance = 12,
+    render_distance = 6,
 
     -- Noise multiplier
     noise_intensity = 8,

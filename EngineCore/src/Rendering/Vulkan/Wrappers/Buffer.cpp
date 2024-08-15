@@ -1,6 +1,8 @@
 #include "Rendering/Vulkan/Wrappers/Buffer.hpp"
 
-#include "Rendering/Vulkan/DeviceManager.hpp"
+#include "Rendering/Vulkan/Wrappers/Instance.hpp"
+#include "Rendering/Vulkan/Wrappers/InstanceOwned.hpp"
+#include "Rendering/Vulkan/Wrappers/LogicalDevice.hpp"
 
 #include "vulkan/vulkan_core.h"
 
@@ -9,17 +11,14 @@
 namespace Engine::Rendering::Vulkan
 {
 	Buffer::Buffer(
-		DeviceManager* const with_device_manager,
+		InstanceOwned::value_t with_instance,
 		VkDeviceSize with_size,
 		VkBufferUsageFlags with_usage,
 		VkMemoryPropertyFlags with_properties,
 		VmaAllocationCreateFlags with_vma_alloc_flags
 	)
-		: HoldsVulkanDevice(with_device_manager), HoldsVMA(with_device_manager->GetVmaAllocator()),
-		  buffer_size(with_size)
+		: InstanceOwned(with_instance), HoldsVMA(with_instance->GetGraphicMemoryAllocator()), buffer_size(with_size)
 	{
-
-		// Create a buffer handle
 		VkBufferCreateInfo buffer_info{};
 		buffer_info.sType		= VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
 		buffer_info.size		= this->buffer_size;
@@ -32,9 +31,8 @@ namespace Engine::Rendering::Vulkan
 		vma_alloc_info.flags				   = with_vma_alloc_flags;
 		vma_alloc_info.requiredFlags		   = with_properties;
 
-		// if (vkCreateBuffer(this->vkLogicalDevice, &bufferInfo, nullptr, &(new_buffer->buffer)) != VK_SUCCESS)
 		if (vmaCreateBuffer(
-				this->allocator,
+				*this->allocator,
 				&buffer_info,
 				&vma_alloc_info,
 				&(this->native_handle),
@@ -42,23 +40,29 @@ namespace Engine::Rendering::Vulkan
 				&(this->allocation_info)
 			) != VK_SUCCESS)
 		{
-			// this->logger->SimpleLog(Logging::LogLevel::Error, LOGPFX_CURRENT "Vulkan failed creating buffer");
 			throw std::runtime_error("failed to create buffer!");
 		}
 
-		vmaSetAllocationName(this->allocator, this->allocation, "VBuffer");
+		vmaSetAllocationName(*this->allocator, this->allocation, "VBuffer");
 	}
 
 	Buffer::~Buffer()
 	{
-		vkDestroyBuffer(this->device_manager->GetLogicalDevice(), this->native_handle, nullptr);
-		vmaFreeMemory(this->allocator, this->allocation);
+		LogicalDevice* logical_device = instance->GetLogicalDevice();
+
+		logical_device->WaitDeviceIdle();
+
+		vkDestroyBuffer(*logical_device, this->native_handle, nullptr);
+
+		vmaFreeMemory(*this->allocator, this->allocation);
 	}
 
 	void Buffer::MapMemory()
 	{
+		LogicalDevice* logical_device = instance->GetLogicalDevice();
+
 		vkMapMemory(
-			this->device_manager->GetLogicalDevice(),
+			*logical_device,
 			this->allocation_info.deviceMemory,
 			this->allocation_info.offset,
 			this->allocation_info.size,
@@ -69,7 +73,9 @@ namespace Engine::Rendering::Vulkan
 
 	void Buffer::UnmapMemory()
 	{
-		vkUnmapMemory(this->device_manager->GetLogicalDevice(), this->allocation_info.deviceMemory);
+		LogicalDevice* logical_device = instance->GetLogicalDevice();
+
+		vkUnmapMemory(*logical_device, this->allocation_info.deviceMemory);
 
 		// ensure mapped_data is never non-null when not mapped
 		this->mapped_data = nullptr;

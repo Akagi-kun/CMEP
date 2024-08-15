@@ -16,7 +16,7 @@ namespace Engine::Rendering::Vulkan
 		VkSampler texture_sampler;
 
 		SampledImage(
-			DeviceManager* with_device_manager,
+			InstanceOwned::value_t with_instance,
 			ImageSize with_size,
 			VkSampleCountFlagBits num_samples,
 			VkFormat format,

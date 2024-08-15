@@ -1,17 +1,17 @@
 #pragma once
 
-#include "Rendering/Vulkan/ImportVulkan.hpp"
+#include "MemoryAllocator.hpp"
 
 namespace Engine::Rendering::Vulkan
 {
 	class HoldsVMA
 	{
 	protected:
-		VmaAllocator allocator = nullptr;
+		MemoryAllocator* allocator = nullptr;
 
 	public:
 		HoldsVMA() = delete;
-		HoldsVMA(VmaAllocator with_allocator) : allocator(with_allocator)
+		HoldsVMA(MemoryAllocator* with_allocator) : allocator(with_allocator)
 		{
 		}
 	};

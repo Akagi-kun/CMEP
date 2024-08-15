@@ -1,11 +1,11 @@
 #include "Rendering/Vulkan/Wrappers/Pipeline.hpp"
 
 #include "Rendering/Renderers/Renderer.hpp"
-#include "Rendering/Vulkan/DeviceManager.hpp"
 #include "Rendering/Vulkan/VulkanRenderingEngine.hpp"
 #include "Rendering/Vulkan/VulkanStructDefs.hpp"
 #include "Rendering/Vulkan/Wrappers/HoldsVMA.hpp"
-#include "Rendering/Vulkan/Wrappers/HoldsVulkanDevice.hpp"
+#include "Rendering/Vulkan/Wrappers/InstanceOwned.hpp"
+#include "Rendering/Vulkan/Wrappers/LogicalDevice.hpp"
 #include "Rendering/Vulkan/Wrappers/RenderPass.hpp"
 #include "Rendering/Vulkan/Wrappers/ShaderModule.hpp"
 
@@ -14,37 +14,35 @@
 namespace Engine::Rendering::Vulkan
 {
 	Pipeline::Pipeline(
-		DeviceManager* with_device_manager,
+		InstanceOwned::value_t with_instance,
 		RenderPass* with_render_pass,
 		VulkanPipelineSettings settings,
 		const std::filesystem::path& shader_path
 	)
-		: HoldsVulkanDevice(with_device_manager), HoldsVMA(with_device_manager->GetVmaAllocator())
+		: InstanceOwned(with_instance), HoldsVMA(with_instance->GetGraphicMemoryAllocator())
 	{
-		const auto& logical_device = this->device_manager->GetLogicalDevice();
+		LogicalDevice* logical_device = instance->GetLogicalDevice();
 
 		// std::string shader_path = this->device_manager->GetOwnerEngine()->GetShaderPath();
 
 		assert(!settings.shader.empty() && "A valid shader for this pipeline is required!");
 
 		// Vertex stage
-		auto vert_shader_module =
-			ShaderModule(this->device_manager, shader_path, std::string(settings.shader) + +"_vert.spv");
+		auto vert_shader_module = ShaderModule(instance, shader_path, std::string(settings.shader) + +"_vert.spv");
 
 		VkPipelineShaderStageCreateInfo vert_shader_stage_info{};
 		vert_shader_stage_info.sType  = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
 		vert_shader_stage_info.stage  = VK_SHADER_STAGE_VERTEX_BIT;
-		vert_shader_stage_info.module = vert_shader_module.GetNativeHandle();
+		vert_shader_stage_info.module = vert_shader_module;
 		vert_shader_stage_info.pName  = "main";
 
 		// Fragment stage
-		auto frag_shader_module =
-			ShaderModule(this->device_manager, shader_path, std::string(settings.shader) + "_frag.spv");
+		auto frag_shader_module = ShaderModule(instance, shader_path, std::string(settings.shader) + "_frag.spv");
 
 		VkPipelineShaderStageCreateInfo frag_shader_stage_info{};
 		frag_shader_stage_info.sType  = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
 		frag_shader_stage_info.stage  = VK_SHADER_STAGE_FRAGMENT_BIT;
-		frag_shader_stage_info.module = frag_shader_module.GetNativeHandle();
+		frag_shader_stage_info.module = frag_shader_module;
 		frag_shader_stage_info.pName  = "main";
 
 		VkPipelineShaderStageCreateInfo shader_stages[] = {vert_shader_stage_info, frag_shader_stage_info};
@@ -105,12 +103,8 @@ namespace Engine::Rendering::Vulkan
 		layout_info.pBindings	 = bindings.data();
 		layout_info.pNext		 = &layout_flags_info;
 
-		if (vkCreateDescriptorSetLayout(
-				this->device_manager->GetLogicalDevice(),
-				&layout_info,
-				nullptr,
-				&(this->descriptor_set_layout)
-			) != VK_SUCCESS)
+		if (vkCreateDescriptorSetLayout(*logical_device, &layout_info, nullptr, &(this->descriptor_set_layout)) !=
+			VK_SUCCESS)
 		{
 			throw std::runtime_error("failed to create descriptor set layout!");
 		}
@@ -124,7 +118,7 @@ namespace Engine::Rendering::Vulkan
 		pipeline_layout_info.pushConstantRangeCount = 0;	   // Optional
 		pipeline_layout_info.pPushConstantRanges	= nullptr; // Optional
 
-		if (vkCreatePipelineLayout(logical_device, &pipeline_layout_info, nullptr, &(this->pipeline_layout)) !=
+		if (vkCreatePipelineLayout(*logical_device, &pipeline_layout_info, nullptr, &(this->pipeline_layout)) !=
 			VK_SUCCESS)
 		{
 			throw std::runtime_error("failed to create pipeline layout!");
@@ -145,9 +139,7 @@ namespace Engine::Rendering::Vulkan
 		pipeline_info.pInputAssemblyState = VulkanPipelineSettings::GetInputAssemblySettings(settings.input_topology);
 		pipeline_info.pViewportState	  = &viewport_state;
 		pipeline_info.pRasterizationState = VulkanPipelineSettings::GetRasterizerSettings();
-		pipeline_info.pMultisampleState	  = VulkanPipelineSettings::GetMultisamplingSettings(
-			  this->device_manager->GetMSAASampleCount()
-		  );
+		pipeline_info.pMultisampleState	 = VulkanPipelineSettings::GetMultisamplingSettings(instance->GetMSAASamples());
 		pipeline_info.pDepthStencilState = nullptr; // Optional
 		pipeline_info.pColorBlendState	 = VulkanPipelineSettings::GetColorBlendSettings();
 		pipeline_info.pDynamicState		 = &dynamic_state;
@@ -159,7 +151,7 @@ namespace Engine::Rendering::Vulkan
 		pipeline_info.basePipelineIndex	 = -1;			   // Optional
 
 		if (vkCreateGraphicsPipelines(
-				logical_device,
+				*logical_device,
 				VK_NULL_HANDLE,
 				1,
 				&pipeline_info,
@@ -178,7 +170,7 @@ namespace Engine::Rendering::Vulkan
 		{
 			VkDescriptorPoolSize pool_size{};
 			pool_size.type			  = settings.descriptor_layout_settings[i].type;
-			pool_size.descriptorCount = VulkanRenderingEngine::GetMaxFramesInFlight() *
+			pool_size.descriptorCount = VulkanRenderingEngine::max_frames_in_flight *
 										settings.descriptor_layout_settings[i].descriptor_count;
 
 			pool_sizes[i] = pool_size;
@@ -189,9 +181,9 @@ namespace Engine::Rendering::Vulkan
 
 	Pipeline::~Pipeline()
 	{
-		VkDevice logical_device = this->device_manager->GetLogicalDevice();
+		LogicalDevice* logical_device = instance->GetLogicalDevice();
 
-		vkDeviceWaitIdle(logical_device);
+		vkDeviceWaitIdle(*logical_device);
 
 		for (auto& data_ref : this->user_data)
 		{
@@ -200,29 +192,26 @@ namespace Engine::Rendering::Vulkan
 				delete uniform_buffer;
 			}
 
-			vkDestroyDescriptorPool(logical_device, data_ref.with_pool, nullptr);
+			vkDestroyDescriptorPool(*logical_device, data_ref.with_pool, nullptr);
 		}
 
-		vkDestroyDescriptorSetLayout(logical_device, this->descriptor_set_layout, nullptr);
+		vkDestroyDescriptorSetLayout(*logical_device, this->descriptor_set_layout, nullptr);
 
-		vkDestroyPipeline(logical_device, this->native_handle, nullptr);
-		vkDestroyPipelineLayout(logical_device, this->pipeline_layout, nullptr);
+		vkDestroyPipeline(*logical_device, this->native_handle, nullptr);
+		vkDestroyPipelineLayout(*logical_device, this->pipeline_layout, nullptr);
 	}
 
 	void Pipeline::AllocateNewDescriptorPool(Pipeline::UserData& data_ref)
 	{
+		LogicalDevice* logical_device = instance->GetLogicalDevice();
+
 		VkDescriptorPoolCreateInfo pool_info{};
 		pool_info.sType			= VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
 		pool_info.poolSizeCount = static_cast<uint32_t>(pool_sizes.size());
 		pool_info.pPoolSizes	= pool_sizes.data();
-		pool_info.maxSets		= VulkanRenderingEngine::GetMaxFramesInFlight();
+		pool_info.maxSets		= VulkanRenderingEngine::max_frames_in_flight;
 
-		if (vkCreateDescriptorPool(
-				this->device_manager->GetLogicalDevice(),
-				&pool_info,
-				nullptr,
-				&(data_ref.with_pool)
-			) != VK_SUCCESS)
+		if (vkCreateDescriptorPool(*logical_device, &pool_info, nullptr, &(data_ref.with_pool)) != VK_SUCCESS)
 		{
 			throw std::runtime_error("failed to create descriptor pool!");
 		}
@@ -232,10 +221,10 @@ namespace Engine::Rendering::Vulkan
 	{
 		static constexpr VkDeviceSize buffer_size = sizeof(RendererMatrixData);
 
-		for (size_t i = 0; i < VulkanRenderingEngine::GetMaxFramesInFlight(); i++)
+		for (size_t i = 0; i < VulkanRenderingEngine::max_frames_in_flight; i++)
 		{
 			buffer_ref[i] = new Buffer(
-				this->device_manager,
+				instance,
 				buffer_size,
 				VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
 				VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
@@ -246,22 +235,21 @@ namespace Engine::Rendering::Vulkan
 
 	void Pipeline::AllocateNewDescriptorSets(Pipeline::UserData& data_ref)
 	{
+		LogicalDevice* logical_device = instance->GetLogicalDevice();
+
 		std::vector<VkDescriptorSetLayout> layouts(
-			VulkanRenderingEngine::GetMaxFramesInFlight(),
+			VulkanRenderingEngine::max_frames_in_flight,
 			this->descriptor_set_layout
 		);
 
 		VkDescriptorSetAllocateInfo alloc_info{};
 		alloc_info.sType			  = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
 		alloc_info.descriptorPool	  = data_ref.with_pool;
-		alloc_info.descriptorSetCount = VulkanRenderingEngine::GetMaxFramesInFlight();
+		alloc_info.descriptorSetCount = VulkanRenderingEngine::max_frames_in_flight;
 		alloc_info.pSetLayouts		  = layouts.data();
 
-		VkResult create_result = vkAllocateDescriptorSets(
-			this->device_manager->GetLogicalDevice(),
-			&alloc_info,
-			data_ref.descriptor_sets.data()
-		);
+		VkResult create_result =
+			vkAllocateDescriptorSets(*logical_device, &alloc_info, data_ref.descriptor_sets.data());
 
 		if (create_result != VK_SUCCESS)
 		{
@@ -285,10 +273,9 @@ namespace Engine::Rendering::Vulkan
 		VulkanRenderingEngine::per_frame_array<VkDescriptorBufferInfo> descriptor_buffer_infos{};
 		VulkanRenderingEngine::per_frame_array<VkWriteDescriptorSet> descriptor_writes{};
 
-		for (uint32_t frame_idx = 0; frame_idx < Vulkan::VulkanRenderingEngine::GetMaxFramesInFlight(); frame_idx++)
+		for (uint32_t frame_idx = 0; frame_idx < Vulkan::VulkanRenderingEngine::max_frames_in_flight; frame_idx++)
 		{
-			descriptor_buffer_infos[frame_idx].buffer = allocated_user_data.uniform_buffers[frame_idx]->GetNativeHandle(
-			);
+			descriptor_buffer_infos[frame_idx].buffer = *allocated_user_data.uniform_buffers[frame_idx];
 			descriptor_buffer_infos[frame_idx].offset = 0;
 			descriptor_buffer_infos[frame_idx].range  = sizeof(RendererMatrixData);
 
@@ -310,6 +297,8 @@ namespace Engine::Rendering::Vulkan
 		const VulkanRenderingEngine::per_frame_array<VkWriteDescriptorSet>& writes
 	)
 	{
+		LogicalDevice* logical_device = instance->GetLogicalDevice();
+
 		VulkanRenderingEngine::per_frame_array<VkWriteDescriptorSet> local_copy = writes;
 
 		for (uint32_t frame = 0; frame < local_copy.size(); frame++)
@@ -318,7 +307,7 @@ namespace Engine::Rendering::Vulkan
 		}
 
 		vkUpdateDescriptorSets(
-			device_manager->GetLogicalDevice(),
+			*logical_device,
 			static_cast<uint32_t>(local_copy.size()),
 			local_copy.data(),
 			0,

@@ -76,6 +76,7 @@ namespace Engine::Scripting
 			vertex.z = static_cast<float>(lua_tonumber(coroutine, -1));
 			lua_pop(coroutine, 3);
 
+			// TODO: Use non-table values
 			lua_rawgeti(coroutine, -1, 1);
 			color.r = static_cast<float>(lua_tonumber(coroutine, -1));
 			lua_rawgeti(coroutine, -2, 2);
@@ -84,6 +85,7 @@ namespace Engine::Scripting
 			color.b = static_cast<float>(lua_tonumber(coroutine, -1));
 			lua_pop(coroutine, 4);
 
+			// TODO: Use non-table values
 			lua_rawgeti(coroutine, -1, 1);
 			normal.x = static_cast<float>(lua_tonumber(coroutine, -1));
 			lua_rawgeti(coroutine, -2, 2);

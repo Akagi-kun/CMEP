@@ -3,6 +3,11 @@
 #include "Rendering/Transform.hpp"
 #include "Rendering/Vulkan/ImportVulkan.hpp"
 
+#include "HandleWrapper.hpp"
+#include "InstanceOwned.hpp"
+#include "Surface.hpp"
+#include "framework.hpp"
+
 #include <bitset>
 #include <cstdint>
 #include <queue>
@@ -36,32 +41,54 @@ namespace Engine::Rendering::Vulkan
 		}
 	};
 
-	struct Window final
+	class Window final : public InstanceOwned, public HandleWrapper<GLFWwindow*>
 	{
 	public:
-		GLFWwindow* native_handle;
-		bool is_resized = false;
-
-		bool is_focus	= false;
-		bool is_content = false;
-
 		Vector2<double> cursor_position;
 		std::queue<InputEvent> input_events;
 
-		Window(ScreenSize with_size, std::string with_title, const std::vector<std::pair<int, int>>& with_hints);
+		struct StatusBits
+		{
+			bool is_resized : 1;
+			bool is_focus : 1;
+			bool is_content : 1;
+		} status;
+
+		Window(
+			InstanceOwned::value_t with_instance,
+			ScreenSize with_size,
+			const std::string& with_title,
+			const std::vector<std::pair<int, int>>& with_hints
+		);
 		~Window();
 
 		void SetVisibility(bool visible);
+
 		void SetShouldClose(bool should_close);
+		[[nodiscard]] bool GetShouldClose() const;
 
 		[[nodiscard]] const ScreenSize& GetFramebufferSize() const
 		{
-			return this->size;
+			return size;
 		}
+
+		[[nodiscard]] Swapchain* GetSwapchain()
+		{
+			return swapchain;
+		}
+
+		[[nodiscard]] const Surface* GetSurface() const
+		{
+			return &surface;
+		}
+
+		void CreateSwapchain();
 
 	private:
 		ScreenSize size;
-		std::string title;
+
+		Swapchain* swapchain = nullptr;
+		Surface surface; // TODO: Make this a pointer
 
 		static Window* GetWindowPtrFromGLFW(GLFWwindow* window);
 

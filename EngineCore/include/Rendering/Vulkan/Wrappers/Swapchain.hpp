@@ -1,7 +1,9 @@
 #pragma once
 
-#include "CommandBuffer.hpp"
-#include "HoldsVulkanDevice.hpp"
+#include "Rendering/Vulkan/VulkanRenderingEngine.hpp"
+#include "Rendering/Vulkan/VulkanStructDefs.hpp"
+#include "Rendering/Vulkan/Wrappers/CommandBuffer.hpp"
+
 #include "framework.hpp"
 #include "vulkan/vulkan_core.h"
 
@@ -9,35 +11,29 @@
 
 namespace Engine::Rendering::Vulkan
 {
-	class Swapchain final : public HoldsVulkanDevice
+	struct RenderTargetData final
 	{
-	private:
-		VkSwapchainKHR native_handle = VK_NULL_HANDLE;
+		SyncObjects sync_objects;
+		CommandBuffer* command_buffer;
+		// VkFramebuffer framebuffer;
+	};
 
-		std::vector<VkImage> image_handles;
-		std::vector<VkImageView> image_view_handles;
-
-		VkFormat image_format{};
-		const VkExtent2D extent;
-
-		RenderPass* render_pass;
-
-		std::vector<VkFramebuffer> framebuffers;
-
-		// Multisampling
-		Image* multisampled_color_image = nullptr;
-		// Depth buffers
-		Image* depth_buffer				= nullptr;
-
+	class Swapchain final : public InstanceOwned, public HandleWrapper<VkSwapchainKHR>
+	{
 	public:
-		Swapchain(DeviceManager* with_device_manager, VkExtent2D with_extent, uint32_t with_count);
+		Swapchain(
+			InstanceOwned::value_t with_instance,
+			Surface* with_surface,
+			VkExtent2D with_extent,
+			uint32_t with_count
+		);
 		~Swapchain();
 
 		void BeginRenderPass(CommandBuffer* with_buffer, size_t image_index);
 
-		[[nodiscard]] VkSwapchainKHR GetNativeHandle()
+		[[nodiscard]] RenderTargetData& GetRenderTarget(size_t index)
 		{
-			return this->native_handle;
+			return this->render_targets[index];
 		}
 
 		[[nodiscard]] VkFormat GetImageFormat() const
@@ -59,5 +55,28 @@ namespace Engine::Rendering::Vulkan
 		{
 			return this->render_pass;
 		}
+
+	private:
+		std::vector<VkImage> image_handles;
+		std::vector<VkImageView> image_view_handles;
+
+		VulkanRenderingEngine::per_frame_array<RenderTargetData> render_targets;
+
+		VkFormat image_format{};
+		const VkExtent2D extent;
+
+		RenderPass* render_pass = nullptr;
+
+		std::vector<VkFramebuffer> framebuffers;
+
+		// Multisampling
+		Image* multisampled_color_image = nullptr;
+		// Depth buffers
+		Image* depth_buffer				= nullptr;
+
+		void CreateRenderTarget(RenderTargetData& target);
+		void CreateSyncObjects(SyncObjects& sync_objects);
+
+		void CleanupRenderTarget(RenderTargetData& target);
 	};
 } // namespace Engine::Rendering::Vulkan

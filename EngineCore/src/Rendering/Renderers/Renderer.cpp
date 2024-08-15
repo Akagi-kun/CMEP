@@ -7,6 +7,7 @@
 #include "Rendering/Vulkan/Wrappers/CommandBuffer.hpp"
 #include "Rendering/Vulkan/Wrappers/Pipeline.hpp"
 #include "Rendering/Vulkan/Wrappers/SampledImage.hpp"
+#include "Rendering/Vulkan/Wrappers/Swapchain.hpp"
 #include "Rendering/framework.hpp"
 
 #include "Engine.hpp"
@@ -25,10 +26,10 @@ namespace Engine::Rendering
 	{
 		Vulkan::VulkanRenderingEngine* renderer = this->owner_engine->GetRenderingEngine();
 
-		this->settings =
-			{renderer->GetSwapchain()->GetExtent(), this->pipeline_name, this->mesh_builder->GetSupportedTopology()};
+		settings =
+			{renderer->GetWindow()->GetSwapchain()->GetExtent(), pipeline_name, mesh_builder->GetSupportedTopology()};
 
-		this->settings.descriptor_layout_settings.push_back(VulkanDescriptorLayoutSettings{
+		settings.descriptor_layout_settings.push_back(VulkanDescriptorLayoutSettings{
 			1,
 			1,
 			VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
@@ -36,7 +37,7 @@ namespace Engine::Rendering
 		});
 
 		// pipeline_manager->GetPipeline(pipeline_settings);
-		//  this->pipeline =	new Vulkan::VPipeline(renderer->GetDeviceManager(), pipeline_settings,
+		//  pipeline =	new Vulkan::VPipeline(renderer->GetDeviceManager(), pipeline_settings,
 		//  renderer->GetRenderPass());
 	}
 
@@ -49,9 +50,9 @@ namespace Engine::Rendering
 				const auto& payload_ref = std::get<std::weak_ptr<void>>(data.payload);
 				assert(!payload_ref.expired() && "Cannot lock expired payload!");
 
-				auto font_cast				  = std::static_pointer_cast<Font>(payload_ref.lock());
-				this->texture				  = font_cast->GetPageTexture(0);
-				this->has_updated_descriptors = false;
+				auto font_cast			= std::static_pointer_cast<Font>(payload_ref.lock());
+				texture					= font_cast->GetPageTexture(0);
+				has_updated_descriptors = false;
 				break;
 			}
 			case RendererSupplyDataType::TEXTURE:
@@ -59,8 +60,8 @@ namespace Engine::Rendering
 				const auto& payload_ref = std::get<std::weak_ptr<void>>(data.payload);
 				assert(!payload_ref.expired() && "Cannot lock expired payload!");
 
-				this->texture				  = std::static_pointer_cast<Texture>(payload_ref.lock());
-				this->has_updated_descriptors = false;
+				texture					= std::static_pointer_cast<Texture>(payload_ref.lock());
+				has_updated_descriptors = false;
 				break;
 			}
 			default:
@@ -69,38 +70,38 @@ namespace Engine::Rendering
 			}
 		}
 
-		assert(this->mesh_builder != nullptr && "This renderer has not been assigned a mesh builder!");
-		this->mesh_builder->SupplyData(data);
+		assert(mesh_builder != nullptr && "This renderer has not been assigned a mesh builder!");
+		mesh_builder->SupplyData(data);
 	}
 
 	void IRenderer::UpdateDescriptorSets()
 	{
-		this->has_updated_descriptors = true;
+		has_updated_descriptors = true;
 
 		auto extended_settings = Vulkan::ExtendedPipelineSettings{settings};
 		if (texture)
 		{
-			extended_settings.supply_data.emplace_back(RendererSupplyDataType::TEXTURE, this->texture);
+			extended_settings.supply_data.emplace_back(RendererSupplyDataType::TEXTURE, texture);
 		}
-		auto pipeline_result	  = this->pipeline_manager->GetPipeline(extended_settings);
-		this->pipeline_user_index = std::get<size_t>(pipeline_result);
-		this->pipeline			  = std::get<Vulkan::Pipeline*>(pipeline_result);
+		auto pipeline_result = pipeline_manager->GetPipeline(extended_settings);
+		pipeline_user_index	 = std::get<size_t>(pipeline_result);
+		pipeline			 = std::get<Vulkan::Pipeline*>(pipeline_result);
 
-		if (this->texture)
+		if (texture)
 		{
 			Vulkan::VulkanRenderingEngine::per_frame_array<VkDescriptorImageInfo> descriptor_image_infos{};
 			Vulkan::VulkanRenderingEngine::per_frame_array<VkWriteDescriptorSet> descriptor_writes{};
 
-			Vulkan::SampledImage* texture_image = this->texture->GetTextureImage();
+			Vulkan::SampledImage* texture_image = texture->GetTextureImage();
 
-			for (uint32_t i = 0; i < Vulkan::VulkanRenderingEngine::GetMaxFramesInFlight(); i++)
+			for (uint32_t i = 0; i < Vulkan::VulkanRenderingEngine::max_frames_in_flight; i++)
 			{
 				descriptor_image_infos[i].imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 				descriptor_image_infos[i].imageView	  = texture_image->GetNativeViewHandle();
 				descriptor_image_infos[i].sampler	  = texture_image->texture_sampler;
 
 				descriptor_writes[i].sType			 = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-				descriptor_writes[i].dstSet			 = this->pipeline->GetDescriptorSet(0, i);
+				descriptor_writes[i].dstSet			 = pipeline->GetDescriptorSet(0, i);
 				descriptor_writes[i].dstBinding		 = 1;
 				descriptor_writes[i].dstArrayElement = 0;
 				descriptor_writes[i].descriptorType	 = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
@@ -111,48 +112,42 @@ namespace Engine::Rendering
 			}
 
 			// TODO: Update using single VkWriteDescriptorSet?
-			this->pipeline->UpdateDescriptorSets(this->pipeline_user_index, descriptor_writes);
+			pipeline->UpdateDescriptorSets(pipeline_user_index, descriptor_writes);
 		}
 	}
 
 	void IRenderer::Render(Vulkan::CommandBuffer* command_buffer, uint32_t current_frame)
 	{
-		if (!this->has_updated_matrices)
+		if (!has_updated_matrices)
 		{
-			this->UpdateMatrices();
+			UpdateMatrices();
 		}
 
-		if (!this->has_updated_descriptors)
+		if (!has_updated_descriptors)
 		{
-			this->UpdateDescriptorSets();
+			UpdateDescriptorSets();
 		}
 
-		// If builder requests a rebuild, do it and update current context
-		if (this->mesh_builder->NeedsRebuild())
+		// If builder requests a rebuild, do it
+		if (mesh_builder->NeedsRebuild())
 		{
-			this->mesh_builder->Build();
+			mesh_builder->Build();
 		}
-		this->mesh_context = this->mesh_builder->GetContext();
+		mesh_context = mesh_builder->GetContext();
 
 		// Render only if VBO non-empty
-		if (this->mesh_context.vbo_vert_count > 0)
+		if (mesh_context.vbo_vert_count > 0)
 		{
-			this->pipeline->GetUniformBuffer(this->pipeline_user_index, current_frame)
-				->MemoryCopy(&this->matrix_data, sizeof(RendererMatrixData));
+			pipeline->GetUniformBuffer(pipeline_user_index, current_frame)
+				->MemoryCopy(&matrix_data, sizeof(RendererMatrixData));
 
-			this->pipeline->BindPipeline(this->pipeline_user_index, command_buffer->GetNativeHandle(), current_frame);
+			pipeline->BindPipeline(pipeline_user_index, *command_buffer, current_frame);
 
-			VkBuffer vertex_buffers[] = {this->mesh_context.vbo->GetNativeHandle()};
+			VkBuffer vertex_buffers[] = {*mesh_context.vbo};
 			VkDeviceSize offsets[]	  = {0};
-			vkCmdBindVertexBuffers(command_buffer->GetNativeHandle(), 0, 1, vertex_buffers, offsets);
+			vkCmdBindVertexBuffers(*command_buffer, 0, 1, vertex_buffers, offsets);
 
-			vkCmdDraw(
-				command_buffer->GetNativeHandle(),
-				static_cast<uint32_t>(this->mesh_context.vbo_vert_count),
-				1,
-				0,
-				0
-			);
+			vkCmdDraw(*command_buffer, static_cast<uint32_t>(mesh_context.vbo_vert_count), 1, 0, 0);
 		}
 	}
 
@@ -164,10 +159,10 @@ namespace Engine::Rendering
 			projection = locked_scene_manager->GetProjectionMatrixOrtho();
 		}
 
-		this->matrix_data.mat_model = CalculateModelMatrix(this->transform, this->parent_transform);
-		this->matrix_data.mat_vp	= projection; // * view;
+		matrix_data.mat_model = CalculateModelMatrix(transform, parent_transform);
+		matrix_data.mat_vp	  = projection; // * view;
 
-		this->has_updated_matrices = true;
+		has_updated_matrices = true;
 	}
 
 	void Renderer3D::UpdateMatrices()
@@ -177,14 +172,14 @@ namespace Engine::Rendering
 		if (auto locked_scene_manager = this->owner_engine->GetSceneManager().lock())
 		{
 			view	   = locked_scene_manager->GetCameraViewMatrix();
-			projection = locked_scene_manager->GetProjectionMatrix(this->screen);
+			projection = locked_scene_manager->GetProjectionMatrix(screen);
 		}
 		projection[1][1] *= -1;
 
-		this->matrix_data.mat_model = CalculateModelMatrix(this->transform, this->parent_transform);
-		this->matrix_data.mat_vp	= projection * view;
+		matrix_data.mat_model = CalculateModelMatrix(transform, parent_transform);
+		matrix_data.mat_vp	  = projection * view;
 
-		this->has_updated_matrices = true;
+		has_updated_matrices = true;
 	}
 
 } // namespace Engine::Rendering

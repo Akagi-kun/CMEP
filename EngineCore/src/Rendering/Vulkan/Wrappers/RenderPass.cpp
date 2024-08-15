@@ -1,8 +1,8 @@
 #include "Rendering/Vulkan/Wrappers/RenderPass.hpp"
 
-#include "Rendering/Vulkan/DeviceManager.hpp"
-#include "Rendering/Vulkan/VulkanRenderingEngine.hpp"
-#include "Rendering/Vulkan/Wrappers/HoldsVulkanDevice.hpp"
+#include "Rendering/Vulkan/Wrappers/Instance.hpp"
+#include "Rendering/Vulkan/Wrappers/InstanceOwned.hpp"
+#include "Rendering/Vulkan/Wrappers/LogicalDevice.hpp"
 
 #include "vulkan/vulkan_core.h"
 
@@ -11,14 +11,13 @@
 
 namespace Engine::Rendering::Vulkan
 {
-	RenderPass::RenderPass(DeviceManager* with_device_manager, VkFormat with_format)
-		: HoldsVulkanDevice(with_device_manager)
+	RenderPass::RenderPass(InstanceOwned::value_t with_instance, VkFormat with_format) : InstanceOwned(with_instance)
 	{
-		const auto& physical_device = this->device_manager->GetPhysicalDevice();
+		const auto& physical_device = instance->GetPhysicalDevice();
 
 		VkAttachmentDescription color_attachment{};
 		color_attachment.format			= with_format;
-		color_attachment.samples		= this->device_manager->GetMSAASampleCount();
+		color_attachment.samples		= instance->GetMSAASamples();
 		color_attachment.loadOp			= VK_ATTACHMENT_LOAD_OP_CLEAR;
 		color_attachment.storeOp		= VK_ATTACHMENT_STORE_OP_DONT_CARE;
 		color_attachment.stencilLoadOp	= VK_ATTACHMENT_LOAD_OP_DONT_CARE;
@@ -27,8 +26,8 @@ namespace Engine::Rendering::Vulkan
 		color_attachment.finalLayout	= VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
 
 		VkAttachmentDescription depth_attachment{};
-		depth_attachment.format			= VulkanRenderingEngine::FindVulkanSupportedDepthFormat(physical_device);
-		depth_attachment.samples		= this->device_manager->GetMSAASampleCount();
+		depth_attachment.format			= physical_device.FindSupportedDepthFormat();
+		depth_attachment.samples		= instance->GetMSAASamples();
 		depth_attachment.loadOp			= VK_ATTACHMENT_LOAD_OP_CLEAR;
 		depth_attachment.storeOp		= VK_ATTACHMENT_STORE_OP_DONT_CARE;
 		depth_attachment.stencilLoadOp	= VK_ATTACHMENT_LOAD_OP_DONT_CARE;
@@ -87,9 +86,9 @@ namespace Engine::Rendering::Vulkan
 		render_pass_info.dependencyCount = 1;
 		render_pass_info.pDependencies	 = &dependency;
 
-		VkDevice logical_device = this->device_manager->GetLogicalDevice();
+		LogicalDevice* logical_device = instance->GetLogicalDevice();
 
-		if (vkCreateRenderPass(logical_device, &render_pass_info, nullptr, &this->native_handle) != VK_SUCCESS)
+		if (vkCreateRenderPass(*logical_device, &render_pass_info, nullptr, &this->native_handle) != VK_SUCCESS)
 		{
 			throw std::runtime_error("failed to create render pass!");
 		}
@@ -97,6 +96,8 @@ namespace Engine::Rendering::Vulkan
 
 	RenderPass::~RenderPass()
 	{
-		vkDestroyRenderPass(this->device_manager->GetLogicalDevice(), this->native_handle, nullptr);
+		LogicalDevice* logical_device = instance->GetLogicalDevice();
+
+		vkDestroyRenderPass(*logical_device, this->native_handle, nullptr);
 	}
 } // namespace Engine::Rendering::Vulkan

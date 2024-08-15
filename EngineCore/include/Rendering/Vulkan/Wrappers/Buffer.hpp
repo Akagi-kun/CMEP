@@ -1,19 +1,18 @@
 #pragma once
 
 #include "Rendering/Vulkan/Wrappers/HoldsVMA.hpp"
-#include "Rendering/Vulkan/Wrappers/HoldsVulkanDevice.hpp"
 #include "Rendering/Vulkan/Wrappers/framework.hpp"
 
+#include "InstanceOwned.hpp"
 #include "vulkan/vulkan_core.h"
 
 #include <cstring>
 
 namespace Engine::Rendering::Vulkan
 {
-	class Buffer : public HoldsVulkanDevice, public HoldsVMA
+	class Buffer : public InstanceOwned, public HoldsVMA, public HandleWrapper<VkBuffer>
 	{
 	protected:
-		VkBuffer native_handle;
 		VkDeviceSize buffer_size;
 
 		VmaAllocation allocation;
@@ -23,7 +22,7 @@ namespace Engine::Rendering::Vulkan
 		void* mapped_data = nullptr;
 
 		Buffer(
-			DeviceManager* with_device_manager,
+			InstanceOwned::value_t with_instance,
 			VkDeviceSize with_size,
 			VkBufferUsageFlags with_usage,
 			VkMemoryPropertyFlags with_properties,
@@ -41,11 +40,6 @@ namespace Engine::Rendering::Vulkan
 			std::memcpy(this->mapped_data, with_data, with_size);
 
 			this->UnmapMemory();
-		}
-
-		[[nodiscard]] VkBuffer& GetNativeHandle()
-		{
-			return this->native_handle;
 		}
 	};
 } // namespace Engine::Rendering::Vulkan

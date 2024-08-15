@@ -22,6 +22,13 @@ namespace Engine::Rendering
 		}
 	};
 
+	struct SyncObjects
+	{
+		VkSemaphore image_available;
+		VkSemaphore present_ready; // render_finished_semaphores
+		VkFence in_flight;
+	};
+
 	struct SwapChainSupportDetails
 	{
 		VkSurfaceCapabilitiesKHR capabilities;

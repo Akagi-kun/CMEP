@@ -1,27 +1,36 @@
 #include "Rendering/Vulkan/Wrappers/Swapchain.hpp"
 
-#include "Rendering/Vulkan/DeviceManager.hpp"
-#include "Rendering/Vulkan/VulkanRenderingEngine.hpp"
 #include "Rendering/Vulkan/VulkanUtilities.hpp"
 #include "Rendering/Vulkan/Wrappers/CommandBuffer.hpp"
-#include "Rendering/Vulkan/Wrappers/HoldsVulkanDevice.hpp"
+#include "Rendering/Vulkan/Wrappers/CommandPool.hpp"
 #include "Rendering/Vulkan/Wrappers/Image.hpp"
 #include "Rendering/Vulkan/Wrappers/RenderPass.hpp"
 
 namespace Engine::Rendering::Vulkan
 {
-	Swapchain::Swapchain(DeviceManager* const with_device_manager, VkExtent2D with_extent, uint32_t with_count)
-		: HoldsVulkanDevice(with_device_manager), image_format(VK_FORMAT_B8G8R8A8_UNORM), extent(with_extent)
+#pragma region Public
+
+	Swapchain::Swapchain(
+		InstanceOwned::value_t with_instance,
+		Surface* with_surface,
+		VkExtent2D with_extent,
+		uint32_t with_count
+	)
+		: InstanceOwned(with_instance), image_format(VK_FORMAT_B8G8R8A8_UNORM), extent(with_extent)
 	{
+		LogicalDevice* logical_device = instance->GetLogicalDevice();
+
 		// Query details for support of swapchains
-		SwapChainSupportDetails swap_chain_support = this->device_manager->QuerySwapChainSupport();
+		SwapChainSupportDetails swap_chain_support = with_surface->QueryVulkanSwapChainSupport(
+			instance->GetPhysicalDevice()
+		);
 		VkSurfaceFormatKHR surface_format = Vulkan::Utils::ChooseVulkanSwapSurfaceFormat(swap_chain_support.formats);
 
 		VkPresentModeKHR present_mode = Vulkan::Utils::ChooseVulkanSwapPresentMode(swap_chain_support.present_modes);
 
 		VkSwapchainCreateInfoKHR create_info{};
 		create_info.sType			 = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
-		create_info.surface			 = this->device_manager->GetSurface();
+		create_info.surface			 = with_surface->native_handle; // this->device_manager->GetSurface();
 		create_info.minImageCount	 = with_count;
 		create_info.imageFormat		 = VK_FORMAT_B8G8R8A8_UNORM;
 		create_info.imageColorSpace	 = surface_format.colorSpace;
@@ -35,7 +44,7 @@ namespace Engine::Rendering::Vulkan
 
 		create_info.oldSwapchain = VK_NULL_HANDLE;
 
-		QueueFamilyIndices queue_indices = this->device_manager->GetQueueFamilies();
+		QueueFamilyIndices queue_indices = logical_device->GetQueueFamilies();
 		uint32_t queue_family_indices[] = {queue_indices.graphics_family.value(), queue_indices.present_family.value()};
 
 		if (queue_indices.graphics_family != queue_indices.present_family)
@@ -49,30 +58,21 @@ namespace Engine::Rendering::Vulkan
 			create_info.imageSharingMode = VK_SHARING_MODE_EXCLUSIVE;
 		}
 
-		if (vkCreateSwapchainKHR(
-				this->device_manager->GetLogicalDevice(),
-				&create_info,
-				nullptr,
-				&(this->native_handle)
-			) != VK_SUCCESS)
+		if (vkCreateSwapchainKHR(*logical_device, &create_info, nullptr, &(this->native_handle)) != VK_SUCCESS)
 		{
 			throw std::runtime_error("Failed to create swap chain!");
 		}
 
+		// TODO: Use max_frames_in_flight instead and only assert they're ==
 		uint32_t swapchain_image_count = 0;
 
 		// Get image count
-		vkGetSwapchainImagesKHR(
-			this->device_manager->GetLogicalDevice(),
-			this->native_handle,
-			&swapchain_image_count,
-			nullptr
-		);
+		vkGetSwapchainImagesKHR(*logical_device, this->native_handle, &swapchain_image_count, nullptr);
 
 		// Get images proper
 		this->image_handles.resize(swapchain_image_count);
 		vkGetSwapchainImagesKHR(
-			this->device_manager->GetLogicalDevice(),
+			*logical_device,
 			this->native_handle,
 			&swapchain_image_count,
 			this->image_handles.data()
@@ -93,41 +93,34 @@ namespace Engine::Rendering::Vulkan
 			view_info.subresourceRange.baseArrayLayer = 0;
 			view_info.subresourceRange.layerCount	  = 1;
 
-			if (vkCreateImageView(
-					this->device_manager->GetLogicalDevice(),
-					&view_info,
-					nullptr,
-					&this->image_view_handles[i]
-				) != VK_SUCCESS)
+			if (vkCreateImageView(*logical_device, &view_info, nullptr, &this->image_view_handles[i]) != VK_SUCCESS)
 			{
 				throw std::runtime_error("Failed to create swapchain image view!");
 			}
 		}
 
-		VkFormat depth_format = VulkanRenderingEngine::FindVulkanSupportedDepthFormat(
-			this->device_manager->GetPhysicalDevice()
-		);
+		VkFormat depth_format = instance->GetPhysicalDevice().FindSupportedDepthFormat();
 		VkFormat color_format = this->GetImageFormat();
 
 		this->depth_buffer = new Image(
-			this->device_manager,
+			instance,
 			{this->extent.width, this->extent.height},
-			this->device_manager->GetMSAASampleCount(),
+			instance->GetMSAASamples(),
 			depth_format,
 			VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT
 		);
 		this->depth_buffer->AddImageView(VK_IMAGE_ASPECT_DEPTH_BIT);
 
 		this->multisampled_color_image = new Image(
-			this->device_manager,
+			instance,
 			{this->extent.width, this->extent.height},
-			this->device_manager->GetMSAASampleCount(),
+			instance->GetMSAASamples(),
 			color_format,
 			VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT
 		);
 		this->multisampled_color_image->AddImageView(VK_IMAGE_ASPECT_COLOR_BIT);
 
-		this->render_pass = new RenderPass(this->device_manager, this->image_format);
+		this->render_pass = new RenderPass(instance, this->image_format);
 
 		this->framebuffers.resize(image_view_handles.size());
 
@@ -148,35 +141,43 @@ namespace Engine::Rendering::Vulkan
 			framebuffer_info.height			 = this->extent.height;
 			framebuffer_info.layers			 = 1;
 
-			VkDevice logical_device = this->device_manager->GetLogicalDevice();
-
-			if (vkCreateFramebuffer(logical_device, &framebuffer_info, nullptr, &this->framebuffers[i]) != VK_SUCCESS)
+			if (vkCreateFramebuffer(*logical_device, &framebuffer_info, nullptr, &this->framebuffers[i]) != VK_SUCCESS)
 			{
 				throw std::runtime_error("failed to create framebuffer!");
 			}
+		}
+
+		for (auto& target : this->render_targets)
+		{
+			this->CreateRenderTarget(target);
 		}
 	}
 
 	Swapchain::~Swapchain()
 	{
-		VkDevice logical_device = this->device_manager->GetLogicalDevice();
+		LogicalDevice* logical_device = instance->GetLogicalDevice();
 
 		for (auto* framebuffer : this->framebuffers)
 		{
-			vkDestroyFramebuffer(logical_device, framebuffer, nullptr);
+			vkDestroyFramebuffer(*logical_device, framebuffer, nullptr);
 		}
 
 		for (auto* image_view : this->image_view_handles)
 		{
-			vkDestroyImageView(logical_device, image_view, nullptr);
+			vkDestroyImageView(*logical_device, image_view, nullptr);
 		}
 
-		vkDestroySwapchainKHR(logical_device, this->native_handle, nullptr);
+		vkDestroySwapchainKHR(*logical_device, this->native_handle, nullptr);
 
 		delete multisampled_color_image;
 		delete depth_buffer;
 
 		delete render_pass;
+
+		for (auto& target : this->render_targets)
+		{
+			this->CleanupRenderTarget(target);
+		}
 	}
 
 	void Swapchain::BeginRenderPass(CommandBuffer* with_buffer, size_t image_index)
@@ -198,4 +199,43 @@ namespace Engine::Rendering::Vulkan
 		with_buffer->BeginRenderPass(&render_pass_info);
 	}
 
+#pragma region Private
+
+	void Swapchain::CreateRenderTarget(RenderTargetData& target)
+	{
+		target.command_buffer = instance->GetCommandPool()->AllocateCommandBuffer();
+
+		this->CreateSyncObjects(target.sync_objects);
+	}
+
+	void Swapchain::CreateSyncObjects(SyncObjects& sync_objects)
+	{
+		LogicalDevice* logical_device = instance->GetLogicalDevice();
+
+		static VkSemaphoreCreateInfo semaphore_info{};
+		semaphore_info.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
+
+		static VkFenceCreateInfo fence_info{};
+		fence_info.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
+		fence_info.flags = VK_FENCE_CREATE_SIGNALED_BIT;
+
+		if (vkCreateSemaphore(*logical_device, &semaphore_info, nullptr, &(sync_objects.image_available)) !=
+				VK_SUCCESS ||
+			vkCreateSemaphore(*logical_device, &semaphore_info, nullptr, &(sync_objects.present_ready)) != VK_SUCCESS ||
+			vkCreateFence(*logical_device, &fence_info, nullptr, &(sync_objects.in_flight)) != VK_SUCCESS)
+		{
+			throw std::runtime_error("failed to create sync objects!");
+		}
+	}
+
+	void Swapchain::CleanupRenderTarget(RenderTargetData& target)
+	{
+		LogicalDevice* logical_device = instance->GetLogicalDevice();
+
+		vkDestroySemaphore(*logical_device, target.sync_objects.present_ready, nullptr);
+		vkDestroySemaphore(*logical_device, target.sync_objects.image_available, nullptr);
+		vkDestroyFence(*logical_device, target.sync_objects.in_flight, nullptr);
+
+		delete target.command_buffer;
+	}
 } // namespace Engine::Rendering::Vulkan

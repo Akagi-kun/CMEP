@@ -32,9 +32,12 @@ set(SRC_FILES
 	
 	src/Rendering/Vulkan/PipelineManager.cpp
 	src/Rendering/Vulkan/VmaImplementation.cpp
-	src/Rendering/Vulkan/DeviceManager.cpp
 	src/Rendering/Vulkan/VulkanRenderingEngine.cpp
 	
+	src/Rendering/Vulkan/Wrappers/LogicalDevice.cpp
+	src/Rendering/Vulkan/Wrappers/MemoryAllocator.cpp
+	src/Rendering/Vulkan/Wrappers/Instance.cpp
+	src/Rendering/Vulkan/Wrappers/Surface.cpp
 	src/Rendering/Vulkan/Wrappers/Window.cpp
 	src/Rendering/Vulkan/Wrappers/ShaderModule.cpp
 	src/Rendering/Vulkan/Wrappers/Pipeline.cpp
@@ -43,6 +46,8 @@ set(SRC_FILES
 	src/Rendering/Vulkan/Wrappers/RenderPass.cpp
 	src/Rendering/Vulkan/Wrappers/Swapchain.cpp
 	src/Rendering/Vulkan/Wrappers/Buffer.cpp
+	src/Rendering/Vulkan/Wrappers/DeviceScore.cpp
+	src/Rendering/Vulkan/Wrappers/PhysicalDevice.cpp
 	src/Rendering/Vulkan/Wrappers/CommandPool.cpp
 	src/Rendering/Vulkan/Wrappers/CommandBuffer.cpp
 	

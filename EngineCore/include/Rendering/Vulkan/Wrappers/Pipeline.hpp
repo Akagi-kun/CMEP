@@ -3,7 +3,6 @@
 #include "Rendering/Vulkan/VulkanRenderingEngine.hpp"
 #include "Rendering/Vulkan/VulkanStructDefs.hpp"
 #include "Rendering/Vulkan/Wrappers/HoldsVMA.hpp"
-#include "Rendering/Vulkan/Wrappers/HoldsVulkanDevice.hpp"
 
 #include "vulkan/vulkan_core.h"
 
@@ -11,7 +10,7 @@
 
 namespace Engine::Rendering::Vulkan
 {
-	class Pipeline : public HoldsVulkanDevice, public HoldsVMA
+	class Pipeline : public InstanceOwned, public HoldsVMA
 	{
 	private:
 		struct UserData
@@ -41,7 +40,7 @@ namespace Engine::Rendering::Vulkan
 
 	public:
 		Pipeline(
-			DeviceManager* with_device_manager,
+			InstanceOwned::value_t with_instance,
 			RenderPass* with_render_pass,
 			VulkanPipelineSettings settings,
 			const std::filesystem::path& shader_path
@@ -52,7 +51,7 @@ namespace Engine::Rendering::Vulkan
 
 		void UpdateDescriptorSets(
 			size_t user_index,
-			const std::array<VkWriteDescriptorSet, VulkanRenderingEngine::GetMaxFramesInFlight()>& writes
+			const VulkanRenderingEngine::per_frame_array<VkWriteDescriptorSet>& writes
 		);
 
 		[[nodiscard]] Buffer* GetUniformBuffer(size_t user_idx, uint32_t current_frame)

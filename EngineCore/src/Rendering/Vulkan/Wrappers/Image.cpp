@@ -1,20 +1,18 @@
 #include "Rendering/Vulkan/Wrappers/Image.hpp"
 
-#include "Rendering/Vulkan/DeviceManager.hpp"
 #include "Rendering/Vulkan/Wrappers/CommandBuffer.hpp"
 #include "Rendering/Vulkan/Wrappers/CommandPool.hpp"
-#include "Rendering/Vulkan/Wrappers/HoldsVulkanDevice.hpp"
+#include "Rendering/Vulkan/Wrappers/Instance.hpp"
 #include "Rendering/Vulkan/Wrappers/framework.hpp"
 
 #include "vulkan/vulkan_core.h"
 
 #include <stdexcept>
 
-
 namespace Engine::Rendering::Vulkan
 {
 	Image::Image(
-		DeviceManager* const with_device_manager,
+		InstanceOwned::value_t with_instance,
 		ImageSize with_size,
 		VkSampleCountFlagBits num_samples,
 		VkFormat format,
@@ -22,8 +20,8 @@ namespace Engine::Rendering::Vulkan
 		VkMemoryPropertyFlags properties,
 		VkImageTiling tiling
 	)
-		: HoldsVulkanDevice(with_device_manager), HoldsVMA(with_device_manager->GetVmaAllocator()),
-		  image_format(format), size(with_size)
+		: InstanceOwned(with_instance), HoldsVMA(with_instance->GetGraphicMemoryAllocator()), image_format(format),
+		  size(with_size)
 	{
 
 		VkImageCreateInfo image_info{};
@@ -48,10 +46,10 @@ namespace Engine::Rendering::Vulkan
 		vma_alloc_info.requiredFlags = properties;
 
 		if (vmaCreateImage(
-				this->allocator,
+				*this->allocator,
 				&image_info,
 				&vma_alloc_info,
-				&(this->native_handle),
+				&(native_handle),
 				&(this->allocation),
 				&(this->allocation_info)
 			) != VK_SUCCESS)
@@ -59,23 +57,23 @@ namespace Engine::Rendering::Vulkan
 			throw std::runtime_error("Failed to create VulkanImage!");
 		}
 
-		vmaSetAllocationName(this->allocator, this->allocation, "VImage");
+		vmaSetAllocationName(*this->allocator, this->allocation, "VImage");
 	}
 
 	Image::~Image()
 	{
-		VkDevice logical_device = this->device_manager->GetLogicalDevice();
+		LogicalDevice* logical_device = instance->GetLogicalDevice();
 
-		vkDeviceWaitIdle(logical_device);
+		logical_device->WaitDeviceIdle();
 
-		if (this->native_view_handle != nullptr)
+		if (native_view_handle != nullptr)
 		{
-			vkDestroyImageView(logical_device, this->native_view_handle, nullptr);
+			vkDestroyImageView(*logical_device, native_view_handle, nullptr);
 		}
 
-		vkDestroyImage(logical_device, this->native_handle, nullptr);
+		vkDestroyImage(*logical_device, native_handle, nullptr);
 
-		vmaFreeMemory(this->allocator, this->allocation);
+		vmaFreeMemory(*this->allocator, this->allocation);
 	}
 
 	void Image::TransitionImageLayout(VkImageLayout new_layout)
@@ -89,7 +87,7 @@ namespace Engine::Rendering::Vulkan
 		barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
 		barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
 
-		barrier.image = this->native_handle;
+		barrier.image = native_handle;
 
 		barrier.subresourceRange.aspectMask		= VK_IMAGE_ASPECT_COLOR_BIT;
 		barrier.subresourceRange.baseMipLevel	= 0;
@@ -122,22 +120,11 @@ namespace Engine::Rendering::Vulkan
 			throw std::invalid_argument("Unsupported layout transition!");
 		}
 
-		auto* command_buffer = this->device_manager->GetCommandPool()->AllocateCommandBuffer();
+		auto* command_buffer = instance->GetCommandPool()->AllocateCommandBuffer();
 
 		// VCommandBuffer(this->device_manager, this->device_manager->GetCommandPool())
 		command_buffer->RecordCmds([&](CommandBuffer* with_buffer) {
-			vkCmdPipelineBarrier(
-				with_buffer->GetNativeHandle(),
-				source_stage,
-				destination_stage,
-				0,
-				0,
-				nullptr,
-				0,
-				nullptr,
-				1,
-				&barrier
-			);
+			vkCmdPipelineBarrier(*with_buffer, source_stage, destination_stage, 0, 0, nullptr, 0, nullptr, 1, &barrier);
 		});
 
 		delete command_buffer;
@@ -147,9 +134,11 @@ namespace Engine::Rendering::Vulkan
 
 	void Image::AddImageView(VkImageAspectFlags with_aspect_flags)
 	{
+		LogicalDevice* logical_device = instance->GetLogicalDevice();
+
 		VkImageViewCreateInfo view_info{};
 		view_info.sType							  = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
-		view_info.image							  = this->native_handle;
+		view_info.image							  = native_handle;
 		view_info.viewType						  = VK_IMAGE_VIEW_TYPE_2D;
 		view_info.format						  = this->image_format;
 		view_info.subresourceRange.aspectMask	  = with_aspect_flags;
@@ -158,12 +147,7 @@ namespace Engine::Rendering::Vulkan
 		view_info.subresourceRange.baseArrayLayer = 0;
 		view_info.subresourceRange.layerCount	  = 1;
 
-		if (vkCreateImageView(
-				this->device_manager->GetLogicalDevice(),
-				&view_info,
-				nullptr,
-				&this->native_view_handle
-			) != VK_SUCCESS)
+		if (vkCreateImageView(*logical_device, &view_info, nullptr, &native_view_handle) != VK_SUCCESS)
 		{
 			throw std::runtime_error("failed to create texture image view!");
 		}

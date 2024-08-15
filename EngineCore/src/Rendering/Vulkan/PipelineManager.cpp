@@ -1,8 +1,7 @@
 #include "Rendering/Vulkan/PipelineManager.hpp"
 
-#include "Rendering/Vulkan/DeviceManager.hpp"
-#include "Rendering/Vulkan/Wrappers/HoldsVulkanDevice.hpp"
 #include "Rendering/Vulkan/Wrappers/Pipeline.hpp"
+#include "Rendering/Vulkan/Wrappers/Swapchain.hpp"
 
 #include "Engine.hpp"
 
@@ -10,8 +9,8 @@
 
 namespace Engine::Rendering::Vulkan
 {
-	PipelineManager::PipelineManager(Engine* with_engine, DeviceManager* with_device_manager)
-		: InternalEngineObject(with_engine), HoldsVulkanDevice(with_device_manager)
+	PipelineManager::PipelineManager(Engine* with_engine, InstanceOwned::value_t with_instance)
+		: InternalEngineObject(with_engine), InstanceOwned(with_instance)
 	{
 	}
 
@@ -60,12 +59,10 @@ namespace Engine::Rendering::Vulkan
 			this->pipelines.size()
 		);
 
-		auto* renderer = owner_engine->GetRenderingEngine();
-
 		// If no such pipeline is found, allocate new one
 		pipeline = new Vulkan::Pipeline(
-			renderer->GetDeviceManager(),
-			renderer->GetSwapchain()->GetRenderPass(),
+			instance,
+			instance->GetWindow()->GetSwapchain()->GetRenderPass(), // renderer->GetSwapchain()->GetRenderPass(),
 			with_settings.short_setting,
 			this->owner_engine->GetShaderPath()
 		);

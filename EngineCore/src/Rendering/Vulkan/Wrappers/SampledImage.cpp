@@ -1,13 +1,14 @@
 #include "Rendering/Vulkan/Wrappers/SampledImage.hpp"
 
-#include "Rendering/Vulkan/DeviceManager.hpp"
+#include "Rendering/Vulkan/Wrappers/Instance.hpp"
+#include "Rendering/Vulkan/Wrappers/LogicalDevice.hpp"
 
 #include <stdexcept>
 
 namespace Engine::Rendering::Vulkan
 {
 	SampledImage::SampledImage(
-		DeviceManager* const with_device_manager,
+		InstanceOwned::value_t with_instance,
 		ImageSize with_size,
 		VkSampleCountFlagBits num_samples,
 		VkFormat format,
@@ -17,20 +18,22 @@ namespace Engine::Rendering::Vulkan
 		VkMemoryPropertyFlags properties,
 		VkImageTiling with_tiling
 	)
-		: Image(with_device_manager, with_size, num_samples, format, usage, properties, with_tiling),
-		  use_filter(with_filter), use_address_mode(with_address_mode)
+		: Image(with_instance, with_size, num_samples, format, usage, properties, with_tiling), use_filter(with_filter),
+		  use_address_mode(with_address_mode)
 	{
+		LogicalDevice* logical_device = instance->GetLogicalDevice();
+
 		VkSamplerCreateInfo sampler_info{};
 		sampler_info.sType	   = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
-		sampler_info.magFilter = this->use_filter;
-		sampler_info.minFilter = this->use_filter; // VK_FILTER_LINEAR;
+		sampler_info.magFilter = use_filter;
+		sampler_info.minFilter = use_filter; // VK_FILTER_LINEAR;
 
-		sampler_info.addressModeU = this->use_address_mode; // VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
-		sampler_info.addressModeV = this->use_address_mode;
-		sampler_info.addressModeW = this->use_address_mode;
+		sampler_info.addressModeU = use_address_mode; // VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
+		sampler_info.addressModeV = use_address_mode;
+		sampler_info.addressModeW = use_address_mode;
 
 		VkPhysicalDeviceProperties device_properties{};
-		vkGetPhysicalDeviceProperties(this->device_manager->GetPhysicalDevice(), &device_properties);
+		vkGetPhysicalDeviceProperties(instance->GetPhysicalDevice(), &device_properties);
 
 		sampler_info.anisotropyEnable = VK_TRUE;
 		sampler_info.maxAnisotropy	  = device_properties.limits.maxSamplerAnisotropy;
@@ -47,12 +50,7 @@ namespace Engine::Rendering::Vulkan
 		sampler_info.minLod		= 0.0f;
 		sampler_info.maxLod		= 0.0f;
 
-		if (vkCreateSampler(
-				this->device_manager->GetLogicalDevice(),
-				&sampler_info,
-				nullptr,
-				&(this->texture_sampler)
-			) != VK_SUCCESS)
+		if (vkCreateSampler(*logical_device, &sampler_info, nullptr, &(texture_sampler)) != VK_SUCCESS)
 		{
 			throw std::runtime_error("failed to create texture sampler!");
 		}
@@ -60,6 +58,8 @@ namespace Engine::Rendering::Vulkan
 
 	SampledImage::~SampledImage()
 	{
-		vkDestroySampler(this->device_manager->GetLogicalDevice(), this->texture_sampler, nullptr);
+		LogicalDevice* logical_device = instance->GetLogicalDevice();
+
+		vkDestroySampler(*logical_device, texture_sampler, nullptr);
 	}
 } // namespace Engine::Rendering::Vulkan
