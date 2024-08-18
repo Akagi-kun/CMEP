@@ -127,21 +127,14 @@ namespace Engine::Scripting
 			lua_setfield(state, -2, mapping.first.c_str());
 		}
 
-		/*******************************/
-		// Logger table
-		lua_newtable(state);
+		lua_setglobal(state, "engine");
 
+		// Replace print by a SimpleLog wrapper
 		void* ptr_obj = lua_newuserdata(state, sizeof(std::weak_ptr<Logging::Logger>));
 		new (ptr_obj) std::weak_ptr<Logging::Logger>(logger);
-		lua_setfield(state, -2, "_smart_ptr");
 
-		lua_pushcfunction(state, Mappings::Functions::MetaLoggerSimpleLog);
-		lua_setfield(state, -2, "SimpleLog");
-		lua_setfield(state, -2, "logger");
-		/*******************************/
-
-		// TODO: Rename
-		lua_setglobal(state, "engine");
+		lua_pushcclosure(state, Mappings::Functions::PrintReplace, 1);
+		lua_setglobal(state, "print");
 
 		lua_settop(state, 0);
 	}
@@ -179,7 +172,7 @@ namespace Engine::Scripting
 
 		using namespace std::literals;
 		// Check whether this works on other systems
-		std::string require_path_str = (require_origin_str + "/?.lua;"s + require_origin_str + "/modules/?.lua"s);
+		std::string require_path_str = (/* require_origin_str + "/?.lua;"s + */ require_origin_str + "/modules/?.lua"s);
 
 		lua_pushstring(state, require_path_str.c_str());
 		lua_setfield(state, -2, "path");

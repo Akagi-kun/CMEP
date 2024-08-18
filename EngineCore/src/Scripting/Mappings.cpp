@@ -13,6 +13,7 @@
 #include "Engine.hpp"
 #include "EnumStringConvertor.hpp"
 #include "KVPairHelper.hpp"
+#include "Logging.hpp"
 #include "lauxlib.h"
 #include "lua.h"
 #include "lua.hpp"
@@ -30,17 +31,32 @@ namespace Engine::Scripting::Mappings
 	{
 #pragma region Meta
 
-		int MetaLoggerSimpleLog(lua_State* state)
+		int PrintReplace(lua_State* state)
 		{
-			CMEP_LUACHECK_FN_ARGC(state, 1)
+			// CMEP_LUACHECK_FN_ARGC(state, 1)
+			int argc = lua_gettop(state);
 
-			const char* string = lua_tostring(state, 1);
+			// const char* string = lua_tostring(state, 1);
 
-			std::weak_ptr<Logging::Logger> logger = Scripting::API::LuaFactories::MetaLoggerFactory(state);
+			std::weak_ptr<Logging::Logger> logger = *static_cast<std::weak_ptr<Logging::Logger>*>(
+				lua_touserdata(state, lua_upvalueindex(1))
+			);
+
+			// std::weak_ptr<Logging::Logger> logger = Scripting::API::LuaFactories::MetaLoggerFactory(state);
 
 			if (auto locked_logger = logger.lock())
 			{
-				locked_logger->SimpleLog(Logging::LogLevel::Info, LOGPFX_CURRENT "%s", string);
+				locked_logger->StartLog(Logging::LogLevel::Info);
+
+				for (int arg = 1; arg <= argc; arg++)
+				{
+					const char* string = lua_tostring(state, arg);
+					locked_logger->Log("%s\t", string);
+				}
+
+				locked_logger->StopLog();
+
+				// locked_logger->SimpleLog(Logging::LogLevel::Info, LOGPFX_CURRENT "%s", string);
 			}
 			else
 			{

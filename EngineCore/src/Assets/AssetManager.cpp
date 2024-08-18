@@ -79,11 +79,6 @@ namespace Engine
 	{
 		if (this->textures.find(name) != this->textures.end())
 		{
-			this->logger->SimpleLog(
-				Logging::LogLevel::Debug2,
-				LOGPFX_CURRENT "Texture '%s' requested and is loaded",
-				name.c_str()
-			);
 			return this->textures.at(name);
 		}
 

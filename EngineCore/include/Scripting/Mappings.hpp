@@ -9,7 +9,7 @@ namespace Engine::Scripting::Mappings
 {
 	namespace Functions
 	{
-		int MetaLoggerSimpleLog(lua_State* state);
+		int PrintReplace(lua_State* state);
 	} // namespace Functions
 
 	extern std::unordered_map<std::string, lua_CFunction> mappings;

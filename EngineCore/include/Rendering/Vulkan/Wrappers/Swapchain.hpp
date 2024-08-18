@@ -1,6 +1,5 @@
 #pragma once
 
-#include "Rendering/Vulkan/VulkanRenderingEngine.hpp"
 #include "Rendering/Vulkan/VulkanStructDefs.hpp"
 #include "Rendering/Vulkan/Wrappers/CommandBuffer.hpp"
 
@@ -15,7 +14,6 @@ namespace Engine::Rendering::Vulkan
 	{
 		SyncObjects sync_objects;
 		CommandBuffer* command_buffer;
-		// VkFramebuffer framebuffer;
 	};
 
 	class Swapchain final : public InstanceOwned, public HandleWrapper<VkSwapchainKHR>
@@ -30,6 +28,12 @@ namespace Engine::Rendering::Vulkan
 		~Swapchain();
 
 		void BeginRenderPass(CommandBuffer* with_buffer, size_t image_index);
+		void RenderFrame(
+			CommandBuffer* command_buffer,
+			uint32_t image_index,
+			const std::function<void(Vulkan::CommandBuffer*, uint32_t, void*)>& callback,
+			void* user_data
+		);
 
 		[[nodiscard]] RenderTargetData& GetRenderTarget(size_t index)
 		{
@@ -60,7 +64,7 @@ namespace Engine::Rendering::Vulkan
 		std::vector<VkImage> image_handles;
 		std::vector<VkImageView> image_view_handles;
 
-		VulkanRenderingEngine::per_frame_array<RenderTargetData> render_targets;
+		per_frame_array<RenderTargetData> render_targets;
 
 		VkFormat image_format{};
 		const VkExtent2D extent;

@@ -16,14 +16,14 @@ namespace Engine::Rendering
 				const auto& payload_ref = std::get<std::weak_ptr<void>>(data.payload);
 				assert(!payload_ref.expired() && "Cannot lock expired payload!");
 
-				this->generator_script = std::static_pointer_cast<Scripting::ILuaScript>(payload_ref.lock());
+				generator_script = std::static_pointer_cast<Scripting::ILuaScript>(payload_ref.lock());
 				break;
 			}
 			case Rendering::RendererSupplyDataType::GENERATOR_SUPPLIER:
 			{
 				const auto& payload_ref = std::get<Rendering::GeneratorSupplierData>(data.payload);
 
-				this->generator_supplier = payload_ref;
+				generator_supplier = payload_ref;
 				break;
 			}
 			default:
@@ -35,27 +35,27 @@ namespace Engine::Rendering
 
 	void GeneratorMeshBuilder::Build()
 	{
-		if (this->context.vbo == nullptr)
+		if (context.vbo == nullptr)
 		{
 			std::vector<RenderingVertex> generated_mesh;
 
-			std::array<void*, 3> generator_data = {&generated_mesh, &generator_supplier, &(this->world_pos)};
+			std::array<void*, 3> generator_data = {&generated_mesh, &generator_supplier, &(world_pos)};
 
-			this->generator_script->CallFunction("GENERATOR_FUNCTION", &generator_data);
+			generator_script->CallFunction("GENERATOR_FUNCTION", &generator_data);
 
 			if (!generated_mesh.empty())
 			{
 				// Create context
-				std::copy(generated_mesh.begin(), generated_mesh.end(), std::back_inserter(this->mesh));
+				std::copy(generated_mesh.begin(), generated_mesh.end(), std::back_inserter(mesh));
 
-				this->context = MeshBuildContext();
-				this->context.RebuildVBO(this->renderer, this->mesh);
-				this->needs_rebuild = false;
+				context = MeshBuildContext();
+				context.RebuildVBO(instance, mesh);
+				needs_rebuild = false;
 			}
 			else
 			{
 				// Renderers shall skip the render if there are no vertices
-				this->context.vbo_vert_count = 0;
+				context.vbo_vert_count = 0;
 			}
 		}
 	}

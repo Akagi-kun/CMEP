@@ -1,5 +1,6 @@
 -- Include modules
-require("util")
+local util = require("util")
+local config = require("config")
 
 -----------------------
 ---->  Game data  <----
@@ -12,24 +13,16 @@ local deltaTime_max = 0.0
 local deltaTime_min = 2000.0
 
 -- Related to spawning pipes
-local spawn_pipe_every = 3.2 -- Configurable spawn rate
+local spawn_pipe_every = config.spawn_pipe_every_start
 local spawn_pipe_last_idx = 0
 local spawn_pipe_first_idx = 1
 local spawn_pipe_count = 0
 local spawn_pipe_since_last = spawn_pipe_every - 0.1
 
--- Pipe sprite size in pixels (note: pipe original size is 110x338)
-local pipe_x_size = 110
-local pipe_y_size = 450
-
 -- Pipe behavior
 local pipe_spacing_start = 200 -- Configurable pipe spacing (between top and bottom)
 local pipe_spacing = pipe_spacing_start
-local pipe_move_speed = 0.155 -- 0.135 Configurable pipe move speed (/speed of flying)
-
--- Birb sprite size in pixels
-local birb_x_size = 72
-local birb_y_size = 44
+local pipe_move_speed = config.pipe_move_speed
 
 -- Birb behavior
 local birb_jump_velocity = 0.46 -- Configurable velocity set on jump
@@ -82,9 +75,9 @@ local gameOnHandleGrounds = function(scene, event)
 end
 
 local checkCollisionsGrounds = function(birbx, birby)
-	return (util.checkCollisions2DBox(birbx, 	birby,								util.pxToScreenX(birb_x_size),	util.pxToScreenY(birb_y_size),
+	return (util.checkCollisions2DBox(birbx, 	birby,								util.pxToScreenX(config.birb_x_size),	util.pxToScreenY(config.birb_y_size),
 									  0.0,		0.0,								1.0,						util.pxToScreenY(60)) or
-			util.checkCollisions2DBox(birbx, 	birby,								util.pxToScreenX(birb_x_size), 	util.pxToScreenY(birb_y_size),
+			util.checkCollisions2DBox(birbx, 	birby,								util.pxToScreenX(config.birb_x_size), 	util.pxToScreenY(config.birb_y_size),
 								 	  0.0,		util.pxToScreenY(util.screen_size_y - 60), 	1.0, 					 	util.pxToScreenY(60)))
 end
 
@@ -223,11 +216,11 @@ onUpdate = function(event)
 
 			local pipe1 = scene:AddTemplatedObject("sprite_pipe_down"..pipe_id, "pipe_down")
 			pipe1:SetPosition(1.0, util.pxToScreenY(pipe_y_offset - (pipe_spacing / 2)), -0.15)
-			pipe1:SetSize(util.pxToScreenX(pipe_x_size), util.pxToScreenY(pipe_y_size), 1.0)
+			pipe1:SetSize(util.pxToScreenX(config.pipe_x_size), util.pxToScreenY(config.pipe_y_size), 1.0)
 
 			local pipe2 = scene:AddTemplatedObject("sprite_pipe_up"..pipe_id, "pipe_up")
-			pipe2:SetPosition(1.0, util.pxToScreenY(pipe_y_size + (pipe_spacing / 2) + pipe_y_offset), -0.15)
-			pipe2:SetSize(util.pxToScreenX(pipe_x_size), util.pxToScreenY(pipe_y_size), 1.0)
+			pipe2:SetPosition(1.0, util.pxToScreenY(config.pipe_y_size + (pipe_spacing / 2) + pipe_y_offset), -0.15)
+			pipe2:SetSize(util.pxToScreenX(config.pipe_x_size), util.pxToScreenY(config.pipe_y_size), 1.0)
 
 			spawn_pipe_last_idx = spawn_pipe_last_idx + 1
 			spawn_pipe_count = spawn_pipe_count + 1
@@ -253,15 +246,15 @@ onUpdate = function(event)
 				pipe2:SetPosition(x2, y2, z2)
 
 				-- Check collisions with both pipes
-				if util.checkCollisions2DBox(birbx, birby, util.pxToScreenX(birb_x_size), util.pxToScreenY(birb_y_size), x1, y1, util.pxToScreenX(pipe_x_size), util.pxToScreenY(pipe_y_size)) or -- pipe 1
-				   util.checkCollisions2DBox(birbx, birby, util.pxToScreenX(birb_x_size), util.pxToScreenY(birb_y_size), x2, y2, util.pxToScreenX(pipe_x_size), util.pxToScreenY(pipe_y_size))	 -- pipe 2
+				if util.checkCollisions2DBox(birbx, birby, util.pxToScreenX(config.birb_x_size), util.pxToScreenY(config.birb_y_size), x1, y1, util.pxToScreenX(config.pipe_x_size), util.pxToScreenY(config.pipe_y_size)) or -- pipe 1
+				   util.checkCollisions2DBox(birbx, birby, util.pxToScreenX(config.birb_x_size), util.pxToScreenY(config.birb_y_size), x2, y2, util.pxToScreenX(config.pipe_x_size), util.pxToScreenY(config.pipe_y_size))	 -- pipe 2
 				then
 					gameOnGameOver(asset_manager, scene_manager)
 					return 0
 				end
 
 				-- Add score by colliding with a wall after the pipes
-				if util.checkCollisions2DBox(birbx, birby, util.pxToScreenX(birb_x_size), util.pxToScreenY(birb_y_size), x2 + util.pxToScreenX(80), 0.0, util.pxToScreenX(80), 1.0) and
+				if util.checkCollisions2DBox(birbx, birby, util.pxToScreenX(config.birb_x_size), util.pxToScreenY(config.birb_y_size), x2 + util.pxToScreenX(80), 0.0, util.pxToScreenX(80), 1.0) and
 				   pipeIdx > game_last_scored_pipe_idx
 				then
 					game_score = game_score + 1
@@ -274,7 +267,7 @@ onUpdate = function(event)
 					spawn_pipe_every = spawn_pipe_every * 0.9950 -- Increase spawn rate (decrease timeout between spawns)
 				end
 
-				if x1 < (0.0 - util.pxToScreenX(pipe_x_size + 5)) then
+				if x1 < (0.0 - util.pxToScreenX(config.pipe_x_size + 5)) then
 					-- Destroy objects
 					scene:RemoveObject("sprite_pipe_down"..tostring(pipeIdx))
 					scene:RemoveObject("sprite_pipe_up"..tostring(pipeIdx))
@@ -294,7 +287,7 @@ onUpdate = function(event)
 		-- we already have birbx/y/z from before
 		birby = birby - birb_velocity * event.deltaTime
 		birb:SetPosition(birbx, birby, birbz)
-		birb_velocity = birb_velocity - birb_gravity * event.deltaTime
+		birb_velocity = birb_velocity - config.birb_gravity * event.deltaTime
 
 		gameOnHandleGrounds(scene, event)
 
@@ -379,6 +372,7 @@ onInit = function(event)
 		local ground_bottom = engine.CreateSceneObject(asset_manager, "renderer_2d/sprite", "sprite", {
 			{"texture", "ground_bottom"}
 	 	})
+
 		ground_bottom:SetPosition(util.pxToScreenX(630) * i, util.pxToScreenY(util.screen_size_y - 60), -0.1)
 		ground_bottom:SetSize(util.pxToScreenX(630), util.pxToScreenY(60), 1)
 		scene:AddObject("ground_bottom"..i, ground_bottom)

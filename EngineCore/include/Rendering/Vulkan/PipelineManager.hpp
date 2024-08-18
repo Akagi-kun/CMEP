@@ -2,6 +2,7 @@
 
 #include "Rendering/SupplyData.hpp"
 #include "Rendering/Vulkan/VulkanStructDefs.hpp"
+#include "Rendering/Vulkan/Wrappers/InstanceOwned.hpp"
 
 #include "InternalEngineObject.hpp"
 #include "Wrappers/Pipeline.hpp"

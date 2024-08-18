@@ -60,7 +60,7 @@ namespace Engine
 		{
 			this->logger->SimpleLog(Logging::LogLevel::Debug3, LOGPFX_CURRENT "Adding object '%s'", name.c_str());
 
-			const auto* window_data = this->owner_engine->GetRenderingEngine()->GetInstance()->GetWindow();
+			const auto* window_data = this->owner_engine->GetVulkanInstance()->GetWindow();
 			const auto& screen_size = window_data->GetFramebufferSize();
 
 			ptr->ScreenSizeInform(screen_size);

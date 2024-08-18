@@ -26,6 +26,7 @@ namespace Engine::Rendering::Vulkan
 			VkImageTiling tiling,
 			VkFormatFeatureFlags features
 		) const;
+
 		[[nodiscard]] VkFormat FindSupportedDepthFormat() const;
 
 		[[nodiscard]] QueueFamilyIndices FindVulkanQueueFamilies(const Surface* with_surface) const;

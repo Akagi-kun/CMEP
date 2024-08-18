@@ -16,8 +16,8 @@
 #include <vector>
 
 // Prefixes for logging messages
-// #define LOGPFX_CURRENT LOGPFX_NONE
-#include "Logging/LoggingPrefix.hpp"
+#define LOGPFX_CURRENT LOGPFX_CLASS_VULKAN_INSTANCE
+#include "Logging/LoggingPrefix.hpp" // IWYU pragma: keep
 
 namespace Engine::Rendering::Vulkan
 {
@@ -120,27 +120,24 @@ namespace Engine::Rendering::Vulkan
 			new Window(this, with_window_parameters.size, with_window_parameters.title, with_window_parameters.hints);
 
 		this->InitDevice();
-
-		logical_device = new LogicalDevice(physical_device, window->GetSurface());
+		logical_device = new LogicalDevice(this, window->GetSurface());
 
 		memory_allocator = new MemoryAllocator(this, *logical_device);
 
 		command_pool = new CommandPool(this);
-
-		// device_manager = new DeviceManager(logger, this);
 
 		window->CreateSwapchain();
 	}
 
 	Instance::~Instance()
 	{
+		this->logical_device->WaitDeviceIdle();
+
 		delete window;
 
 		delete command_pool;
 
 		delete memory_allocator;
-
-		// delete device_manager;
 
 		delete logical_device;
 
@@ -148,9 +145,12 @@ namespace Engine::Rendering::Vulkan
 		{
 			DestroyDebugUtilsMessengerEXT(native_handle, debug_messenger, nullptr);
 		}
+
+		glfwTerminate();
 	}
 
 #pragma endregion
+
 #pragma region Private
 
 	const std::vector<const char*> Instance::validation_layers = {
@@ -285,6 +285,7 @@ namespace Engine::Rendering::Vulkan
 	void Instance::InitDevice()
 	{
 		this->logger->SimpleLog(Logging::LogLevel::Debug2, LOGPFX_CURRENT "Initializing vulkan device");
+
 		// Get physical device count
 		uint32_t device_count = 0;
 		vkEnumeratePhysicalDevices(native_handle, &device_count, nullptr);
@@ -301,11 +302,9 @@ namespace Engine::Rendering::Vulkan
 
 		// Sorted vector of all devices
 		std::vector<DeviceScore> candidates;
-
 		candidates.reserve(physical_devices.size());
 		for (const auto& device : physical_devices)
 		{
-			// TODO: Debug print all found devices
 			auto score = DeviceScore(device, window->GetSurface());
 
 			this->logger->SimpleLog(
@@ -331,21 +330,19 @@ namespace Engine::Rendering::Vulkan
 			{
 				this->physical_device = candidate.device_scored;
 				this->msaa_samples	  = GetMaxUsableSampleCount(physical_device);
+
+				this->logger->SimpleLog(
+					Logging::LogLevel::Info,
+					LOGPFX_CURRENT "Found a capable physical device: '%s'",
+					this->physical_device.GetDeviceName().c_str()
+				);
 				this->logger->SimpleLog(Logging::LogLevel::Info, LOGPFX_CURRENT "Using MSAAx%u", this->msaa_samples);
-				break;
+
+				return;
 			}
 		}
 
-		if (!physical_device)
-		{
-			throw std::runtime_error("No physical device found!");
-		}
-
-		this->logger->SimpleLog(
-			Logging::LogLevel::Info,
-			LOGPFX_CURRENT "Found a capable physical device: '%s'",
-			this->physical_device.GetDeviceName().c_str()
-		);
+		throw std::runtime_error("No physical device found!");
 	}
 
 	VkSampleCountFlagBits Instance::GetMaxUsableSampleCount(VkPhysicalDevice device)

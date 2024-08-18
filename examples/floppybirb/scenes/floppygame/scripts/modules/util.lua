@@ -1,14 +1,17 @@
-util = {
-	screen_size_x = 1100,
-	screen_size_y = 720,
-	
+local screen_size_x = 1100
+local screen_size_y = 720
+
+return {
+	screen_size_x = screen_size_x,
+	screen_size_y = screen_size_y,
+
 	-- Pixel to screen-size conversion functions
 	pxToScreenX = function(x)
-		return x / util.screen_size_x
+		return x / screen_size_x
 	end,
 	
 	pxToScreenY = function(y)
-		return y / util.screen_size_y
+		return y / screen_size_y
 	end,
 
 	-- basic 2D box collision

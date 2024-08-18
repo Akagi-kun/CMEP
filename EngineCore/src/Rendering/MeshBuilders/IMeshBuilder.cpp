@@ -4,7 +4,7 @@
 
 namespace Engine::Rendering
 {
-	IMeshBuilder::IMeshBuilder(Engine* engine) : InternalEngineObject(engine), renderer(engine->GetRenderingEngine())
+	IMeshBuilder::IMeshBuilder(Engine* engine) : InternalEngineObject(engine), instance(engine->GetVulkanInstance())
 	{
 	}
 } // namespace Engine::Rendering

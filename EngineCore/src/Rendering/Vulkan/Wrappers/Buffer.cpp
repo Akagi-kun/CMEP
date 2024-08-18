@@ -1,5 +1,7 @@
 #include "Rendering/Vulkan/Wrappers/Buffer.hpp"
 
+#include "Rendering/Vulkan/Wrappers/CommandBuffer.hpp"
+#include "Rendering/Vulkan/Wrappers/CommandPool.hpp"
 #include "Rendering/Vulkan/Wrappers/Instance.hpp"
 #include "Rendering/Vulkan/Wrappers/InstanceOwned.hpp"
 #include "Rendering/Vulkan/Wrappers/LogicalDevice.hpp"
@@ -10,6 +12,8 @@
 
 namespace Engine::Rendering::Vulkan
 {
+#pragma region Public
+
 	Buffer::Buffer(
 		InstanceOwned::value_t with_instance,
 		VkDeviceSize with_size,
@@ -80,4 +84,36 @@ namespace Engine::Rendering::Vulkan
 		// ensure mapped_data is never non-null when not mapped
 		this->mapped_data = nullptr;
 	}
+
+	StagingBuffer::StagingBuffer(InstanceOwned::value_t with_instance, const void* with_data, VkDeviceSize with_size)
+		: Buffer(
+			  with_instance,
+			  with_size,
+			  VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
+			  VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT
+		  )
+	{
+		this->MemoryCopy(with_data, with_size);
+	}
+
+	VertexBuffer::VertexBuffer(InstanceOwned::value_t with_instance, const std::vector<RenderingVertex>& vertices)
+		: Buffer(
+			  with_instance,
+			  sizeof(vertices[0]) * vertices.size(),
+			  VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
+			  VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT
+		  )
+	{
+		CommandBuffer* command_buffer = with_instance->GetCommandPool()->AllocateCommandBuffer();
+
+		auto staging_buffer = StagingBuffer(with_instance, vertices.data(), buffer_size);
+
+		// Copy into final buffer
+		command_buffer->BufferBufferCopy(&staging_buffer, this, {VkBufferCopy{0, 0, buffer_size}});
+
+		// delete staging_buffer;
+		delete command_buffer;
+	}
+
+#pragma endregion
 } // namespace Engine::Rendering::Vulkan

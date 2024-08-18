@@ -1,23 +1,20 @@
 #pragma once
 
+#include "Rendering/Vulkan/VulkanStructDefs.hpp"
 #include "Rendering/Vulkan/Wrappers/HoldsVMA.hpp"
+#include "Rendering/Vulkan/Wrappers/InstanceOwned.hpp"
 #include "Rendering/Vulkan/Wrappers/framework.hpp"
 
 #include "InstanceOwned.hpp"
 #include "vulkan/vulkan_core.h"
 
 #include <cstring>
+#include <vector>
 
 namespace Engine::Rendering::Vulkan
 {
 	class Buffer : public InstanceOwned, public HoldsVMA, public HandleWrapper<VkBuffer>
 	{
-	protected:
-		VkDeviceSize buffer_size;
-
-		VmaAllocation allocation;
-		VmaAllocationInfo allocation_info;
-
 	public:
 		void* mapped_data = nullptr;
 
@@ -41,5 +38,23 @@ namespace Engine::Rendering::Vulkan
 
 			this->UnmapMemory();
 		}
+
+	protected:
+		VkDeviceSize buffer_size;
+
+		VmaAllocation allocation;
+		VmaAllocationInfo allocation_info;
+	};
+
+	class StagingBuffer final : public Buffer
+	{
+	public:
+		StagingBuffer(InstanceOwned::value_t with_instance, const void* with_data, VkDeviceSize with_size);
+	};
+
+	class VertexBuffer final : public Buffer
+	{
+	public:
+		VertexBuffer(InstanceOwned::value_t with_instance, const std::vector<RenderingVertex>& vertices);
 	};
 } // namespace Engine::Rendering::Vulkan

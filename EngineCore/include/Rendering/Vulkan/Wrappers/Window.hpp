@@ -83,12 +83,27 @@ namespace Engine::Rendering::Vulkan
 		}
 
 		void CreateSwapchain();
+		void DrawFrame();
+
+		void SetRenderCallback(
+			std::function<void(Vulkan::CommandBuffer*, uint32_t, void*)> with_callback,
+			void* with_user_data
+		)
+		{
+			render_callback = std::move(with_callback);
+			user_data		= with_user_data;
+		}
 
 	private:
 		ScreenSize size;
 
 		Swapchain* swapchain = nullptr;
 		Surface surface; // TODO: Make this a pointer
+
+		// Rendering related
+		std::function<void(Vulkan::CommandBuffer*, uint32_t, void*)> render_callback;
+		void* user_data		   = nullptr;
+		uint32_t current_frame = 0;
 
 		static Window* GetWindowPtrFromGLFW(GLFWwindow* window);
 
@@ -97,6 +112,11 @@ namespace Engine::Rendering::Vulkan
 		static void CallbackOnCursorEnterLeave(GLFWwindow* window, int entered);
 		static void CallbackOnCursorPosition(GLFWwindow* window, double xpos, double ypos);
 		static void CallbackOnKeyEvent(GLFWwindow* window, int key, int scancode, int action, int mods);
+
+		static VkExtent2D ChooseVulkanSwapExtent(
+			const Window* with_window,
+			const VkSurfaceCapabilitiesKHR& capabilities
+		);
 
 		void Resize(ScreenSize to_size);
 	};

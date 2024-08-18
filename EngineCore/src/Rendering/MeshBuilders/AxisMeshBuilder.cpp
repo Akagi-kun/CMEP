@@ -12,7 +12,7 @@ namespace Engine::Rendering
 
 	void AxisMeshBuilder::Build()
 	{
-		if (this->context.vbo == nullptr)
+		if (context.vbo == nullptr)
 		{
 			// Simple quad mesh
 			const std::vector<RenderingVertex> generated_mesh = {
@@ -25,11 +25,11 @@ namespace Engine::Rendering
 			};
 
 			// Create context
-			std::copy(generated_mesh.begin(), generated_mesh.end(), std::back_inserter(this->mesh));
+			std::copy(generated_mesh.begin(), generated_mesh.end(), std::back_inserter(mesh));
 
-			this->context = MeshBuildContext();
-			this->context.RebuildVBO(this->renderer, this->mesh);
-			this->needs_rebuild = false;
+			context = MeshBuildContext();
+			context.RebuildVBO(instance, mesh);
+			needs_rebuild = false;
 		}
 	}
 } // namespace Engine::Rendering

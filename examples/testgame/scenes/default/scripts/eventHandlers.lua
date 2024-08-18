@@ -103,28 +103,39 @@ terrain_generator = function(...)
 
 	for x = 1, config.chunk_size_x do
 		for z = 1, config.chunk_size_z do
-			local noise_raw = perlin:noise((x + xpos) / config.chunk_size_x, config.noise_layer, (z + zpos) / config.chunk_size_z)
+			local noise_raw = perlin:noise((x + xpos) / config.chunk_size_x / 2, config.noise_layer, (z + zpos) / config.chunk_size_z / 2)
+			local noise_raw2 = perlin:noise((x + xpos) / config.chunk_size_x / 6, config.noise_layer + 0.4, (z + zpos) / config.chunk_size_z / 6)
+			local noise_raw3 = perlin:noise((x + xpos) / config.chunk_size_x / 10, config.noise_layer + 0.6, (z + zpos) / config.chunk_size_z / 10)
 
---			cast_data[(z - 1) + ((x - 1) * config.chunk_size_z)] = noise_raw
+			--print(noise_raw, noise_raw2)
 
-			local noise_adjusted = math.floor((noise_raw + 1) * config.noise_intensity)
+			local noise_adjusted1 = (noise_raw + 1) * (config.noise_intensity / 2)
+			local noise_adjusted2 = (noise_raw2 + 1) * (config.noise_intensity / 1.2)
+			local noise_adjusted3 = (noise_raw3 + 1) * (config.noise_intensity)
+			local noise_adjusted = math.floor(noise_adjusted1 / 3 + noise_adjusted2 / 3 + noise_adjusted3 / 3)
 			local random_y = noise_adjusted + config.floor_level
 
-			for y = 1, config.chunk_size_y do
-				local offset = calculateMapOffset(x, y, z)-- (z - 1) + ((y - 1) * config.chunk_size_x * config.chunk_size_z) + ((x - 1) * config.chunk_size_z)
+			--print(string.format("[%i, %i, %f, %f]", x + xpos, z + zpos, noise_adjusted1, noise_adjusted2))
 
+			for y = 1, config.chunk_size_y do
+				local offset = calculateMapOffset(x, y, z)
+				
 				-- Primary terrain generator step
 				if y > random_y then
 					cast_map_data[offset] = game_defs.block_types.AIR
 				else
 					if y == random_y then
-						cast_map_data[offset] = game_defs.block_types.GRASS
+						if random_y > config.water_table_level then
+							cast_map_data[offset] = game_defs.block_types.GRASS
 						
-						-- Tree placement selector
-						if (math.random(config.tree_generation_chance) > (config.tree_generation_chance - 2)
-							and x > 2 and x < (config.chunk_size_x - 1)
-							and z > 2 and z < (config.chunk_size_z - 1)) then
-							table.insert(tree_placement_data, {x, y, z})
+							-- Tree placement selector
+							if (math.random(config.tree_generation_chance) > (config.tree_generation_chance - 2)
+								and x > 2 and x < (config.chunk_size_x - 1)
+								and z > 2 and z < (config.chunk_size_z - 1)) then
+								table.insert(tree_placement_data, {x, y, z})
+							end
+						else
+							cast_map_data[offset] = game_defs.block_types.MISSING
 						end
 					else
 						if y > (random_y - 3) then
@@ -350,7 +361,7 @@ onInit = function(event)
 	local scene = scene_manager:GetSceneCurrent();
 
 	-- Set-up camera
-	scene_manager:SetCameraTransform(-2.0, 65.8, 4.7)
+	scene_manager:SetCameraTransform(-2.0, 55.8, 4.7)
 	scene_manager:SetCameraHVRotation(114.0, 224.8)
 	
 	-- Create frametime counter and add it to scene
@@ -376,7 +387,7 @@ onInit = function(event)
 	--object3:SetRotation(0, -100, 180)
 	--scene:AddObject("test3dsprite", object3)
 
-	for chunk_x = -chunks_x, chunks_x, 1 do
+	for chunk_x = -chunks_x, chunks_x, 1 do -- chunks_x, chunks_x, 1
 		chunks[chunk_x] = {}
 		for chunk_z = -chunks_z, chunks_z, 1 do
 			local chunk_obj = engine.CreateSceneObject(asset_manager, "renderer_3d/generator", "terrain", {
@@ -387,18 +398,12 @@ onInit = function(event)
 			chunk_obj:SetRotation(0, 0, 0)
 			scene:AddObject(string.format("chunk_%i_%i", chunk_x, chunk_z), chunk_obj)
 			chunks[chunk_x][chunk_z] = chunk_obj
+			--print(string.format("Building chunk [%i,%i]",chunk_x, chunk_z))
+			--engine.RendererForceBuild(chunk_obj.renderer)
 		end
 	end
 
 	print("Hi!")
-
---[[ 	local chunk_obj = engine.CreateSceneObject(asset_manager, "renderer_3d/generator", "terrain", {
-		{"texture", "atlas"}, {"generator_script", "testgen"}, {"generator_supplier", "script0/terrain_generator"}
-	})
-	chunk_obj:SetPosition(16, 0, 0)
-	chunk_obj:SetSize(1, 1, 1)
-	chunk_obj:SetRotation(0, 0, 0)
-	scene:AddObject(string.format("chunk_%i_%i", 0, 0), chunk_obj) ]]
 
 	return 0
 end

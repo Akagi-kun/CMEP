@@ -32,7 +32,6 @@ set(SRC_FILES
 	
 	src/Rendering/Vulkan/PipelineManager.cpp
 	src/Rendering/Vulkan/VmaImplementation.cpp
-	src/Rendering/Vulkan/VulkanRenderingEngine.cpp
 	
 	src/Rendering/Vulkan/Wrappers/LogicalDevice.cpp
 	src/Rendering/Vulkan/Wrappers/MemoryAllocator.cpp

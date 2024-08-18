@@ -1,6 +1,7 @@
 #pragma once
 
-#include "Rendering/Vulkan/Wrappers/PhysicalDevice.hpp"
+#include "Rendering/Vulkan/VulkanStructDefs.hpp"
+#include "Rendering/Vulkan/Wrappers/InstanceOwned.hpp"
 #include "Rendering/Vulkan/Wrappers/Queue.hpp"
 
 #include "HandleWrapper.hpp"
@@ -8,12 +9,12 @@
 
 namespace Engine::Rendering::Vulkan
 {
-	class LogicalDevice : public HandleWrapper<VkDevice>
+	class LogicalDevice : public InstanceOwned, public HandleWrapper<VkDevice>
 	{
 	public:
 		LogicalDevice(LogicalDevice& other) = delete;
 
-		LogicalDevice(PhysicalDevice with_physical_device, const Surface* with_surface);
+		LogicalDevice(InstanceOwned::value_t with_instance, const Surface* with_surface);
 		~LogicalDevice();
 
 		[[nodiscard]] const QueueFamilyIndices& GetQueueFamilies() const

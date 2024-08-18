@@ -1,5 +1,6 @@
 #include "Rendering/Vulkan/Wrappers/Window.hpp"
 
+#include "Rendering/Vulkan/Wrappers/Instance.hpp"
 #include "Rendering/Vulkan/Wrappers/Swapchain.hpp"
 
 #include "GLFW/glfw3.h"
@@ -90,6 +91,132 @@ namespace Engine::Rendering::Vulkan
 		return glfwWindowShouldClose(native_handle) != 0;
 	}
 
+	void Window::CreateSwapchain()
+	{
+		// Get device and surface Swap Chain capabilities
+		SwapChainSupportDetails swap_chain_support = surface.QueryVulkanSwapChainSupport(instance->GetPhysicalDevice());
+
+		VkExtent2D extent = ChooseVulkanSwapExtent(this, swap_chain_support.capabilities);
+
+		// Request one image more than is the required minimum
+		// uint32_t swapchain_image_count = swap_chain_support.capabilities.minImageCount + 1;
+		// Temporary fix for screen lag
+		// uint32_t swapchain_image_count = 1;
+		uint32_t swapchain_image_count = max_frames_in_flight;
+
+		// Check if there is a defined maximum (maxImageCount > 0)
+		// where 0 is a special value meaning no maximum
+		//
+		// And if there is a maximum, clamp swap chain length to it
+		if (swap_chain_support.capabilities.maxImageCount > 0)
+		{
+			swapchain_image_count = std::clamp(
+				swapchain_image_count,
+				swap_chain_support.capabilities.minImageCount,
+				swap_chain_support.capabilities.maxImageCount
+			);
+		}
+
+		this->swapchain = new Swapchain(instance, &surface, extent, swapchain_image_count);
+	}
+
+	void Window::DrawFrame()
+	{
+		LogicalDevice* logical_device = instance->GetLogicalDevice();
+
+		auto& render_target = swapchain->GetRenderTarget(this->current_frame);
+		// auto& frame_sync_objects = this->sync_objects[this->current_frame];
+
+		// Wait for fence
+		vkWaitForFences(*logical_device, 1, &render_target.sync_objects.in_flight, VK_TRUE, UINT64_MAX);
+
+		// Reset fence after wait is over
+		// (fence has to be reset before being used again)
+		vkResetFences(*logical_device, 1, &render_target.sync_objects.in_flight);
+
+		// Index of framebuffer in this->vk_swap_chain_framebuffers
+		uint32_t image_index	= 0;
+		// Acquire render target
+		// the render target is an image in the swap chain
+		VkResult acquire_result = vkAcquireNextImageKHR(
+			*logical_device,
+			*swapchain,
+			UINT64_MAX,
+			render_target.sync_objects.image_available,
+			nullptr,
+			&image_index
+		);
+
+		// Framebuffer is being resized
+		if (acquire_result == VK_ERROR_OUT_OF_DATE_KHR || instance->GetWindow()->status.is_resized ||
+			acquire_result == VK_SUBOPTIMAL_KHR)
+		{
+			return;
+		}
+
+		if (acquire_result != VK_SUCCESS)
+		{
+			throw std::runtime_error("Failed to acquire swap chain image!");
+		}
+
+		// Reset command buffer to initial state´
+		render_target.command_buffer->ResetBuffer();
+
+		// Records render into command buffer
+		swapchain->RenderFrame(render_target.command_buffer, image_index, render_callback, user_data);
+
+		VkSubmitInfo submit_info{};
+		submit_info.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+
+		std::array<VkCommandBuffer, 1> command_buffers = {*render_target.command_buffer};
+
+		// Wait semaphores
+		VkSemaphore wait_semaphores[]	   = {render_target.sync_objects.image_available};
+		VkPipelineStageFlags wait_stages[] = {VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT};
+		submit_info.waitSemaphoreCount	   = 1;
+		submit_info.pWaitSemaphores		   = wait_semaphores;
+		submit_info.pWaitDstStageMask	   = wait_stages;
+		submit_info.commandBufferCount	   = static_cast<uint32_t>(command_buffers.size());
+		submit_info.pCommandBuffers		   = command_buffers.data();
+
+		// Signal semaphores to be signaled once
+		// all submit_info.pCommandBuffers finish executing
+		VkSemaphore signal_semaphores[]	 = {render_target.sync_objects.present_ready};
+		submit_info.signalSemaphoreCount = 1;
+		submit_info.pSignalSemaphores	 = signal_semaphores;
+
+		// Submit to queue
+		// passed fence will be signaled when command buffer execution is finished
+		if (vkQueueSubmit(logical_device->GetGraphicsQueue(), 1, &submit_info, render_target.sync_objects.in_flight) !=
+			VK_SUCCESS)
+		{
+			throw std::runtime_error("Failed to submit draw command buffer!");
+		}
+
+		// Increment current frame
+		// this->current_frame = 0;
+		this->current_frame = (this->current_frame + 1) % max_frames_in_flight;
+
+		VkPresentInfoKHR present_info{};
+		present_info.sType				= VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
+		// Wait for present_ready_semaphores to be signaled
+		// (when signaled = image is ready to be presented)
+		present_info.waitSemaphoreCount = 1;
+		present_info.pWaitSemaphores	= signal_semaphores;
+
+		VkSwapchainKHR swap_chains[] = {*swapchain};
+		present_info.swapchainCount	 = 1;
+		present_info.pSwapchains	 = swap_chains;
+		present_info.pImageIndices	 = &image_index;
+		present_info.pResults		 = nullptr; // Optional
+
+		// Present current image to the screen
+		if (vkQueuePresentKHR(logical_device->GetPresentQueue(), &present_info) != VK_SUCCESS)
+		{
+			throw std::runtime_error("Failed to present queue!");
+		}
+	}
+
 #pragma endregion
 
 #pragma region Private
@@ -154,7 +281,7 @@ namespace Engine::Rendering::Vulkan
 		self->input_events.emplace(action, key, mods);
 	}
 
-	static VkExtent2D ChooseVulkanSwapExtent(
+	VkExtent2D Window::ChooseVulkanSwapExtent(
 		const Window* const with_window,
 		const VkSurfaceCapabilitiesKHR& capabilities
 	)
@@ -174,35 +301,6 @@ namespace Engine::Rendering::Vulkan
 			std::clamp(actual_extent.height, capabilities.minImageExtent.height, capabilities.maxImageExtent.height);
 
 		return actual_extent;
-	}
-
-	void Window::CreateSwapchain()
-	{
-		// Get device and surface Swap Chain capabilities
-		SwapChainSupportDetails swap_chain_support = surface.QueryVulkanSwapChainSupport(instance->GetPhysicalDevice());
-
-		VkExtent2D extent = ChooseVulkanSwapExtent(this, swap_chain_support.capabilities);
-
-		// Request one image more than is the required minimum
-		// uint32_t swapchain_image_count = swap_chain_support.capabilities.minImageCount + 1;
-		// Temporary fix for screen lag
-		// uint32_t swapchain_image_count = 1;
-		uint32_t swapchain_image_count = VulkanRenderingEngine::max_frames_in_flight;
-
-		// Check if there is a defined maximum (maxImageCount > 0)
-		// where 0 is a special value meaning no maximum
-		//
-		// And if there is a maximum, clamp swap chain length to it
-		if (swap_chain_support.capabilities.maxImageCount > 0)
-		{
-			swapchain_image_count = std::clamp(
-				swapchain_image_count,
-				swap_chain_support.capabilities.minImageCount,
-				swap_chain_support.capabilities.maxImageCount
-			);
-		}
-
-		this->swapchain = new Swapchain(instance, &surface, extent, swapchain_image_count);
 	}
 
 	void Window::Resize(ScreenSize to_size)

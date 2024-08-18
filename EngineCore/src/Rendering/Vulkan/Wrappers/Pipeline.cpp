@@ -1,10 +1,9 @@
 #include "Rendering/Vulkan/Wrappers/Pipeline.hpp"
 
 #include "Rendering/Renderers/Renderer.hpp"
-#include "Rendering/Vulkan/VulkanRenderingEngine.hpp"
 #include "Rendering/Vulkan/VulkanStructDefs.hpp"
 #include "Rendering/Vulkan/Wrappers/HoldsVMA.hpp"
-#include "Rendering/Vulkan/Wrappers/InstanceOwned.hpp"
+#include "Rendering/Vulkan/Wrappers/Instance.hpp"
 #include "Rendering/Vulkan/Wrappers/LogicalDevice.hpp"
 #include "Rendering/Vulkan/Wrappers/RenderPass.hpp"
 #include "Rendering/Vulkan/Wrappers/ShaderModule.hpp"
@@ -170,8 +169,7 @@ namespace Engine::Rendering::Vulkan
 		{
 			VkDescriptorPoolSize pool_size{};
 			pool_size.type			  = settings.descriptor_layout_settings[i].type;
-			pool_size.descriptorCount = VulkanRenderingEngine::max_frames_in_flight *
-										settings.descriptor_layout_settings[i].descriptor_count;
+			pool_size.descriptorCount = max_frames_in_flight * settings.descriptor_layout_settings[i].descriptor_count;
 
 			pool_sizes[i] = pool_size;
 		}
@@ -209,7 +207,7 @@ namespace Engine::Rendering::Vulkan
 		pool_info.sType			= VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
 		pool_info.poolSizeCount = static_cast<uint32_t>(pool_sizes.size());
 		pool_info.pPoolSizes	= pool_sizes.data();
-		pool_info.maxSets		= VulkanRenderingEngine::max_frames_in_flight;
+		pool_info.maxSets		= max_frames_in_flight;
 
 		if (vkCreateDescriptorPool(*logical_device, &pool_info, nullptr, &(data_ref.with_pool)) != VK_SUCCESS)
 		{
@@ -217,18 +215,17 @@ namespace Engine::Rendering::Vulkan
 		}
 	}
 
-	void Pipeline::AllocateNewUniformBuffers(VulkanRenderingEngine::per_frame_array<Buffer*>& buffer_ref)
+	void Pipeline::AllocateNewUniformBuffers(per_frame_array<Buffer*>& buffer_ref)
 	{
 		static constexpr VkDeviceSize buffer_size = sizeof(RendererMatrixData);
 
-		for (size_t i = 0; i < VulkanRenderingEngine::max_frames_in_flight; i++)
+		for (size_t i = 0; i < max_frames_in_flight; i++)
 		{
 			buffer_ref[i] = new Buffer(
 				instance,
 				buffer_size,
 				VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
-				VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
-				0
+				VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT
 			);
 		}
 	}
@@ -237,15 +234,12 @@ namespace Engine::Rendering::Vulkan
 	{
 		LogicalDevice* logical_device = instance->GetLogicalDevice();
 
-		std::vector<VkDescriptorSetLayout> layouts(
-			VulkanRenderingEngine::max_frames_in_flight,
-			this->descriptor_set_layout
-		);
+		std::vector<VkDescriptorSetLayout> layouts(max_frames_in_flight, this->descriptor_set_layout);
 
 		VkDescriptorSetAllocateInfo alloc_info{};
 		alloc_info.sType			  = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
 		alloc_info.descriptorPool	  = data_ref.with_pool;
-		alloc_info.descriptorSetCount = VulkanRenderingEngine::max_frames_in_flight;
+		alloc_info.descriptorSetCount = max_frames_in_flight;
 		alloc_info.pSetLayouts		  = layouts.data();
 
 		VkResult create_result =
@@ -270,10 +264,10 @@ namespace Engine::Rendering::Vulkan
 		this->AllocateNewDescriptorSets(allocated_user_data);
 
 		// Set up binding 0 to point to uniform buffers
-		VulkanRenderingEngine::per_frame_array<VkDescriptorBufferInfo> descriptor_buffer_infos{};
-		VulkanRenderingEngine::per_frame_array<VkWriteDescriptorSet> descriptor_writes{};
+		per_frame_array<VkDescriptorBufferInfo> descriptor_buffer_infos{};
+		per_frame_array<VkWriteDescriptorSet> descriptor_writes{};
 
-		for (uint32_t frame_idx = 0; frame_idx < Vulkan::VulkanRenderingEngine::max_frames_in_flight; frame_idx++)
+		for (uint32_t frame_idx = 0; frame_idx < max_frames_in_flight; frame_idx++)
 		{
 			descriptor_buffer_infos[frame_idx].buffer = *allocated_user_data.uniform_buffers[frame_idx];
 			descriptor_buffer_infos[frame_idx].offset = 0;
@@ -292,27 +286,30 @@ namespace Engine::Rendering::Vulkan
 		return user_index;
 	}
 
-	void Pipeline::UpdateDescriptorSets(
-		size_t user_index,
-		const VulkanRenderingEngine::per_frame_array<VkWriteDescriptorSet>& writes
-	)
+	void Pipeline::UpdateDescriptorSets(size_t user_index, per_frame_array<VkWriteDescriptorSet> with_writes)
 	{
 		LogicalDevice* logical_device = instance->GetLogicalDevice();
 
-		VulkanRenderingEngine::per_frame_array<VkWriteDescriptorSet> local_copy = writes;
-
-		for (uint32_t frame = 0; frame < local_copy.size(); frame++)
+		for (uint32_t frame = 0; frame < with_writes.size(); frame++)
 		{
-			local_copy[frame].dstSet = this->GetDescriptorSet(user_index, frame);
+			with_writes[frame].dstSet = this->GetDescriptorSet(user_index, frame);
 		}
 
 		vkUpdateDescriptorSets(
 			*logical_device,
-			static_cast<uint32_t>(local_copy.size()),
-			local_copy.data(),
+			static_cast<uint32_t>(with_writes.size()),
+			with_writes.data(),
 			0,
 			nullptr
 		);
+	}
+
+	void Pipeline::UpdateDescriptorSetsAll(size_t user_index, const VkWriteDescriptorSet& with_write)
+	{
+		per_frame_array<VkWriteDescriptorSet> writes;
+		std::fill(writes.begin(), writes.end(), with_write);
+
+		UpdateDescriptorSets(user_index, writes);
 	}
 
 	void Pipeline::BindPipeline(size_t user_index, VkCommandBuffer with_command_buffer, uint32_t current_frame)

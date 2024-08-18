@@ -401,3 +401,5 @@ cov-int
 /compile_commands.json
 /source_files.txt
 /CMakeDoxyfile.in
+
+util/*.png

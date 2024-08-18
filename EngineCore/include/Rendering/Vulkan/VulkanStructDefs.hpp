@@ -11,6 +11,9 @@
 
 namespace Engine::Rendering
 {
+	static constexpr uint16_t max_frames_in_flight		 = 3;
+	template <typename value_type> using per_frame_array = std::array<value_type, max_frames_in_flight>;
+
 	struct QueueFamilyIndices
 	{
 		std::optional<uint32_t> graphics_family;

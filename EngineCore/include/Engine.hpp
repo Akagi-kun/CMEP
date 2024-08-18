@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Rendering/Vulkan/PipelineManager.hpp"
-#include "Rendering/Vulkan/VulkanRenderingEngine.hpp"
+#include "Rendering/Vulkan/Wrappers/Instance.hpp"
 
 #include "Logging/Logging.hpp"
 
@@ -56,25 +56,19 @@ namespace Engine
 		std::shared_ptr<Logging::Logger> logger;
 		std::shared_ptr<AssetManager> asset_manager;
 
-		Rendering::Vulkan::VulkanRenderingEngine* rendering_engine = nullptr;
-		std::shared_ptr<Rendering::Vulkan::PipelineManager> pipeline_manager;
+		Rendering::Vulkan::Instance* vk_instance = nullptr;
 
-		// Event handler storage
-		// std::multimap<EventHandling::EventType, std::function<int(EventHandling::Event&)>> event_handlers;
+		std::shared_ptr<Rendering::Vulkan::PipelineManager> pipeline_manager;
 
 		static void SpinSleep(double seconds);
 
 		static void RenderCallback(
 			Rendering::Vulkan::CommandBuffer* command_buffer,
 			uint32_t current_frame,
-			Engine* engine
+			void* engine
 		);
 
 		static void ErrorCallback(int code, const char* message);
-		// static void OnWindowFocusCallback(GLFWwindow* window, int focused);
-		// static void CursorPositionCallback(GLFWwindow* window, double xpos, double ypos);
-		// static void CursorEnterLeaveCallback(GLFWwindow* window, int entered);
-		// static void OnKeyEventCallback(GLFWwindow* window, int key, int scancode, int action, int mods);
 
 		void HandleInput(double delta_time);
 
@@ -85,11 +79,6 @@ namespace Engine
 		std::shared_ptr<SceneManager> scene_manager;
 
 	public:
-		// bool state_is_window_in_focus;
-		// bool state_is_window_in_content;
-		// double state_mouse_x_pos;
-		// double state_mouse_y_pos;
-
 		Engine(std::shared_ptr<Logging::Logger>& logger);
 		~Engine();
 
@@ -97,8 +86,6 @@ namespace Engine
 		void Run();
 
 		void ConfigFile(std::string path);
-		// void RegisterEventHandler(EventHandling::EventType event_type, std::function<int(EventHandling::Event&)>
-		// function);
 
 		void Stop();
 
@@ -108,35 +95,35 @@ namespace Engine
 
 		void SetFramerateTarget(uint_fast16_t framerate) noexcept
 		{
-			this->config->framerate_target = framerate;
+			config->framerate_target = framerate;
 		}
 
 		[[nodiscard]] const std::string& GetShaderPath() const
 		{
-			return this->config->shader_path;
+			return config->shader_path;
 		}
 
 		[[nodiscard]] double GetLastDeltaTime() const;
 
 		[[nodiscard]] std::shared_ptr<Logging::Logger> GetLogger() const noexcept
 		{
-			return this->logger;
+			return logger;
 		}
 		[[nodiscard]] std::weak_ptr<AssetManager> GetAssetManager() noexcept
 		{
-			return this->asset_manager;
+			return asset_manager;
 		}
 		[[nodiscard]] std::shared_ptr<Rendering::Vulkan::PipelineManager> GetVulkanPipelineManager()
 		{
-			return this->pipeline_manager;
+			return pipeline_manager;
 		}
-		[[nodiscard]] Rendering::Vulkan::VulkanRenderingEngine* GetRenderingEngine() noexcept
+		[[nodiscard]] Rendering::Vulkan::Instance* GetVulkanInstance()
 		{
-			return this->rendering_engine;
+			return vk_instance;
 		}
 		[[nodiscard]] std::weak_ptr<SceneManager> GetSceneManager() noexcept
 		{
-			return this->scene_manager;
+			return scene_manager;
 		}
 	};
 } // namespace Engine

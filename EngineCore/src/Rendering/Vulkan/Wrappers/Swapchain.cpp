@@ -4,6 +4,7 @@
 #include "Rendering/Vulkan/Wrappers/CommandBuffer.hpp"
 #include "Rendering/Vulkan/Wrappers/CommandPool.hpp"
 #include "Rendering/Vulkan/Wrappers/Image.hpp"
+#include "Rendering/Vulkan/Wrappers/Instance.hpp"
 #include "Rendering/Vulkan/Wrappers/RenderPass.hpp"
 
 namespace Engine::Rendering::Vulkan
@@ -197,6 +198,44 @@ namespace Engine::Rendering::Vulkan
 		render_pass_info.pClearValues	 = clear_values.data();
 
 		with_buffer->BeginRenderPass(&render_pass_info);
+	}
+
+	void Swapchain::RenderFrame(
+		CommandBuffer* command_buffer,
+		uint32_t image_index,
+		const std::function<void(Vulkan::CommandBuffer*, uint32_t, void*)>& callback,
+		void* user_data
+	)
+	{
+		command_buffer->BeginCmdBuffer(0);
+
+		BeginRenderPass(command_buffer, image_index);
+
+		VkViewport viewport{};
+		viewport.x		  = 0.0f;
+		viewport.y		  = 0.0f;
+		viewport.width	  = static_cast<float>(extent.width);
+		viewport.height	  = static_cast<float>(extent.height);
+		viewport.minDepth = 0.0f;
+		viewport.maxDepth = 1.0f;
+		vkCmdSetViewport(*command_buffer, 0, 1, &viewport);
+
+		VkRect2D scissor{};
+		scissor.offset = {0, 0};
+		scissor.extent = extent;
+		vkCmdSetScissor(*command_buffer, 0, 1, &scissor);
+
+		// Perform actual render
+		if (!callback)
+		{
+			throw std::invalid_argument("Tried to perform frame render without a callback!");
+		}
+
+		assert(callback);
+		callback(command_buffer, image_index, user_data);
+
+		command_buffer->EndRenderPass();
+		command_buffer->EndCmdBuffer();
 	}
 
 #pragma region Private

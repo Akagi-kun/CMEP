@@ -13,7 +13,6 @@ namespace Engine::Rendering::Vulkan
 #else
 	static constexpr bool enable_vk_validation_layers = true;
 #	define DS_VALIDATION_LAYERS_ENABLED // NOLINT this can be used to #ifdef
-// #	pragma message("Validation layers enabled")
 #endif
 
 	struct DeviceScore final

@@ -3,7 +3,6 @@
 #include "Assets/Texture.hpp"
 #include "Rendering/SupplyData.hpp"
 #include "Rendering/Vulkan/PipelineManager.hpp"
-#include "Rendering/Vulkan/VulkanRenderingEngine.hpp"
 #include "Rendering/Vulkan/Wrappers/CommandBuffer.hpp"
 #include "Rendering/Vulkan/Wrappers/Pipeline.hpp"
 #include "Rendering/Vulkan/Wrappers/SampledImage.hpp"
@@ -24,13 +23,10 @@ namespace Engine::Rendering
 		: InternalEngineObject(with_engine), pipeline_name(with_pipeline_program),
 		  pipeline_manager(with_engine->GetVulkanPipelineManager()), mesh_builder(with_builder)
 	{
-		Vulkan::VulkanRenderingEngine* renderer = this->owner_engine->GetRenderingEngine();
+		Vulkan::Instance* instance = this->owner_engine->GetVulkanInstance();
 
-		settings = {
-			renderer->GetInstance()->GetWindow()->GetSwapchain()->GetExtent(),
-			pipeline_name,
-			mesh_builder->GetSupportedTopology()
-		};
+		settings =
+			{instance->GetWindow()->GetSwapchain()->GetExtent(), pipeline_name, mesh_builder->GetSupportedTopology()};
 
 		settings.descriptor_layout_settings.push_back(VulkanDescriptorLayoutSettings{
 			1,
@@ -92,30 +88,22 @@ namespace Engine::Rendering
 
 		if (texture)
 		{
-			Vulkan::VulkanRenderingEngine::per_frame_array<VkDescriptorImageInfo> descriptor_image_infos{};
-			Vulkan::VulkanRenderingEngine::per_frame_array<VkWriteDescriptorSet> descriptor_writes{};
-
 			Vulkan::SampledImage* texture_image = texture->GetTextureImage();
 
-			for (uint32_t i = 0; i < Vulkan::VulkanRenderingEngine::max_frames_in_flight; i++)
-			{
-				descriptor_image_infos[i].imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-				descriptor_image_infos[i].imageView	  = texture_image->GetNativeViewHandle();
-				descriptor_image_infos[i].sampler	  = texture_image->texture_sampler;
+			VkDescriptorImageInfo descriptor_image_info{};
+			descriptor_image_info.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+			descriptor_image_info.imageView	  = texture_image->GetNativeViewHandle();
+			descriptor_image_info.sampler	  = texture_image->texture_sampler;
 
-				descriptor_writes[i].sType			 = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-				descriptor_writes[i].dstSet			 = pipeline->GetDescriptorSet(0, i);
-				descriptor_writes[i].dstBinding		 = 1;
-				descriptor_writes[i].dstArrayElement = 0;
-				descriptor_writes[i].descriptorType	 = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-				descriptor_writes[i].descriptorCount = 1;
-				descriptor_writes[i].pImageInfo		 = &(descriptor_image_infos[i]);
+			VkWriteDescriptorSet descriptor_write{};
+			descriptor_write.sType			 = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+			descriptor_write.dstBinding		 = 1;
+			descriptor_write.dstArrayElement = 0;
+			descriptor_write.descriptorType	 = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+			descriptor_write.descriptorCount = 1;
+			descriptor_write.pImageInfo		 = &(descriptor_image_info);
 
-				// TODO: Add support for additional textures?
-			}
-
-			// TODO: Update using single VkWriteDescriptorSet?
-			pipeline->UpdateDescriptorSets(pipeline_user_index, descriptor_writes);
+			pipeline->UpdateDescriptorSetsAll(pipeline_user_index, descriptor_write);
 		}
 	}
 

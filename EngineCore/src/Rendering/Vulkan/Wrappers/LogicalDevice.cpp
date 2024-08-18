@@ -1,7 +1,8 @@
 #include "Rendering/Vulkan/Wrappers/LogicalDevice.hpp"
 
 #include "Rendering/Vulkan/Wrappers/DeviceScore.hpp"
-#include "Rendering/Vulkan/Wrappers/PhysicalDevice.hpp"
+#include "Rendering/Vulkan/Wrappers/Instance.hpp"
+#include "Rendering/Vulkan/Wrappers/InstanceOwned.hpp"
 
 #include "vulkan/vulkan_core.h"
 
@@ -20,9 +21,12 @@ namespace Engine::Rendering::Vulkan
 
 #pragma region Public
 
-	LogicalDevice::LogicalDevice(PhysicalDevice with_physical_device, const Surface* with_surface)
+	LogicalDevice::LogicalDevice(InstanceOwned::value_t with_instance, const Surface* with_surface)
+		: InstanceOwned(with_instance)
 	{
-		queue_family_indices = with_physical_device.FindVulkanQueueFamilies(with_surface);
+		auto physical_device = with_instance->GetPhysicalDevice();
+
+		queue_family_indices = physical_device.FindVulkanQueueFamilies(with_surface);
 
 		// Vector of queue creation structs
 		std::vector<VkDeviceQueueCreateInfo> queue_create_infos;
@@ -56,7 +60,7 @@ namespace Engine::Rendering::Vulkan
 
 		VkPhysicalDeviceFeatures2 device_features2{};
 		device_features2.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2;
-		vkGetPhysicalDeviceFeatures2(with_physical_device, &device_features2);
+		vkGetPhysicalDeviceFeatures2(physical_device, &device_features2);
 		device_features2.pNext = &device_robustness_features;
 
 		// Logical device creation information
@@ -82,7 +86,7 @@ namespace Engine::Rendering::Vulkan
 		}
 
 		// Create logical device
-		VkResult result = vkCreateDevice(with_physical_device, &create_info, nullptr, &native_handle);
+		VkResult result = vkCreateDevice(physical_device, &create_info, nullptr, &native_handle);
 		if (result != VK_SUCCESS)
 		{
 			throw std::runtime_error("Vulkan: failed to create logical device!");

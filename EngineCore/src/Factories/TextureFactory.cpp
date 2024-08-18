@@ -108,7 +108,8 @@ namespace Engine::Factories
 
 		auto memory_size = static_cast<VkDeviceSize>(xsize * ysize) * channel_count;
 
-		Rendering::Vulkan::VulkanRenderingEngine* renderer = this->owner_engine->GetRenderingEngine();
+		Rendering::Vulkan::Instance* vk_instance = this->owner_engine->GetVulkanInstance();
+		assert(vk_instance);
 
 		Rendering::Vulkan::Buffer* used_staging_buffer = nullptr;
 
@@ -116,7 +117,7 @@ namespace Engine::Factories
 		if (staging_buffer == nullptr)
 		{
 			used_staging_buffer = new Rendering::Vulkan::Buffer(
-				renderer->GetInstance(),
+				vk_instance,
 				static_cast<size_t>(memory_size),
 				VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
 				VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT
@@ -128,18 +129,12 @@ namespace Engine::Factories
 			used_staging_buffer = staging_buffer;
 		}
 
-		auto* instance = renderer->GetInstance();
-		if (instance == nullptr)
-		{
-			throw std::runtime_error("Renderer returned a nullptr for DeviceManager!");
-		}
-
 		used_staging_buffer->MapMemory();
 
 		memcpy(used_staging_buffer->mapped_data, raw_data.data(), static_cast<size_t>(memory_size));
 
 		texture_data->texture_image = new Rendering::Vulkan::SampledImage(
-			renderer->GetInstance(),
+			vk_instance,
 			{xsize, ysize},
 			VK_SAMPLE_COUNT_1_BIT,
 			VK_FORMAT_R8G8B8A8_UNORM,
@@ -151,7 +146,7 @@ namespace Engine::Factories
 		// Transfer image layout to compatible with transfers
 		texture_data->texture_image->TransitionImageLayout(VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
 
-		auto* command_buffer = instance->GetCommandPool()->AllocateCommandBuffer();
+		auto* command_buffer = vk_instance->GetCommandPool()->AllocateCommandBuffer();
 
 		command_buffer->BufferImageCopy(used_staging_buffer, texture_data->texture_image);
 

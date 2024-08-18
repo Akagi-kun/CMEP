@@ -2,7 +2,6 @@
 
 #include "Rendering/MeshBuilders/MeshBuildContext.hpp"
 #include "Rendering/SupplyData.hpp"
-#include "Rendering/Vulkan/VulkanRenderingEngine.hpp"
 
 #include "InternalEngineObject.hpp"
 
@@ -15,7 +14,7 @@ namespace Engine::Rendering
 		bool needs_rebuild = true;
 
 		MeshBuildContext context = {};
-		Vulkan::VulkanRenderingEngine* renderer;
+		Vulkan::Instance* instance;
 
 		glm::vec3 world_pos;
 
