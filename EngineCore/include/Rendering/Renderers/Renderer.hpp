@@ -4,21 +4,15 @@
 #include "Rendering/MeshBuilders/MeshBuildContext.hpp"
 #include "Rendering/SupplyData.hpp"
 #include "Rendering/Transform.hpp"
-#include "Rendering/Vulkan/PipelineManager.hpp"
-#include "Rendering/Vulkan/Wrappers/Pipeline.hpp"
+#include "Rendering/Vulkan/exports.hpp"
 
 #include "InternalEngineObject.hpp"
 
 #include <cstdint>
 
+
 namespace Engine::Rendering
 {
-	struct RendererMatrixData
-	{
-		glm::mat4 mat_vp{};
-		glm::mat4 mat_model{};
-	};
-
 	// Interface for Renderers
 	class IRenderer : public InternalEngineObject
 	{

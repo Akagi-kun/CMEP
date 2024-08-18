@@ -1,7 +1,6 @@
 #pragma once
 
-#include "Rendering/Vulkan/PipelineManager.hpp"
-#include "Rendering/Vulkan/Wrappers/Instance.hpp"
+#include "Rendering/Vulkan/exports.hpp"
 
 #include "Logging/Logging.hpp"
 
@@ -11,6 +10,7 @@
 #include <cstdint>
 #include <memory>
 #include <string>
+
 
 namespace Engine
 {

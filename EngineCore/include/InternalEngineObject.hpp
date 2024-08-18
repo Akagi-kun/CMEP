@@ -9,21 +9,7 @@ namespace Engine
 {
 	class Engine;
 
-	class SupportsLogging
-	{
-	public:
-		using logger_t = std::shared_ptr<Logging::Logger>;
-
-		SupportsLogging() = delete;
-		SupportsLogging(logger_t with_logger) : logger(std::move(with_logger))
-		{
-		}
-
-	protected:
-		logger_t logger;
-	};
-
-	class InternalEngineObject : public SupportsLogging
+	class InternalEngineObject : public Logging::SupportsLogging
 	{
 	protected:
 		Engine* owner_engine = nullptr;

@@ -1,7 +1,7 @@
 #include "Scripting/GeneratorLuaScript.hpp"
 
 #include "Rendering/SupplyData.hpp"
-#include "Rendering/Vulkan/VulkanStructDefs.hpp"
+#include "Rendering/Vulkan/exports.hpp"
 
 #include "Scripting/CrossStateFunctionCall.hpp"
 #include "Scripting/ILuaScript.hpp"
@@ -11,6 +11,7 @@
 #include <stdexcept>
 #include <string>
 #include <utility>
+
 
 namespace Engine::Scripting
 {

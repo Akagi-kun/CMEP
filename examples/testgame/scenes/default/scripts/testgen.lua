@@ -35,82 +35,14 @@ end
 
 debug.sethook(trace, "lc", 1) ]]
 
-local map = {}
-
-local calculateMapOffsetZ = function(z)
-	return (config.chunk_size_x * z)
+local calculateMapOffsetY = function(y)
+	return ((y) * config.chunk_size_x * config.chunk_size_z)
 end
+
 
 local calculateMapOffset = function(x, y, z)
-	return x + (calculateMapOffsetZ(z - 1)) + (calculateMapOffsetZ(config.chunk_size_z)) * (y - 1)
+	return (x - 1) + calculateMapOffsetY(y - 1) + ((z - 1) * config.chunk_size_x)
 end
-
---[[ local generateTree = function(x, y, z)
-	local leaves = gamedefs.block_types.LEAVES
-	local wood = gamedefs.block_types.WOOD
-	local tree_def = {
-		{
-			0, 0, 0, 	0, 0,
-			0, 0, 0, 	0, 0,
-			0, 0, wood, 0, 0,
-			0, 0, 0, 	0, 0,
-			0, 0, 0, 	0, 0,
-		},
-		{
-			0, 0, 0, 	0, 0,
-			0, 0, 0, 	0, 0,
-			0, 0, wood, 0, 0,
-			0, 0, 0, 	0, 0,
-			0, 0, 0, 	0, 0,
-		},
-		{
-			0, 0, 0, 	0, 0,
-			0, 0, 0, 	0, 0,
-			0, 0, wood, 0, 0,
-			0, 0, 0, 	0, 0,
-			0, 0, 0, 	0, 0,
-		},
-		{
-			0, 5, 5, 	5, 0,
-			5, 5, 5, 	5, 5,
-			5, 5, wood, 5, 5,
-			5, 5, 5, 	5, 5,
-			0, 5, 5, 	5, 0,
-		},
-		{
-			0, 		leaves, leaves, leaves, 0,
-			leaves, leaves, leaves, leaves, leaves,
-			leaves, leaves, wood, 	leaves, leaves,
-			leaves, leaves, leaves, leaves, leaves,
-			0, 		leaves, leaves, leaves, 0,
-		},
-		{
-			0, 0, 		0, 		0,		0,
-			0, leaves,	leaves, leaves, 0,
-			0, leaves,	leaves, leaves, 0,
-			0, leaves,	leaves, leaves, 0,
-			0, 0, 		0, 		0, 		0,
-		},
-		{
-			0, 0, 		0, 		0, 		0,
-			0, 0, 		leaves, 0, 		0,
-			0, leaves,	leaves, leaves, 0,
-			0, 0, 		leaves, 0, 		0,
-			0, 0, 		0, 		0, 		0,
-		}
-	}
-
-	for idx = 1, #tree_def do
-		for x_off = -2, 2 do
-			for z_off = -2, 2 do
-				local value = tree_def[idx][x_off + 3 + (z_off + 2) * 5]
-				if value ~= 0 then
-						map[calculateMapOffset(x + x_off, y + idx - 1, z + z_off)] = value
-				end
-			end
-		end
-	end
-end ]]
 
 --local tblpack = function(...)
 --    return {n = select("#", ...), ...}
@@ -123,42 +55,7 @@ local generateMap = function(supplier, world_x, world_y, world_z)
 	local map_data = supplier(world_x, world_z)
 	local cast_map_data = ffi.cast("uint8_t*", map_data)
 	
-	for map_pos_x = 1, config.chunk_size_x do
-
-		for map_pos_z = 1, config.chunk_size_z do
-
-			for map_pos_y = 1, config.chunk_size_y do
-				local offset = calculateMapOffset(map_pos_x, map_pos_y, map_pos_z)
-
-				map[offset] = cast_map_data[(map_pos_z - 1) + ((map_pos_y - 1) * config.chunk_size_x * config.chunk_size_z) + ((map_pos_x - 1) * config.chunk_size_z)]
-
---				map[offset] = 1
-
---				local noise_adjusted = math.floor((noise_raw + 1) * config.noise_intensity)
---				local randomY = noise_adjusted + config.floor_level
---
---				if map[offset] == nil then
---					if map_pos_y < randomY then
---						if (randomY - map_pos_y - 1) < 1 then
---							map[offset] = gamedefs.block_types.GRASS
---						elseif (randomY - map_pos_y - 1) < 3 then
---							map[offset] = gamedefs.block_types.DIRT
---						else
---							map[offset] = gamedefs.block_types.STONE
---						end
---					else
---						map[offset] = 0
---						if (map[offset - calculateMapOffsetZ(config.chunk_size_z)] == 2
---							and math.random(config.tree_generation_chance) > (config.tree_generation_chance - 2)
---							and map_pos_x > 2 and map_pos_x < (config.chunk_size_x - 1)
---							and map_pos_z > 2 and map_pos_z < (config.chunk_size_z - 1)) then
---							generateTree(map_pos_x, map_pos_y, map_pos_z)
---						end
---					end
---				end
-			end
-		end
-	end
+	return cast_map_data
 end
 
 -- Mesh generation
@@ -200,12 +97,8 @@ local faceYielder = function(value, face, x_off, z_off, y_off)
 end
 
 GENERATOR_FUNCTION = function(supplier, world_x, world_y, world_z)
-	map = {}
-
-	--print(supplier)
-	--print(supplier())
-
-	generateMap(supplier, world_x, world_y, world_z)
+	
+	local map = generateMap(supplier, world_x, world_y, world_z)
 	
 	for map_pos_y = 1, config.chunk_size_y do
 		for map_pos_z = 1, config.chunk_size_z do
@@ -231,10 +124,10 @@ GENERATOR_FUNCTION = function(supplier, world_x, world_y, world_z)
 					if map_pos_z > 1 then map_prev_z = map[offset - config.chunk_size_x] end
 
 					local map_next_y = 0
-					if map_pos_y < config.chunk_size_y then map_next_y = map[offset + calculateMapOffsetZ(config.chunk_size_z)] end
+					if map_pos_y < config.chunk_size_y then map_next_y = map[offset + calculateMapOffsetY(1)] end
 
 					local map_prev_y = 0
-					if map_pos_y > 1 then map_prev_y = map[offset - calculateMapOffsetZ(config.chunk_size_z)] end
+					if map_pos_y > 1 then map_prev_y = map[offset - calculateMapOffsetY(1)] end
 
 					-- if current and next Y (vertical) position has air (block boundary)
 					if map_next_y == 0 then

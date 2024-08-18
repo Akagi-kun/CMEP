@@ -26,8 +26,7 @@
 #	define LOGPFX_CURRENT LOGPFX_NONE
 #endif
 
-// Include like this:
-/*
+/* Include like this:
 
 // Prefixes for logging messages
 #define LOGPFX_CURRENT __DESIRED_LOGPFX__

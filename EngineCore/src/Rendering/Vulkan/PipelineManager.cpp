@@ -9,8 +9,13 @@
 
 namespace Engine::Rendering::Vulkan
 {
-	PipelineManager::PipelineManager(Engine* with_engine, InstanceOwned::value_t with_instance)
-		: InternalEngineObject(with_engine), InstanceOwned(with_instance)
+	PipelineManager::PipelineManager(
+		SupportsLogging::logger_t with_logger,
+		InstanceOwned::value_t with_instance,
+		std::filesystem::path with_shader_path
+	)
+		: /* InternalEngineObject(with_engine), */ SupportsLogging(std::move(with_logger)),
+		  InstanceOwned(with_instance), shader_path(std::move(with_shader_path))
 	{
 	}
 
@@ -64,7 +69,7 @@ namespace Engine::Rendering::Vulkan
 			instance,
 			instance->GetWindow()->GetSwapchain()->GetRenderPass(), // renderer->GetSwapchain()->GetRenderPass(),
 			with_settings.short_setting,
-			this->owner_engine->GetShaderPath()
+			shader_path
 		);
 
 		this->pipelines.emplace_back(with_settings, pipeline);

@@ -17,8 +17,12 @@ ffi.cdef[[
 void *malloc( size_t size );
 ]]
 
+local calculateMapOffsetY = function(y)
+	return ((y) * config.chunk_size_x * config.chunk_size_z)
+end
+
 local calculateMapOffset = function(x, y, z)
-	return (z - 1) + ((y - 1) * config.chunk_size_x * config.chunk_size_z) + ((x - 1) * config.chunk_size_z)
+	return (x - 1) + calculateMapOffsetY(y - 1) + ((z - 1) * config.chunk_size_x)
 end
 
 local generateTree = function(map_data, x, y, z)
@@ -94,15 +98,13 @@ terrain_generator = function(...)
 	local xpos = select(1, ...)
 	local zpos = select(2, ...)
 
---	local noise_val = perlin:noise(xpos / config.chunk_size_x, config.noise_layer, zpos / config.chunk_size_z)
-
 	local map_data = ffi.C.malloc(ffi.sizeof("uint8_t") * config.chunk_size_x * config.chunk_size_y * config.chunk_size_z)
 	local cast_map_data = ffi.cast("uint8_t*", map_data)
 
 	local tree_placement_data = {}
 
-	for x = 1, config.chunk_size_x do
-		for z = 1, config.chunk_size_z do
+	for z = 1, config.chunk_size_z do
+		for x = 1, config.chunk_size_x do
 			local noise_raw = perlin:noise((x + xpos) / config.chunk_size_x / 2, config.noise_layer, (z + zpos) / config.chunk_size_z / 2)
 			local noise_raw2 = perlin:noise((x + xpos) / config.chunk_size_x / 6, config.noise_layer + 0.4, (z + zpos) / config.chunk_size_z / 6)
 			local noise_raw3 = perlin:noise((x + xpos) / config.chunk_size_x / 10, config.noise_layer + 0.6, (z + zpos) / config.chunk_size_z / 10)
@@ -135,7 +137,7 @@ terrain_generator = function(...)
 								table.insert(tree_placement_data, {x, y, z})
 							end
 						else
-							cast_map_data[offset] = game_defs.block_types.MISSING
+							cast_map_data[offset] = game_defs.block_types.DIRT -- water areas?
 						end
 					else
 						if y > (random_y - 3) then

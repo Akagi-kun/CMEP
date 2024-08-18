@@ -6,6 +6,8 @@ If:
 Diagnostics:
   ClangTidy:
     FastCheckFilter: None
+  Includes:
+    IgnoreHeader: [glm.hpp, ImportVulkan.hpp]
 ---
 Completion:
   AllScopes: No

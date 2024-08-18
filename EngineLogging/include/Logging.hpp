@@ -3,6 +3,7 @@
 #include "PlatformSemantics.hpp"
 
 #include <cstdio>
+#include <memory>
 #include <string>
 
 namespace Logging
@@ -72,4 +73,24 @@ namespace Logging
 
 		void CMEP_EXPORT SimpleLog(LogLevel level, const char* format, ...);
 	};
+
+	class SupportsLogging
+	{
+	public:
+		using logger_t = std::shared_ptr<Logging::Logger>;
+
+		SupportsLogging() = delete;
+		SupportsLogging(logger_t with_logger) : logger(std::move(with_logger))
+		{
+		}
+
+		[[nodiscard]] logger_t GetLogger()
+		{
+			return logger;
+		}
+
+	protected:
+		logger_t logger;
+	};
+
 } // namespace Logging

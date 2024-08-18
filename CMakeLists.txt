@@ -19,6 +19,18 @@ else()
 	set(ENGINE_COMPILE_OPTIONS -Wall -Wno-unknown-pragmas -Wno-nullability -Wno-nullability-completeness) # -Wextra -Wpedantic -Werror -std=c++17
 endif()
 
+if(DEFINED ENV{VULKAN_SDK})
+	if(WIN32)
+		set(ENGINE_VULKAN_LINK_PATH $ENV{VULKAN_SDK}/Lib)
+		set(ENGINE_VULKAN_INCLUDE_PATH $ENV{VULKAN_SDK}/Include)
+	else()
+		set(ENGINE_VULKAN_LINK_PATH $ENV{VULKAN_SDK}/lib)
+		set(ENGINE_VULKAN_INCLUDE_PATH $ENV{VULKAN_SDK}/include)
+	endif()
+else()
+	message("Warning! Vulkan SDK environment variable not found!")
+endif()
+
 # Global compile options
 if(MSVC)
 	add_compile_options(/MP /EHs /Zi)
@@ -47,6 +59,7 @@ endif()
 add_subdirectory(external)
 
 add_subdirectory(EngineLogging)
+add_subdirectory(EngineRenderingVulkan)
 
 add_subdirectory(EngineCore)
 add_dependencies(EngineCore glfw)

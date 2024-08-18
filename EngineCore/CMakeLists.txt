@@ -30,25 +30,25 @@ set(SRC_FILES
 	src/Rendering/MeshBuilders/SpriteMeshBuilder.cpp
 	src/Rendering/MeshBuilders/GeneratorMeshBuilder.cpp
 	
-	src/Rendering/Vulkan/PipelineManager.cpp
-	src/Rendering/Vulkan/VmaImplementation.cpp
+#	src/Rendering/Vulkan/PipelineManager.cpp
+#	src/Rendering/Vulkan/VmaImplementation.cpp
 	
-	src/Rendering/Vulkan/Wrappers/LogicalDevice.cpp
-	src/Rendering/Vulkan/Wrappers/MemoryAllocator.cpp
-	src/Rendering/Vulkan/Wrappers/Instance.cpp
-	src/Rendering/Vulkan/Wrappers/Surface.cpp
-	src/Rendering/Vulkan/Wrappers/Window.cpp
-	src/Rendering/Vulkan/Wrappers/ShaderModule.cpp
-	src/Rendering/Vulkan/Wrappers/Pipeline.cpp
-	src/Rendering/Vulkan/Wrappers/Image.cpp
-	src/Rendering/Vulkan/Wrappers/SampledImage.cpp
-	src/Rendering/Vulkan/Wrappers/RenderPass.cpp
-	src/Rendering/Vulkan/Wrappers/Swapchain.cpp
-	src/Rendering/Vulkan/Wrappers/Buffer.cpp
-	src/Rendering/Vulkan/Wrappers/DeviceScore.cpp
-	src/Rendering/Vulkan/Wrappers/PhysicalDevice.cpp
-	src/Rendering/Vulkan/Wrappers/CommandPool.cpp
-	src/Rendering/Vulkan/Wrappers/CommandBuffer.cpp
+#	src/Rendering/Vulkan/Wrappers/LogicalDevice.cpp
+#	src/Rendering/Vulkan/Wrappers/MemoryAllocator.cpp
+#	src/Rendering/Vulkan/Wrappers/Instance.cpp
+#	src/Rendering/Vulkan/Wrappers/Surface.cpp
+#	src/Rendering/Vulkan/Wrappers/Window.cpp
+#	src/Rendering/Vulkan/Wrappers/ShaderModule.cpp
+#	src/Rendering/Vulkan/Wrappers/Pipeline.cpp
+#	src/Rendering/Vulkan/Wrappers/Image.cpp
+#	src/Rendering/Vulkan/Wrappers/SampledImage.cpp
+#	src/Rendering/Vulkan/Wrappers/RenderPass.cpp
+#	src/Rendering/Vulkan/Wrappers/Swapchain.cpp
+#	src/Rendering/Vulkan/Wrappers/Buffer.cpp
+#	src/Rendering/Vulkan/Wrappers/DeviceScore.cpp
+#	src/Rendering/Vulkan/Wrappers/PhysicalDevice.cpp
+#	src/Rendering/Vulkan/Wrappers/CommandPool.cpp
+#	src/Rendering/Vulkan/Wrappers/CommandBuffer.cpp
 	
 	src/Scripting/CrossStateFunctionCall.cpp
 	
@@ -87,7 +87,7 @@ else()
 		)
 endif()
 
-list(APPEND STATIC_LIBRARIES EngineLogging)
+list(APPEND STATIC_LIBRARIES EngineLogging EngineRenderingVulkan)
 
 add_library(EngineCore SHARED ${SRC_FILES})
 
@@ -97,10 +97,11 @@ set_target_properties(EngineCore PROPERTIES CXX_EXTENSIONS OFF)
 
 target_compile_options(EngineCore PRIVATE ${ENGINE_COMPILE_OPTIONS})
 
-target_link_directories(EngineCore PUBLIC ../build)
+target_link_directories(EngineCore PUBLIC ../build ${ENGINE_VULKAN_LINK_PATH})
 
 target_include_directories(EngineCore PUBLIC include
 											 ../EngineLogging/export_include
+											 ../EngineRenderingVulkan/export_include
 											 ../external/luajit/src
 											 ../external/glfw/include
 											 ../external/nlohmann-json/single_include
@@ -108,17 +109,7 @@ target_include_directories(EngineCore PUBLIC include
 											 ../external/lodepng
 											 ../external/glm
 											 ../common_include
+											 ${ENGINE_VULKAN_INCLUDE_PATH}
 											 )
-if(DEFINED ENV{VULKAN_SDK})
-	if(WIN32)
-		target_link_directories(EngineCore PUBLIC $ENV{VULKAN_SDK}/Lib)
-		target_include_directories(EngineCore PUBLIC $ENV{VULKAN_SDK}/Include)
-	else()
-		target_link_directories(EngineCore PUBLIC $ENV{VULKAN_SDK}/lib)
-		target_include_directories(EngineCore PUBLIC $ENV{VULKAN_SDK}/include)
-	endif()
-else()
-	message("Warning! Vulkan SDK environment variable not found!")
-endif()
 
 target_link_libraries(EngineCore ${STATIC_LIBRARIES})

@@ -1,7 +1,6 @@
 #pragma once
 
-#include "Rendering/Vulkan/VulkanStructDefs.hpp"
-#include "Rendering/Vulkan/Wrappers/Buffer.hpp"
+#include "Rendering/Vulkan/exports.hpp"
 
 namespace Engine::Rendering
 {

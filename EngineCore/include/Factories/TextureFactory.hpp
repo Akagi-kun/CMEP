@@ -1,9 +1,10 @@
 #pragma once
 
 #include "Assets/Texture.hpp"
-#include "Rendering/Vulkan/Wrappers/framework.hpp"
+#include "Rendering/Vulkan/exports.hpp"
 
 #include "InternalEngineObject.hpp"
+
 
 namespace Engine::Factories
 {

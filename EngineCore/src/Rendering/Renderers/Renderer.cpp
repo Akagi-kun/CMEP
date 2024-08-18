@@ -2,11 +2,7 @@
 
 #include "Assets/Texture.hpp"
 #include "Rendering/SupplyData.hpp"
-#include "Rendering/Vulkan/PipelineManager.hpp"
-#include "Rendering/Vulkan/Wrappers/CommandBuffer.hpp"
-#include "Rendering/Vulkan/Wrappers/Pipeline.hpp"
-#include "Rendering/Vulkan/Wrappers/SampledImage.hpp"
-#include "Rendering/Vulkan/Wrappers/Swapchain.hpp"
+#include "Rendering/Vulkan/exports.hpp"
 #include "Rendering/framework.hpp"
 
 #include "Engine.hpp"

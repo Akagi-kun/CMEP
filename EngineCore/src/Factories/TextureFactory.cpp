@@ -8,12 +8,12 @@
 #include "lodepng.h"
 #pragma warning(pop)
 
-#include "Rendering/Vulkan/Wrappers/CommandBuffer.hpp"
-#include "Rendering/Vulkan/Wrappers/CommandPool.hpp"
+#include "Rendering/Vulkan/exports.hpp"
 
 #include "Factories/TextureFactory.hpp"
 
 #include "Engine.hpp"
+
 
 // Prefixes for logging messages
 #define LOGPFX_CURRENT LOGPFX_CLASS_TEXTURE_FACTORY

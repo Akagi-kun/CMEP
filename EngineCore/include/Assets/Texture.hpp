@@ -1,12 +1,13 @@
 #pragma once
 
 #include "Rendering/Transform.hpp"
-#include "Rendering/Vulkan/Wrappers/SampledImage.hpp"
+#include "Rendering/Vulkan/exports.hpp"
 
 #include "InternalEngineObject.hpp"
 
 #include <memory>
 #include <vector>
+
 
 namespace Engine::Rendering
 {

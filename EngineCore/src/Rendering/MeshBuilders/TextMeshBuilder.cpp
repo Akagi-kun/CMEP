@@ -2,7 +2,6 @@
 
 #include "Assets/Font.hpp"
 #include "Assets/Texture.hpp"
-#include "Rendering/Vulkan/VulkanStructDefs.hpp"
 
 #include "Engine.hpp"
 

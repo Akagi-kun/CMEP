@@ -3,7 +3,7 @@
 #include "Assets/AssetManager.hpp"
 #include "Rendering/MeshBuilders/AxisMeshBuilder.hpp"
 #include "Rendering/Renderers/Renderer.hpp"
-#include "Rendering/Vulkan/PipelineManager.hpp"
+#include "Rendering/Vulkan/exports.hpp"
 
 #include "Scripting/ILuaScript.hpp"
 
@@ -439,7 +439,8 @@ namespace Engine
 
 		vk_instance->GetWindow()->SetRenderCallback(Engine::RenderCallback, this);
 
-		pipeline_manager = std::make_shared<Rendering::Vulkan::PipelineManager>(this, vk_instance);
+		pipeline_manager =
+			std::make_shared<Rendering::Vulkan::PipelineManager>(logger, vk_instance, config->shader_path);
 
 		scene_manager->SetSceneLoadPrefix(config->scene_path);
 		scene_manager->LoadScene(config->default_scene);
