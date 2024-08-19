@@ -10,7 +10,7 @@
 
 namespace Engine::Rendering::Vulkan
 {
-	class LogicalDevice : public InstanceOwned, public HandleWrapper<VkDevice>
+	class LogicalDevice : public InstanceOwned, public HandleWrapper<vk::Device>
 	{
 	public:
 		LogicalDevice(LogicalDevice& other) = delete;
@@ -23,12 +23,12 @@ namespace Engine::Rendering::Vulkan
 			return queue_family_indices;
 		}
 
-		[[nodiscard]] const Queue& GetGraphicsQueue()
+		[[nodiscard]] Queue& GetGraphicsQueue()
 		{
 			return graphics_queue;
 		}
 
-		[[nodiscard]] const Queue& GetPresentQueue()
+		[[nodiscard]] Queue& GetPresentQueue()
 		{
 			return present_queue;
 		}

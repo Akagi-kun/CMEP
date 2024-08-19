@@ -18,7 +18,7 @@ namespace Engine::Rendering::Vulkan
 		pool_info.flags			   = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
 		pool_info.queueFamilyIndex = logical_device->GetQueueFamilies().graphics_family.value();
 
-		if (vkCreateCommandPool(*logical_device, &pool_info, nullptr, &(native_handle)) != VK_SUCCESS)
+		if (vkCreateCommandPool(logical_device->GetHandle(), &pool_info, nullptr, &(native_handle)) != VK_SUCCESS)
 		{
 			throw std::runtime_error("Failed to create command pool!");
 		}
@@ -28,7 +28,7 @@ namespace Engine::Rendering::Vulkan
 	{
 		LogicalDevice* logical_device = instance->GetLogicalDevice();
 
-		vkDestroyCommandPool(*logical_device, native_handle, nullptr);
+		vkDestroyCommandPool(logical_device->GetHandle(), native_handle, nullptr);
 	}
 
 	[[nodiscard]] CommandBuffer* CommandPool::AllocateCommandBuffer()

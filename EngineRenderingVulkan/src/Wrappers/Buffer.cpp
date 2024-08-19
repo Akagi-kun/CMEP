@@ -1,11 +1,11 @@
 #include "Wrappers/Buffer.hpp"
 
+#include "ImportVulkan.hpp"
 #include "Wrappers/CommandBuffer.hpp"
 #include "Wrappers/CommandPool.hpp"
 #include "Wrappers/Instance.hpp"
 #include "Wrappers/InstanceOwned.hpp"
 #include "Wrappers/LogicalDevice.hpp"
-#include "vulkan/vulkan.h"
 
 #include <stdexcept>
 
@@ -55,7 +55,7 @@ namespace Engine::Rendering::Vulkan
 
 		logical_device->WaitDeviceIdle();
 
-		vkDestroyBuffer(*logical_device, this->native_handle, nullptr);
+		vkDestroyBuffer(logical_device->GetHandle(), this->native_handle, nullptr);
 
 		vmaFreeMemory(*this->allocator, this->allocation);
 	}
@@ -65,7 +65,7 @@ namespace Engine::Rendering::Vulkan
 		LogicalDevice* logical_device = instance->GetLogicalDevice();
 
 		vkMapMemory(
-			*logical_device,
+			logical_device->GetHandle(),
 			this->allocation_info.deviceMemory,
 			this->allocation_info.offset,
 			this->allocation_info.size,
@@ -78,7 +78,7 @@ namespace Engine::Rendering::Vulkan
 	{
 		LogicalDevice* logical_device = instance->GetLogicalDevice();
 
-		vkUnmapMemory(*logical_device, this->allocation_info.deviceMemory);
+		vkUnmapMemory(logical_device->GetHandle(), this->allocation_info.deviceMemory);
 
 		// ensure mapped_data is never non-null when not mapped
 		this->mapped_data = nullptr;

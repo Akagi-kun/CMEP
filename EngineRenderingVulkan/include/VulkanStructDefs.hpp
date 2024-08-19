@@ -2,6 +2,7 @@
 
 #include "ImportVulkan.hpp"
 #include "glm/glm.hpp"
+#include "vulkan/vulkan_core.h"
 
 #include <array>
 #include <optional>
@@ -39,9 +40,9 @@ namespace Engine::Rendering
 
 	struct SwapChainSupportDetails
 	{
-		VkSurfaceCapabilitiesKHR capabilities;
-		std::vector<VkSurfaceFormatKHR> formats;
-		std::vector<VkPresentModeKHR> present_modes;
+		vk::SurfaceCapabilitiesKHR capabilities;
+		std::vector<vk::SurfaceFormatKHR> formats;
+		std::vector<vk::PresentModeKHR> present_modes;
 	};
 
 	struct VulkanDescriptorLayoutSettings
@@ -165,13 +166,13 @@ namespace Engine::Rendering
 			return &rasterizer;
 		}
 
-		static VkPipelineMultisampleStateCreateInfo* GetMultisamplingSettings(VkSampleCountFlagBits msaa_samples)
+		static VkPipelineMultisampleStateCreateInfo* GetMultisamplingSettings(vk::SampleCountFlagBits msaa_samples)
 		{
 			static VkPipelineMultisampleStateCreateInfo multisampling{};
 
 			multisampling.sType					= VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;
 			multisampling.sampleShadingEnable	= VK_FALSE;
-			multisampling.rasterizationSamples	= msaa_samples;
+			multisampling.rasterizationSamples	= static_cast<VkSampleCountFlagBits>(msaa_samples);
 			multisampling.minSampleShading		= 1.0f;		// Optional
 			multisampling.pSampleMask			= nullptr;	// Optional
 			multisampling.alphaToCoverageEnable = VK_FALSE; // Optional

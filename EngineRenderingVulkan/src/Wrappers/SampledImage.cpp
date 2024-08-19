@@ -2,6 +2,7 @@
 
 #include "Wrappers/Instance.hpp"
 #include "Wrappers/LogicalDevice.hpp"
+#include "Wrappers/PhysicalDevice.hpp"
 
 #include <stdexcept>
 
@@ -10,7 +11,7 @@ namespace Engine::Rendering::Vulkan
 	SampledImage::SampledImage(
 		InstanceOwned::value_t with_instance,
 		ImageSize with_size,
-		VkSampleCountFlagBits num_samples,
+		vk::SampleCountFlagBits num_samples,
 		VkFormat format,
 		VkImageUsageFlags usage,
 		VkFilter with_filter,
@@ -33,7 +34,10 @@ namespace Engine::Rendering::Vulkan
 		sampler_info.addressModeW = use_address_mode;
 
 		VkPhysicalDeviceProperties device_properties{};
-		vkGetPhysicalDeviceProperties(instance->GetPhysicalDevice(), &device_properties);
+		vkGetPhysicalDeviceProperties(
+			static_cast<PhysicalDevice::value_t>(instance->GetPhysicalDevice()),
+			&device_properties
+		);
 
 		sampler_info.anisotropyEnable = VK_TRUE;
 		sampler_info.maxAnisotropy	  = device_properties.limits.maxSamplerAnisotropy;
@@ -50,7 +54,7 @@ namespace Engine::Rendering::Vulkan
 		sampler_info.minLod		= 0.0f;
 		sampler_info.maxLod		= 0.0f;
 
-		if (vkCreateSampler(*logical_device, &sampler_info, nullptr, &(texture_sampler)) != VK_SUCCESS)
+		if (vkCreateSampler(logical_device->GetHandle(), &sampler_info, nullptr, &(texture_sampler)) != VK_SUCCESS)
 		{
 			throw std::runtime_error("failed to create texture sampler!");
 		}
@@ -60,6 +64,6 @@ namespace Engine::Rendering::Vulkan
 	{
 		LogicalDevice* logical_device = instance->GetLogicalDevice();
 
-		vkDestroySampler(*logical_device, texture_sampler, nullptr);
+		vkDestroySampler(logical_device->GetHandle(), texture_sampler, nullptr);
 	}
 } // namespace Engine::Rendering::Vulkan

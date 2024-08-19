@@ -3,7 +3,7 @@
 #include "Factories/ObjectFactory.hpp"
 
 #include "EventHandling.hpp"
-#include "vulkan/vulkan_core.h"
+#include "ImportVulkan.hpp"
 
 namespace Engine
 {

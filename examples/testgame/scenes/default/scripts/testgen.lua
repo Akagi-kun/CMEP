@@ -80,15 +80,15 @@ local faceYielder = function(value, face, x_off, z_off, y_off)
 				z = z + z_off - 1
 				y = y + y_off - 1
 
-				local u_ratio = 0.9 / gamedefs.block_type_count
-				local v_ratio = 0.9 / gamedefs.block_textures
+				local u_ratio = 0.85 / gamedefs.block_type_count -- 0.9
+				local v_ratio = 0.9 / gamedefs.block_textures -- 0.9
 
 				-- ((size of 1 texture in atlas) * uv coord) + (offset from first texture) 
 				local modified_u = (u_ratio * u)
 				local modified_v = (v_ratio * v)
 
-				local offset_u = modified_u + ((value - 1) / gamedefs.block_type_count) + (u_ratio / gamedefs.texture_pixels.x / 3)
-				local offset_v = modified_v + (use_texture / gamedefs.block_textures) + (v_ratio / gamedefs.texture_pixels.y / 3)
+				local offset_u = modified_u + ((value - 1) / gamedefs.block_type_count) + (u_ratio / gamedefs.texture_pixels.x / 2)
+				local offset_v = modified_v + (use_texture / gamedefs.block_textures) + (v_ratio / gamedefs.texture_pixels.y / 2)
 
 				coroutine.yield(offset_u, offset_v, normals[face], {0, 0, 0}, x, y, z)
 			end

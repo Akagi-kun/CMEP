@@ -2,6 +2,7 @@
 
 #include "Wrappers/Instance.hpp"
 #include "Wrappers/Swapchain.hpp"
+#include "vulkan/vulkan_handles.hpp"
 
 #include <stdexcept>
 #include <utility>
@@ -45,7 +46,13 @@ namespace Engine::Rendering::Vulkan
 
 		// Surface ops
 		surface.created_by = with_instance;
-		if (glfwCreateWindowSurface(*surface.created_by, native_handle, nullptr, &surface.native_handle) != VK_SUCCESS)
+
+		if (glfwCreateWindowSurface(
+				static_cast<Instance::value_t>(*instance),
+				native_handle,
+				nullptr,
+				&surface.native_handle
+			) != VK_SUCCESS)
 		{
 			throw std::runtime_error("glfw failed to create window surface!");
 		}
@@ -57,7 +64,7 @@ namespace Engine::Rendering::Vulkan
 	{
 		delete swapchain;
 
-		vkDestroySurfaceKHR(*surface.created_by, surface.native_handle, nullptr);
+		instance->GetHandle().destroySurfaceKHR(surface.native_handle);
 
 		glfwDestroyWindow(native_handle);
 	}
@@ -83,7 +90,7 @@ namespace Engine::Rendering::Vulkan
 		glfwSetWindowShouldClose(native_handle, static_cast<int>(should_close));
 	}
 
-	[[nodiscard]] bool Window::GetShouldClose() const
+	bool Window::GetShouldClose() const
 	{
 		return glfwWindowShouldClose(native_handle) != 0;
 	}
@@ -125,19 +132,19 @@ namespace Engine::Rendering::Vulkan
 		// auto& frame_sync_objects = this->sync_objects[this->current_frame];
 
 		// Wait for fence
-		vkWaitForFences(*logical_device, 1, &render_target.sync_objects.in_flight, VK_TRUE, UINT64_MAX);
+		vkWaitForFences(logical_device->GetHandle(), 1, &render_target.sync_objects.in_flight, VK_TRUE, UINT64_MAX);
 
 		// Reset fence after wait is over
 		// (fence has to be reset before being used again)
-		vkResetFences(*logical_device, 1, &render_target.sync_objects.in_flight);
+		vkResetFences(logical_device->GetHandle(), 1, &render_target.sync_objects.in_flight);
 
 		// Index of framebuffer in this->vk_swap_chain_framebuffers
 		uint32_t image_index	= 0;
 		// Acquire render target
 		// the render target is an image in the swap chain
 		VkResult acquire_result = vkAcquireNextImageKHR(
-			*logical_device,
-			*swapchain,
+			logical_device->GetHandle(),
+			swapchain->GetHandle(),
 			UINT64_MAX,
 			render_target.sync_objects.image_available,
 			nullptr,
@@ -201,7 +208,7 @@ namespace Engine::Rendering::Vulkan
 		present_info.waitSemaphoreCount = 1;
 		present_info.pWaitSemaphores	= signal_semaphores;
 
-		VkSwapchainKHR swap_chains[] = {*swapchain};
+		VkSwapchainKHR swap_chains[] = {swapchain->GetHandle()};
 		present_info.swapchainCount	 = 1;
 		present_info.pSwapchains	 = swap_chains;
 		present_info.pImageIndices	 = &image_index;

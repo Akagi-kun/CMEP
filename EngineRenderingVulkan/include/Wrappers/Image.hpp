@@ -8,7 +8,6 @@
 
 #include <cassert>
 
-
 namespace Engine::Rendering::Vulkan
 {
 	class Image : public InstanceOwned, public HoldsVMA, public HandleWrapper<VkImage>
@@ -17,7 +16,7 @@ namespace Engine::Rendering::Vulkan
 		Image(
 			InstanceOwned::value_t with_instance,
 			ImageSize with_size,
-			VkSampleCountFlagBits num_samples,
+			vk::SampleCountFlagBits num_samples,
 			VkFormat format,
 			VkImageUsageFlags usage,
 			VkMemoryPropertyFlags properties = VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,

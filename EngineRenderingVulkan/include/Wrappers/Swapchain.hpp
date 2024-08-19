@@ -14,7 +14,7 @@ namespace Engine::Rendering::Vulkan
 		CommandBuffer* command_buffer;
 	};
 
-	class Swapchain final : public InstanceOwned, public HandleWrapper<VkSwapchainKHR>
+	class Swapchain final : public InstanceOwned, public HandleWrapper<vk::SwapchainKHR>
 	{
 	public:
 		Swapchain(
@@ -38,12 +38,12 @@ namespace Engine::Rendering::Vulkan
 			return this->render_targets[index];
 		}
 
-		[[nodiscard]] VkFormat GetImageFormat() const
+		[[nodiscard]] vk::Format GetImageFormat() const
 		{
 			return this->image_format;
 		}
 
-		[[nodiscard]] std::vector<VkImageView>& GetImageViewHandles()
+		[[nodiscard]] std::vector<vk::ImageView>& GetImageViewHandles()
 		{
 			return this->image_view_handles;
 		}
@@ -59,17 +59,18 @@ namespace Engine::Rendering::Vulkan
 		}
 
 	private:
-		std::vector<VkImage> image_handles;
-		std::vector<VkImageView> image_view_handles;
+		std::vector<vk::Image> image_handles;
+		std::vector<vk::ImageView> image_view_handles;
 
 		per_frame_array<RenderTargetData> render_targets;
 
-		VkFormat image_format{};
+		vk::Format image_format{};
 		const VkExtent2D extent;
 
 		RenderPass* render_pass = nullptr;
 
-		std::vector<VkFramebuffer> framebuffers;
+		// TODO: move framebuffers into RenderTargetData
+		std::vector<vk::Framebuffer> framebuffers;
 
 		// Multisampling
 		Image* multisampled_color_image = nullptr;

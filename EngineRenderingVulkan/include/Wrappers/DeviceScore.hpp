@@ -29,7 +29,7 @@ namespace Engine::Rendering::Vulkan
 		DeviceScore(PhysicalDevice with_device, const Surface* with_surface);
 
 		static const std::vector<const char*> device_extensions;
-		static bool CheckDeviceExtensionSupport(VkPhysicalDevice device);
+		static bool CheckDeviceExtensionSupport(vk::PhysicalDevice device);
 
 		operator bool() const
 		{

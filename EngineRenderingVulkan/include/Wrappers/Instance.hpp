@@ -11,13 +11,14 @@
 #include "Wrappers/PhysicalDevice.hpp"
 #include "Wrappers/Window.hpp"
 #include "framework.hpp"
+#include "vulkan/vulkan_enums.hpp"
+#include "vulkan/vulkan_handles.hpp"
 
 #include <vector>
 
-
 namespace Engine::Rendering::Vulkan
 {
-	class Instance final : public Logging::SupportsLogging, public HandleWrapper<VkInstance>
+	class Instance final : public Logging::SupportsLogging, public HandleWrapper<vk::Instance>
 	{
 	public:
 		struct WindowParams
@@ -37,7 +38,7 @@ namespace Engine::Rendering::Vulkan
 			return window;
 		}
 
-		[[nodiscard]] VkSampleCountFlagBits GetMSAASamples() const
+		[[nodiscard]] vk::SampleCountFlagBits GetMSAASamples() const
 		{
 			return msaa_samples;
 		}
@@ -63,7 +64,7 @@ namespace Engine::Rendering::Vulkan
 		}
 
 	private:
-		VkDebugUtilsMessengerEXT debug_messenger = VK_NULL_HANDLE;
+		vk::DebugUtilsMessengerEXT debug_messenger = VK_NULL_HANDLE;
 
 		PhysicalDevice physical_device;
 		LogicalDevice* logical_device = nullptr;
@@ -73,7 +74,7 @@ namespace Engine::Rendering::Vulkan
 
 		CommandPool* command_pool = nullptr;
 
-		VkSampleCountFlagBits msaa_samples = VK_SAMPLE_COUNT_1_BIT;
+		vk::SampleCountFlagBits msaa_samples = vk::SampleCountFlagBits::e1;
 
 		static const std::vector<const char*> validation_layers;
 
@@ -81,6 +82,6 @@ namespace Engine::Rendering::Vulkan
 		void InitDevice();
 
 		static bool CheckVulkanValidationLayers();
-		static VkSampleCountFlagBits GetMaxUsableSampleCount(VkPhysicalDevice device);
+		static vk::SampleCountFlagBits GetMaxUsableSampleCount(vk::PhysicalDevice device);
 	};
 } // namespace Engine::Rendering::Vulkan

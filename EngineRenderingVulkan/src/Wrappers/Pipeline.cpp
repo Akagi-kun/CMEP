@@ -2,6 +2,7 @@
 
 // #include "Rendering/Renderers/Renderer.hpp"
 
+#include "ImportVulkan.hpp"
 #include "VulkanStructDefs.hpp"
 #include "Wrappers/Buffer.hpp"
 #include "Wrappers/HoldsVMA.hpp"
@@ -9,7 +10,7 @@
 #include "Wrappers/LogicalDevice.hpp"
 #include "Wrappers/RenderPass.hpp"
 #include "Wrappers/ShaderModule.hpp"
-#include "vulkan/vulkan.h"
+#include "vulkan/vulkan_core.h"
 
 namespace Engine::Rendering::Vulkan
 {
@@ -23,8 +24,6 @@ namespace Engine::Rendering::Vulkan
 	{
 		LogicalDevice* logical_device = instance->GetLogicalDevice();
 
-		// std::string shader_path = this->device_manager->GetOwnerEngine()->GetShaderPath();
-
 		assert(!settings.shader.empty() && "A valid shader for this pipeline is required!");
 
 		// Vertex stage
@@ -33,7 +32,7 @@ namespace Engine::Rendering::Vulkan
 		VkPipelineShaderStageCreateInfo vert_shader_stage_info{};
 		vert_shader_stage_info.sType  = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
 		vert_shader_stage_info.stage  = VK_SHADER_STAGE_VERTEX_BIT;
-		vert_shader_stage_info.module = vert_shader_module;
+		vert_shader_stage_info.module = vert_shader_module.GetHandle();
 		vert_shader_stage_info.pName  = "main";
 
 		// Fragment stage
@@ -42,7 +41,7 @@ namespace Engine::Rendering::Vulkan
 		VkPipelineShaderStageCreateInfo frag_shader_stage_info{};
 		frag_shader_stage_info.sType  = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
 		frag_shader_stage_info.stage  = VK_SHADER_STAGE_FRAGMENT_BIT;
-		frag_shader_stage_info.module = frag_shader_module;
+		frag_shader_stage_info.module = frag_shader_module.GetHandle();
 		frag_shader_stage_info.pName  = "main";
 
 		VkPipelineShaderStageCreateInfo shader_stages[] = {vert_shader_stage_info, frag_shader_stage_info};
@@ -103,8 +102,12 @@ namespace Engine::Rendering::Vulkan
 		layout_info.pBindings	 = bindings.data();
 		layout_info.pNext		 = &layout_flags_info;
 
-		if (vkCreateDescriptorSetLayout(*logical_device, &layout_info, nullptr, &(this->descriptor_set_layout)) !=
-			VK_SUCCESS)
+		if (vkCreateDescriptorSetLayout(
+				logical_device->GetHandle(),
+				&layout_info,
+				nullptr,
+				&(this->descriptor_set_layout)
+			) != VK_SUCCESS)
 		{
 			throw std::runtime_error("failed to create descriptor set layout!");
 		}
@@ -118,8 +121,12 @@ namespace Engine::Rendering::Vulkan
 		pipeline_layout_info.pushConstantRangeCount = 0;	   // Optional
 		pipeline_layout_info.pPushConstantRanges	= nullptr; // Optional
 
-		if (vkCreatePipelineLayout(*logical_device, &pipeline_layout_info, nullptr, &(this->pipeline_layout)) !=
-			VK_SUCCESS)
+		if (vkCreatePipelineLayout(
+				logical_device->GetHandle(),
+				&pipeline_layout_info,
+				nullptr,
+				&(this->pipeline_layout)
+			) != VK_SUCCESS)
 		{
 			throw std::runtime_error("failed to create pipeline layout!");
 		}
@@ -151,7 +158,7 @@ namespace Engine::Rendering::Vulkan
 		pipeline_info.basePipelineIndex	 = -1;			   // Optional
 
 		if (vkCreateGraphicsPipelines(
-				*logical_device,
+				logical_device->GetHandle(),
 				VK_NULL_HANDLE,
 				1,
 				&pipeline_info,
@@ -182,7 +189,7 @@ namespace Engine::Rendering::Vulkan
 	{
 		LogicalDevice* logical_device = instance->GetLogicalDevice();
 
-		vkDeviceWaitIdle(*logical_device);
+		vkDeviceWaitIdle(logical_device->GetHandle());
 
 		for (auto& data_ref : this->user_data)
 		{
@@ -191,13 +198,13 @@ namespace Engine::Rendering::Vulkan
 				delete uniform_buffer;
 			}
 
-			vkDestroyDescriptorPool(*logical_device, data_ref.with_pool, nullptr);
+			vkDestroyDescriptorPool(logical_device->GetHandle(), data_ref.with_pool, nullptr);
 		}
 
-		vkDestroyDescriptorSetLayout(*logical_device, this->descriptor_set_layout, nullptr);
+		vkDestroyDescriptorSetLayout(logical_device->GetHandle(), this->descriptor_set_layout, nullptr);
 
-		vkDestroyPipeline(*logical_device, this->native_handle, nullptr);
-		vkDestroyPipelineLayout(*logical_device, this->pipeline_layout, nullptr);
+		vkDestroyPipeline(logical_device->GetHandle(), this->native_handle, nullptr);
+		vkDestroyPipelineLayout(logical_device->GetHandle(), this->pipeline_layout, nullptr);
 	}
 
 	void Pipeline::AllocateNewDescriptorPool(Pipeline::UserData& data_ref)
@@ -210,7 +217,8 @@ namespace Engine::Rendering::Vulkan
 		pool_info.pPoolSizes	= pool_sizes.data();
 		pool_info.maxSets		= max_frames_in_flight;
 
-		if (vkCreateDescriptorPool(*logical_device, &pool_info, nullptr, &(data_ref.with_pool)) != VK_SUCCESS)
+		if (vkCreateDescriptorPool(logical_device->GetHandle(), &pool_info, nullptr, &(data_ref.with_pool)) !=
+			VK_SUCCESS)
 		{
 			throw std::runtime_error("failed to create descriptor pool!");
 		}
@@ -244,7 +252,7 @@ namespace Engine::Rendering::Vulkan
 		alloc_info.pSetLayouts		  = layouts.data();
 
 		VkResult create_result =
-			vkAllocateDescriptorSets(*logical_device, &alloc_info, data_ref.descriptor_sets.data());
+			vkAllocateDescriptorSets(logical_device->GetHandle(), &alloc_info, data_ref.descriptor_sets.data());
 
 		if (create_result != VK_SUCCESS)
 		{
@@ -297,7 +305,7 @@ namespace Engine::Rendering::Vulkan
 		}
 
 		vkUpdateDescriptorSets(
-			*logical_device,
+			logical_device->GetHandle(),
 			static_cast<uint32_t>(with_writes.size()),
 			with_writes.data(),
 			0,

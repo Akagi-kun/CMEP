@@ -3,7 +3,6 @@
 #include "ImportVulkan.hpp"
 #include "Wrappers/Image.hpp"
 
-
 namespace Engine::Rendering::Vulkan
 {
 	class SampledImage : public Image
@@ -18,7 +17,7 @@ namespace Engine::Rendering::Vulkan
 		SampledImage(
 			InstanceOwned::value_t with_instance,
 			ImageSize with_size,
-			VkSampleCountFlagBits num_samples,
+			vk::SampleCountFlagBits num_samples,
 			VkFormat format,
 			VkImageUsageFlags usage,
 			VkFilter with_filter,

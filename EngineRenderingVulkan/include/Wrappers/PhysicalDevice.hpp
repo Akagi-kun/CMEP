@@ -8,14 +8,13 @@
 #include <string>
 #include <vector>
 
-
 namespace Engine::Rendering::Vulkan
 {
-	class PhysicalDevice final : public HandleWrapper<VkPhysicalDevice, true>
+	class PhysicalDevice final : public HandleWrapper<vk::PhysicalDevice, true>
 	{
 	public:
 		PhysicalDevice() = default;
-		PhysicalDevice(VkPhysicalDevice from_device) : HandleWrapper<VkPhysicalDevice, true>(from_device)
+		PhysicalDevice(vk::PhysicalDevice from_device) : HandleWrapper<vk::PhysicalDevice, true>(from_device)
 		{
 		}
 

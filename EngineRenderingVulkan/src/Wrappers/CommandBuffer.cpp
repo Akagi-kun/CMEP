@@ -1,11 +1,11 @@
 #include "Wrappers/CommandBuffer.hpp"
 
+#include "ImportVulkan.hpp"
 #include "Wrappers/Buffer.hpp"
 #include "Wrappers/Image.hpp"
 #include "Wrappers/Instance.hpp"
 #include "Wrappers/InstanceOwned.hpp"
 #include "Wrappers/LogicalDevice.hpp"
-#include "vulkan/vulkan.h"
 
 #include <stdexcept>
 
@@ -22,7 +22,7 @@ namespace Engine::Rendering::Vulkan
 
 		LogicalDevice* logical_device = instance->GetLogicalDevice();
 
-		if (vkAllocateCommandBuffers(*logical_device, &alloc_info, &native_handle) != VK_SUCCESS)
+		if (vkAllocateCommandBuffers(logical_device->GetHandle(), &alloc_info, &native_handle) != VK_SUCCESS)
 		{
 			throw std::runtime_error("failed to allocate command buffers!");
 		}
@@ -32,7 +32,7 @@ namespace Engine::Rendering::Vulkan
 	{
 		LogicalDevice* logical_device = instance->GetLogicalDevice();
 
-		vkFreeCommandBuffers(*logical_device, this->owning_pool, 1, &native_handle);
+		vkFreeCommandBuffers(logical_device->GetHandle(), this->owning_pool, 1, &native_handle);
 	}
 
 	void CommandBuffer::BeginCmdBuffer(VkCommandBufferUsageFlags usage_flags)

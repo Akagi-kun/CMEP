@@ -1,6 +1,8 @@
 #include "Wrappers/DeviceScore.hpp"
 
 #include "Wrappers/Surface.hpp"
+#include "vulkan/vulkan_handles.hpp"
+#include "vulkan/vulkan_structs.hpp"
 
 #include <set>
 
@@ -14,13 +16,9 @@ namespace Engine::Rendering::Vulkan
 
 	DeviceScore::DeviceScore(PhysicalDevice with_device, const Surface* const with_surface) : device_scored(with_device)
 	{
-		// Physical device properties
-		VkPhysicalDeviceProperties device_properties;
-		vkGetPhysicalDeviceProperties(with_device, &device_properties);
+		vk::PhysicalDeviceProperties device_properties = with_device.GetHandle().getProperties();
 
-		// Physical device optional features
-		VkPhysicalDeviceFeatures device_features;
-		vkGetPhysicalDeviceFeatures(with_device, &device_features);
+		vk::PhysicalDeviceFeatures device_features = with_device.GetHandle().getFeatures();
 
 		// Suppress magic numbers since it doesnt make sense here
 		// NOLINTBEGIN(readability-magic-numbers)
@@ -28,16 +26,16 @@ namespace Engine::Rendering::Vulkan
 		// Naive scoring to favor usually-more-performant devices
 		switch (device_properties.deviceType)
 		{
-			case VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU:
+			case vk::PhysicalDeviceType::eDiscreteGpu:
 				preference_score = 12;
 				break;
-			case VK_PHYSICAL_DEVICE_TYPE_INTEGRATED_GPU:
+			case vk::PhysicalDeviceType::eIntegratedGpu:
 				preference_score = 10;
 				break;
-			case VK_PHYSICAL_DEVICE_TYPE_VIRTUAL_GPU:
+			case vk::PhysicalDeviceType::eVirtualGpu:
 				preference_score = 8;
 				break;
-			case VK_PHYSICAL_DEVICE_TYPE_CPU:
+			case vk::PhysicalDeviceType::eCpu:
 				preference_score = 4;
 				break;
 			default:
@@ -81,13 +79,9 @@ namespace Engine::Rendering::Vulkan
 		supported = true;
 	}
 
-	bool DeviceScore::CheckDeviceExtensionSupport(VkPhysicalDevice device)
+	bool DeviceScore::CheckDeviceExtensionSupport(vk::PhysicalDevice device)
 	{
-		uint32_t extension_count;
-		vkEnumerateDeviceExtensionProperties(device, nullptr, &extension_count, nullptr);
-
-		std::vector<VkExtensionProperties> available_extensions(extension_count);
-		vkEnumerateDeviceExtensionProperties(device, nullptr, &extension_count, available_extensions.data());
+		std::vector<vk::ExtensionProperties> available_extensions = device.enumerateDeviceExtensionProperties();
 
 		std::set<std::string> required_extensions(device_extensions.begin(), device_extensions.end());
 

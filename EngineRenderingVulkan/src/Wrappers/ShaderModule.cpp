@@ -1,9 +1,11 @@
 #include "Wrappers/ShaderModule.hpp"
 
+#include "VulkanStructDefs.hpp"
 #include "VulkanUtilities.hpp"
 #include "Wrappers/Instance.hpp"
 #include "Wrappers/InstanceOwned.hpp"
 #include "Wrappers/LogicalDevice.hpp"
+#include "vulkan/vulkan_structs.hpp"
 
 namespace Engine::Rendering::Vulkan
 {
@@ -18,21 +20,30 @@ namespace Engine::Rendering::Vulkan
 
 		const auto shader_code = Vulkan::Utils::ReadShaderFile(with_path.append(filename));
 
-		VkShaderModuleCreateInfo create_info{};
+		/* VkShaderModuleCreateInfo create_info{};
 		create_info.sType	 = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
 		create_info.codeSize = shader_code.size();
-		create_info.pCode	 = reinterpret_cast<const uint32_t*>(shader_code.data());
+		create_info.pCode	 = reinterpret_cast<const uint32_t*>(shader_code.data()); */
 
-		if (vkCreateShaderModule(*logical_device, &create_info, nullptr, &(this->native_handle)) != VK_SUCCESS)
+		vk::ShaderModuleCreateInfo create_info(
+			{},
+			shader_code.size(),
+			reinterpret_cast<const uint32_t*>(shader_code.data())
+		);
+
+		native_handle = logical_device->GetHandle().createShaderModule(create_info);
+		/* if (vkCreateShaderModule(logical_device->GetHandle(), &create_info, nullptr, &(this->native_handle)) !=
+			  VK_SUCCESS)
 		{
 			throw std::runtime_error("failed to create shader module!");
-		}
+		} */
 	}
 
 	ShaderModule::~ShaderModule()
 	{
 		LogicalDevice* logical_device = instance->GetLogicalDevice();
 
-		vkDestroyShaderModule(*logical_device, this->native_handle, nullptr);
+		logical_device->GetHandle().destroyShaderModule(native_handle);
+		// vkDestroyShaderModule(logical_device->GetHandle(), this->native_handle, nullptr);
 	}
 } // namespace Engine::Rendering::Vulkan

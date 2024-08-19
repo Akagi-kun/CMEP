@@ -8,9 +8,9 @@
 #include "Wrappers/DeviceScore.hpp"
 #include "Wrappers/MemoryAllocator.hpp"
 #include "Wrappers/Surface.hpp"
-
-// #include "vulkan/vulkan.hpp"
-#include "vulkan/vulkan.h"
+#include "vulkan/vulkan_enums.hpp"
+#include "vulkan/vulkan_handles.hpp"
+#include "vulkan/vulkan_structs.hpp"
 
 #include <cstring>
 #include <stdexcept>
@@ -28,7 +28,7 @@ namespace Engine::Rendering::Vulkan
 
 	// NOLINTBEGIN(readability-identifier-naming)
 	// these functions do not follow our naming conventions
-	// their names are as specified by Vulkan
+	// names are as specified by Vulkan
 	//
 	VKAPI_ATTR static VkBool32 VKAPI_CALL VulkanDebugCallback(
 		VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
@@ -52,42 +52,6 @@ namespace Engine::Rendering::Vulkan
 
 		return VK_FALSE;
 	}
-
-	static VkResult CreateDebugUtilsMessengerEXT(
-		VkInstance instance,
-		const VkDebugUtilsMessengerCreateInfoEXT* pCreateInfo,
-		const VkAllocationCallbacks* pAllocator,
-		VkDebugUtilsMessengerEXT* pDebugMessenger
-	)
-	{
-		auto func = reinterpret_cast<PFN_vkCreateDebugUtilsMessengerEXT>(
-			vkGetInstanceProcAddr(instance, "vkCreateDebugUtilsMessengerEXT")
-		);
-
-		if (func != nullptr)
-		{
-			return func(instance, pCreateInfo, pAllocator, pDebugMessenger);
-		}
-
-		return VK_ERROR_EXTENSION_NOT_PRESENT;
-	}
-
-	static void DestroyDebugUtilsMessengerEXT(
-		VkInstance instance,
-		VkDebugUtilsMessengerEXT debugMessenger,
-		const VkAllocationCallbacks* pAllocator
-	)
-	{
-		auto func = reinterpret_cast<PFN_vkDestroyDebugUtilsMessengerEXT>(
-			vkGetInstanceProcAddr(instance, "vkDestroyDebugUtilsMessengerEXT")
-		);
-
-		if (func != nullptr)
-		{
-			func(instance, debugMessenger, pAllocator);
-		}
-	}
-	//
 	// NOLINTEND(readability-identifier-naming)
 
 	[[noreturn]] static void GlfwErrorCallback(int error, const char* description)
@@ -114,6 +78,9 @@ namespace Engine::Rendering::Vulkan
 		glfwSetErrorCallback(GlfwErrorCallback);
 
 		this->logger->SimpleLog(Logging::LogLevel::Info, LOGPFX_CURRENT "GLFW initialized");
+
+		// Initialize dynamic dispatcher base before all other vulkan calls
+		VULKAN_HPP_DEFAULT_DISPATCHER.init(vkGetInstanceProcAddr);
 
 		this->InitInstance();
 
@@ -146,7 +113,7 @@ namespace Engine::Rendering::Vulkan
 
 		if (enable_vk_validation_layers)
 		{
-			DestroyDebugUtilsMessengerEXT(native_handle, debug_messenger, nullptr);
+			native_handle.destroyDebugUtilsMessengerEXT(debug_messenger);
 		}
 
 		glfwTerminate();
@@ -162,18 +129,8 @@ namespace Engine::Rendering::Vulkan
 
 	void Instance::InitInstance()
 	{
-		// NOLINTBEGIN(*old-style-cast) Suppress warnings for VK_API macros
-		//
 		// Application information
-		VkApplicationInfo app_info{};
-		app_info.sType				= VK_STRUCTURE_TYPE_APPLICATION_INFO;
-		app_info.pApplicationName	= "An unknown CMEP application"; // TODO: this->windowTitle.c_str();
-		app_info.applicationVersion = VK_MAKE_VERSION(1, 0, 0);
-		app_info.pEngineName		= "CMEP EngineCore";
-		app_info.engineVersion		= VK_MAKE_VERSION(1, 0, 0);
-		app_info.apiVersion			= VK_API_VERSION_1_1;
-		//
-		// NOLINTEND(*old-style-cast)
+		vk::ApplicationInfo app_info("A CMEP application", 1, "CMEP", 1, vk::ApiVersion11);
 
 		// Check validation layer support
 		if (enable_vk_validation_layers && !CheckVulkanValidationLayers())
@@ -181,71 +138,53 @@ namespace Engine::Rendering::Vulkan
 			throw std::runtime_error("Validation layers requested but unsupported!");
 		}
 
-		// Vulkan instance information
-		VkInstanceCreateInfo create_info{};
-		create_info.sType			 = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
-		create_info.pApplicationInfo = &app_info;
-
 		// Get extensions required by GLFW
 		uint32_t glfw_extension_count = 0;
 		const char** glfw_extensions  = glfwGetRequiredInstanceExtensions(&glfw_extension_count);
 
 		// Get our required extensions
-		std::vector<const char*> vk_extensions(glfw_extensions, glfw_extensions + glfw_extension_count);
+		std::vector<const char*> instance_extensions(glfw_extensions, glfw_extensions + glfw_extension_count);
+		std::vector<const char*> instance_layers{};
 
 		// Enable validation layer extension if it's a debug build
 		if (enable_vk_validation_layers)
 		{
-			vk_extensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
+			instance_extensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
+
+			// Append validation layers if they're enabled
+			instance_layers.insert(instance_layers.end(), validation_layers.begin(), validation_layers.end());
 		}
 
-		// Add the required extensions
-		create_info.enabledExtensionCount	= static_cast<uint32_t>(vk_extensions.size());
-		create_info.ppEnabledExtensionNames = vk_extensions.data();
+		native_handle = vk::createInstance({
+			{},
+			&app_info,
+			validation_layers,
+			instance_extensions,
+		});
 
-		// Enable validation layers if it's a debug build
-		if (enable_vk_validation_layers)
-		{
-			create_info.enabledLayerCount	= static_cast<uint32_t>(validation_layers.size());
-			create_info.ppEnabledLayerNames = validation_layers.data();
-		}
-		else
-		{
-			// Or else we don't enable any layers
-			create_info.enabledLayerCount = 0;
-		}
+		// Load instance functions in dispatcher
+		VULKAN_HPP_DEFAULT_DISPATCHER.init(native_handle);
 
 		// Create an instance
-		if (vkCreateInstance(&create_info, nullptr, &(this->native_handle)) != VK_SUCCESS)
-		{
-			throw std::runtime_error("Could not create Vulkan instance");
-		}
 		this->logger->SimpleLog(Logging::LogLevel::Info, LOGPFX_CURRENT "Created a Vulkan instance");
 
 		// If it's a debug build, add a debug callback to Vulkan
 		if (enable_vk_validation_layers)
 		{
 			this->logger->SimpleLog(Logging::LogLevel::Debug2, LOGPFX_CURRENT "Creating debug messenger");
-			VkDebugUtilsMessengerCreateInfoEXT debug_messenger_create_info{};
-			debug_messenger_create_info.sType			= VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT;
-			debug_messenger_create_info.messageSeverity = VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT |
-														  VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT |
-														  VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT;
-			debug_messenger_create_info.messageType = VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT |
-													  VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT |
-													  VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT;
-			debug_messenger_create_info.pfnUserCallback = VulkanDebugCallback;
-			debug_messenger_create_info.pUserData		= this;
 
-			if (CreateDebugUtilsMessengerEXT(
-					this->native_handle,
-					&debug_messenger_create_info,
-					nullptr,
-					&(this->debug_messenger)
-				) != VK_SUCCESS)
-			{
-				throw std::runtime_error("Could not create debug messenger!");
-			}
+			vk::DebugUtilsMessengerCreateInfoEXT debug_messenger_create_info(
+				{},
+				vk::DebugUtilsMessageSeverityFlagBitsEXT::eVerbose |
+					vk::DebugUtilsMessageSeverityFlagBitsEXT::eWarning |
+					vk::DebugUtilsMessageSeverityFlagBitsEXT::eError,
+				vk::DebugUtilsMessageTypeFlagBitsEXT::eGeneral | vk::DebugUtilsMessageTypeFlagBitsEXT::eValidation |
+					vk::DebugUtilsMessageTypeFlagBitsEXT::ePerformance,
+				VulkanDebugCallback,
+				this
+			);
+
+			debug_messenger = native_handle.createDebugUtilsMessengerEXT(debug_messenger_create_info);
 
 			this->logger->SimpleLog(Logging::LogLevel::Debug2, LOGPFX_CURRENT "Created debug messenger");
 		}
@@ -253,13 +192,7 @@ namespace Engine::Rendering::Vulkan
 
 	bool Instance::CheckVulkanValidationLayers()
 	{
-		// Get supported validation layer count
-		uint32_t layer_count;
-		vkEnumerateInstanceLayerProperties(&layer_count, nullptr);
-
-		// Get all validation layers supported
-		std::vector<VkLayerProperties> available_layers(layer_count);
-		vkEnumerateInstanceLayerProperties(&layer_count, available_layers.data());
+		std::vector<vk::LayerProperties> available_layers = vk::enumerateInstanceLayerProperties();
 
 		// Check if any of the supported validation layers feature the ones we want to enable
 		for (const char* layer_name : validation_layers)
@@ -290,18 +223,8 @@ namespace Engine::Rendering::Vulkan
 		this->logger->SimpleLog(Logging::LogLevel::Debug2, LOGPFX_CURRENT "Initializing vulkan device");
 
 		// Get physical device count
-		uint32_t device_count = 0;
-		vkEnumeratePhysicalDevices(native_handle, &device_count, nullptr);
 
-		// Check if there are any Vulkan-supporting devices
-		if (device_count == 0)
-		{
-			throw std::runtime_error("Found no device supporting the Vulkan API");
-		}
-
-		// Get all Vulkan-supporting devices
-		std::vector<VkPhysicalDevice> physical_devices(device_count);
-		vkEnumeratePhysicalDevices(native_handle, &device_count, physical_devices.data());
+		std::vector<vk::PhysicalDevice> physical_devices = native_handle.enumeratePhysicalDevices();
 
 		// Sorted vector of all devices
 		std::vector<DeviceScore> candidates;
@@ -348,34 +271,45 @@ namespace Engine::Rendering::Vulkan
 		throw std::runtime_error("No physical device found!");
 	}
 
-	VkSampleCountFlagBits Instance::GetMaxUsableSampleCount(VkPhysicalDevice device)
+	vk::SampleCountFlagBits Instance::GetMaxUsableSampleCount(vk::PhysicalDevice device)
 	{
-		VkPhysicalDeviceProperties physical_device_properties;
-		vkGetPhysicalDeviceProperties(device, &physical_device_properties);
+		vk::PhysicalDeviceProperties physical_device_properties = device.getProperties();
 
 		// Check which sample counts are supported by the framebuffers
-		VkSampleCountFlags counts = physical_device_properties.limits.framebufferColorSampleCounts &
-									physical_device_properties.limits.framebufferDepthSampleCounts;
+		vk::SampleCountFlags counts = physical_device_properties.limits.framebufferColorSampleCounts &
+									  physical_device_properties.limits.framebufferDepthSampleCounts;
 
-		// VkSampleCountFlagBits is a bitfield
-		// where each bit represents a single choice.
-		// We can therefore iteratively right-shift it
-		// until the bit matches one enabled in VkSampleCountFlags
-		// (equal to a chain of if/else)
-		//
-		uint16_t bit_val = VK_SAMPLE_COUNT_64_BIT;
-		while (bit_val > 0)
+		if (!counts)
 		{
-			// Try if this bit is enabled (count supported)
-			if ((counts & bit_val) != 0)
-			{
-				return static_cast<VkSampleCountFlagBits>(bit_val);
-			}
-
-			bit_val >>= 1;
+			return vk::SampleCountFlagBits::e1;
 		}
 
-		return VK_SAMPLE_COUNT_1_BIT;
+		if (counts & vk::SampleCountFlagBits::e64)
+		{
+			return vk::SampleCountFlagBits::e64;
+		}
+		if (counts & vk::SampleCountFlagBits::e32)
+		{
+			return vk::SampleCountFlagBits::e32;
+		}
+		if (counts & vk::SampleCountFlagBits::e16)
+		{
+			return vk::SampleCountFlagBits::e16;
+		}
+		if (counts & vk::SampleCountFlagBits::e8)
+		{
+			return vk::SampleCountFlagBits::e8;
+		}
+		if (counts & vk::SampleCountFlagBits::e4)
+		{
+			return vk::SampleCountFlagBits::e4;
+		}
+		if (counts & vk::SampleCountFlagBits::e2)
+		{
+			return vk::SampleCountFlagBits::e2;
+		}
+
+		return vk::SampleCountFlagBits::e1;
 	}
 
 #pragma endregion

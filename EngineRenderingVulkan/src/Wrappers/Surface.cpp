@@ -1,70 +1,46 @@
 #include "Wrappers/Surface.hpp"
 
+#include "vulkan/vulkan_enums.hpp"
+#include "vulkan/vulkan_structs.hpp"
+
 namespace Engine::Rendering::Vulkan
 {
 #pragma region Public
 
-	SwapChainSupportDetails Surface::QueryVulkanSwapChainSupport(VkPhysicalDevice device) const
+	SwapChainSupportDetails Surface::QueryVulkanSwapChainSupport(vk::PhysicalDevice device) const
 	{
-		assert(device != nullptr && "Tried to query swapchain support with VkPhysicalDevice == nullptr");
+		assert(device && "Tried to query swapchain support with invalid vk::PhysicalDevice");
 
 		SwapChainSupportDetails details;
-
-		vkGetPhysicalDeviceSurfaceCapabilitiesKHR(device, native_handle, &details.capabilities);
-
-		uint32_t format_count;
-		vkGetPhysicalDeviceSurfaceFormatsKHR(device, native_handle, &format_count, nullptr);
-
-		if (format_count != 0)
-		{
-			details.formats.resize(format_count);
-			vkGetPhysicalDeviceSurfaceFormatsKHR(device, native_handle, &format_count, details.formats.data());
-		}
-
-		uint32_t present_mode_count;
-		vkGetPhysicalDeviceSurfacePresentModesKHR(device, native_handle, &present_mode_count, nullptr);
-
-		if (present_mode_count != 0)
-		{
-			details.present_modes.resize(present_mode_count);
-			vkGetPhysicalDeviceSurfacePresentModesKHR(
-				device,
-				native_handle,
-				&present_mode_count,
-				details.present_modes.data()
-			);
-		}
+		details.capabilities  = device.getSurfaceCapabilitiesKHR(native_handle);
+		details.formats		  = device.getSurfaceFormatsKHR(native_handle);
+		details.present_modes = device.getSurfacePresentModesKHR(native_handle);
 
 		return details;
 	}
 
-	bool Surface::QueryQueueSupport(VkPhysicalDevice physical_device, uint32_t queue_family) const
+	bool Surface::QueryQueueSupport(vk::PhysicalDevice physical_device, uint32_t queue_family) const
 	{
-		VkBool32 support;
-		vkGetPhysicalDeviceSurfaceSupportKHR(physical_device, queue_family, native_handle, &support);
+		vk::Bool32 support = physical_device.getSurfaceSupportKHR(queue_family, native_handle);
 
 		return support != 0u;
 	}
 
-	QueueFamilyIndices Surface::FindVulkanQueueFamilies(VkPhysicalDevice device) const
+	QueueFamilyIndices Surface::FindVulkanQueueFamilies(vk::PhysicalDevice device) const
 	{
 		QueueFamilyIndices indices;
 
-		uint32_t queue_family_count = 0;
-		vkGetPhysicalDeviceQueueFamilyProperties(device, &queue_family_count, nullptr);
-
-		std::vector<VkQueueFamilyProperties> queue_families(queue_family_count);
-		vkGetPhysicalDeviceQueueFamilyProperties(device, &queue_family_count, queue_families.data());
+		std::vector<vk::QueueFamilyProperties> queue_families = device.getQueueFamilyProperties();
 
 		uint32_t indice = 0;
 		for (const auto& queue_family : queue_families)
 		{
-			if ((queue_family.queueFlags & VK_QUEUE_GRAPHICS_BIT) != 0)
+			if ((queue_family.queueFlags & vk::QueueFlagBits::eGraphics /* VK_QUEUE_GRAPHICS_BIT */))
 			{
 				indices.graphics_family = indice;
 			}
 
-			if (this->QueryQueueSupport(device, indice)) // (present_support != 0u)
+			if (this->QueryQueueSupport(device, indice))
 			{
 				indices.present_family = indice;
 			}

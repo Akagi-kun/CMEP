@@ -10,7 +10,7 @@
 #include "Engine.hpp"
 #include "EnumStringConvertor.hpp"
 #include "EventHandling.hpp"
-#include "vulkan/vulkan_core.h"
+#include "ImportVulkan.hpp"
 
 #include <fstream>
 #include <stdexcept>

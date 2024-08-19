@@ -2,8 +2,10 @@ cmake_minimum_required(VERSION 3.12)
 project(EngineCore CXX)
 
 set(SRC_FILES
-	src/PipelineManager.cpp
 	src/VmaImplementation.cpp
+	src/VkDispatchLoaderDynamic.cpp
+
+	src/PipelineManager.cpp
 	
 	src/Wrappers/LogicalDevice.cpp
 	src/Wrappers/MemoryAllocator.cpp
@@ -47,6 +49,8 @@ add_library(EngineRenderingVulkan STATIC ${SRC_FILES})
 target_compile_features(EngineRenderingVulkan PUBLIC cxx_std_17)
 set_target_properties(EngineRenderingVulkan PROPERTIES CXX_STANDARD_REQUIRED ON)
 set_target_properties(EngineRenderingVulkan PROPERTIES CXX_EXTENSIONS OFF)
+
+target_compile_definitions(EngineRenderingVulkan PRIVATE VULKAN_HPP_DISPATCH_LOADER_DYNAMIC=1)
 
 target_compile_options(EngineRenderingVulkan PRIVATE ${ENGINE_COMPILE_OPTIONS})
 

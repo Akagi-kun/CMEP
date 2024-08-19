@@ -6,10 +6,9 @@
 
 #include <filesystem>
 
-
 namespace Engine::Rendering::Vulkan
 {
-	class ShaderModule final : public InstanceOwned, public HandleWrapper<VkShaderModule>
+	class ShaderModule final : public InstanceOwned, public HandleWrapper<vk::ShaderModule>
 	{
 	public:
 		ShaderModule(

@@ -3,7 +3,6 @@
 #include "ImportVulkan.hpp"
 #include "VulkanStructDefs.hpp"
 
-
 namespace Engine::Rendering::Vulkan
 {
 	class Instance;
@@ -13,8 +12,8 @@ namespace Engine::Rendering::Vulkan
 		const Instance* created_by;
 		VkSurfaceKHR native_handle;
 
-		SwapChainSupportDetails QueryVulkanSwapChainSupport(VkPhysicalDevice device) const;
-		bool QueryQueueSupport(VkPhysicalDevice physical_device, uint32_t queue_family) const;
-		QueueFamilyIndices FindVulkanQueueFamilies(VkPhysicalDevice device) const;
+		[[nodiscard]] SwapChainSupportDetails QueryVulkanSwapChainSupport(vk::PhysicalDevice device) const;
+		bool QueryQueueSupport(vk::PhysicalDevice physical_device, uint32_t queue_family) const;
+		[[nodiscard]] QueueFamilyIndices FindVulkanQueueFamilies(vk::PhysicalDevice device) const;
 	};
 } // namespace Engine::Rendering::Vulkan

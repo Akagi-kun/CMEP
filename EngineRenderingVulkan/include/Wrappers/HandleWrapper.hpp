@@ -10,12 +10,15 @@ namespace Engine::Rendering::Vulkan
 	template <typename T, bool handle_constructible = false> class HandleWrapper
 	{
 	public:
-		using self_t  = HandleWrapper<T>;
-		using value_t = T;
+		using self_t	   = HandleWrapper<T, handle_constructible>;
+		using const_self_t = const self_t;
+
+		using value_t  = T;
+		using is_ptr_t = std::is_pointer<value_t>;
 
 		HandleWrapper() = default;
 
-		// Use handle_constructible = true to enable this object to be constructed from its handle representation
+		// If handle constructor is allowed
 		template <
 			typename conditional_enable_t								  = int,
 			std::enable_if_t<handle_constructible, conditional_enable_t>* = nullptr>
@@ -23,14 +26,28 @@ namespace Engine::Rendering::Vulkan
 		{
 		}
 
-		operator bool() const
+		// If handle is a pointer
+		template <
+			typename conditional_enable_t							 = int,
+			std::enable_if_t<is_ptr_t::value, conditional_enable_t>* = nullptr>
+		[[nodiscard]] operator bool() const
 		{
 			return native_handle != VK_NULL_HANDLE;
 		}
 
-		operator value_t() const
+		// If handle isn't a pointer
+		template <
+			typename conditional_enable_t							  = int,
+			std::enable_if_t<!is_ptr_t::value, conditional_enable_t>* = nullptr>
+		[[nodiscard]] operator bool() const
 		{
-			if (!static_cast<bool>(*this))
+			return static_cast<bool>(native_handle);
+		}
+
+		[[nodiscard]] operator value_t()
+		{
+			// bool conversion op is const and so will only be called on const objects
+			if (!static_cast<bool>(static_cast<const_self_t>(*this)))
 			{
 				throw std::runtime_error("Tried to acquire handle of an empty HandleWrapper!");
 			}
@@ -38,11 +55,15 @@ namespace Engine::Rendering::Vulkan
 			return native_handle;
 		}
 
+		[[nodiscard]] value_t GetHandle()
+		{
+			return native_handle;
+		}
+
 	protected:
-		static_assert(std::is_pointer<value_t>(), "HandleWrapper can only wrap pointer types");
 		static_assert(!std::is_same<value_t, std::nullptr_t>(), "nullptr_t is not a valid handle type");
 
-		value_t native_handle = VK_NULL_HANDLE;
+		value_t native_handle{};
 	};
 
 } // namespace Engine::Rendering::Vulkan

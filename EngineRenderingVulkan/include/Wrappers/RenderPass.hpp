@@ -4,7 +4,6 @@
 #include "InstanceOwned.hpp"
 #include "framework.hpp"
 
-
 namespace Engine::Rendering::Vulkan
 {
 	struct RenderPass final : public InstanceOwned

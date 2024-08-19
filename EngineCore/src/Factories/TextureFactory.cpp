@@ -14,7 +14,6 @@
 
 #include "Engine.hpp"
 
-
 // Prefixes for logging messages
 #define LOGPFX_CURRENT LOGPFX_CLASS_TEXTURE_FACTORY
 #include "Logging/LoggingPrefix.hpp" // IWYU pragma: keep
@@ -136,8 +135,8 @@ namespace Engine::Factories
 		texture_data->texture_image = new Rendering::Vulkan::SampledImage(
 			vk_instance,
 			{xsize, ysize},
-			VK_SAMPLE_COUNT_1_BIT,
-			VK_FORMAT_R8G8B8A8_UNORM,
+			vk::SampleCountFlagBits::e1, // VK_SAMPLE_COUNT_1_BIT,
+			VK_FORMAT_R8G8B8A8_SRGB,
 			VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
 			filtering,			 // Filter for both mag and min
 			sampler_address_mode // sampler address mode

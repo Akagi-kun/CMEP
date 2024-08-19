@@ -137,7 +137,7 @@ terrain_generator = function(...)
 								table.insert(tree_placement_data, {x, y, z})
 							end
 						else
-							cast_map_data[offset] = game_defs.block_types.DIRT -- water areas?
+							cast_map_data[offset] = game_defs.block_types.SAND -- water areas?
 						end
 					else
 						if y > (random_y - 3) then

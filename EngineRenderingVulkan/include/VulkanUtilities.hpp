@@ -1,6 +1,7 @@
 #pragma once
 
 #include "ImportVulkan.hpp"
+#include "vulkan/vulkan_enums.hpp"
 
 #include <cstring>
 #include <filesystem>
@@ -9,12 +10,14 @@
 
 namespace Engine::Rendering::Vulkan::Utils
 {
-	inline VkSurfaceFormatKHR ChooseVulkanSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& available_formats)
+	inline vk::SurfaceFormatKHR ChooseVulkanSwapSurfaceFormat(const std::vector<vk::SurfaceFormatKHR>& available_formats
+	)
 	{
 		for (const auto& available_format : available_formats)
 		{
-			if (available_format.format == VK_FORMAT_B8G8R8A8_SRGB &&
-				available_format.colorSpace == VK_COLOR_SPACE_SRGB_NONLINEAR_KHR)
+			if (available_format.format == vk::Format::eB8G8R8A8Srgb /* VK_FORMAT_B8G8R8A8_SRGB */ &&
+				available_format.colorSpace ==
+					vk::ColorSpaceKHR::eSrgbNonlinear /* VK_COLOR_SPACE_SRGB_NONLINEAR_KHR */)
 			{
 				return available_format;
 			}
@@ -24,21 +27,23 @@ namespace Engine::Rendering::Vulkan::Utils
 		return available_formats[0];
 	}
 
-	inline VkPresentModeKHR ChooseVulkanSwapPresentMode(const std::vector<VkPresentModeKHR>& available_present_modes)
+	inline vk::PresentModeKHR ChooseVulkanSwapPresentMode(const std::vector<vk::PresentModeKHR>& available_present_modes
+	)
 	{
 		(void)(available_present_modes);
 		// Mailbox potentially worse?
 		// for (const auto& available_present_mode : availablePresentModes)
 		//{
-		/* if (available_present_mode == VK_PRESENT_MODE_MAILBOX_KHR)
+		/* if (available_present_mode == vk::PresentModeKHR::eMailbox)
 		{
 			return available_present_mode;
 		} */
 		//}
 
 		// FIFO is guaranteed to be available by the spec
-		return VK_PRESENT_MODE_FIFO_KHR;
-		// return VK_PRESENT_MODE_FIFO_RELAXED_KHR;
+		return vk::PresentModeKHR::eFifo;
+		// VK_PRESENT_MODE_FIFO_KHR;
+		// return vk::PresentModeKHR::eFifoRelaxed;
 	}
 
 	inline bool DoesVulkanFormatHaveStencilComponent(VkFormat format) noexcept

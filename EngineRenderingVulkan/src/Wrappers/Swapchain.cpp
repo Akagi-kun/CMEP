@@ -1,11 +1,15 @@
 #include "Wrappers/Swapchain.hpp"
 
+#include "VulkanStructDefs.hpp"
 #include "VulkanUtilities.hpp"
 #include "Wrappers/CommandBuffer.hpp"
 #include "Wrappers/CommandPool.hpp"
 #include "Wrappers/Image.hpp"
 #include "Wrappers/Instance.hpp"
 #include "Wrappers/RenderPass.hpp"
+#include "vulkan/vulkan_core.h"
+#include "vulkan/vulkan_enums.hpp"
+#include "vulkan/vulkan_structs.hpp"
 
 namespace Engine::Rendering::Vulkan
 {
@@ -17,7 +21,7 @@ namespace Engine::Rendering::Vulkan
 		VkExtent2D with_extent,
 		uint32_t with_count
 	)
-		: InstanceOwned(with_instance), image_format(VK_FORMAT_B8G8R8A8_UNORM), extent(with_extent)
+		: InstanceOwned(with_instance), extent(with_extent)
 	{
 		LogicalDevice* logical_device = instance->GetLogicalDevice();
 
@@ -25,83 +29,61 @@ namespace Engine::Rendering::Vulkan
 		SwapChainSupportDetails swap_chain_support = with_surface->QueryVulkanSwapChainSupport(
 			instance->GetPhysicalDevice()
 		);
-		VkSurfaceFormatKHR surface_format = Vulkan::Utils::ChooseVulkanSwapSurfaceFormat(swap_chain_support.formats);
+		vk::SurfaceFormatKHR surface_format = Vulkan::Utils::ChooseVulkanSwapSurfaceFormat(swap_chain_support.formats);
 
-		VkPresentModeKHR present_mode = Vulkan::Utils::ChooseVulkanSwapPresentMode(swap_chain_support.present_modes);
-
-		VkSwapchainCreateInfoKHR create_info{};
-		create_info.sType			 = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
-		create_info.surface			 = with_surface->native_handle; // this->device_manager->GetSurface();
-		create_info.minImageCount	 = with_count;
-		create_info.imageFormat		 = VK_FORMAT_B8G8R8A8_UNORM;
-		create_info.imageColorSpace	 = surface_format.colorSpace;
-		create_info.imageExtent		 = with_extent;
-		create_info.imageArrayLayers = 1;
-		create_info.imageUsage		 = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
-		create_info.preTransform	 = swap_chain_support.capabilities.currentTransform;
-		create_info.compositeAlpha	 = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR;
-		create_info.presentMode		 = present_mode;
-		create_info.clipped			 = VK_TRUE;
-
-		create_info.oldSwapchain = VK_NULL_HANDLE;
+		vk::PresentModeKHR present_mode = Vulkan::Utils::ChooseVulkanSwapPresentMode(swap_chain_support.present_modes);
 
 		QueueFamilyIndices queue_indices = logical_device->GetQueueFamilies();
 		uint32_t queue_family_indices[] = {queue_indices.graphics_family.value(), queue_indices.present_family.value()};
 
-		if (queue_indices.graphics_family != queue_indices.present_family)
-		{
-			create_info.imageSharingMode	  = VK_SHARING_MODE_CONCURRENT;
-			create_info.queueFamilyIndexCount = 2;
-			create_info.pQueueFamilyIndices	  = queue_family_indices;
-		}
-		else
-		{
-			create_info.imageSharingMode = VK_SHARING_MODE_EXCLUSIVE;
-		}
+		bool identical_queue_families = queue_indices.graphics_family != queue_indices.present_family;
 
-		if (vkCreateSwapchainKHR(*logical_device, &create_info, nullptr, &(this->native_handle)) != VK_SUCCESS)
-		{
-			throw std::runtime_error("Failed to create swap chain!");
-		}
+		image_format = surface_format.format;
 
-		// TODO: Use max_frames_in_flight instead and only assert they're ==
-		uint32_t swapchain_image_count = 0;
-
-		// Get image count
-		vkGetSwapchainImagesKHR(*logical_device, this->native_handle, &swapchain_image_count, nullptr);
-
-		// Get images proper
-		this->image_handles.resize(swapchain_image_count);
-		vkGetSwapchainImagesKHR(
-			*logical_device,
-			this->native_handle,
-			&swapchain_image_count,
-			this->image_handles.data()
+		vk::SwapchainCreateInfoKHR create_info(
+			{},
+			with_surface->native_handle,
+			with_count,
+			surface_format.format,
+			surface_format.colorSpace,
+			with_extent,
+			1,
+			vk::ImageUsageFlagBits::eColorAttachment,
+			identical_queue_families ? vk::SharingMode::eConcurrent : vk::SharingMode::eExclusive,
+			identical_queue_families ? 2 : uint32_t{},
+			identical_queue_families ? queue_family_indices : nullptr,
+			swap_chain_support.capabilities.currentTransform,
+			vk::CompositeAlphaFlagBitsKHR::eOpaque,
+			present_mode,
+			vk::True
 		);
+
+		native_handle = logical_device->GetHandle().createSwapchainKHR(create_info);
+
+		image_handles = logical_device->GetHandle().getSwapchainImagesKHR(native_handle);
 
 		// Create image views
 		this->image_view_handles.resize(this->image_handles.size());
 		for (size_t i = 0; i < this->image_handles.size(); i++)
 		{
-			VkImageViewCreateInfo view_info{};
-			view_info.sType							  = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
-			view_info.image							  = this->image_handles[i];
-			view_info.viewType						  = VK_IMAGE_VIEW_TYPE_2D;
-			view_info.format						  = VK_FORMAT_B8G8R8A8_UNORM;
-			view_info.subresourceRange.aspectMask	  = VK_IMAGE_ASPECT_COLOR_BIT;
-			view_info.subresourceRange.baseMipLevel	  = 0;
-			view_info.subresourceRange.levelCount	  = 1;
-			view_info.subresourceRange.baseArrayLayer = 0;
-			view_info.subresourceRange.layerCount	  = 1;
+			vk::ImageViewCreateInfo view_create_info(
+				{},
+				image_handles[i],
+				vk::ImageViewType::e2D,
+				surface_format.format,
+				{},
+				{vk::ImageAspectFlagBits::eColor, 0, 1, 0, 1}
+			);
 
-			if (vkCreateImageView(*logical_device, &view_info, nullptr, &this->image_view_handles[i]) != VK_SUCCESS)
+			image_view_handles[i] = logical_device->GetHandle().createImageView(view_create_info);
+			/* if (vkCreateImageView(*logical_device, &view_info, nullptr, &this->image_view_handles[i]) != VK_SUCCESS)
 			{
 				throw std::runtime_error("Failed to create swapchain image view!");
-			}
+			} */
 		}
 
 		VkFormat depth_format = instance->GetPhysicalDevice().FindSupportedDepthFormat();
-		VkFormat color_format = this->GetImageFormat();
+		auto color_format	  = static_cast<VkFormat>(image_format);
 
 		this->depth_buffer = new Image(
 			instance,
@@ -121,31 +103,22 @@ namespace Engine::Rendering::Vulkan
 		);
 		this->multisampled_color_image->AddImageView(VK_IMAGE_ASPECT_COLOR_BIT);
 
-		this->render_pass = new RenderPass(instance, this->image_format);
+		this->render_pass = new RenderPass(instance, color_format);
 
 		this->framebuffers.resize(image_view_handles.size());
 
 		for (size_t i = 0; i < image_view_handles.size(); i++)
 		{
-			std::array<VkImageView, 3> attachments = {
-				this->multisampled_color_image->GetNativeViewHandle(),
-				this->depth_buffer->GetNativeViewHandle(),
+			per_frame_array<vk::ImageView> attachments = {
+				multisampled_color_image->GetNativeViewHandle(),
+				depth_buffer->GetNativeViewHandle(),
 				image_view_handles[i]
 			};
 
-			VkFramebufferCreateInfo framebuffer_info{};
-			framebuffer_info.sType			 = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
-			framebuffer_info.renderPass		 = this->render_pass->native_handle;
-			framebuffer_info.attachmentCount = static_cast<uint32_t>(attachments.size());
-			framebuffer_info.pAttachments	 = attachments.data();
-			framebuffer_info.width			 = this->extent.width;
-			framebuffer_info.height			 = this->extent.height;
-			framebuffer_info.layers			 = 1;
+			vk::FramebufferCreateInfo
+				framebuffer_create_info({}, render_pass->native_handle, attachments, extent.width, extent.height, 1);
 
-			if (vkCreateFramebuffer(*logical_device, &framebuffer_info, nullptr, &this->framebuffers[i]) != VK_SUCCESS)
-			{
-				throw std::runtime_error("failed to create framebuffer!");
-			}
+			framebuffers[i] = logical_device->GetHandle().createFramebuffer(framebuffer_create_info);
 		}
 
 		for (auto& target : this->render_targets)
@@ -158,17 +131,17 @@ namespace Engine::Rendering::Vulkan
 	{
 		LogicalDevice* logical_device = instance->GetLogicalDevice();
 
-		for (auto* framebuffer : this->framebuffers)
+		for (auto framebuffer : framebuffers)
 		{
-			vkDestroyFramebuffer(*logical_device, framebuffer, nullptr);
+			logical_device->GetHandle().destroyFramebuffer(framebuffer);
 		}
 
-		for (auto* image_view : this->image_view_handles)
+		for (auto image_view : image_view_handles)
 		{
-			vkDestroyImageView(*logical_device, image_view, nullptr);
+			logical_device->GetHandle().destroyImageView(image_view);
 		}
 
-		vkDestroySwapchainKHR(*logical_device, this->native_handle, nullptr);
+		logical_device->GetHandle().destroySwapchainKHR(native_handle);
 
 		delete multisampled_color_image;
 		delete depth_buffer;
@@ -251,29 +224,21 @@ namespace Engine::Rendering::Vulkan
 	{
 		LogicalDevice* logical_device = instance->GetLogicalDevice();
 
-		static VkSemaphoreCreateInfo semaphore_info{};
-		semaphore_info.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
+		static constexpr vk::SemaphoreCreateInfo semaphore_create_info({}, {});
+		static constexpr vk::FenceCreateInfo fence_create_info(vk::FenceCreateFlagBits::eSignaled, {});
 
-		static VkFenceCreateInfo fence_info{};
-		fence_info.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
-		fence_info.flags = VK_FENCE_CREATE_SIGNALED_BIT;
-
-		if (vkCreateSemaphore(*logical_device, &semaphore_info, nullptr, &(sync_objects.image_available)) !=
-				VK_SUCCESS ||
-			vkCreateSemaphore(*logical_device, &semaphore_info, nullptr, &(sync_objects.present_ready)) != VK_SUCCESS ||
-			vkCreateFence(*logical_device, &fence_info, nullptr, &(sync_objects.in_flight)) != VK_SUCCESS)
-		{
-			throw std::runtime_error("failed to create sync objects!");
-		}
+		sync_objects.image_available = logical_device->GetHandle().createSemaphore(semaphore_create_info);
+		sync_objects.present_ready	 = logical_device->GetHandle().createSemaphore(semaphore_create_info);
+		sync_objects.in_flight		 = logical_device->GetHandle().createFence(fence_create_info);
 	}
 
 	void Swapchain::CleanupRenderTarget(RenderTargetData& target)
 	{
 		LogicalDevice* logical_device = instance->GetLogicalDevice();
 
-		vkDestroySemaphore(*logical_device, target.sync_objects.present_ready, nullptr);
-		vkDestroySemaphore(*logical_device, target.sync_objects.image_available, nullptr);
-		vkDestroyFence(*logical_device, target.sync_objects.in_flight, nullptr);
+		logical_device->GetHandle().destroySemaphore(target.sync_objects.present_ready);
+		logical_device->GetHandle().destroySemaphore(target.sync_objects.image_available);
+		logical_device->GetHandle().destroyFence(target.sync_objects.in_flight);
 
 		delete target.command_buffer;
 	}

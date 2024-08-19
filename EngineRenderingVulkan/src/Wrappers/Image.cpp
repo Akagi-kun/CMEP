@@ -1,10 +1,11 @@
 #include "Wrappers/Image.hpp"
 
+#include "ImportVulkan.hpp"
 #include "Wrappers/CommandBuffer.hpp"
 #include "Wrappers/CommandPool.hpp"
 #include "Wrappers/Instance.hpp"
 #include "Wrappers/framework.hpp"
-#include "vulkan/vulkan.h"
+#include "vulkan/vulkan_core.h"
 
 #include <stdexcept>
 
@@ -13,7 +14,7 @@ namespace Engine::Rendering::Vulkan
 	Image::Image(
 		InstanceOwned::value_t with_instance,
 		ImageSize with_size,
-		VkSampleCountFlagBits num_samples,
+		vk::SampleCountFlagBits num_samples,
 		VkFormat format,
 		VkImageUsageFlags usage,
 		VkMemoryPropertyFlags properties,
@@ -22,7 +23,6 @@ namespace Engine::Rendering::Vulkan
 		: InstanceOwned(with_instance), HoldsVMA(with_instance->GetGraphicMemoryAllocator()), image_format(format),
 		  size(with_size)
 	{
-
 		VkImageCreateInfo image_info{};
 		image_info.sType		 = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
 		image_info.imageType	 = VK_IMAGE_TYPE_2D;
@@ -34,7 +34,7 @@ namespace Engine::Rendering::Vulkan
 		image_info.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
 		image_info.usage		 = usage;
 		image_info.sharingMode	 = VK_SHARING_MODE_EXCLUSIVE;
-		image_info.samples		 = num_samples;
+		image_info.samples		 = static_cast<VkSampleCountFlagBits>(num_samples);
 		image_info.flags		 = 0; // Optional
 
 		VmaAllocationCreateInfo vma_alloc_info{};
@@ -67,10 +67,10 @@ namespace Engine::Rendering::Vulkan
 
 		if (native_view_handle != nullptr)
 		{
-			vkDestroyImageView(*logical_device, native_view_handle, nullptr);
+			vkDestroyImageView(logical_device->GetHandle(), native_view_handle, nullptr);
 		}
 
-		vkDestroyImage(*logical_device, native_handle, nullptr);
+		vkDestroyImage(logical_device->GetHandle(), native_handle, nullptr);
 
 		vmaFreeMemory(*this->allocator, this->allocation);
 	}
@@ -146,7 +146,7 @@ namespace Engine::Rendering::Vulkan
 		view_info.subresourceRange.baseArrayLayer = 0;
 		view_info.subresourceRange.layerCount	  = 1;
 
-		if (vkCreateImageView(*logical_device, &view_info, nullptr, &native_view_handle) != VK_SUCCESS)
+		if (vkCreateImageView(logical_device->GetHandle(), &view_info, nullptr, &native_view_handle) != VK_SUCCESS)
 		{
 			throw std::runtime_error("failed to create texture image view!");
 		}
