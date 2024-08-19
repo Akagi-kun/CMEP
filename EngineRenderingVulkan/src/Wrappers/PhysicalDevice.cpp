@@ -2,6 +2,7 @@
 
 #include "Wrappers/Surface.hpp"
 #include "vulkan/vulkan_enums.hpp"
+#include "vulkan/vulkan_structs.hpp"
 
 #include <stdexcept>
 
@@ -11,10 +12,7 @@ namespace Engine::Rendering::Vulkan
 
 	std::string PhysicalDevice::GetDeviceName() const
 	{
-		VkPhysicalDeviceProperties device_properties;
-		vkGetPhysicalDeviceProperties(native_handle, &device_properties);
-
-		return device_properties.deviceName;
+		return native_handle.getProperties().deviceName;
 	}
 
 	vk::Format PhysicalDevice::FindSupportedFormat(
@@ -26,17 +24,13 @@ namespace Engine::Rendering::Vulkan
 		for (vk::Format format : candidates)
 		{
 			vk::FormatProperties fmt_properties = native_handle.getFormatProperties(format);
-			/* VkFormatProperties props;
-			vkGetPhysicalDeviceFormatProperties(native_handle, format, &props); */
 
-			if (tiling == vk::ImageTiling::eLinear /* VK_IMAGE_TILING_LINEAR */ &&
-				(fmt_properties.linearTilingFeatures & features) == features)
+			if (tiling == vk::ImageTiling::eLinear && (fmt_properties.linearTilingFeatures & features) == features)
 			{
 				return format;
 			}
 
-			if (tiling == vk::ImageTiling::eOptimal /* VK_IMAGE_TILING_OPTIMAL */ &&
-				(fmt_properties.optimalTilingFeatures & features) == features)
+			if (tiling == vk::ImageTiling::eOptimal && (fmt_properties.optimalTilingFeatures & features) == features)
 			{
 				return format;
 			}
@@ -58,16 +52,12 @@ namespace Engine::Rendering::Vulkan
 	{
 		QueueFamilyIndices indices;
 
-		uint32_t queue_family_count = 0;
-		vkGetPhysicalDeviceQueueFamilyProperties(native_handle, &queue_family_count, nullptr);
-
-		std::vector<VkQueueFamilyProperties> queue_families(queue_family_count);
-		vkGetPhysicalDeviceQueueFamilyProperties(native_handle, &queue_family_count, queue_families.data());
+		std::vector<vk::QueueFamilyProperties> queue_families = native_handle.getQueueFamilyProperties();
 
 		uint32_t indice = 0;
 		for (const auto& queue_family : queue_families)
 		{
-			if ((queue_family.queueFlags & VK_QUEUE_GRAPHICS_BIT) != 0)
+			if (queue_family.queueFlags & vk::QueueFlagBits::eGraphics)
 			{
 				indices.graphics_family = indice;
 			}

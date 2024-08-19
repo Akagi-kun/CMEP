@@ -49,7 +49,7 @@ add_library(EngineRenderingVulkan STATIC ${SRC_FILES})
 target_compile_features(EngineRenderingVulkan PUBLIC cxx_std_17)
 set_target_properties(EngineRenderingVulkan PROPERTIES CXX_STANDARD_REQUIRED ON)
 set_target_properties(EngineRenderingVulkan PROPERTIES CXX_EXTENSIONS OFF)
-set_target_properties(EngineLogging PROPERTIES POSITION_INDEPENDENT_CODE ON)
+set_target_properties(EngineRenderingVulkan PROPERTIES POSITION_INDEPENDENT_CODE ON)
 
 target_compile_definitions(EngineRenderingVulkan PRIVATE VULKAN_HPP_DISPATCH_LOADER_DYNAMIC=1)
 
