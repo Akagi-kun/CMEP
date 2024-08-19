@@ -135,15 +135,15 @@ namespace Engine::Factories
 		texture_data->texture_image = new Rendering::Vulkan::SampledImage(
 			vk_instance,
 			{xsize, ysize},
-			vk::SampleCountFlagBits::e1, // VK_SAMPLE_COUNT_1_BIT,
-			VK_FORMAT_R8G8B8A8_SRGB,
-			VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
+			vk::SampleCountFlagBits::e1,
+			vk::Format::eR8G8B8A8Srgb,
+			vk::ImageUsageFlagBits::eTransferDst | vk::ImageUsageFlagBits::eSampled,
 			filtering,			 // Filter for both mag and min
 			sampler_address_mode // sampler address mode
 		);
 
 		// Transfer image layout to compatible with transfers
-		texture_data->texture_image->TransitionImageLayout(VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
+		texture_data->texture_image->TransitionImageLayout(vk::ImageLayout::eTransferDstOptimal);
 
 		auto* command_buffer = vk_instance->GetCommandPool()->AllocateCommandBuffer();
 
@@ -152,7 +152,7 @@ namespace Engine::Factories
 		delete command_buffer;
 
 		// Transfer image layout to compatible with rendering
-		texture_data->texture_image->TransitionImageLayout(VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+		texture_data->texture_image->TransitionImageLayout(vk::ImageLayout::eShaderReadOnlyOptimal);
 
 		// Unmap staging memory and cleanup buffer if we created it here
 		used_staging_buffer->UnmapMemory();

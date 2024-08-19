@@ -43,7 +43,7 @@ namespace Engine::Rendering
 
 		virtual void Build() = 0;
 
-		[[nodiscard]] virtual VkPrimitiveTopology GetSupportedTopology() const noexcept = 0;
+		[[nodiscard]] virtual vk::PrimitiveTopology GetSupportedTopology() const noexcept = 0;
 
 		[[nodiscard]] const MeshBuildContext& GetContext() const
 		{

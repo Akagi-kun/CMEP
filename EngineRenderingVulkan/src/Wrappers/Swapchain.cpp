@@ -76,34 +76,29 @@ namespace Engine::Rendering::Vulkan
 			);
 
 			image_view_handles[i] = logical_device->GetHandle().createImageView(view_create_info);
-			/* if (vkCreateImageView(*logical_device, &view_info, nullptr, &this->image_view_handles[i]) != VK_SUCCESS)
-			{
-				throw std::runtime_error("Failed to create swapchain image view!");
-			} */
 		}
 
-		VkFormat depth_format = instance->GetPhysicalDevice().FindSupportedDepthFormat();
-		auto color_format	  = static_cast<VkFormat>(image_format);
+		vk::Format depth_format = instance->GetPhysicalDevice().FindSupportedDepthFormat();
 
 		this->depth_buffer = new Image(
 			instance,
 			{this->extent.width, this->extent.height},
 			instance->GetMSAASamples(),
 			depth_format,
-			VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT
+			vk::ImageUsageFlagBits::eDepthStencilAttachment
 		);
-		this->depth_buffer->AddImageView(VK_IMAGE_ASPECT_DEPTH_BIT);
+		this->depth_buffer->AddImageView(vk::ImageAspectFlagBits::eDepth);
 
 		this->multisampled_color_image = new Image(
 			instance,
 			{this->extent.width, this->extent.height},
 			instance->GetMSAASamples(),
-			color_format,
-			VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT
+			image_format,
+			vk::ImageUsageFlagBits::eTransientAttachment | vk::ImageUsageFlagBits::eColorAttachment
 		);
-		this->multisampled_color_image->AddImageView(VK_IMAGE_ASPECT_COLOR_BIT);
+		this->multisampled_color_image->AddImageView(vk::ImageAspectFlagBits::eColor);
 
-		this->render_pass = new RenderPass(instance, color_format);
+		this->render_pass = new RenderPass(instance, image_format);
 
 		this->framebuffers.resize(image_view_handles.size());
 
@@ -184,19 +179,11 @@ namespace Engine::Rendering::Vulkan
 
 		BeginRenderPass(command_buffer, image_index);
 
-		VkViewport viewport{};
-		viewport.x		  = 0.0f;
-		viewport.y		  = 0.0f;
-		viewport.width	  = static_cast<float>(extent.width);
-		viewport.height	  = static_cast<float>(extent.height);
-		viewport.minDepth = 0.0f;
-		viewport.maxDepth = 1.0f;
-		vkCmdSetViewport(*command_buffer, 0, 1, &viewport);
+		vk::Viewport viewport(0.f, 0.f, static_cast<float>(extent.width), static_cast<float>(extent.height), 0.f, 1.f);
+		command_buffer->GetHandle().setViewport(0, viewport);
 
-		VkRect2D scissor{};
-		scissor.offset = {0, 0};
-		scissor.extent = extent;
-		vkCmdSetScissor(*command_buffer, 0, 1, &scissor);
+		vk::Rect2D scissor({0, 0}, extent);
+		command_buffer->GetHandle().setScissor(0, scissor);
 
 		// Perform actual render
 		if (!callback)

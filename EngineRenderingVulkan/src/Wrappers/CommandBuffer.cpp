@@ -6,33 +6,28 @@
 #include "Wrappers/Instance.hpp"
 #include "Wrappers/InstanceOwned.hpp"
 #include "Wrappers/LogicalDevice.hpp"
-
-#include <stdexcept>
+#include "vulkan/vulkan_core.h"
+#include "vulkan/vulkan_enums.hpp"
+#include "vulkan/vulkan_handles.hpp"
+#include "vulkan/vulkan_structs.hpp"
 
 namespace Engine::Rendering::Vulkan
 {
-	CommandBuffer::CommandBuffer(InstanceOwned::value_t with_instance, VkCommandPool from_pool)
+	CommandBuffer::CommandBuffer(InstanceOwned::value_t with_instance, vk::CommandPool from_pool)
 		: InstanceOwned(with_instance), owning_pool(from_pool)
 	{
-		VkCommandBufferAllocateInfo alloc_info{};
-		alloc_info.sType			  = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
-		alloc_info.commandPool		  = from_pool;
-		alloc_info.level			  = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-		alloc_info.commandBufferCount = 1;
+		vk::CommandBufferAllocateInfo alloc_info(from_pool, vk::CommandBufferLevel::ePrimary, 1, {});
 
 		LogicalDevice* logical_device = instance->GetLogicalDevice();
 
-		if (vkAllocateCommandBuffers(logical_device->GetHandle(), &alloc_info, &native_handle) != VK_SUCCESS)
-		{
-			throw std::runtime_error("failed to allocate command buffers!");
-		}
+		native_handle = logical_device->GetHandle().allocateCommandBuffers(alloc_info)[0];
 	}
 
 	CommandBuffer::~CommandBuffer()
 	{
 		LogicalDevice* logical_device = instance->GetLogicalDevice();
 
-		vkFreeCommandBuffers(logical_device->GetHandle(), this->owning_pool, 1, &native_handle);
+		logical_device->GetHandle().freeCommandBuffers(owning_pool, native_handle);
 	}
 
 	void CommandBuffer::BeginCmdBuffer(VkCommandBufferUsageFlags usage_flags)
@@ -77,7 +72,7 @@ namespace Engine::Rendering::Vulkan
 		VkSubmitInfo submit_info{};
 		submit_info.sType			   = VK_STRUCTURE_TYPE_SUBMIT_INFO;
 		submit_info.commandBufferCount = 1;
-		submit_info.pCommandBuffers	   = &native_handle;
+		submit_info.pCommandBuffers	   = reinterpret_cast<VkCommandBuffer*>(&native_handle);
 
 		vkQueueSubmit(to_queue, 1, &submit_info, VK_NULL_HANDLE);
 	}
@@ -117,7 +112,7 @@ namespace Engine::Rendering::Vulkan
 			vkCmdCopyBufferToImage(
 				with_buf->native_handle,
 				*from_buffer,
-				*to_image,
+				static_cast<VkImage>(to_image->GetHandle()),
 				VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
 				1,
 				&region

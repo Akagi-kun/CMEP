@@ -172,7 +172,7 @@ namespace Engine::Rendering::Vulkan
 		VkSubmitInfo submit_info{};
 		submit_info.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
 
-		std::array<VkCommandBuffer, 1> command_buffers = {*render_target.command_buffer};
+		std::array<VkCommandBuffer, 1> command_buffers = {render_target.command_buffer->GetHandle()};
 
 		// Wait semaphores
 		VkSemaphore wait_semaphores[]	   = {render_target.sync_objects.image_available};

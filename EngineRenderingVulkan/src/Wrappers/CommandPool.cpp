@@ -4,8 +4,8 @@
 #include "Wrappers/Instance.hpp"
 #include "Wrappers/InstanceOwned.hpp"
 #include "Wrappers/LogicalDevice.hpp"
-
-#include <stdexcept>
+#include "vulkan/vulkan_enums.hpp"
+#include "vulkan/vulkan_structs.hpp"
 
 namespace Engine::Rendering::Vulkan
 {
@@ -13,22 +13,19 @@ namespace Engine::Rendering::Vulkan
 	{
 		LogicalDevice* logical_device = instance->GetLogicalDevice();
 
-		VkCommandPoolCreateInfo pool_info{};
-		pool_info.sType			   = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
-		pool_info.flags			   = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
-		pool_info.queueFamilyIndex = logical_device->GetQueueFamilies().graphics_family.value();
+		vk::CommandPoolCreateInfo pool_info(
+			vk::CommandPoolCreateFlagBits::eResetCommandBuffer,
+			logical_device->GetQueueFamilies().graphics_family.value()
+		);
 
-		if (vkCreateCommandPool(logical_device->GetHandle(), &pool_info, nullptr, &(native_handle)) != VK_SUCCESS)
-		{
-			throw std::runtime_error("Failed to create command pool!");
-		}
+		native_handle = logical_device->GetHandle().createCommandPool(pool_info);
 	}
 
 	CommandPool::~CommandPool()
 	{
 		LogicalDevice* logical_device = instance->GetLogicalDevice();
 
-		vkDestroyCommandPool(logical_device->GetHandle(), native_handle, nullptr);
+		logical_device->GetHandle().destroyCommandPool(native_handle);
 	}
 
 	[[nodiscard]] CommandBuffer* CommandPool::AllocateCommandBuffer()

@@ -20,13 +20,13 @@ namespace Engine::Rendering::Vulkan
 
 		[[nodiscard]] std::string GetDeviceName() const;
 
-		[[nodiscard]] VkFormat FindSupportedFormat(
-			const std::vector<VkFormat>& candidates,
-			VkImageTiling tiling,
-			VkFormatFeatureFlags features
+		[[nodiscard]] vk::Format FindSupportedFormat(
+			const std::vector<vk::Format>& candidates,
+			vk::ImageTiling tiling,
+			vk::FormatFeatureFlags features
 		) const;
 
-		[[nodiscard]] VkFormat FindSupportedDepthFormat() const;
+		[[nodiscard]] vk::Format FindSupportedDepthFormat() const;
 
 		[[nodiscard]] QueueFamilyIndices FindVulkanQueueFamilies(const Surface* with_surface) const;
 	};

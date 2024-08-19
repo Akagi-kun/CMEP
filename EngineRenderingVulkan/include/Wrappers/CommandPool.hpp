@@ -7,10 +7,9 @@
 
 #include <cassert>
 
-
 namespace Engine::Rendering::Vulkan
 {
-	class CommandPool : public InstanceOwned, public HandleWrapper<VkCommandPool>
+	class CommandPool : public InstanceOwned, public HandleWrapper<vk::CommandPool>
 	{
 	public:
 		CommandPool(InstanceOwned::value_t with_instance);

@@ -363,7 +363,7 @@ onInit = function(event)
 	local scene = scene_manager:GetSceneCurrent();
 
 	-- Set-up camera
-	scene_manager:SetCameraTransform(-2.0, 55.8, 4.7)
+	scene_manager:SetCameraTransform(-1.0, 55.8, 2.5)
 	scene_manager:SetCameraHVRotation(114.0, 224.8)
 	
 	-- Create frametime counter and add it to scene

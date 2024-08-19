@@ -1,6 +1,7 @@
 #include "Wrappers/PhysicalDevice.hpp"
 
 #include "Wrappers/Surface.hpp"
+#include "vulkan/vulkan_enums.hpp"
 
 #include <stdexcept>
 
@@ -16,23 +17,26 @@ namespace Engine::Rendering::Vulkan
 		return device_properties.deviceName;
 	}
 
-	VkFormat PhysicalDevice::FindSupportedFormat(
-		const std::vector<VkFormat>& candidates,
-		VkImageTiling tiling,
-		VkFormatFeatureFlags features
+	vk::Format PhysicalDevice::FindSupportedFormat(
+		const std::vector<vk::Format>& candidates,
+		vk::ImageTiling tiling,
+		vk::FormatFeatureFlags features
 	) const
 	{
-		for (VkFormat format : candidates)
+		for (vk::Format format : candidates)
 		{
-			VkFormatProperties props;
-			vkGetPhysicalDeviceFormatProperties(native_handle, format, &props);
+			vk::FormatProperties fmt_properties = native_handle.getFormatProperties(format);
+			/* VkFormatProperties props;
+			vkGetPhysicalDeviceFormatProperties(native_handle, format, &props); */
 
-			if (tiling == VK_IMAGE_TILING_LINEAR && (props.linearTilingFeatures & features) == features)
+			if (tiling == vk::ImageTiling::eLinear /* VK_IMAGE_TILING_LINEAR */ &&
+				(fmt_properties.linearTilingFeatures & features) == features)
 			{
 				return format;
 			}
 
-			if (tiling == VK_IMAGE_TILING_OPTIMAL && (props.optimalTilingFeatures & features) == features)
+			if (tiling == vk::ImageTiling::eOptimal /* VK_IMAGE_TILING_OPTIMAL */ &&
+				(fmt_properties.optimalTilingFeatures & features) == features)
 			{
 				return format;
 			}
@@ -41,12 +45,12 @@ namespace Engine::Rendering::Vulkan
 		throw std::runtime_error("failed to find supported VkFormat!");
 	}
 
-	VkFormat PhysicalDevice::FindSupportedDepthFormat() const
+	vk::Format PhysicalDevice::FindSupportedDepthFormat() const
 	{
 		return FindSupportedFormat(
-			{VK_FORMAT_D32_SFLOAT, VK_FORMAT_D32_SFLOAT_S8_UINT, VK_FORMAT_D24_UNORM_S8_UINT},
-			VK_IMAGE_TILING_OPTIMAL,
-			VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT
+			{vk::Format::eD32Sfloat, vk::Format::eD32SfloatS8Uint, vk::Format::eD24UnormS8Uint},
+			vk::ImageTiling::eOptimal,
+			vk::FormatFeatureFlagBits::eDepthStencilAttachment
 		);
 	}
 

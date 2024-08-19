@@ -12,8 +12,8 @@ namespace Engine::Rendering::Vulkan
 		InstanceOwned::value_t with_instance,
 		ImageSize with_size,
 		vk::SampleCountFlagBits num_samples,
-		VkFormat format,
-		VkImageUsageFlags usage,
+		vk::Format format,
+		vk::ImageUsageFlags usage,
 		VkFilter with_filter,
 		VkSamplerAddressMode with_address_mode,
 		VkMemoryPropertyFlags properties,
@@ -27,9 +27,9 @@ namespace Engine::Rendering::Vulkan
 		VkSamplerCreateInfo sampler_info{};
 		sampler_info.sType	   = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
 		sampler_info.magFilter = use_filter;
-		sampler_info.minFilter = use_filter; // VK_FILTER_LINEAR;
+		sampler_info.minFilter = use_filter;
 
-		sampler_info.addressModeU = use_address_mode; // VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
+		sampler_info.addressModeU = use_address_mode;
 		sampler_info.addressModeV = use_address_mode;
 		sampler_info.addressModeW = use_address_mode;
 

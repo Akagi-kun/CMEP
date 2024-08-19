@@ -7,10 +7,6 @@ namespace Engine::Rendering::Vulkan
 {
 	class SampledImage : public Image
 	{
-	private:
-		VkFilter use_filter;
-		VkSamplerAddressMode use_address_mode;
-
 	public:
 		VkSampler texture_sampler;
 
@@ -18,8 +14,8 @@ namespace Engine::Rendering::Vulkan
 			InstanceOwned::value_t with_instance,
 			ImageSize with_size,
 			vk::SampleCountFlagBits num_samples,
-			VkFormat format,
-			VkImageUsageFlags usage,
+			vk::Format format,
+			vk::ImageUsageFlags usage,
 			VkFilter with_filter,
 			VkSamplerAddressMode with_address_mode,
 			VkMemoryPropertyFlags properties = VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
@@ -27,5 +23,9 @@ namespace Engine::Rendering::Vulkan
 		);
 
 		~SampledImage();
+
+	private:
+		VkFilter use_filter;
+		VkSamplerAddressMode use_address_mode;
 	};
 } // namespace Engine::Rendering::Vulkan

@@ -24,9 +24,9 @@ namespace Engine::Rendering
 
 		void Build() override;
 
-		[[nodiscard]] VkPrimitiveTopology GetSupportedTopology() const noexcept override
+		[[nodiscard]] vk::PrimitiveTopology GetSupportedTopology() const noexcept override
 		{
-			return VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
+			return vk::PrimitiveTopology::eTriangleList; // VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
 		}
 
 		static constexpr bool supports_2d = true;

@@ -6,13 +6,13 @@ namespace Engine::Rendering::Vulkan
 {
 	class HoldsVMA
 	{
-	protected:
-		MemoryAllocator* allocator = nullptr;
-
 	public:
 		HoldsVMA() = delete;
 		HoldsVMA(MemoryAllocator* with_allocator) : allocator(with_allocator)
 		{
 		}
+
+	protected:
+		MemoryAllocator* allocator = nullptr;
 	};
 } // namespace Engine::Rendering::Vulkan

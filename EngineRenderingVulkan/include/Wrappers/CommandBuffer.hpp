@@ -7,13 +7,12 @@
 
 #include <functional>
 
-
 namespace Engine::Rendering::Vulkan
 {
-	class CommandBuffer final : public InstanceOwned, public HandleWrapper<VkCommandBuffer>
+	class CommandBuffer final : public InstanceOwned, public HandleWrapper<vk::CommandBuffer>
 	{
 	public:
-		CommandBuffer(InstanceOwned::value_t with_instance, VkCommandPool from_pool);
+		CommandBuffer(InstanceOwned::value_t with_instance, vk::CommandPool from_pool);
 		~CommandBuffer();
 
 		void BeginCmdBuffer(VkCommandBufferUsageFlags usage_flags);

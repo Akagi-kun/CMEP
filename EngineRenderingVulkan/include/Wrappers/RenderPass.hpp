@@ -10,7 +10,7 @@ namespace Engine::Rendering::Vulkan
 	{
 		VkRenderPass native_handle;
 
-		RenderPass(InstanceOwned::value_t with_instance, VkFormat with_format);
+		RenderPass(InstanceOwned::value_t with_instance, vk::Format with_format);
 		~RenderPass();
 	};
 } // namespace Engine::Rendering::Vulkan

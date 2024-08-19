@@ -7,6 +7,7 @@
 
 #include "Engine.hpp"
 #include "ImportVulkan.hpp"
+#include "vulkan/vulkan_enums.hpp"
 
 namespace Engine::Rendering
 {
@@ -27,8 +28,8 @@ namespace Engine::Rendering
 		settings.descriptor_layout_settings.push_back(VulkanDescriptorLayoutSettings{
 			1,
 			1,
-			VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
-			VK_SHADER_STAGE_FRAGMENT_BIT
+			vk::DescriptorType::eCombinedImageSampler,
+			vk::ShaderStageFlagBits::eFragment
 		});
 
 		// pipeline_manager->GetPipeline(pipeline_settings);
@@ -78,9 +79,8 @@ namespace Engine::Rendering
 		{
 			extended_settings.supply_data.emplace_back(RendererSupplyDataType::TEXTURE, texture);
 		}
-		auto pipeline_result = pipeline_manager->GetPipeline(extended_settings);
-		pipeline_user_index	 = std::get<size_t>(pipeline_result);
-		pipeline			 = std::get<Vulkan::Pipeline*>(pipeline_result);
+
+		std::tie(pipeline_user_index, pipeline) = pipeline_manager->GetPipeline(extended_settings);
 
 		if (texture)
 		{
@@ -130,11 +130,9 @@ namespace Engine::Rendering
 
 			pipeline->BindPipeline(pipeline_user_index, *command_buffer, current_frame);
 
-			VkBuffer vertex_buffers[] = {*mesh_context.vbo};
-			VkDeviceSize offsets[]	  = {0};
-			vkCmdBindVertexBuffers(*command_buffer, 0, 1, vertex_buffers, offsets);
+			command_buffer->GetHandle().bindVertexBuffers(0, {mesh_context.vbo->GetHandle()}, {0});
 
-			vkCmdDraw(*command_buffer, static_cast<uint32_t>(mesh_context.vbo_vert_count), 1, 0, 0);
+			command_buffer->GetHandle().draw(static_cast<uint32_t>(mesh_context.vbo_vert_count), 1, 0, 0);
 		}
 	}
 

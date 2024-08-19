@@ -3,7 +3,6 @@
 #include "IMeshBuilder.hpp"
 #include "ImportVulkan.hpp"
 
-
 namespace Engine::Rendering
 {
 	class AxisMeshBuilder final : public IMeshBuilder
@@ -15,9 +14,9 @@ namespace Engine::Rendering
 
 		void Build() override;
 
-		[[nodiscard]] VkPrimitiveTopology GetSupportedTopology() const noexcept override
+		[[nodiscard]] vk::PrimitiveTopology GetSupportedTopology() const noexcept override
 		{
-			return VK_PRIMITIVE_TOPOLOGY_LINE_LIST;
+			return vk::PrimitiveTopology::eLineList; // VK_PRIMITIVE_TOPOLOGY_LINE_LIST;
 		}
 
 		static constexpr bool supports_2d = false;
