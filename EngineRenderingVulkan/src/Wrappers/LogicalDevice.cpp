@@ -19,7 +19,8 @@ namespace Engine::Rendering::Vulkan
 	};
 #	pragma message("Validation layers enabled")
 #else
-	const std::vector<const char*> LogicalDevice::vk_validation_layers = {}
+	const std::vector<const char*> LogicalDevice::vk_validation_layers = {};
+#	pragma message("Validation layers disabled")
 #endif
 
 #pragma region Public
