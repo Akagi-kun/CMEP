@@ -1,8 +1,6 @@
 #include "Wrappers/PhysicalDevice.hpp"
 
 #include "Wrappers/Surface.hpp"
-#include "vulkan/vulkan_enums.hpp"
-#include "vulkan/vulkan_structs.hpp"
 
 #include <stdexcept>
 

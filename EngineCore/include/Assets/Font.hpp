@@ -34,15 +34,8 @@ namespace Engine
 
 		class Font final : public InternalEngineObject
 		{
-		private:
-			std::string fntfile;
-
-			// Data from fnt file
-			std::unique_ptr<FontData> data;
-
 		public:
 			using InternalEngineObject::InternalEngineObject;
-			// Font(AssetManager* managed_by = nullptr);
 			~Font();
 
 			void Init(std::unique_ptr<FontData> init_data);
@@ -50,6 +43,9 @@ namespace Engine
 			FontChar* GetChar(char character_id);
 			std::shared_ptr<Texture> GetPageTexture(int page);
 			std::string* GetFontInfoParameter(const std::string& name);
+
+		private:
+			std::unique_ptr<FontData> data;
 		};
 	} // namespace Rendering
 } // namespace Engine

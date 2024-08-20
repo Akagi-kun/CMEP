@@ -10,20 +10,18 @@
 #include <cstring>
 #include <vector>
 
-
 namespace Engine::Rendering::Vulkan
 {
-	class Buffer : public InstanceOwned, public HoldsVMA, public HandleWrapper<VkBuffer>
+	class Buffer : public InstanceOwned, public HoldsVMA, public HandleWrapper<vk::Buffer>
 	{
 	public:
 		void* mapped_data = nullptr;
 
 		Buffer(
 			InstanceOwned::value_t with_instance,
-			VkDeviceSize with_size,
-			VkBufferUsageFlags with_usage,
-			VkMemoryPropertyFlags with_properties,
-			VmaAllocationCreateFlags with_vma_alloc_flags = 0
+			vk::DeviceSize with_size,
+			vk::BufferUsageFlags with_usage,
+			vk::MemoryPropertyFlags with_properties
 		);
 		~Buffer();
 
@@ -40,7 +38,7 @@ namespace Engine::Rendering::Vulkan
 		}
 
 	protected:
-		VkDeviceSize buffer_size;
+		vk::DeviceSize buffer_size;
 
 		VmaAllocation allocation;
 		VmaAllocationInfo allocation_info;
@@ -49,7 +47,7 @@ namespace Engine::Rendering::Vulkan
 	class StagingBuffer final : public Buffer
 	{
 	public:
-		StagingBuffer(InstanceOwned::value_t with_instance, const void* with_data, VkDeviceSize with_size);
+		StagingBuffer(InstanceOwned::value_t with_instance, const void* with_data, vk::DeviceSize with_size);
 	};
 
 	class VertexBuffer final : public Buffer

@@ -6,10 +6,6 @@
 #include "Wrappers/Instance.hpp"
 #include "Wrappers/InstanceOwned.hpp"
 #include "Wrappers/LogicalDevice.hpp"
-#include "vulkan/vulkan_core.h"
-#include "vulkan/vulkan_enums.hpp"
-#include "vulkan/vulkan_handles.hpp"
-#include "vulkan/vulkan_structs.hpp"
 
 namespace Engine::Rendering::Vulkan
 {
@@ -67,7 +63,7 @@ namespace Engine::Rendering::Vulkan
 		device->GetGraphicsQueue().WaitQueueIdle();
 	}
 
-	void CommandBuffer::QueueSubmit(VkQueue to_queue)
+	void CommandBuffer::QueueSubmit(vk::Queue to_queue)
 	{
 		VkSubmitInfo submit_info{};
 		submit_info.sType			   = VK_STRUCTURE_TYPE_SUBMIT_INFO;
@@ -82,8 +78,8 @@ namespace Engine::Rendering::Vulkan
 		this->RecordCmds([&](CommandBuffer* handle) {
 			vkCmdCopyBuffer(
 				handle->native_handle,
-				*from_buffer,
-				*to_buffer,
+				from_buffer->GetHandle(),
+				to_buffer->GetHandle(),
 				static_cast<uint32_t>(regions.size()),
 				regions.data()
 			);
@@ -111,7 +107,7 @@ namespace Engine::Rendering::Vulkan
 		this->RecordCmds([&](CommandBuffer* with_buf) {
 			vkCmdCopyBufferToImage(
 				with_buf->native_handle,
-				*from_buffer,
+				from_buffer->GetHandle(),
 				static_cast<VkImage>(to_image->GetHandle()),
 				VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
 				1,

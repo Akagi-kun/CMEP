@@ -4,7 +4,6 @@
 #include "Wrappers/Instance.hpp"
 #include "Wrappers/InstanceOwned.hpp"
 #include "Wrappers/LogicalDevice.hpp"
-#include "vulkan/vulkan_core.h"
 
 #include <array>
 #include <stdexcept>

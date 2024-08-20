@@ -2,8 +2,6 @@
 
 #include "ImportVulkan.hpp"
 #include "glm/glm.hpp"
-#include "vulkan/vulkan_core.h"
-#include "vulkan/vulkan_enums.hpp"
 
 #include <array>
 #include <optional>

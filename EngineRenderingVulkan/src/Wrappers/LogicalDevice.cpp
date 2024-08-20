@@ -4,9 +4,6 @@
 #include "Wrappers/DeviceScore.hpp"
 #include "Wrappers/Instance.hpp"
 #include "Wrappers/InstanceOwned.hpp"
-#include "vulkan/vulkan.hpp"
-#include "vulkan/vulkan_handles.hpp"
-#include "vulkan/vulkan_structs.hpp"
 
 #include <set>
 #include <stdexcept>

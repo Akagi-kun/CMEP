@@ -34,14 +34,14 @@ endif()
 # Global compile options
 if(MSVC)
 	add_compile_options(/MP /EHs /Zi)
-	add_link_options(/DEBUG:FULL /INCREMENTAL:NO /OPT:REF)
+	add_link_options(/DEBUG:FULL)
 
 	# Debug only
 	add_compile_definitions($<$<CONFIG:Debug>:DEBUG=1>)
 	add_compile_options($<$<CONFIG:Debug>:/Od>)
 
 	# Release only
-	add_compile_options($<$<CONFIG:Release>:/O1>)
+	add_compile_options($<$<CONFIG:Release>:/O2>)
 
 else()
 	add_compile_options(-g)
@@ -52,7 +52,7 @@ else()
 	add_compile_options($<$<CONFIG:Debug>:-g3>)
 
 	# Release only
-	add_compile_options($<$<CONFIG:Release>:-O1>)
+	add_compile_options($<$<CONFIG:Release>:-O2>)
 
 endif()
 

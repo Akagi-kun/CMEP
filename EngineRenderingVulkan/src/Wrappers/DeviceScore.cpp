@@ -1,10 +1,9 @@
 #include "Wrappers/DeviceScore.hpp"
 
 #include "Wrappers/Surface.hpp"
-#include "vulkan/vulkan_handles.hpp"
-#include "vulkan/vulkan_structs.hpp"
 
 #include <set>
+
 
 namespace Engine::Rendering::Vulkan
 {

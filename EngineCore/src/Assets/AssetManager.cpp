@@ -45,12 +45,12 @@ namespace Engine
 		const std::string& name,
 		const std::string& path,
 		Rendering::Texture_InitFiletype filetype,
-		VkFilter filtering,
-		VkSamplerAddressMode address_mode
+		vk::Filter filtering,
+		vk::SamplerAddressMode address_mode
 	)
 	{
 		std::shared_ptr<Rendering::Texture> texture =
-			this->texture_factory->InitFile(path, nullptr, filetype, filtering, address_mode);
+			this->texture_factory->InitFile(path, filetype, filtering, address_mode);
 
 		this->textures.emplace(name, texture);
 		this->logger->SimpleLog(

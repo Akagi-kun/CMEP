@@ -35,16 +35,16 @@ namespace Engine
 	};
 
 	template <>
-	EnumStringConvertor<VkFilter>::map_t EnumStringConvertor<VkFilter>::type_map = {
-		{"nearest"sv, VK_FILTER_NEAREST},
-		{"linear"sv, VK_FILTER_LINEAR},
+	EnumStringConvertor<vk::Filter>::map_t EnumStringConvertor<vk::Filter>::type_map = {
+		{"nearest"sv, vk::Filter::eNearest},
+		{"linear"sv, vk::Filter::eLinear},
 	};
 
 	template <>
-	EnumStringConvertor<VkSamplerAddressMode>::map_t EnumStringConvertor<VkSamplerAddressMode>::type_map = {
-		{"repeat"sv, VK_SAMPLER_ADDRESS_MODE_REPEAT},
-		{"clamp"sv, VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE},
-		{"clamp_border"sv, VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_BORDER},
+	EnumStringConvertor<vk::SamplerAddressMode>::map_t EnumStringConvertor<vk::SamplerAddressMode>::type_map = {
+		{"repeat"sv, vk::SamplerAddressMode::eRepeat},
+		{"clamp"sv, vk::SamplerAddressMode::eClampToEdge},
+		{"clamp_border"sv, vk::SamplerAddressMode::eClampToBorder},
 	};
 
 	template <>

@@ -10,10 +10,10 @@ namespace Engine::Rendering::Vulkan
 	struct Surface
 	{
 		const Instance* created_by;
-		VkSurfaceKHR native_handle;
+		vk::SurfaceKHR native_handle;
 
 		[[nodiscard]] SwapChainSupportDetails QueryVulkanSwapChainSupport(vk::PhysicalDevice device) const;
-		bool QueryQueueSupport(vk::PhysicalDevice physical_device, uint32_t queue_family) const;
+		[[nodiscard]] bool QueryQueueSupport(vk::PhysicalDevice physical_device, uint32_t queue_family) const;
 		[[nodiscard]] QueueFamilyIndices FindVulkanQueueFamilies(vk::PhysicalDevice device) const;
 	};
 } // namespace Engine::Rendering::Vulkan

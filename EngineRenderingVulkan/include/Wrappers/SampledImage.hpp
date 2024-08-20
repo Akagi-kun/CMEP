@@ -16,16 +16,16 @@ namespace Engine::Rendering::Vulkan
 			vk::SampleCountFlagBits num_samples,
 			vk::Format format,
 			vk::ImageUsageFlags usage,
-			VkFilter with_filter,
-			VkSamplerAddressMode with_address_mode,
-			VkMemoryPropertyFlags properties = VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
-			VkImageTiling with_tiling		 = VK_IMAGE_TILING_OPTIMAL
+			vk::Filter with_filter,
+			vk::SamplerAddressMode with_address_mode,
+			vk::MemoryPropertyFlags properties = vk::MemoryPropertyFlagBits::eDeviceLocal,
+			vk::ImageTiling with_tiling		   = vk::ImageTiling::eOptimal
 		);
 
 		~SampledImage();
 
 	private:
-		VkFilter use_filter;
-		VkSamplerAddressMode use_address_mode;
+		const vk::Filter use_filter;
+		const vk::SamplerAddressMode use_address_mode;
 	};
 } // namespace Engine::Rendering::Vulkan

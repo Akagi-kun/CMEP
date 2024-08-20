@@ -20,18 +20,18 @@
 
 namespace Engine::Factories
 {
+	static constexpr size_t max_texture_size = 0x2fff;
+
 	std::shared_ptr<Rendering::Texture> TextureFactory::InitFile(
-		const std::string& path,
-		Rendering::Vulkan::Buffer* staging_buffer,
+		const std::filesystem::path& path,
 		Rendering::Texture_InitFiletype filetype,
-		VkFilter filtering,
-		VkSamplerAddressMode sampler_address_mode
+		vk::Filter filtering,
+		vk::SamplerAddressMode sampler_address_mode
 	)
 	{
-		FILE* file = fopen(path.c_str(), "rb");
-		if (file == nullptr)
+		if (!std::filesystem::exists(path))
 		{
-			throw std::runtime_error("Could not find texture '" + path + "'!");
+			throw std::invalid_argument("Cannot initialize a texture from a nonexistent path!");
 		}
 
 		this->logger
@@ -44,34 +44,25 @@ namespace Engine::Factories
 		{
 			case Rendering::Texture_InitFiletype::FILE_PNG:
 			{
-				unsigned int size_x;
-				unsigned int size_y;
-				unsigned error = lodepng::decode(data, size_x, size_y, path);
+				Rendering::TextureSize size;
+				unsigned int error = lodepng::decode(data, size.x, size.y, path.string());
 
-				assert(error == 0);
+				if (error != 0 || 0 >= size.x || size.x >= max_texture_size || 0 >= size.y ||
+					size.y >= max_texture_size)
+				{
+					throw std::runtime_error("Failed decoding PNG file!");
+				}
 
 				this->logger->SimpleLog(
 					Logging::LogLevel::Debug1,
 					LOGPFX_CURRENT "Decoded png file %s; width %u; height %u; filter %u",
 					path.c_str(),
-					size_x,
-					size_y,
+					size.x,
+					size.y,
 					filtering
 				);
 
-				assert(0 < size_x && size_x < 0x2fff);
-				assert(0 < size_y && size_y < 0x2fff);
-
-				this->InitRaw(
-					texture_data,
-					staging_buffer,
-					std::move(data),
-					4,
-					filtering,
-					sampler_address_mode,
-					size_x,
-					size_y
-				);
+				InitRaw(texture_data, std::move(data), 4, filtering, sampler_address_mode, size);
 				break;
 			}
 			default:
@@ -80,61 +71,40 @@ namespace Engine::Factories
 			}
 		}
 
-		fclose(file);
+		// fclose(file);
 
 		std::shared_ptr<Rendering::Texture> texture =
-			std::make_shared<Rendering::Texture>(this->owner_engine, std::move(texture_data));
+			std::make_shared<Rendering::Texture>(owner_engine, std::move(texture_data));
 
 		return texture;
 	}
 
 	int TextureFactory::InitRaw(
 		std::unique_ptr<Rendering::TextureData>& texture_data,
-		Rendering::Vulkan::Buffer* staging_buffer,
 		std::vector<unsigned char> raw_data,
 		int color_format,
-		VkFilter filtering,
-		VkSamplerAddressMode sampler_address_mode,
-		unsigned int xsize,
-		unsigned int ysize
+		vk::Filter filtering,
+		vk::SamplerAddressMode sampler_address_mode,
+		Rendering::TextureSize size
 	)
 	{
 		uint_fast8_t channel_count = 4;
 
 		texture_data->data		= raw_data;
 		texture_data->color_fmt = color_format;
-		texture_data->size		= {xsize, ysize};
+		texture_data->size		= size;
 
-		auto memory_size = static_cast<VkDeviceSize>(xsize * ysize) * channel_count;
+		auto memory_size = static_cast<vk::DeviceSize>(size.x * size.y) * channel_count;
 
-		Rendering::Vulkan::Instance* vk_instance = this->owner_engine->GetVulkanInstance();
+		Rendering::Vulkan::Instance* vk_instance = owner_engine->GetVulkanInstance();
 		assert(vk_instance);
 
-		Rendering::Vulkan::Buffer* used_staging_buffer = nullptr;
-
-		// If no valid buffer was passed then create one here
-		if (staging_buffer == nullptr)
-		{
-			used_staging_buffer = new Rendering::Vulkan::Buffer(
-				vk_instance,
-				static_cast<size_t>(memory_size),
-				VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
-				VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT
-			);
-		}
-		else
-		{
-			// If it was, use that one
-			used_staging_buffer = staging_buffer;
-		}
-
-		used_staging_buffer->MapMemory();
-
-		memcpy(used_staging_buffer->mapped_data, raw_data.data(), static_cast<size_t>(memory_size));
+		Rendering::Vulkan::Buffer* staging_buffer =
+			new Rendering::Vulkan::StagingBuffer(vk_instance, raw_data.data(), memory_size);
 
 		texture_data->texture_image = new Rendering::Vulkan::SampledImage(
 			vk_instance,
-			{xsize, ysize},
+			{size.x, size.y},
 			vk::SampleCountFlagBits::e1,
 			vk::Format::eR8G8B8A8Srgb,
 			vk::ImageUsageFlagBits::eTransferDst | vk::ImageUsageFlagBits::eSampled,
@@ -145,22 +115,17 @@ namespace Engine::Factories
 		// Transfer image layout to compatible with transfers
 		texture_data->texture_image->TransitionImageLayout(vk::ImageLayout::eTransferDstOptimal);
 
-		auto* command_buffer = vk_instance->GetCommandPool()->AllocateCommandBuffer();
+		auto command_buffer = vk_instance->GetCommandPool()->AllocateTemporaryCommandBuffer();
 
-		command_buffer->BufferImageCopy(used_staging_buffer, texture_data->texture_image);
+		// auto* command_buffer = vk_instance->GetCommandPool()->AllocateCommandBuffer();
 
-		delete command_buffer;
+		command_buffer.BufferImageCopy(staging_buffer, texture_data->texture_image);
+
+		// delete command_buffer;
+		delete staging_buffer;
 
 		// Transfer image layout to compatible with rendering
 		texture_data->texture_image->TransitionImageLayout(vk::ImageLayout::eShaderReadOnlyOptimal);
-
-		// Unmap staging memory and cleanup buffer if we created it here
-		used_staging_buffer->UnmapMemory();
-
-		if (staging_buffer == nullptr)
-		{
-			delete used_staging_buffer;
-		}
 
 		texture_data->texture_image->AddImageView();
 

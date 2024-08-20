@@ -4,6 +4,9 @@
 #include "ImportVulkan.hpp"
 #include "framework.hpp"
 
+// Include VMA
+#include "vk_mem_alloc.h" // IWYU pragma: export
+
 namespace Engine::Rendering::Vulkan
 {
 	struct MemoryAllocator final : public HandleWrapper<VmaAllocator>

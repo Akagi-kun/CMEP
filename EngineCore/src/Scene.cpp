@@ -42,9 +42,8 @@ namespace Engine
 
 		if (templated_object != this->templates.end())
 		{
-			Factories::ObjectFactory::ObjectTemplate object_template = templated_object->second;
-
-			Object* obj = Factories::ObjectFactory::InstantiateObjectTemplate(this->GetOwnerEngine(), object_template);
+			Object* obj =
+				Factories::ObjectFactory::InstantiateObjectTemplate(this->GetOwnerEngine(), templated_object->second);
 
 			this->AddObject(name, obj);
 		}
@@ -98,7 +97,7 @@ namespace Engine
 		}
 	}
 
-	void Scene::LoadTemplatedObject(const std::string& name, Factories::ObjectFactory::ObjectTemplate object)
+	void Scene::LoadTemplatedObject(const std::string& name, const Factories::ObjectFactory::ObjectTemplate& object)
 	{
 		this->templates.emplace(name, object);
 	}

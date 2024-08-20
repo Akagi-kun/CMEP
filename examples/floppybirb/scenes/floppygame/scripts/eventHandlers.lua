@@ -85,7 +85,7 @@ local gameOnGameOver = function(asset_manager, scene_manager)
 	game_midgameover_state = true
 	birb_velocity = -0.4
 
-	engine.logger.SimpleLog(string.format("Game over!"))
+	print("Game over!")
 
 	local object = engine.CreateSceneObject(asset_manager, "renderer_2d/text", "text", {
 		{"font", "myfont"}, {"text", "GAME OVER"}
@@ -193,7 +193,7 @@ onUpdate = function(event)
 	-- Updates frametime counter, recommend to leave this here for debugging purposes
 	if deltaTime_accum >= 1.0 then
 		local deltaTime_avg = deltaTime_accum / deltaTime_count
-		--cmepmeta.logger.SimpleLog(string.format("Frametime is: %f ms!", deltaTime_accum / deltaTime_count * 1000))
+		--print(string.format("Frametime is: %f ms!", deltaTime_accum / deltaTime_count * 1000))
 		local object = scene:FindObject("_debug_info")
 		engine.RendererSupplyText(object.renderer, string.format("avg: %fms\nmin: %fms\nmax: %fms", deltaTime_avg * 1000, deltaTime_min * 1000, deltaTime_max * 1000))
 

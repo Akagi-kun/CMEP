@@ -23,7 +23,7 @@ namespace Engine::Rendering
 
 		Vulkan::Instance* instance = this->owner_engine->GetVulkanInstance();
 
-		instance->GetLogicalDevice()->WaitDeviceIdle();
+		instance->GetLogicalDevice()->GetHandle().waitIdle();
 
 		delete this->data->texture_image;
 

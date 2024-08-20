@@ -35,5 +35,12 @@ namespace Engine::Rendering::Vulkan
 		{
 			return device_scored && supported && (preference_score > 0);
 		}
+
+		bool operator<(const DeviceScore& other) const
+		{
+			assert(supported && "Tried to call operator< on an unsupported device, possibly a bug?");
+
+			return std::less<int>{}(preference_score, other.preference_score);
+		}
 	};
 } // namespace Engine::Rendering::Vulkan

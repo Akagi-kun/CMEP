@@ -1,8 +1,5 @@
 #include "Wrappers/Surface.hpp"
 
-#include "vulkan/vulkan_enums.hpp"
-#include "vulkan/vulkan_structs.hpp"
-
 namespace Engine::Rendering::Vulkan
 {
 #pragma region Public

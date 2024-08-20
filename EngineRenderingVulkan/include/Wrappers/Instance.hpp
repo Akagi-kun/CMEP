@@ -11,8 +11,6 @@
 #include "Wrappers/PhysicalDevice.hpp"
 #include "Wrappers/Window.hpp"
 #include "framework.hpp"
-#include "vulkan/vulkan_enums.hpp"
-#include "vulkan/vulkan_handles.hpp"
 
 #include <vector>
 

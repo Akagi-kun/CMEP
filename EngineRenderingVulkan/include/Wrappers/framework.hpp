@@ -27,7 +27,7 @@ namespace Engine::Rendering::Vulkan
 	// Image related
 	class Image;
 	class SampledImage;
-	struct ImageSize
+	struct ImageSize // TODO: Replace with Vector2
 	{
 		uint32_t x;
 		uint32_t y;

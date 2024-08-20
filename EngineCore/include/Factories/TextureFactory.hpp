@@ -1,36 +1,31 @@
 #pragma once
 
 #include "Assets/Texture.hpp"
-#include "Rendering/Vulkan/exports.hpp"
 
 #include "InternalEngineObject.hpp"
-
 
 namespace Engine::Factories
 {
 	class TextureFactory : public InternalEngineObject
 	{
-	private:
-		int InitRaw(
-			std::unique_ptr<Rendering::TextureData>& texture_data,
-			Rendering::Vulkan::Buffer* staging_buffer,
-			std::vector<unsigned char> raw_data,
-			int color_format,
-			VkFilter filtering,
-			VkSamplerAddressMode sampler_address_mode,
-			unsigned int xsize,
-			unsigned int ysize
-		);
-
 	public:
 		using InternalEngineObject::InternalEngineObject;
 
 		std::shared_ptr<Rendering::Texture> InitFile(
-			const std::string& path,
-			Rendering::Vulkan::Buffer* staging_buffer,
+			const std::filesystem::path& path,
 			Rendering::Texture_InitFiletype filetype,
-			VkFilter filtering						  = VK_FILTER_LINEAR,
-			VkSamplerAddressMode sampler_address_mode = VK_SAMPLER_ADDRESS_MODE_REPEAT
+			vk::Filter filtering						= vk::Filter::eLinear,
+			vk::SamplerAddressMode sampler_address_mode = vk::SamplerAddressMode::eRepeat
+		);
+
+	private:
+		int InitRaw(
+			std::unique_ptr<Rendering::TextureData>& texture_data,
+			std::vector<unsigned char> raw_data,
+			int color_format,
+			vk::Filter filtering,
+			vk::SamplerAddressMode sampler_address_mode,
+			Rendering::TextureSize size
 		);
 	};
 } // namespace Engine::Factories

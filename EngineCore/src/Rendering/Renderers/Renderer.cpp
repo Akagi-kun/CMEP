@@ -7,7 +7,6 @@
 
 #include "Engine.hpp"
 #include "ImportVulkan.hpp"
-#include "vulkan/vulkan_enums.hpp"
 
 namespace Engine::Rendering
 {
@@ -31,10 +30,14 @@ namespace Engine::Rendering
 			vk::DescriptorType::eCombinedImageSampler,
 			vk::ShaderStageFlagBits::eFragment
 		});
+	}
 
-		// pipeline_manager->GetPipeline(pipeline_settings);
-		//  pipeline =	new Vulkan::VPipeline(renderer->GetDeviceManager(), pipeline_settings,
-		//  renderer->GetRenderPass());
+	IRenderer::~IRenderer()
+	{
+		delete pipeline;
+
+		delete mesh_builder;
+		mesh_builder = nullptr;
 	}
 
 	void IRenderer::SupplyData(const RendererSupplyData& data)
@@ -80,7 +83,7 @@ namespace Engine::Rendering
 			extended_settings.supply_data.emplace_back(RendererSupplyDataType::TEXTURE, texture);
 		}
 
-		std::tie(pipeline_user_index, pipeline) = pipeline_manager->GetPipeline(extended_settings);
+		pipeline = pipeline_manager->GetPipeline(extended_settings);
 
 		if (texture)
 		{
@@ -99,7 +102,7 @@ namespace Engine::Rendering
 			descriptor_write.descriptorCount = 1;
 			descriptor_write.pImageInfo		 = &(descriptor_image_info);
 
-			pipeline->UpdateDescriptorSetsAll(pipeline_user_index, descriptor_write);
+			pipeline->UpdateDescriptorSetsAll(descriptor_write);
 		}
 	}
 
@@ -125,10 +128,9 @@ namespace Engine::Rendering
 		// Render only if VBO non-empty
 		if (mesh_context.vbo_vert_count > 0)
 		{
-			pipeline->GetUniformBuffer(pipeline_user_index, current_frame)
-				->MemoryCopy(&matrix_data, sizeof(RendererMatrixData));
+			pipeline->GetUniformBuffer(current_frame)->MemoryCopy(&matrix_data, sizeof(RendererMatrixData));
 
-			pipeline->BindPipeline(pipeline_user_index, *command_buffer, current_frame);
+			pipeline->BindPipeline(*command_buffer, current_frame);
 
 			command_buffer->GetHandle().bindVertexBuffers(0, {mesh_context.vbo->GetHandle()}, {0});
 

@@ -5,7 +5,6 @@
 #include "ImportVulkan.hpp"
 #include "InstanceOwned.hpp"
 #include "framework.hpp"
-#include "vulkan/vulkan_enums.hpp"
 
 #include <cassert>
 
@@ -20,8 +19,8 @@ namespace Engine::Rendering::Vulkan
 			vk::SampleCountFlagBits num_samples,
 			vk::Format format,
 			vk::ImageUsageFlags usage,
-			VkMemoryPropertyFlags properties = VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
-			VkImageTiling with_tiling		 = VK_IMAGE_TILING_OPTIMAL
+			vk::MemoryPropertyFlags properties = vk::MemoryPropertyFlagBits::eDeviceLocal,
+			vk::ImageTiling with_tiling		   = vk::ImageTiling::eOptimal
 		);
 		~Image();
 
@@ -40,10 +39,9 @@ namespace Engine::Rendering::Vulkan
 		}
 
 	protected:
-		vk::ImageLayout current_layout = vk::ImageLayout::eUndefined; // VK_IMAGE_LAYOUT_UNDEFINED;
-		vk::Format image_format		   = vk::Format::eUndefined;	  // VK_FORMAT_UNDEFINED;
+		vk::ImageLayout current_layout = vk::ImageLayout::eUndefined;
+		vk::Format image_format		   = vk::Format::eUndefined;
 		vk::ImageView native_view_handle;
-		// VK_NULL_HANDLE;
 
 		ImageSize size{};
 

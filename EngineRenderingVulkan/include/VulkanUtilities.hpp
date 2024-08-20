@@ -1,7 +1,6 @@
 #pragma once
 
 #include "ImportVulkan.hpp"
-#include "vulkan/vulkan_enums.hpp"
 
 #include <cstring>
 #include <filesystem>

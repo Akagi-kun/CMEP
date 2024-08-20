@@ -10,7 +10,6 @@
 
 #include <cstdint>
 
-
 namespace Engine::Rendering
 {
 	// Interface for Renderers
@@ -26,8 +25,9 @@ namespace Engine::Rendering
 
 		// Renderer configuration
 		std::string_view pipeline_name;
-		Vulkan::Pipeline* pipeline = nullptr;
-		size_t pipeline_user_index = 0;
+		Vulkan::PipelineUserRef* pipeline;
+		// Vulkan::Pipeline* pipeline = nullptr;
+		// size_t pipeline_user_index = 0;
 		std::shared_ptr<Vulkan::PipelineManager> pipeline_manager;
 
 		IMeshBuilder* mesh_builder = nullptr;
@@ -51,11 +51,7 @@ namespace Engine::Rendering
 			// Vulkan::PipelineManager* with_pipeline_manager,
 			std::string_view with_pipeline_program
 		);
-		virtual ~IRenderer()
-		{
-			delete this->mesh_builder;
-			this->mesh_builder = nullptr;
-		}
+		virtual ~IRenderer();
 
 		// Renderers shall implement this to get textures, fonts etc.
 		void SupplyData(const RendererSupplyData& data);

@@ -18,7 +18,6 @@ namespace Engine::Rendering
 
 	struct GeneratorSupplierData
 	{
-		// lua_State* state;
 		std::weak_ptr<Scripting::ILuaScript> script;
 		std::string name;
 	};
@@ -32,8 +31,7 @@ namespace Engine::Rendering
 		GENERATOR_SCRIPT = 2,
 		FONT			 = 3,
 
-		// NO lua_State*
-		// YES weak_ptr<void>
+		// GeneratorSupplierData
 		GENERATOR_SUPPLIER = 16,
 
 		// std::string
@@ -44,12 +42,12 @@ namespace Engine::Rendering
 
 	struct RendererSupplyData
 	{
-		using payload_type = std::variant<std::weak_ptr<void>, std::string, GeneratorSupplierData>;
+		using payload_t = std::variant<std::weak_ptr<void>, std::string, GeneratorSupplierData>;
 
 		RendererSupplyDataType type = RendererSupplyDataType::MIN_ENUM;
-		payload_type payload;
+		payload_t payload;
 
-		RendererSupplyData(RendererSupplyDataType with_type, payload_type data)
+		RendererSupplyData(RendererSupplyDataType with_type, payload_t data)
 		{
 			this->type	  = with_type;
 			this->payload = std::move(data);
@@ -67,27 +65,11 @@ namespace Engine::Rendering
 			{
 				case RendererSupplyDataType::FONT:
 				{
-					const auto& payload_ref = std::get<std::weak_ptr<void>>(payload);
-					assert(!payload_ref.expired() && "Cannot lock expired payload!");
-					auto font_cast = std::static_pointer_cast<Font>(payload_ref.lock());
-
-					const auto& other_payload_ref = std::get<std::weak_ptr<void>>(payload);
-					assert(!other_payload_ref.expired() && "Cannot lock expired payload!");
-					auto other_font_cast = std::static_pointer_cast<Font>(other_payload_ref.lock());
-
-					return font_cast == other_font_cast;
+					return PayloadCompareOp<std::weak_ptr<void>, Font>(payload, other.payload);
 				}
 				case RendererSupplyDataType::TEXTURE:
 				{
-					const auto& payload_ref = std::get<std::weak_ptr<void>>(payload);
-					assert(!payload_ref.expired() && "Cannot lock expired payload!");
-					auto texture_cast = std::static_pointer_cast<Texture>(payload_ref.lock());
-
-					const auto& other_payload_ref = std::get<std::weak_ptr<void>>(other.payload);
-					assert(!other_payload_ref.expired() && "Cannot lock expired payload!");
-					auto other_texture_cast = std::static_pointer_cast<Texture>(other_payload_ref.lock());
-
-					return texture_cast == other_texture_cast;
+					return PayloadCompareOp<std::weak_ptr<void>, Texture>(payload, other.payload);
 				}
 				default:
 				{
@@ -96,6 +78,21 @@ namespace Engine::Rendering
 			}
 
 			return false;
+		}
+
+		template <
+			typename value_t,
+			typename cast_t,
+			std::enable_if_t<std::is_same_v<value_t, std::weak_ptr<void>>, int>* = nullptr>
+		[[nodiscard]] bool PayloadCompareOp(payload_t left, payload_t right) const
+		{
+			const auto& left_payload_ref = std::get<value_t>(left);
+			const auto left_cast		 = std::static_pointer_cast<cast_t>(left_payload_ref.lock());
+
+			const auto& right_payload_ref = std::get<value_t>(right);
+			const auto right_cast		  = std::static_pointer_cast<cast_t>(right_payload_ref.lock());
+
+			return left_cast == right_cast;
 		}
 	};
 } // namespace Engine::Rendering

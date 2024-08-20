@@ -39,8 +39,8 @@ namespace Engine
 			const std::string& name,
 			const std::string& path,
 			Rendering::Texture_InitFiletype filetype,
-			VkFilter filtering				  = VK_FILTER_LINEAR,
-			VkSamplerAddressMode address_mode = VK_SAMPLER_ADDRESS_MODE_REPEAT
+			vk::Filter filtering				= vk::Filter::eLinear,
+			vk::SamplerAddressMode address_mode = vk::SamplerAddressMode::eRepeat
 		);
 		void AddFont(const std::string& name, const std::string& path);
 

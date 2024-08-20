@@ -6,8 +6,8 @@
 #include "InternalEngineObject.hpp"
 
 #include <memory>
+#include <type_traits>
 #include <vector>
-
 
 namespace Engine::Rendering
 {
@@ -30,12 +30,11 @@ namespace Engine::Rendering
 
 	class Texture final : public InternalEngineObject
 	{
-	private:
-		std::unique_ptr<TextureData> data;
-
 	public:
 		Texture(Engine* with_engine, std::unique_ptr<TextureData> init_data);
 		~Texture();
+
+		Texture(const Texture&) = delete;
 
 		void GetSize(TextureSize& size) const noexcept
 		{
@@ -56,5 +55,11 @@ namespace Engine::Rendering
 		{
 			return this->data->color_fmt;
 		}
+
+	private:
+		std::unique_ptr<TextureData> data;
 	};
+
+	static_assert(!std::is_copy_constructible<Texture>());
+
 } // namespace Engine::Rendering

@@ -4,8 +4,6 @@
 #include "Wrappers/Instance.hpp"
 #include "Wrappers/InstanceOwned.hpp"
 #include "Wrappers/LogicalDevice.hpp"
-#include "vulkan/vulkan_enums.hpp"
-#include "vulkan/vulkan_structs.hpp"
 
 namespace Engine::Rendering::Vulkan
 {
@@ -31,6 +29,11 @@ namespace Engine::Rendering::Vulkan
 	[[nodiscard]] CommandBuffer* CommandPool::AllocateCommandBuffer()
 	{
 		return new CommandBuffer(instance, native_handle);
+	}
+
+	[[nodiscard]] CommandBuffer CommandPool::AllocateTemporaryCommandBuffer()
+	{
+		return {instance, native_handle};
 	}
 
 } // namespace Engine::Rendering::Vulkan

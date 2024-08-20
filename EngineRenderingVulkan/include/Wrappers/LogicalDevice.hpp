@@ -33,15 +33,10 @@ namespace Engine::Rendering::Vulkan
 			return present_queue;
 		}
 
-		void WaitDeviceIdle() const
-		{
-			vkDeviceWaitIdle(native_handle);
-		}
-
 	private:
 		QueueFamilyIndices queue_family_indices{};
-		Queue graphics_queue = VK_NULL_HANDLE;
-		Queue present_queue	 = VK_NULL_HANDLE;
+		Queue graphics_queue;
+		Queue present_queue;
 
 		static const std::vector<const char*> vk_validation_layers;
 

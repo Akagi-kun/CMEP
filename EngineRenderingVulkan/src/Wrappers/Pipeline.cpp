@@ -8,9 +8,6 @@
 #include "Wrappers/LogicalDevice.hpp"
 #include "Wrappers/RenderPass.hpp"
 #include "Wrappers/ShaderModule.hpp"
-#include "vulkan/vulkan_core.h"
-#include "vulkan/vulkan_enums.hpp"
-#include "vulkan/vulkan_structs.hpp"
 
 #include <algorithm>
 #include <stdexcept>
@@ -18,6 +15,8 @@
 
 namespace Engine::Rendering::Vulkan
 {
+#pragma region Public
+
 	Pipeline::Pipeline(
 		InstanceOwned::value_t with_instance,
 		RenderPass* with_render_pass,
@@ -156,69 +155,42 @@ namespace Engine::Rendering::Vulkan
 
 		logical_device->GetHandle().waitIdle();
 
-		for (auto& data_ref : this->user_data)
-		{
-			for (auto* uniform_buffer : data_ref.uniform_buffers)
-			{
-				delete uniform_buffer;
-			}
-
-			logical_device->GetHandle().destroyDescriptorPool(data_ref.with_pool);
-		}
 		logical_device->GetHandle().destroyDescriptorSetLayout(descriptor_set_layout);
 
 		logical_device->GetHandle().destroyPipeline(native_handle);
 		logical_device->GetHandle().destroyPipelineLayout(pipeline_layout);
 	}
 
-	void Pipeline::AllocateNewDescriptorPool(Pipeline::UserData& data_ref)
+	void Pipeline::UpdateDescriptorSets(
+		vk::Device logical_device,
+		UserData& from,
+		per_frame_array<vk::WriteDescriptorSet> with_writes
+	)
 	{
-		LogicalDevice* logical_device = instance->GetLogicalDevice();
-
-		vk::DescriptorPoolCreateInfo pool_create_info({}, max_frames_in_flight, pool_sizes);
-
-		data_ref.with_pool = logical_device->GetHandle().createDescriptorPool(pool_create_info);
-	}
-
-	void Pipeline::AllocateNewUniformBuffers(per_frame_array<Buffer*>& buffer_ref)
-	{
-		static constexpr VkDeviceSize buffer_size = sizeof(RendererMatrixData);
-
-		for (size_t i = 0; i < max_frames_in_flight; i++)
+		for (uint32_t frame = 0; frame < with_writes.size(); frame++)
 		{
-			buffer_ref[i] = new Buffer(
-				instance,
-				buffer_size,
-				VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
-				VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT
-			);
+			with_writes[frame].dstSet = from.GetDescriptorSet(frame);
 		}
+
+		logical_device.updateDescriptorSets(with_writes, {});
 	}
 
-	void Pipeline::AllocateNewDescriptorSets(Pipeline::UserData& data_ref)
+	void Pipeline::BindPipeline(UserData& from, vk::CommandBuffer with_command_buffer, uint32_t current_frame)
 	{
-		LogicalDevice* logical_device = instance->GetLogicalDevice();
-
-		std::vector<vk::DescriptorSetLayout> layouts(max_frames_in_flight, this->descriptor_set_layout);
-		vk::DescriptorSetAllocateInfo alloc_info(data_ref.with_pool, layouts);
-
-		auto allocated_sets = logical_device->GetHandle().allocateDescriptorSets(alloc_info);
-
-		// move allocated descriptor sets into the user data
-		std::copy_n(
-			std::make_move_iterator(allocated_sets.begin()),
-			data_ref.descriptor_sets.size(),
-			data_ref.descriptor_sets.begin()
+		with_command_buffer.bindDescriptorSets(
+			vk::PipelineBindPoint::eGraphics,
+			pipeline_layout,
+			0,
+			from.descriptor_sets[current_frame],
+			{}
 		);
+
+		with_command_buffer.bindPipeline(vk::PipelineBindPoint::eGraphics, native_handle);
 	}
 
-	size_t Pipeline::AllocateNewUserData()
+	void Pipeline::AllocateNewUserData(UserData& into)
 	{
-		// TODO: Support actually removing userdata
-		size_t user_index = user_data.size();
-		user_data.emplace_back();
-
-		auto& allocated_user_data = user_data[user_index];
+		auto& allocated_user_data = into;
 
 		this->AllocateNewUniformBuffers(allocated_user_data.uniform_buffers);
 		this->AllocateNewDescriptorPool(allocated_user_data);
@@ -247,41 +219,54 @@ namespace Engine::Rendering::Vulkan
 			);
 		}
 
-		this->UpdateDescriptorSets(user_index, descriptor_writes);
-
-		return user_index;
+		UpdateDescriptorSets(instance->GetLogicalDevice()->GetHandle(), allocated_user_data, descriptor_writes);
 	}
 
-	void Pipeline::UpdateDescriptorSets(size_t user_index, per_frame_array<vk::WriteDescriptorSet> with_writes)
+#pragma endregion
+
+#pragma region Private
+
+	void Pipeline::AllocateNewUniformBuffers(per_frame_array<Buffer*>& buffer_ref)
+	{
+		static constexpr VkDeviceSize buffer_size = sizeof(RendererMatrixData);
+
+		for (size_t i = 0; i < max_frames_in_flight; i++)
+		{
+			// TODO: Create UniformBuffer class?
+			buffer_ref[i] = new Buffer(
+				instance,
+				buffer_size,
+				vk::BufferUsageFlagBits::eUniformBuffer,
+				vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent
+			);
+		}
+	}
+
+	void Pipeline::AllocateNewDescriptorPool(Pipeline::UserData& data_ref)
 	{
 		LogicalDevice* logical_device = instance->GetLogicalDevice();
 
-		for (uint32_t frame = 0; frame < with_writes.size(); frame++)
-		{
-			with_writes[frame].dstSet = this->GetDescriptorSet(user_index, frame);
-		}
+		vk::DescriptorPoolCreateInfo pool_create_info({}, max_frames_in_flight, pool_sizes);
 
-		logical_device->GetHandle().updateDescriptorSets(with_writes, {});
+		data_ref.descriptor_pool = logical_device->GetHandle().createDescriptorPool(pool_create_info);
 	}
 
-	void Pipeline::UpdateDescriptorSetsAll(size_t user_index, const vk::WriteDescriptorSet& with_write)
+	void Pipeline::AllocateNewDescriptorSets(Pipeline::UserData& data_ref)
 	{
-		per_frame_array<vk::WriteDescriptorSet> writes;
-		std::fill(writes.begin(), writes.end(), with_write);
+		LogicalDevice* logical_device = instance->GetLogicalDevice();
 
-		UpdateDescriptorSets(user_index, writes);
-	}
+		std::vector<vk::DescriptorSetLayout> layouts(max_frames_in_flight, this->descriptor_set_layout);
+		vk::DescriptorSetAllocateInfo alloc_info(data_ref.descriptor_pool, layouts);
 
-	void Pipeline::BindPipeline(size_t user_index, vk::CommandBuffer with_command_buffer, uint32_t current_frame)
-	{
-		with_command_buffer.bindDescriptorSets(
-			vk::PipelineBindPoint::eGraphics,
-			pipeline_layout,
-			0,
-			this->user_data[user_index].descriptor_sets[current_frame],
-			{}
+		auto allocated_sets = logical_device->GetHandle().allocateDescriptorSets(alloc_info);
+
+		// move allocated descriptor sets into the user data
+		std::copy_n(
+			std::make_move_iterator(allocated_sets.begin()),
+			data_ref.descriptor_sets.size(),
+			data_ref.descriptor_sets.begin()
 		);
-
-		with_command_buffer.bindPipeline(vk::PipelineBindPoint::eGraphics, native_handle);
 	}
+
+#pragma endregion
 } // namespace Engine::Rendering::Vulkan

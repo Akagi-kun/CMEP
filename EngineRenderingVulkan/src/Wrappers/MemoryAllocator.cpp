@@ -7,7 +7,7 @@ namespace Engine::Rendering::Vulkan
 	MemoryAllocator::MemoryAllocator(Instance* with_instance, vk::Device with_logical_device)
 	{
 		VmaAllocatorCreateInfo allocator_create_info = {};
-		allocator_create_info.vulkanApiVersion		 = VK_API_VERSION_1_1; // NOLINT
+		allocator_create_info.vulkanApiVersion		 = vk::ApiVersion11;
 		allocator_create_info.physicalDevice		 = with_instance->GetPhysicalDevice().GetHandle();
 		allocator_create_info.device				 = with_logical_device;
 		allocator_create_info.instance				 = with_instance->GetHandle();

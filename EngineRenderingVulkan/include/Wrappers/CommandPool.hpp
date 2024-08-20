@@ -17,5 +17,6 @@ namespace Engine::Rendering::Vulkan
 		~CommandPool();
 
 		[[nodiscard]] CommandBuffer* AllocateCommandBuffer();
+		[[nodiscard]] CommandBuffer AllocateTemporaryCommandBuffer();
 	};
 } // namespace Engine::Rendering::Vulkan

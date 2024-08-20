@@ -1,20 +1,24 @@
 #include "PipelineManager.hpp"
 
+#include "Wrappers/Buffer.hpp" // IWYU pragma: keep
 #include "Wrappers/Instance.hpp"
 #include "Wrappers/Pipeline.hpp"
 #include "Wrappers/Swapchain.hpp"
 
+#include <string_view>
 #include <utility>
 
 namespace Engine::Rendering::Vulkan
 {
+#pragma region Public
+
 	PipelineManager::PipelineManager(
 		SupportsLogging::logger_t with_logger,
 		InstanceOwned::value_t with_instance,
 		std::filesystem::path with_shader_path
 	)
-		: /* InternalEngineObject(with_engine), */ SupportsLogging(std::move(with_logger)),
-		  InstanceOwned(with_instance), shader_path(std::move(with_shader_path))
+		: SupportsLogging(std::move(with_logger)), InstanceOwned(with_instance),
+		  shader_path(std::move(with_shader_path))
 	{
 	}
 
@@ -28,8 +32,81 @@ namespace Engine::Rendering::Vulkan
 		pipelines.clear();
 	}
 
-	Pipeline* PipelineManager::FindPipeline(const ExtendedPipelineSettings& with_settings)
+	PipelineUserRef* PipelineManager::GetPipeline(const ExtendedPipelineSettings& with_settings)
 	{
+		Pipeline* pipeline = nullptr;
+		std::string_view reason;
+
+		std::tie(pipeline, reason) = this->FindPipeline(with_settings);
+
+		if (pipeline != nullptr)
+		{
+			auto* user_ref = new PipelineUserRef(instance, pipeline);
+
+			return user_ref;
+		}
+
+		this->logger->SimpleLog(
+			Logging::LogLevel::Debug1,
+			"Creating new pipeline (none found, '%s'), current pipelines: %u",
+			reason.data(),
+			this->pipelines.size()
+		);
+
+		// If no such pipeline is found, allocate new one
+		pipeline = new Vulkan::Pipeline(
+			instance,
+			instance->GetWindow()->GetSwapchain()->GetRenderPass(),
+			with_settings.short_setting,
+			shader_path
+		);
+
+		this->pipelines.emplace_back(with_settings, pipeline);
+
+		auto* user_ref = new PipelineUserRef(instance, pipeline);
+
+		return user_ref;
+	}
+
+	PipelineUserRef::PipelineUserRef(InstanceOwned::value_t with_instance, Pipeline* with_origin)
+		: InstanceOwned(with_instance), origin(with_origin)
+	{
+		origin->AllocateNewUserData(user_data);
+	}
+
+	PipelineUserRef::~PipelineUserRef()
+	{
+		for (auto* uniform_buffer : user_data.uniform_buffers)
+		{
+			delete uniform_buffer;
+		}
+
+		instance->GetLogicalDevice()->GetHandle().destroyDescriptorPool(user_data.descriptor_pool);
+	}
+
+	void PipelineUserRef::UpdateDescriptorSets(per_frame_array<vk::WriteDescriptorSet> with_writes)
+	{
+		Pipeline::UpdateDescriptorSets(instance->GetLogicalDevice()->GetHandle(), user_data, with_writes);
+	}
+
+	void PipelineUserRef::UpdateDescriptorSetsAll(const vk::WriteDescriptorSet& with_write)
+	{
+		per_frame_array<vk::WriteDescriptorSet> writes;
+		std::fill(writes.begin(), writes.end(), with_write);
+
+		UpdateDescriptorSets(writes);
+	}
+
+#pragma endregion
+
+#pragma region Private
+
+	// string_view is guaranteed to be null-terminated
+	std::pair<Pipeline*, std::string_view> PipelineManager::FindPipeline(const ExtendedPipelineSettings& with_settings)
+	{
+		std::string_view reasons[] = {"no setting match", "setting match, no supply data match"};
+		int reached_point		   = 0;
+
 		// O(N)
 		for (const auto& [settings, pipeline_ptr] : this->pipelines)
 		{
@@ -37,44 +114,15 @@ namespace Engine::Rendering::Vulkan
 			{
 				if (settings.supply_data == with_settings.supply_data)
 				{
-					return pipeline_ptr;
+					return {pipeline_ptr, {}};
 				}
 
-				return nullptr;
+				reached_point = 1;
 			}
 		}
 
-		return nullptr;
+		return {nullptr, reasons[reached_point]};
 	}
 
-	std::tuple<size_t, Pipeline*> PipelineManager::GetPipeline(const ExtendedPipelineSettings& with_settings)
-	{
-		Pipeline* pipeline = /*  nullptr;  */ this->FindPipeline(with_settings);
-
-		if (pipeline != nullptr)
-		{
-			size_t new_user_index = pipeline->AllocateNewUserData();
-			return {new_user_index, pipeline};
-		}
-
-		this->logger->SimpleLog(
-			Logging::LogLevel::Debug1,
-			"Creating new pipeline (no usable pipeline found), current pipelines: %u",
-			this->pipelines.size()
-		);
-
-		// If no such pipeline is found, allocate new one
-		pipeline = new Vulkan::Pipeline(
-			instance,
-			instance->GetWindow()->GetSwapchain()->GetRenderPass(), // renderer->GetSwapchain()->GetRenderPass(),
-			with_settings.short_setting,
-			shader_path
-		);
-
-		this->pipelines.emplace_back(with_settings, pipeline);
-
-		size_t new_user_index = pipeline->AllocateNewUserData();
-		return {new_user_index, pipeline};
-	}
-
+#pragma endregion
 } // namespace Engine::Rendering::Vulkan

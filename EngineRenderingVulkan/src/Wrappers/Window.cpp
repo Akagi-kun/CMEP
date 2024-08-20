@@ -2,7 +2,6 @@
 
 #include "Wrappers/Instance.hpp"
 #include "Wrappers/Swapchain.hpp"
-#include "vulkan/vulkan_handles.hpp"
 
 #include <stdexcept>
 #include <utility>
@@ -47,17 +46,18 @@ namespace Engine::Rendering::Vulkan
 		// Surface ops
 		surface.created_by = with_instance;
 
+		// TODO: Make a constructor for Surface
 		if (glfwCreateWindowSurface(
 				static_cast<Instance::value_t>(*instance),
 				native_handle,
 				nullptr,
-				&surface.native_handle
+				reinterpret_cast<VkSurfaceKHR*>(&surface.native_handle)
 			) != VK_SUCCESS)
 		{
 			throw std::runtime_error("glfw failed to create window surface!");
 		}
 
-		// this->CreateSwapchain();
+		// CreateSwapchain();
 	}
 
 	Window::~Window()
@@ -121,15 +121,15 @@ namespace Engine::Rendering::Vulkan
 			);
 		}
 
-		this->swapchain = new Swapchain(instance, &surface, extent, swapchain_image_count);
+		swapchain = new Swapchain(instance, &surface, extent, swapchain_image_count);
 	}
 
 	void Window::DrawFrame()
 	{
 		LogicalDevice* logical_device = instance->GetLogicalDevice();
 
-		auto& render_target = swapchain->GetRenderTarget(this->current_frame);
-		// auto& frame_sync_objects = this->sync_objects[this->current_frame];
+		auto& render_target = swapchain->GetRenderTarget(current_frame);
+		// auto& frame_sync_objects = sync_objects[current_frame];
 
 		// Wait for fence
 		vkWaitForFences(logical_device->GetHandle(), 1, &render_target.sync_objects.in_flight, VK_TRUE, UINT64_MAX);
@@ -138,7 +138,7 @@ namespace Engine::Rendering::Vulkan
 		// (fence has to be reset before being used again)
 		vkResetFences(logical_device->GetHandle(), 1, &render_target.sync_objects.in_flight);
 
-		// Index of framebuffer in this->vk_swap_chain_framebuffers
+		// Index of framebuffer in vk_swap_chain_framebuffers
 		uint32_t image_index	= 0;
 		// Acquire render target
 		// the render target is an image in the swap chain
@@ -191,15 +191,19 @@ namespace Engine::Rendering::Vulkan
 
 		// Submit to queue
 		// passed fence will be signaled when command buffer execution is finished
-		if (vkQueueSubmit(logical_device->GetGraphicsQueue(), 1, &submit_info, render_target.sync_objects.in_flight) !=
-			VK_SUCCESS)
+		if (vkQueueSubmit(
+				logical_device->GetGraphicsQueue().GetHandle(),
+				1,
+				&submit_info,
+				render_target.sync_objects.in_flight
+			) != VK_SUCCESS)
 		{
 			throw std::runtime_error("Failed to submit draw command buffer!");
 		}
 
 		// Increment current frame
-		// this->current_frame = 0;
-		this->current_frame = (this->current_frame + 1) % max_frames_in_flight;
+		// current_frame = 0;
+		current_frame = (current_frame + 1) % max_frames_in_flight;
 
 		VkPresentInfoKHR present_info{};
 		present_info.sType				= VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
@@ -215,7 +219,7 @@ namespace Engine::Rendering::Vulkan
 		present_info.pResults		 = nullptr; // Optional
 
 		// Present current image to the screen
-		if (vkQueuePresentKHR(logical_device->GetPresentQueue(), &present_info) != VK_SUCCESS)
+		if (vkQueuePresentKHR(logical_device->GetPresentQueue().GetHandle(), &present_info) != VK_SUCCESS)
 		{
 			throw std::runtime_error("Failed to present queue!");
 		}
@@ -318,17 +322,17 @@ namespace Engine::Rendering::Vulkan
 		ScreenSize framebuffer;
 		do
 		{
-			framebuffer = this->GetFramebufferSize();
+			framebuffer = GetFramebufferSize();
 			glfwWaitEvents();
 		} while (framebuffer.x == 0 || framebuffer.y == 0);
 
-		logical_device->WaitDeviceIdle();
+		logical_device->GetHandle().waitIdle();
 
 		// Clean up old swap chain
 		delete swapchain;
 
 		// Create a new swap chain
-		this->CreateSwapchain();
+		CreateSwapchain();
 	}
 
 #pragma endregion

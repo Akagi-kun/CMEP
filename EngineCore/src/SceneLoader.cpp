@@ -173,17 +173,17 @@ namespace Engine
 					if (asset_type == "texture")
 					{
 						// Check if a specific filtering is requested, otherwise use default
-						VkFilter filtering = VK_FILTER_LINEAR;
+						vk::Filter filtering = vk::Filter::eLinear;
 						if (asset_entry.contains("filtering"))
 						{
-							filtering = EnumStringConvertor<VkFilter>(asset_entry["filtering"].get<std::string>());
+							filtering = EnumStringConvertor<vk::Filter>(asset_entry["filtering"].get<std::string>());
 						}
 
 						// Check if a specific sampling is requested, otherwise use default
-						VkSamplerAddressMode sampling_mode = VK_SAMPLER_ADDRESS_MODE_REPEAT;
+						vk::SamplerAddressMode sampling_mode = vk::SamplerAddressMode::eRepeat;
 						if (asset_entry.contains("sampling_mode"))
 						{
-							sampling_mode = EnumStringConvertor<VkSamplerAddressMode>(
+							sampling_mode = EnumStringConvertor<vk::SamplerAddressMode>(
 								asset_entry["sampling_mode"].get<std::string>()
 							);
 						}

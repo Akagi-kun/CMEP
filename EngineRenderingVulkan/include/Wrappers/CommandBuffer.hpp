@@ -23,7 +23,7 @@ namespace Engine::Rendering::Vulkan
 		// TODO: Remove this in the future
 		void RecordCmds(std::function<void(CommandBuffer*)> const& lambda);
 
-		void QueueSubmit(VkQueue to_queue);
+		void QueueSubmit(vk::Queue to_queue);
 
 		void BufferBufferCopy(Buffer* from_buffer, Buffer* to_buffer, std::vector<VkBufferCopy> regions);
 		void BufferImageCopy(Buffer* from_buffer, Image* to_image);

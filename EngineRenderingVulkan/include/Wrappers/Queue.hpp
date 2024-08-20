@@ -5,16 +5,17 @@
 
 namespace Engine::Rendering::Vulkan
 {
-	class Queue : public HandleWrapper<VkQueue, true>
+	class Queue : public HandleWrapper<vk::Queue, true>
 	{
 	public:
-		Queue(VkQueue with_queue) : HandleWrapper<VkQueue, true>(with_queue)
+		Queue() = default;
+		Queue(vk::Queue with_queue) : HandleWrapper<vk::Queue, true>(with_queue)
 		{
 		}
 
 		void WaitQueueIdle() const
 		{
-			vkQueueWaitIdle(native_handle);
+			native_handle.waitIdle();
 		}
 	};
 } // namespace Engine::Rendering::Vulkan

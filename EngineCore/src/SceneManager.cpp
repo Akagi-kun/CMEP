@@ -21,8 +21,6 @@ namespace Engine
 	SceneManager::SceneManager(Engine* with_engine) : InternalEngineObject(with_engine)
 	{
 		// Reset transform and rotation
-		// this->camera_transform	 = glm::vec3(0.0, 0.0, 0.0);
-		// this->camera_hv_rotation = glm::vec2(0.0, 0.0);
 		this->logger = this->owner_engine->GetLogger();
 
 		std::shared_ptr<Scene> default_scene = std::make_shared<Scene>(with_engine);
@@ -39,11 +37,7 @@ namespace Engine
 	SceneManager::~SceneManager()
 	{
 		this->logger->SimpleLog(Logging::LogLevel::Info, LOGPFX_CURRENT "Destructor called");
-		/*
-		for (auto& scene : this->scenes)
-		{
-			scene.second.reset();
-		} */
+
 		this->scenes.clear();
 
 		this->scene_loader.reset();

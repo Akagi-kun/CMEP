@@ -12,7 +12,23 @@ namespace Engine::Rendering::Vulkan
 	class Pipeline : public InstanceOwned, public HoldsVMA
 	{
 	public:
-		using user_idx_t = size_t;
+		struct UserData
+		{
+			per_frame_array<Buffer*> uniform_buffers;
+
+			vk::DescriptorPool descriptor_pool;
+			per_frame_array<vk::DescriptorSet> descriptor_sets;
+
+			[[nodiscard]] Buffer* GetUniformBuffer(uint32_t current_frame)
+			{
+				return uniform_buffers[current_frame];
+			}
+
+			[[nodiscard]] vk::DescriptorSet GetDescriptorSet(uint32_t current_frame)
+			{
+				return descriptor_sets[current_frame];
+			}
+		};
 
 		Pipeline(
 			InstanceOwned::value_t with_instance,
@@ -22,45 +38,22 @@ namespace Engine::Rendering::Vulkan
 		);
 		~Pipeline();
 
-		user_idx_t AllocateNewUserData();
+		void AllocateNewUserData(UserData& into);
 
-		void UpdateDescriptorSets(user_idx_t user_index, per_frame_array<vk::WriteDescriptorSet> writes);
-		void UpdateDescriptorSetsAll(user_idx_t user_index, const vk::WriteDescriptorSet& with_write);
+		void BindPipeline(UserData& from, vk::CommandBuffer with_command_buffer, uint32_t current_frame);
 
-		[[nodiscard]] Buffer* GetUniformBuffer(user_idx_t user_idx, uint32_t current_frame)
-		{
-			return this->user_data[user_idx].uniform_buffers[current_frame];
-		}
-
-		[[nodiscard]] vk::DescriptorSet GetDescriptorSet(user_idx_t user_idx, uint32_t current_frame)
-		{
-			return this->user_data[user_idx].descriptor_sets[current_frame];
-		}
-
-		void BindPipeline(user_idx_t user_index, vk::CommandBuffer with_command_buffer, uint32_t current_frame);
+		static void UpdateDescriptorSets(
+			vk::Device logical_device,
+			UserData& from,
+			per_frame_array<vk::WriteDescriptorSet> writes
+		);
 
 	private:
-		struct UserData
-		{
-			per_frame_array<Buffer*> uniform_buffers;
-
-			vk::DescriptorPool with_pool;
-			per_frame_array<vk::DescriptorSet> descriptor_sets;
-		};
-
 		vk::DescriptorSetLayout descriptor_set_layout = VK_NULL_HANDLE;
 		VkPipelineLayout pipeline_layout			  = VK_NULL_HANDLE;
 		vk::Pipeline native_handle					  = VK_NULL_HANDLE;
 
-		// std::vector<VBuffer*> uniform_buffers;
-		// std::vector<VulkanRenderingEngine::per_frame_array<VBuffer*>> uniform_buffers;
-
 		std::vector<vk::DescriptorPoolSize> pool_sizes;
-
-		std::vector<UserData> user_data;
-
-		// VkDescriptorPool descriptor_pool = VK_NULL_HANDLE;
-		//  std::vector<VulkanRenderingEngine::per_frame_array<VkDescriptorSet>> descriptor_sets;
 
 		void AllocateNewDescriptorPool(UserData& data_ref);
 		void AllocateNewUniformBuffers(per_frame_array<Buffer*>& buffer_ref);

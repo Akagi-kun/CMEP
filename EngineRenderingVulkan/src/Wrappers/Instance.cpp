@@ -8,9 +8,6 @@
 #include "Wrappers/DeviceScore.hpp"
 #include "Wrappers/MemoryAllocator.hpp"
 #include "Wrappers/Surface.hpp"
-#include "vulkan/vulkan_enums.hpp"
-#include "vulkan/vulkan_handles.hpp"
-#include "vulkan/vulkan_structs.hpp"
 
 #include <cstring>
 #include <stdexcept>
@@ -82,14 +79,14 @@ namespace Engine::Rendering::Vulkan
 		// Initialize dynamic dispatcher base before all other vulkan calls
 		VULKAN_HPP_DEFAULT_DISPATCHER.init(vkGetInstanceProcAddr);
 
-		this->InitInstance();
+		InitInstance();
 
 		this->logger->SimpleLog(Logging::LogLevel::Info, LOGPFX_CURRENT "Instance initialized");
 
 		window =
 			new Window(this, with_window_parameters.size, with_window_parameters.title, with_window_parameters.hints);
 
-		this->InitDevice();
+		InitDevice();
 		logical_device = new LogicalDevice(this, window->GetSurface());
 
 		memory_allocator = new MemoryAllocator(this, *logical_device);
@@ -101,7 +98,7 @@ namespace Engine::Rendering::Vulkan
 
 	Instance::~Instance()
 	{
-		this->logical_device->WaitDeviceIdle();
+		logical_device->GetHandle().waitIdle();
 
 		delete window;
 
@@ -155,6 +152,7 @@ namespace Engine::Rendering::Vulkan
 			instance_layers.insert(instance_layers.end(), validation_layers.begin(), validation_layers.end());
 		}
 
+		// Create an instance
 		native_handle = vk::createInstance({
 			{},
 			&app_info,
@@ -165,7 +163,6 @@ namespace Engine::Rendering::Vulkan
 		// Load instance functions in dispatcher
 		VULKAN_HPP_DEFAULT_DISPATCHER.init(native_handle);
 
-		// Create an instance
 		this->logger->SimpleLog(Logging::LogLevel::Info, LOGPFX_CURRENT "Created a Vulkan instance");
 
 		// If it's a debug build, add a debug callback to Vulkan
@@ -222,11 +219,10 @@ namespace Engine::Rendering::Vulkan
 	{
 		this->logger->SimpleLog(Logging::LogLevel::Debug2, LOGPFX_CURRENT "Initializing vulkan device");
 
-		// Get physical device count
-
+		// Get physical devices
 		std::vector<vk::PhysicalDevice> physical_devices = native_handle.enumeratePhysicalDevices();
 
-		// Sorted vector of all devices
+		// Sorted (by score) vector of all devices
 		std::vector<DeviceScore> candidates;
 		candidates.reserve(physical_devices.size());
 		for (const auto& device : physical_devices)
@@ -254,15 +250,15 @@ namespace Engine::Rendering::Vulkan
 		{
 			if (candidate)
 			{
-				this->physical_device = candidate.device_scored;
-				this->msaa_samples	  = GetMaxUsableSampleCount(physical_device);
+				physical_device = candidate.device_scored;
+				msaa_samples	= GetMaxUsableSampleCount(physical_device);
 
 				this->logger->SimpleLog(
 					Logging::LogLevel::Info,
 					LOGPFX_CURRENT "Found a capable physical device: '%s'",
-					this->physical_device.GetDeviceName().c_str()
+					physical_device.GetDeviceName().c_str()
 				);
-				this->logger->SimpleLog(Logging::LogLevel::Info, LOGPFX_CURRENT "Using MSAAx%u", this->msaa_samples);
+				this->logger->SimpleLog(Logging::LogLevel::Info, LOGPFX_CURRENT "Using MSAAx%u", msaa_samples);
 
 				return;
 			}
