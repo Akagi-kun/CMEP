@@ -1,5 +1,7 @@
 #pragma once
 
+#include "Rendering/Transform.hpp"
+
 #include "ImportVulkan.hpp"
 
 #include <cstring>
@@ -9,6 +11,18 @@
 
 namespace Engine::Rendering::Vulkan::Utils
 {
+	template <typename T, std::enable_if_t<std::is_same_v<T, vk::Extent2D>, int>* = nullptr>
+	[[nodiscard]] constexpr auto ConvertToExtent(ImageSize& size) -> T
+	{
+		return {static_cast<uint32_t>(size.x), static_cast<uint32_t>(size.y)};
+	}
+
+	template <typename T, std::enable_if_t<std::is_same_v<T, vk::Extent3D>, int>* = nullptr>
+	[[nodiscard]] constexpr auto ConvertToExtent(ImageSize& size, uint32_t depth) -> T
+	{
+		return {static_cast<uint32_t>(size.x), static_cast<uint32_t>(size.y), depth};
+	}
+
 	inline vk::SurfaceFormatKHR ChooseVulkanSwapSurfaceFormat(const std::vector<vk::SurfaceFormatKHR>& available_formats
 	)
 	{

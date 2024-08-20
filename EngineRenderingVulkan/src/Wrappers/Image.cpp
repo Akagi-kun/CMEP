@@ -1,6 +1,7 @@
 #include "Wrappers/Image.hpp"
 
 #include "ImportVulkan.hpp"
+#include "VulkanUtilities.hpp"
 #include "Wrappers/CommandBuffer.hpp"
 #include "Wrappers/CommandPool.hpp"
 #include "Wrappers/Instance.hpp"
@@ -28,7 +29,7 @@ namespace Engine::Rendering::Vulkan
 			{},
 			vk::ImageType::e2D,
 			image_format,
-			vk::Extent3D{size.x, size.y, 1},
+			Utils::ConvertToExtent<vk::Extent3D>(size, 1),
 			1,
 			1,
 			num_samples,

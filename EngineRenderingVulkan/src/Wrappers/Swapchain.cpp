@@ -148,19 +148,22 @@ namespace Engine::Rendering::Vulkan
 
 	void Swapchain::BeginRenderPass(CommandBuffer* with_buffer, size_t image_index)
 	{
-		VkRenderPassBeginInfo render_pass_info{};
+		std::array<vk::ClearValue, 2> clear_values{};
+		clear_values[0].setColor({0.0f, 0.0f, 0.0f, 1.0f}); // TODO: configurable
+		clear_values[1].setDepthStencil({1.f, 0});
+
+		vk::RenderPassBeginInfo
+			render_pass_info(render_pass->native_handle, framebuffers[image_index], {{0, 0}, extent}, clear_values, {});
+
+		/* VkRenderPassBeginInfo render_pass_info{};
 		render_pass_info.sType			   = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
 		render_pass_info.renderPass		   = this->render_pass->native_handle;
 		render_pass_info.framebuffer	   = this->framebuffers[image_index];
 		render_pass_info.renderArea.offset = {0, 0};
 		render_pass_info.renderArea.extent = this->extent;
 
-		std::array<VkClearValue, 2> clear_values{};
-		clear_values[0].color		 = {{0.0f, 0.0f, 0.0f, 1.0f}}; // TODO: configurable
-		clear_values[1].depthStencil = {1.0f, 0};
-
 		render_pass_info.clearValueCount = 2;
-		render_pass_info.pClearValues	 = clear_values.data();
+		render_pass_info.pClearValues	 = clear_values.data(); */
 
 		with_buffer->BeginRenderPass(&render_pass_info);
 	}
@@ -172,7 +175,7 @@ namespace Engine::Rendering::Vulkan
 		void* user_data
 	)
 	{
-		command_buffer->BeginCmdBuffer(0);
+		command_buffer->BeginCmdBuffer({});
 
 		BeginRenderPass(command_buffer, image_index);
 
