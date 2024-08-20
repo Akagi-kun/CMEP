@@ -1,5 +1,7 @@
 #pragma once
 
+#include "Rendering/Transform.hpp"
+
 #include "HandleWrapper.hpp"
 #include "HoldsVMA.hpp"
 #include "ImportVulkan.hpp"

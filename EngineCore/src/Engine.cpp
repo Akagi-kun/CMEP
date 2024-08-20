@@ -79,10 +79,9 @@ namespace Engine
 		auto* window_data		= vk_instance->GetWindow();
 		const auto& screen_size = window_data->GetFramebufferSize();
 
-		static Rendering::Vector2<double> last_pos = {
-			static_cast<double>(screen_size.x) / 2,
-			static_cast<double>(screen_size.y) / 2
-		};
+		static glm::vec<2, double>
+			/* static Vector2<double> */
+			last_pos = {static_cast<double>(screen_size.x) / 2, static_cast<double>(screen_size.y) / 2};
 
 		static constexpr double clamp_difference = 128;
 

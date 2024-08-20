@@ -25,7 +25,7 @@ namespace Engine::Factories
 			int color_format,
 			vk::Filter filtering,
 			vk::SamplerAddressMode sampler_address_mode,
-			Rendering::TextureSize size
+			Rendering::ImageSize size
 		);
 	};
 } // namespace Engine::Factories

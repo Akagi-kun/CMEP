@@ -92,10 +92,9 @@ namespace Engine::Rendering
 				}
 
 				// Get texture information
-				TextureSize texture_size;
 				std::shared_ptr<Texture> texture = font->GetPageTexture(chardata->page);
 				assert(texture != nullptr);
-				texture->GetSize(texture_size);
+				ImageSize texture_size = texture->GetSize();
 				assert(texture_size.x > 0 && texture_size.y > 0);
 
 				// Character parameters as specified in .fnt file

@@ -48,7 +48,7 @@ namespace Engine::Rendering::Vulkan
 	class Window final : public InstanceOwned, public HandleWrapper<GLFWwindow*>
 	{
 	public:
-		Vector2<double> cursor_position;
+		glm::vec<2, double> cursor_position;
 		std::queue<InputEvent> input_events;
 
 		struct StatusBits

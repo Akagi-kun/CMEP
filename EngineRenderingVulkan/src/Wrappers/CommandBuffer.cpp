@@ -52,13 +52,13 @@ namespace Engine::Rendering::Vulkan
 		LogicalDevice* device = instance->GetLogicalDevice();
 
 		// TODO: Check if we should really pass non-zero here
-		this->BeginCmdBuffer(VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT);
+		BeginCmdBuffer(VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT);
 
 		// TODO: Don't pass this here
 		lambda(this);
 
-		this->EndCmdBuffer();
-		this->QueueSubmit(device->GetGraphicsQueue());
+		EndCmdBuffer();
+		QueueSubmit(device->GetGraphicsQueue());
 
 		device->GetGraphicsQueue().WaitQueueIdle();
 	}
@@ -75,7 +75,7 @@ namespace Engine::Rendering::Vulkan
 
 	void CommandBuffer::BufferBufferCopy(Buffer* from_buffer, Buffer* to_buffer, std::vector<VkBufferCopy> regions)
 	{
-		this->RecordCmds([&](CommandBuffer* handle) {
+		RecordCmds([&](CommandBuffer* handle) {
 			vkCmdCopyBuffer(
 				handle->native_handle,
 				from_buffer->GetHandle(),
@@ -104,7 +104,7 @@ namespace Engine::Rendering::Vulkan
 		region.imageOffset = {0, 0, 0};
 		region.imageExtent = {image_size.x, image_size.y, 1};
 
-		this->RecordCmds([&](CommandBuffer* with_buf) {
+		RecordCmds([&](CommandBuffer* with_buf) {
 			vkCmdCopyBufferToImage(
 				with_buf->native_handle,
 				from_buffer->GetHandle(),

@@ -11,7 +11,6 @@
 #include <memory>
 #include <string>
 
-
 namespace Engine
 {
 	class AssetManager;

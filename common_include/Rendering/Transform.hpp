@@ -1,5 +1,6 @@
 #pragma once
 
+// #include "DataTypes.hpp"
 #include "glm/glm.hpp"
 
 #include <cstdint>
@@ -13,16 +14,10 @@ namespace Engine::Rendering
 		glm::vec3 rotation = glm::vec3();
 	};
 
-	template <typename T> struct Vector2
-	{
-		using self_t  = Vector2<T>;
-		using value_t = T;
+	// Screen size, use for windows etc
+	using ScreenSize = glm::vec<2, uint_fast16_t>;
 
-		T x;
-		T y;
-	};
-
-	using ScreenSize  = Vector2<uint_fast16_t>;
-	using TextureSize = Vector2<uint_fast32_t>;
+	// Texture size
+	using ImageSize = glm::vec<2, uint_fast32_t>;
 
 } // namespace Engine::Rendering

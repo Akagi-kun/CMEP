@@ -238,7 +238,7 @@ namespace Engine::Rendering::Vulkan
 	{
 		auto* self = Window::GetWindowPtrFromGLFW(window);
 
-		self->Resize({static_cast<ScreenSize::value_t>(width), static_cast<ScreenSize::value_t>(height)});
+		self->Resize({width, height});
 	}
 
 	void Window::CallbackOnWindowFocus(GLFWwindow* window, int focused)

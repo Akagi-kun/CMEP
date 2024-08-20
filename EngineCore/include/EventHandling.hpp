@@ -1,8 +1,8 @@
 #pragma once
 
-#include "Rendering/Transform.hpp"
-
+// #include "DataTypes.hpp"
 #include "EnumStringConvertor.hpp"
+#include "glm/glm.hpp"
 
 #include <cstdint>
 
@@ -33,8 +33,8 @@ namespace Engine::EventHandling
 
 		double delta_time = 0.0;
 		union {
-			uint16_t keycode = 0;			  // ON_KEYDOWN/ON_KEYUP events
-			Rendering::Vector2<double> mouse; // ON_MOUSEMOVED event
+			uint16_t keycode = 0;	   // ON_KEYDOWN/ON_KEYUP events
+			glm::vec<2, double> mouse; // ON_MOUSEMOVED event
 		};
 
 		Event(Engine* const with_engine, const EnumStringConvertor<EventType> eventtype)

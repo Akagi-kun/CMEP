@@ -44,7 +44,7 @@ namespace Engine::Factories
 		{
 			case Rendering::Texture_InitFiletype::FILE_PNG:
 			{
-				Rendering::TextureSize size;
+				Rendering::ImageSize size;
 				unsigned int error = lodepng::decode(data, size.x, size.y, path.string());
 
 				if (error != 0 || 0 >= size.x || size.x >= max_texture_size || 0 >= size.y ||
@@ -85,7 +85,7 @@ namespace Engine::Factories
 		int color_format,
 		vk::Filter filtering,
 		vk::SamplerAddressMode sampler_address_mode,
-		Rendering::TextureSize size
+		Rendering::ImageSize size
 	)
 	{
 		uint_fast8_t channel_count = 4;
