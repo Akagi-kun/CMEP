@@ -3,7 +3,7 @@ project(EngineCore CXX)
 
 set(SRC_FILES
 	src/VmaImplementation.cpp
-	src/VkDispatchLoaderDynamic.cpp
+	src/DispatchLoaderDynamic.cpp
 
 	src/PipelineManager.cpp
 	

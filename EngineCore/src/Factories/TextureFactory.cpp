@@ -44,14 +44,18 @@ namespace Engine::Factories
 		{
 			case Rendering::Texture_InitFiletype::FILE_PNG:
 			{
-				// static_cast size to ensure compatibility with different compilers
 				Rendering::ImageSize size;
-				unsigned int error = lodepng::decode(
-					data,
-					static_cast<unsigned int&>(size.x),
-					static_cast<unsigned int&>(size.y),
-					path.string()
-				);
+				unsigned int error;
+
+				// lodepng uses references for output
+				// this makes it incompatible with ImageSize when defined with different sized integer
+				{
+					unsigned int size_x;
+					unsigned int size_y;
+
+					error = lodepng::decode(data, std::ref(size_x), size_y, path.string());
+					size  = {size_x, size_y};
+				}
 
 				if (error != 0 || 0 >= size.x || size.x >= max_texture_size || 0 >= size.y ||
 					size.y >= max_texture_size)
@@ -76,8 +80,6 @@ namespace Engine::Factories
 				throw std::runtime_error("Unknown texture filetype passed to TextureFactory!");
 			}
 		}
-
-		// fclose(file);
 
 		std::shared_ptr<Rendering::Texture> texture =
 			std::make_shared<Rendering::Texture>(owner_engine, std::move(texture_data));
@@ -123,11 +125,8 @@ namespace Engine::Factories
 
 		auto command_buffer = vk_instance->GetCommandPool()->AllocateTemporaryCommandBuffer();
 
-		// auto* command_buffer = vk_instance->GetCommandPool()->AllocateCommandBuffer();
-
 		command_buffer.BufferImageCopy(staging_buffer, texture_data->texture_image);
 
-		// delete command_buffer;
 		delete staging_buffer;
 
 		// Transfer image layout to compatible with rendering

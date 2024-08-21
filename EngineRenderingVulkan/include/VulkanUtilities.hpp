@@ -58,11 +58,6 @@ namespace Engine::Rendering::Vulkan::Utils
 		// return vk::PresentModeKHR::eFifoRelaxed;
 	}
 
-	inline bool DoesVulkanFormatHaveStencilComponent(VkFormat format) noexcept
-	{
-		return format == VK_FORMAT_D32_SFLOAT_S8_UINT || format == VK_FORMAT_D24_UNORM_S8_UINT;
-	}
-
 	inline std::vector<char> ReadShaderFile(const std::filesystem::path& path)
 	{
 		std::ifstream file(path, std::ios::ate | std::ios::binary);
