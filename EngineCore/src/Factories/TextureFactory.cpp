@@ -44,8 +44,14 @@ namespace Engine::Factories
 		{
 			case Rendering::Texture_InitFiletype::FILE_PNG:
 			{
+				// static_cast size to ensure compatibility with different compilers
 				Rendering::ImageSize size;
-				unsigned int error = lodepng::decode(data, size.x, size.y, path.string());
+				unsigned int error = lodepng::decode(
+					data,
+					static_cast<unsigned int&>(size.x),
+					static_cast<unsigned int&>(size.y),
+					path.string()
+				);
 
 				if (error != 0 || 0 >= size.x || size.x >= max_texture_size || 0 >= size.y ||
 					size.y >= max_texture_size)

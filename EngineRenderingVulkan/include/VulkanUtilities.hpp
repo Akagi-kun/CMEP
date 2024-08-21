@@ -28,9 +28,8 @@ namespace Engine::Rendering::Vulkan::Utils
 	{
 		for (const auto& available_format : available_formats)
 		{
-			if (available_format.format == vk::Format::eB8G8R8A8Srgb /* VK_FORMAT_B8G8R8A8_SRGB */ &&
-				available_format.colorSpace ==
-					vk::ColorSpaceKHR::eSrgbNonlinear /* VK_COLOR_SPACE_SRGB_NONLINEAR_KHR */)
+			if (available_format.format == vk::Format::eB8G8R8A8Srgb &&
+				available_format.colorSpace == vk::ColorSpaceKHR::eSrgbNonlinear)
 			{
 				return available_format;
 			}
@@ -45,17 +44,17 @@ namespace Engine::Rendering::Vulkan::Utils
 	{
 		(void)(available_present_modes);
 		// Mailbox potentially worse?
-		// for (const auto& available_present_mode : availablePresentModes)
-		//{
-		/* if (available_present_mode == vk::PresentModeKHR::eMailbox)
+		/* for (const auto& available_present_mode : available_present_modes)
 		{
-			return available_present_mode;
-		} */
-		//}
+			if (available_present_mode == vk::PresentModeKHR::eMailbox)
+			{
+				return available_present_mode;
+			}
+		}
+		*/
 
 		// FIFO is guaranteed to be available by the spec
 		return vk::PresentModeKHR::eFifo;
-		// VK_PRESENT_MODE_FIFO_KHR;
 		// return vk::PresentModeKHR::eFifoRelaxed;
 	}
 
