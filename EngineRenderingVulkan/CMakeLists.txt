@@ -53,6 +53,8 @@ set_target_properties(EngineRenderingVulkan PROPERTIES POSITION_INDEPENDENT_CODE
 
 target_compile_definitions(EngineRenderingVulkan PRIVATE VULKAN_HPP_DISPATCH_LOADER_DYNAMIC=1)
 
+target_precompile_headers(EngineRenderingVulkan PRIVATE [["ImportVulkan.hpp"]])
+
 target_compile_options(EngineRenderingVulkan PRIVATE ${ENGINE_COMPILE_OPTIONS})
 
 target_link_directories(EngineRenderingVulkan PUBLIC ../build ${ENGINE_VULKAN_LINK_PATH})

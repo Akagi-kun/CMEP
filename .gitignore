@@ -403,3 +403,4 @@ cov-int
 /CMakeDoxyfile.in
 
 util/*.png
+util/*.csv

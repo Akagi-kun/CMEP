@@ -1,4 +1,5 @@
 import os
+import argparse
 
 build_str = "clang-tidy --verify-config && clang-tidy"
 
@@ -17,9 +18,12 @@ def walk_path(dir):
 			walk_path(dir)
 
 def main():
+	parser = argparse.ArgumentParser(prog="clang-tidy command generator", description="generates a clang-tidy command with every source file of a specific folder")
+	parser.add_argument("folder")
+	args = parser.parse_args()
+
 	# Walk every library
-	walk_path("EngineCore/src")
-	#walk_path("EngineLogging/src")
+	walk_path(args.folder + "/src")
 
 	print("Generated the following clang-tidy command:\n")
 	print(build_str)

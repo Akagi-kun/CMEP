@@ -57,7 +57,7 @@ namespace Engine::Rendering::Vulkan
 			{
 				return value_t();
 			}
-			else if constexpr (std::is_constructible<value_t, std::nullptr_t>())
+			else if constexpr (std::is_constructible<value_t, std::nullptr_t>() || is_ptr_t::value)
 			{
 				return nullptr;
 			}
