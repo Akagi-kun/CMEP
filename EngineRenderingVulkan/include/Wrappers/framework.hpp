@@ -3,8 +3,6 @@
 // file containing forward decls
 // for vulkan wrapper classes
 
-#include <cstdint>
-
 namespace Engine::Rendering::Vulkan
 {
 	// Base classes
@@ -19,7 +17,6 @@ namespace Engine::Rendering::Vulkan
 	class Instance;
 	class PhysicalDevice;
 	class LogicalDevice;
-	class Queue;
 
 	class DeviceManager;
 	class VulkanRenderingEngine;
@@ -27,11 +24,6 @@ namespace Engine::Rendering::Vulkan
 	// Image related
 	class Image;
 	class SampledImage;
-	/* struct ImageSize // TODO: Replace with Vector2
-	{
-		uint32_t x;
-		uint32_t y;
-	}; */
 
 	// Rendering stack related
 	class Swapchain;

@@ -9,12 +9,12 @@
 
 namespace Engine::Rendering::Vulkan
 {
-	class CommandPool : public InstanceOwned, public HandleWrapper<vk::CommandPool>
+	class CommandPool : public InstanceOwned, public HandleWrapper<vk::raii::CommandPool>
 	{
 	public:
 		CommandPool(InstanceOwned::value_t with_instance);
 
-		~CommandPool();
+		~CommandPool() = default;
 
 		[[nodiscard]] CommandBuffer* AllocateCommandBuffer();
 		[[nodiscard]] CommandBuffer AllocateTemporaryCommandBuffer();

@@ -16,15 +16,15 @@ namespace Engine::Rendering::Vulkan
 		{
 			per_frame_array<Buffer*> uniform_buffers;
 
-			vk::DescriptorPool descriptor_pool;
-			per_frame_array<vk::DescriptorSet> descriptor_sets;
+			vk::raii::DescriptorPool descriptor_pool = nullptr;
+			vk::raii::DescriptorSets descriptor_sets = nullptr;
 
 			[[nodiscard]] Buffer* GetUniformBuffer(uint32_t current_frame)
 			{
 				return uniform_buffers[current_frame];
 			}
 
-			[[nodiscard]] vk::DescriptorSet GetDescriptorSet(uint32_t current_frame)
+			[[nodiscard]] vk::raii::DescriptorSet& GetDescriptorSet(uint32_t current_frame)
 			{
 				return descriptor_sets[current_frame];
 			}
@@ -38,20 +38,20 @@ namespace Engine::Rendering::Vulkan
 		);
 		~Pipeline();
 
-		void AllocateNewUserData(UserData& into);
+		UserData* AllocateNewUserData();
 
 		void BindPipeline(UserData& from, vk::CommandBuffer with_command_buffer, uint32_t current_frame);
 
 		static void UpdateDescriptorSets(
-			vk::Device logical_device,
+			const vk::raii::Device& logical_device,
 			UserData& from,
 			per_frame_array<vk::WriteDescriptorSet> writes
 		);
 
 	private:
-		vk::DescriptorSetLayout descriptor_set_layout = VK_NULL_HANDLE;
-		VkPipelineLayout pipeline_layout			  = VK_NULL_HANDLE;
-		vk::Pipeline native_handle					  = VK_NULL_HANDLE;
+		vk::raii::DescriptorSetLayout descriptor_set_layout = nullptr;
+		vk::raii::PipelineLayout pipeline_layout			= nullptr;
+		vk::raii::Pipeline native_handle					= nullptr;
 
 		std::vector<vk::DescriptorPoolSize> pool_sizes;
 

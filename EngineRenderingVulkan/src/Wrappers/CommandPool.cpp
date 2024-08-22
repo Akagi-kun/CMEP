@@ -13,17 +13,10 @@ namespace Engine::Rendering::Vulkan
 
 		vk::CommandPoolCreateInfo pool_info(
 			vk::CommandPoolCreateFlagBits::eResetCommandBuffer,
-			logical_device->GetQueueFamilies().graphics_family.value()
+			logical_device->GetQueueFamilies().graphics_family
 		);
 
 		native_handle = logical_device->GetHandle().createCommandPool(pool_info);
-	}
-
-	CommandPool::~CommandPool()
-	{
-		LogicalDevice* logical_device = instance->GetLogicalDevice();
-
-		logical_device->GetHandle().destroyCommandPool(native_handle);
 	}
 
 	[[nodiscard]] CommandBuffer* CommandPool::AllocateCommandBuffer()

@@ -12,7 +12,7 @@
 
 namespace Engine::Rendering::Vulkan
 {
-	class Buffer : public InstanceOwned, public HoldsVMA, public HandleWrapper<vk::Buffer>
+	class Buffer : public InstanceOwned, public HoldsVMA, public HandleWrapper<vk::raii::Buffer>
 	{
 	public:
 		void* mapped_data = nullptr;
@@ -44,6 +44,7 @@ namespace Engine::Rendering::Vulkan
 		VmaAllocationInfo allocation_info;
 	};
 
+	// Specializations of Buffer
 	class StagingBuffer final : public Buffer
 	{
 	public:
@@ -54,5 +55,11 @@ namespace Engine::Rendering::Vulkan
 	{
 	public:
 		VertexBuffer(InstanceOwned::value_t with_instance, const std::vector<RenderingVertex>& vertices);
+	};
+
+	class UniformBuffer final : public Buffer
+	{
+	public:
+		UniformBuffer(InstanceOwned::value_t, vk::DeviceSize with_size);
 	};
 } // namespace Engine::Rendering::Vulkan

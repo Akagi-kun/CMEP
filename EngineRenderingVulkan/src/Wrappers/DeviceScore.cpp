@@ -4,7 +4,6 @@
 
 #include <set>
 
-
 namespace Engine::Rendering::Vulkan
 {
 	const std::vector<const char*> DeviceScore::device_extensions = {
@@ -13,11 +12,12 @@ namespace Engine::Rendering::Vulkan
 		VK_EXT_ROBUSTNESS_2_EXTENSION_NAME,
 	};
 
-	DeviceScore::DeviceScore(PhysicalDevice with_device, const Surface* const with_surface) : device_scored(with_device)
+	DeviceScore::DeviceScore(const PhysicalDevice& with_device, const Surface* const with_surface)
+		: device_scored(with_device)
 	{
-		vk::PhysicalDeviceProperties device_properties = with_device.GetHandle().getProperties();
+		vk::PhysicalDeviceProperties device_properties = with_device.getProperties();
 
-		vk::PhysicalDeviceFeatures device_features = with_device.GetHandle().getFeatures();
+		vk::PhysicalDeviceFeatures device_features = with_device.getFeatures();
 
 		// Suppress magic numbers since it doesnt make sense here
 		// NOLINTBEGIN(readability-magic-numbers)
@@ -43,10 +43,10 @@ namespace Engine::Rendering::Vulkan
 		}
 		// NOLINTEND(readability-magic-numbers)
 
-		QueueFamilyIndices indices = with_surface->FindVulkanQueueFamilies(with_device);
+		auto indices = with_device.FindVulkanQueueFamilies(with_surface);
 
-		// Return 0 (unsuitable) if some of the required functions aren't supported
-		if (!indices.IsComplete())
+		// Return (unsuitable) if some of the required functions aren't supported
+		if (!indices.has_value())
 		{
 			unsupported_reason = "required queue types unsupported";
 			return;
@@ -78,7 +78,7 @@ namespace Engine::Rendering::Vulkan
 		supported = true;
 	}
 
-	bool DeviceScore::CheckDeviceExtensionSupport(vk::PhysicalDevice device)
+	bool DeviceScore::CheckDeviceExtensionSupport(const vk::raii::PhysicalDevice& device)
 	{
 		std::vector<vk::ExtensionProperties> available_extensions = device.enumerateDeviceExtensionProperties();
 

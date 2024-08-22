@@ -12,8 +12,9 @@ namespace Engine::Rendering::Vulkan
 		const Instance* created_by;
 		vk::SurfaceKHR native_handle;
 
-		[[nodiscard]] SwapChainSupportDetails QueryVulkanSwapChainSupport(vk::PhysicalDevice device) const;
-		[[nodiscard]] bool QueryQueueSupport(vk::PhysicalDevice physical_device, uint32_t queue_family) const;
-		[[nodiscard]] QueueFamilyIndices FindVulkanQueueFamilies(vk::PhysicalDevice device) const;
+		[[nodiscard]] SwapChainSupportDetails QueryVulkanSwapChainSupport(const vk::raii::PhysicalDevice& device) const;
+		[[nodiscard]] bool QueryQueueSupport(const vk::raii::PhysicalDevice& physical_device, uint32_t queue_family)
+			const;
+		//[[nodiscard]] QueueFamilyIndices FindVulkanQueueFamilies(const vk::raii::PhysicalDevice& device) const;
 	};
 } // namespace Engine::Rendering::Vulkan

@@ -8,13 +8,31 @@
 
 namespace Engine::Rendering::Vulkan
 {
-	struct RenderTargetData final
+	struct SyncObjects
 	{
-		SyncObjects sync_objects;
-		CommandBuffer* command_buffer;
+		vk::raii::Semaphore image_available = nullptr;
+		vk::raii::Semaphore present_ready	= nullptr; // render_finished_semaphores
+		vk::raii::Fence in_flight			= nullptr;
 	};
 
-	class Swapchain final : public InstanceOwned, public HandleWrapper<vk::SwapchainKHR>
+	struct RenderTarget final
+	{
+		SyncObjects sync_objects; //	  = nullptr;
+		CommandBuffer* command_buffer = nullptr;
+
+		RenderTarget() = default;
+		RenderTarget(CommandPool* with_command_pool, vk::raii::Device& with_device);
+		~RenderTarget();
+
+		RenderTarget(RenderTarget&)	 = delete;
+		RenderTarget(RenderTarget&&) = default;
+
+		RenderTarget& operator=(RenderTarget&)	= delete;
+		RenderTarget& operator=(RenderTarget&&) = default;
+	};
+	static_assert(std::is_move_constructible<RenderTarget>() && std::is_move_assignable<RenderTarget>());
+
+	class Swapchain final : public InstanceOwned, public HandleWrapper<vk::raii::SwapchainKHR>
 	{
 	public:
 		Swapchain(
@@ -33,53 +51,46 @@ namespace Engine::Rendering::Vulkan
 			void* user_data
 		);
 
-		[[nodiscard]] RenderTargetData& GetRenderTarget(size_t index)
+		[[nodiscard]] RenderTarget& GetRenderTarget(size_t index)
 		{
-			return this->render_targets[index];
+			return *render_targets[index];
 		}
 
 		[[nodiscard]] vk::Format GetImageFormat() const
 		{
-			return this->image_format;
+			return surface_format.format;
 		}
 
-		[[nodiscard]] std::vector<vk::ImageView>& GetImageViewHandles()
+		[[nodiscard]] std::vector<vk::raii::ImageView>& GetImageViewHandles()
 		{
-			return this->image_view_handles;
+			return image_view_handles;
 		}
 
 		[[nodiscard]] const VkExtent2D& GetExtent() const
 		{
-			return this->extent;
+			return extent;
 		}
 
 		[[nodiscard]] RenderPass* GetRenderPass()
 		{
-			return this->render_pass;
+			return render_pass;
 		}
 
 	private:
 		std::vector<vk::Image> image_handles;
-		std::vector<vk::ImageView> image_view_handles;
+		std::vector<vk::raii::ImageView> image_view_handles;
 
-		per_frame_array<RenderTargetData> render_targets;
+		per_frame_array<RenderTarget*> render_targets;
 
-		vk::Format image_format{};
+		vk::SurfaceFormatKHR surface_format;
 		const VkExtent2D extent;
 
 		RenderPass* render_pass = nullptr;
 
 		// TODO: move framebuffers into RenderTargetData
-		std::vector<vk::Framebuffer> framebuffers;
+		std::vector<vk::raii::Framebuffer*> framebuffers;
 
-		// Multisampling
 		Image* multisampled_color_image = nullptr;
-		// Depth buffers
 		Image* depth_buffer				= nullptr;
-
-		void CreateRenderTarget(RenderTargetData& target);
-		void CreateSyncObjects(SyncObjects& sync_objects);
-
-		void CleanupRenderTarget(RenderTargetData& target);
 	};
 } // namespace Engine::Rendering::Vulkan

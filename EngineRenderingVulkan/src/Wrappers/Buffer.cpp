@@ -32,18 +32,23 @@ namespace Engine::Rendering::Vulkan
 
 		native_handle = logical_device->GetHandle().createBuffer(create_info);
 
-		if (vmaAllocateMemoryForBuffer(*allocator, native_handle, &vma_alloc_info, &allocation, &allocation_info) !=
-			VK_SUCCESS)
+		if (vmaAllocateMemoryForBuffer(
+				allocator->GetHandle(),
+				*native_handle,
+				&vma_alloc_info,
+				&allocation,
+				&allocation_info
+			) != VK_SUCCESS)
 		{
 			throw std::runtime_error("Could not allocate buffer memory!");
 		}
 
-		if (vmaBindBufferMemory(*allocator, allocation, native_handle) != VK_SUCCESS)
+		if (vmaBindBufferMemory(allocator->GetHandle(), allocation, *native_handle) != VK_SUCCESS)
 		{
 			throw std::runtime_error("Could not bind buffer memory!");
 		}
 
-		vmaSetAllocationName(*allocator, allocation, "Buffer");
+		vmaSetAllocationName(allocator->GetHandle(), allocation, "Buffer");
 	}
 
 	Buffer::~Buffer()
@@ -52,33 +57,22 @@ namespace Engine::Rendering::Vulkan
 
 		logical_device->GetHandle().waitIdle();
 
-		logical_device->GetHandle().destroyBuffer(native_handle);
-
-		vmaFreeMemory(*allocator, allocation);
+		vmaFreeMemory(allocator->GetHandle(), allocation);
 	}
 
 	void Buffer::MapMemory()
 	{
 		LogicalDevice* logical_device = instance->GetLogicalDevice();
 
-		mapped_data = logical_device->GetHandle()
+		mapped_data = (*logical_device->GetHandle())
 						  .mapMemory(allocation_info.deviceMemory, allocation_info.offset, allocation_info.size);
-		/* vkMapMemory(
-			logical_device->GetHandle(),
-			allocation_info.deviceMemory,
-			allocation_info.offset,
-			allocation_info.size,
-			0,
-			&mapped_data
-		); */
 	}
 
 	void Buffer::UnmapMemory()
 	{
 		LogicalDevice* logical_device = instance->GetLogicalDevice();
 
-		logical_device->GetHandle().unmapMemory(allocation_info.deviceMemory);
-		// vkUnmapMemory(logical_device->GetHandle(), allocation_info.deviceMemory);
+		(*logical_device->GetHandle()).unmapMemory(allocation_info.deviceMemory);
 
 		// ensure mapped_data is never non-null when not mapped
 		mapped_data = nullptr;
@@ -110,8 +104,17 @@ namespace Engine::Rendering::Vulkan
 		// Copy into final buffer
 		command_buffer->BufferBufferCopy(&staging_buffer, this, {VkBufferCopy{0, 0, buffer_size}});
 
-		// delete staging_buffer;
 		delete command_buffer;
+	}
+
+	UniformBuffer::UniformBuffer(InstanceOwned::value_t with_instance, vk::DeviceSize with_size)
+		: Buffer(
+			  with_instance,
+			  with_size,
+			  vk::BufferUsageFlagBits::eUniformBuffer,
+			  vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent
+		  )
+	{
 	}
 
 #pragma endregion

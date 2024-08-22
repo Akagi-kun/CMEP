@@ -4,7 +4,6 @@
 #include "glm/glm.hpp"
 
 #include <array>
-#include <optional>
 #include <string>
 #include <vector>
 
@@ -21,20 +20,8 @@ namespace Engine::Rendering
 
 	struct QueueFamilyIndices
 	{
-		std::optional<uint32_t> graphics_family;
-		std::optional<uint32_t> present_family;
-
-		[[nodiscard]] bool IsComplete() const
-		{
-			return graphics_family.has_value() && present_family.has_value();
-		}
-	};
-
-	struct SyncObjects
-	{
-		VkSemaphore image_available;
-		VkSemaphore present_ready; // render_finished_semaphores
-		VkFence in_flight;
+		uint32_t graphics_family;
+		uint32_t present_family;
 	};
 
 	struct SwapChainSupportDetails

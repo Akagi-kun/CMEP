@@ -8,9 +8,9 @@ namespace Engine::Rendering::Vulkan
 {
 	struct RenderPass final : public InstanceOwned
 	{
-		VkRenderPass native_handle;
+		vk::raii::RenderPass native_handle = nullptr;
 
 		RenderPass(InstanceOwned::value_t with_instance, vk::Format with_format);
-		~RenderPass();
+		~RenderPass() = default;
 	};
 } // namespace Engine::Rendering::Vulkan

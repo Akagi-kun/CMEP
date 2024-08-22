@@ -25,17 +25,24 @@ namespace Engine::Rendering::Vulkan
 	LogicalDevice::LogicalDevice(InstanceOwned::value_t with_instance, const Surface* with_surface)
 		: InstanceOwned(with_instance)
 	{
-		auto physical_device = with_instance->GetPhysicalDevice();
+		auto* physical_device = with_instance->GetPhysicalDevice();
 
-		queue_family_indices = physical_device.FindVulkanQueueFamilies(with_surface);
+		auto families = physical_device->FindVulkanQueueFamilies(with_surface);
+
+		if (!families.has_value())
+		{
+			throw std::runtime_error("Not all required queue families were present!");
+		}
+
+		queue_family_indices = families.value();
 
 		// Vector of queue creation structs
 		std::vector<vk::DeviceQueueCreateInfo> queue_create_infos;
 
 		// Indices of which queue families we're going to use
 		std::set<uint32_t> unique_queue_families = {
-			queue_family_indices.graphics_family.value(),
-			queue_family_indices.present_family.value()
+			queue_family_indices.graphics_family,
+			queue_family_indices.present_family
 		};
 
 		// Fill queueCreateInfos
@@ -53,7 +60,7 @@ namespace Engine::Rendering::Vulkan
 		vk::PhysicalDeviceRobustness2FeaturesEXT
 			device_robustness_features({}, {}, vk::True, &device_descriptor_indexing_features);
 
-		vk::PhysicalDeviceFeatures2 device_features2 = physical_device.GetHandle().getFeatures2().setPNext(
+		vk::PhysicalDeviceFeatures2 device_features2 = physical_device->getFeatures2().setPNext(
 			&device_robustness_features
 		);
 
@@ -68,33 +75,11 @@ namespace Engine::Rendering::Vulkan
 		);
 
 		// Create logical device
-		native_handle = physical_device.GetHandle().createDevice(create_info);
-
-		if (!queue_family_indices.IsComplete())
-		{
-			throw std::runtime_error("Graphics indices are not complete!");
-		}
+		native_handle = physical_device->createDevice(create_info);
 
 		// Get queue handles
-		graphics_queue = GetDeviceQueue(queue_family_indices.graphics_family.value(), 0);
-		present_queue  = GetDeviceQueue(queue_family_indices.present_family.value(), 0);
-	}
-
-	LogicalDevice::~LogicalDevice()
-	{
-		native_handle.destroy();
-	}
-
-#pragma endregion
-
-#pragma region Private
-
-	[[nodiscard]] Queue LogicalDevice::GetDeviceQueue(uint32_t family, uint32_t index) const
-	{
-		VkQueue native;
-		vkGetDeviceQueue(native_handle, family, index, &native);
-
-		return {native};
+		graphics_queue = native_handle.getQueue(queue_family_indices.graphics_family, 0);
+		present_queue  = native_handle.getQueue(queue_family_indices.present_family, 0);
 	}
 
 #pragma endregion

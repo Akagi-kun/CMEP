@@ -26,11 +26,4 @@ namespace Engine::Rendering::Vulkan
 
 		native_handle = logical_device->GetHandle().createShaderModule(create_info);
 	}
-
-	ShaderModule::~ShaderModule()
-	{
-		LogicalDevice* logical_device = instance->GetLogicalDevice();
-
-		logical_device->GetHandle().destroyShaderModule(native_handle);
-	}
 } // namespace Engine::Rendering::Vulkan

@@ -9,8 +9,6 @@
 #include "Wrappers/RenderPass.hpp"
 #include "Wrappers/ShaderModule.hpp"
 
-#include <algorithm>
-#include <stdexcept>
 #include <string>
 
 namespace Engine::Rendering::Vulkan
@@ -35,12 +33,12 @@ namespace Engine::Rendering::Vulkan
 		// Vertex stage
 		auto vert_shader_module = ShaderModule(instance, shader_path, std::string(settings.shader) + +"_vert.spv");
 		vk::PipelineShaderStageCreateInfo
-			vert_shader_stage_info({}, vk::ShaderStageFlagBits::eVertex, vert_shader_module.GetHandle(), "main");
+			vert_shader_stage_info({}, vk::ShaderStageFlagBits::eVertex, *vert_shader_module.GetHandle(), "main");
 
 		// Fragment stage
 		auto frag_shader_module = ShaderModule(instance, shader_path, std::string(settings.shader) + "_frag.spv");
 		vk::PipelineShaderStageCreateInfo
-			frag_shader_stage_info({}, vk::ShaderStageFlagBits::eFragment, frag_shader_module.GetHandle(), "main");
+			frag_shader_stage_info({}, vk::ShaderStageFlagBits::eFragment, *frag_shader_module.GetHandle(), "main");
 
 		std::array<vk::PipelineShaderStageCreateInfo, 2> shader_stages = {
 			vert_shader_stage_info,
@@ -93,7 +91,8 @@ namespace Engine::Rendering::Vulkan
 		/************************************/
 		// Create Graphics Pipeline Layout
 
-		vk::PipelineLayoutCreateInfo pipeline_layout_info({}, descriptor_set_layout, {});
+		vk::PipelineLayoutCreateInfo pipeline_layout_info({}, *descriptor_set_layout, {});
+
 		pipeline_layout = logical_device->GetHandle().createPipelineLayout(pipeline_layout_info);
 
 		/************************************/
@@ -120,19 +119,14 @@ namespace Engine::Rendering::Vulkan
 			VulkanPipelineSettings::GetDepthStencilSettings(),
 			VulkanPipelineSettings::GetColorBlendSettings(),
 			&dynamic_state,
-			pipeline_layout,
-			with_render_pass->native_handle,
+			*pipeline_layout,
+			*with_render_pass->native_handle,
 			0,
 			{},
 			{}
 		);
 
-		vk::Result result;
-		std::tie(result, native_handle) = logical_device->GetHandle().createGraphicsPipeline(nullptr, pipeline_info);
-		if (result != vk::Result::eSuccess)
-		{
-			throw std::runtime_error("Failed creating pipeline!");
-		}
+		native_handle = logical_device->GetHandle().createGraphicsPipeline(nullptr, pipeline_info);
 
 		/************************************/
 		// Create Descriptor Pool Sizes
@@ -154,22 +148,17 @@ namespace Engine::Rendering::Vulkan
 		LogicalDevice* logical_device = instance->GetLogicalDevice();
 
 		logical_device->GetHandle().waitIdle();
-
-		logical_device->GetHandle().destroyDescriptorSetLayout(descriptor_set_layout);
-
-		logical_device->GetHandle().destroyPipeline(native_handle);
-		logical_device->GetHandle().destroyPipelineLayout(pipeline_layout);
 	}
 
 	void Pipeline::UpdateDescriptorSets(
-		vk::Device logical_device,
+		const vk::raii::Device& logical_device,
 		UserData& from,
 		per_frame_array<vk::WriteDescriptorSet> with_writes
 	)
 	{
 		for (uint32_t frame = 0; frame < with_writes.size(); frame++)
 		{
-			with_writes[frame].dstSet = from.GetDescriptorSet(frame);
+			with_writes[frame].dstSet = *from.GetDescriptorSet(frame);
 		}
 
 		logical_device.updateDescriptorSets(with_writes, {});
@@ -179,22 +168,22 @@ namespace Engine::Rendering::Vulkan
 	{
 		with_command_buffer.bindDescriptorSets(
 			vk::PipelineBindPoint::eGraphics,
-			pipeline_layout,
+			*pipeline_layout,
 			0,
-			from.descriptor_sets[current_frame],
+			*from.GetDescriptorSet(current_frame),
 			{}
 		);
 
-		with_command_buffer.bindPipeline(vk::PipelineBindPoint::eGraphics, native_handle);
+		with_command_buffer.bindPipeline(vk::PipelineBindPoint::eGraphics, *native_handle);
 	}
 
-	void Pipeline::AllocateNewUserData(UserData& into)
+	Pipeline::UserData* Pipeline::AllocateNewUserData()
 	{
-		auto& allocated_user_data = into;
+		auto* into = new UserData();
 
-		this->AllocateNewUniformBuffers(allocated_user_data.uniform_buffers);
-		this->AllocateNewDescriptorPool(allocated_user_data);
-		this->AllocateNewDescriptorSets(allocated_user_data);
+		this->AllocateNewUniformBuffers(into->uniform_buffers);
+		this->AllocateNewDescriptorPool(*into);
+		this->AllocateNewDescriptorSets(*into);
 
 		// Set up binding 0 to point to uniform buffers
 		per_frame_array<vk::DescriptorBufferInfo> descriptor_buffer_infos{};
@@ -202,11 +191,8 @@ namespace Engine::Rendering::Vulkan
 
 		for (uint32_t frame_idx = 0; frame_idx < max_frames_in_flight; frame_idx++)
 		{
-			descriptor_buffer_infos[frame_idx] = vk::DescriptorBufferInfo(
-				allocated_user_data.uniform_buffers[frame_idx]->GetHandle(),
-				0,
-				sizeof(RendererMatrixData)
-			);
+			descriptor_buffer_infos[frame_idx] =
+				vk::DescriptorBufferInfo(*into->uniform_buffers[frame_idx]->GetHandle(), 0, sizeof(RendererMatrixData));
 
 			descriptor_writes[frame_idx] = vk::WriteDescriptorSet(
 				{},
@@ -219,7 +205,9 @@ namespace Engine::Rendering::Vulkan
 			);
 		}
 
-		UpdateDescriptorSets(instance->GetLogicalDevice()->GetHandle(), allocated_user_data, descriptor_writes);
+		UpdateDescriptorSets(instance->GetLogicalDevice()->GetHandle(), *into, descriptor_writes);
+
+		return into;
 	}
 
 #pragma endregion
@@ -232,13 +220,7 @@ namespace Engine::Rendering::Vulkan
 
 		for (size_t i = 0; i < max_frames_in_flight; i++)
 		{
-			// TODO: Create UniformBuffer class?
-			buffer_ref[i] = new Buffer(
-				instance,
-				buffer_size,
-				vk::BufferUsageFlagBits::eUniformBuffer,
-				vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent
-			);
+			buffer_ref[i] = new UniformBuffer(instance, buffer_size);
 		}
 	}
 
@@ -246,7 +228,11 @@ namespace Engine::Rendering::Vulkan
 	{
 		LogicalDevice* logical_device = instance->GetLogicalDevice();
 
-		vk::DescriptorPoolCreateInfo pool_create_info({}, max_frames_in_flight, pool_sizes);
+		vk::DescriptorPoolCreateInfo pool_create_info(
+			{vk::DescriptorPoolCreateFlagBits::eFreeDescriptorSet},
+			max_frames_in_flight,
+			pool_sizes
+		);
 
 		data_ref.descriptor_pool = logical_device->GetHandle().createDescriptorPool(pool_create_info);
 	}
@@ -255,17 +241,10 @@ namespace Engine::Rendering::Vulkan
 	{
 		LogicalDevice* logical_device = instance->GetLogicalDevice();
 
-		std::vector<vk::DescriptorSetLayout> layouts(max_frames_in_flight, this->descriptor_set_layout);
-		vk::DescriptorSetAllocateInfo alloc_info(data_ref.descriptor_pool, layouts);
+		std::vector<vk::DescriptorSetLayout> layouts(max_frames_in_flight, *descriptor_set_layout);
+		vk::DescriptorSetAllocateInfo alloc_info(*data_ref.descriptor_pool, layouts);
 
-		auto allocated_sets = logical_device->GetHandle().allocateDescriptorSets(alloc_info);
-
-		// move allocated descriptor sets into the user data
-		std::copy_n(
-			std::make_move_iterator(allocated_sets.begin()),
-			data_ref.descriptor_sets.size(),
-			data_ref.descriptor_sets.begin()
-		);
+		data_ref.descriptor_sets = vk::raii::DescriptorSets(logical_device->GetHandle(), alloc_info);
 	}
 
 #pragma endregion

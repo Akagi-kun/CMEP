@@ -91,8 +91,8 @@ namespace Engine::Rendering
 
 			VkDescriptorImageInfo descriptor_image_info{};
 			descriptor_image_info.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-			descriptor_image_info.imageView	  = texture_image->GetNativeViewHandle();
-			descriptor_image_info.sampler	  = texture_image->texture_sampler;
+			descriptor_image_info.imageView	  = **texture_image->GetNativeViewHandle();
+			descriptor_image_info.sampler	  = *texture_image->texture_sampler;
 
 			VkWriteDescriptorSet descriptor_write{};
 			descriptor_write.sType			 = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
@@ -130,9 +130,9 @@ namespace Engine::Rendering
 		{
 			pipeline->GetUniformBuffer(current_frame)->MemoryCopy(&matrix_data, sizeof(RendererMatrixData));
 
-			pipeline->BindPipeline(*command_buffer, current_frame);
+			pipeline->BindPipeline(*command_buffer->GetHandle(), current_frame);
 
-			command_buffer->GetHandle().bindVertexBuffers(0, {mesh_context.vbo->GetHandle()}, {0});
+			command_buffer->GetHandle().bindVertexBuffers(0, {*mesh_context.vbo->GetHandle()}, {0});
 
 			command_buffer->GetHandle().draw(static_cast<uint32_t>(mesh_context.vbo_vert_count), 1, 0, 0);
 		}

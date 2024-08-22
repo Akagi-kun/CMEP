@@ -10,7 +10,7 @@ namespace Engine::Rendering::Vulkan
 
 	std::string PhysicalDevice::GetDeviceName() const
 	{
-		return native_handle.getProperties().deviceName;
+		return getProperties().deviceName;
 	}
 
 	vk::Format PhysicalDevice::FindSupportedFormat(
@@ -21,7 +21,7 @@ namespace Engine::Rendering::Vulkan
 	{
 		for (vk::Format format : candidates)
 		{
-			vk::FormatProperties fmt_properties = native_handle.getFormatProperties(format);
+			vk::FormatProperties fmt_properties = getFormatProperties(format);
 
 			if (tiling == vk::ImageTiling::eLinear && (fmt_properties.linearTilingFeatures & features) == features)
 			{
@@ -46,11 +46,14 @@ namespace Engine::Rendering::Vulkan
 		);
 	}
 
-	QueueFamilyIndices PhysicalDevice::FindVulkanQueueFamilies(const Surface* with_surface) const
+	std::optional<QueueFamilyIndices> PhysicalDevice::FindVulkanQueueFamilies(const Surface* with_surface) const
 	{
 		QueueFamilyIndices indices;
 
-		std::vector<vk::QueueFamilyProperties> queue_families = native_handle.getQueueFamilyProperties();
+		std::vector<vk::QueueFamilyProperties> queue_families = getQueueFamilyProperties();
+
+		bool graphics_found = false;
+		bool present_found	= false;
 
 		uint32_t indice = 0;
 		for (const auto& queue_family : queue_families)
@@ -58,17 +61,25 @@ namespace Engine::Rendering::Vulkan
 			if (queue_family.queueFlags & vk::QueueFlagBits::eGraphics)
 			{
 				indices.graphics_family = indice;
+				graphics_found			= true;
 			}
 
-			if (with_surface->QueryQueueSupport(native_handle, indice))
+			// check surface support
+			if (with_surface->QueryQueueSupport(*this, indice))
 			{
 				indices.present_family = indice;
+				present_found		   = true;
 			}
 
 			indice++;
 		}
 
-		return indices;
+		if (graphics_found && present_found)
+		{
+			return indices;
+		}
+
+		return std::nullopt;
 	}
 
 #pragma endregion

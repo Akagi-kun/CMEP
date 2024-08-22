@@ -8,7 +8,7 @@
 
 namespace Engine::Rendering::Vulkan
 {
-	class ShaderModule final : public InstanceOwned, public HandleWrapper<vk::ShaderModule>
+	class ShaderModule final : public InstanceOwned, public HandleWrapper<vk::raii::ShaderModule>
 	{
 	public:
 		ShaderModule(
@@ -16,6 +16,5 @@ namespace Engine::Rendering::Vulkan
 			std::filesystem::path with_path,
 			const std::string& filename
 		);
-		~ShaderModule();
 	};
 } // namespace Engine::Rendering::Vulkan

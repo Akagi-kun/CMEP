@@ -44,14 +44,14 @@ namespace Engine::Rendering::Vulkan
 
 		VmaAllocationCreateInfo vma_alloc_info{};
 		vma_alloc_info.usage		 = VMA_MEMORY_USAGE_UNKNOWN;
-		vma_alloc_info.flags		 = 0; // VMA_ALLOCATION_CREATE_DEDICATED_MEMORY_BIT; // TODO: Consider removing
+		vma_alloc_info.flags		 = 0;
 		vma_alloc_info.requiredFlags = static_cast<VkMemoryPropertyFlags>(properties);
 
 		native_handle = logical_device->GetHandle().createImage(create_info);
 
 		if (vmaAllocateMemoryForImage(
-				*allocator,
-				static_cast<VkImage>(native_handle),
+				allocator->GetHandle(),
+				*native_handle,
 				&vma_alloc_info,
 				&allocation,
 				&allocation_info
@@ -60,12 +60,12 @@ namespace Engine::Rendering::Vulkan
 			throw std::runtime_error("Could not allocate image memory!");
 		}
 
-		if (vmaBindImageMemory(*allocator, allocation, native_handle) != VK_SUCCESS)
+		if (vmaBindImageMemory(allocator->GetHandle(), allocation, *native_handle) != VK_SUCCESS)
 		{
 			throw std::runtime_error("Could not bind image memory!");
 		}
 
-		vmaSetAllocationName(*allocator, allocation, "Image");
+		vmaSetAllocationName(allocator->GetHandle(), allocation, "Image");
 	}
 
 	Image::~Image()
@@ -74,14 +74,11 @@ namespace Engine::Rendering::Vulkan
 
 		logical_device->GetHandle().waitIdle();
 
-		if (native_view_handle != nullptr)
-		{
-			logical_device->GetHandle().destroyImageView(native_view_handle);
-		}
+		delete native_view_handle;
 
-		logical_device->GetHandle().destroyImage(native_handle);
-
-		vmaFreeMemory(*allocator, allocation);
+		// Ensure image is released before memory is deallocated
+		native_handle.clear();
+		vmaFreeMemory(allocator->GetHandle(), allocation);
 	}
 
 	void Image::TransitionImageLayout(vk::ImageLayout new_layout)
@@ -93,7 +90,7 @@ namespace Engine::Rendering::Vulkan
 			new_layout,
 			vk::QueueFamilyIgnored,
 			vk::QueueFamilyIgnored,
-			native_handle,
+			*native_handle,
 			{vk::ImageAspectFlagBits::eColor, 0, 1, 0, 1},
 			{}
 		);
@@ -126,7 +123,7 @@ namespace Engine::Rendering::Vulkan
 		auto* command_buffer = instance->GetCommandPool()->AllocateCommandBuffer();
 
 		command_buffer->RecordCmds([&](CommandBuffer* with_buffer) {
-			with_buffer->GetHandle().pipelineBarrier(src_stage, dst_stage, {}, 0, {}, 0, {}, 1, &barrier);
+			with_buffer->GetHandle().pipelineBarrier(src_stage, dst_stage, {}, {}, {}, barrier);
 		});
 
 		delete command_buffer;
@@ -140,13 +137,13 @@ namespace Engine::Rendering::Vulkan
 
 		vk::ImageViewCreateInfo view_create_info(
 			{},
-			native_handle,
+			*native_handle,
 			vk::ImageViewType::e2D,
 			image_format,
 			{},
 			{with_aspect_flags, 0, 1, 0, 1}
 		);
 
-		native_view_handle = logical_device->GetHandle().createImageView(view_create_info);
+		native_view_handle = new vk::raii::ImageView(logical_device->GetHandle().createImageView(view_create_info));
 	}
 } // namespace Engine::Rendering::Vulkan

@@ -18,13 +18,13 @@ namespace Engine::Rendering::Vulkan
 	)
 		: InstanceOwned(with_instance), size(with_size)
 	{
-		// Default hint since we use Vulkan only
-		glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
-
 		for (const auto& [hint, value] : with_hints)
 		{
 			glfwWindowHint(hint, value);
 		}
+
+		// Default hint since we use Vulkan only
+		glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
 
 		memset(&status, 0, sizeof(StatusBits));
 
@@ -48,7 +48,7 @@ namespace Engine::Rendering::Vulkan
 
 		// TODO: Make a constructor for Surface
 		if (glfwCreateWindowSurface(
-				static_cast<Instance::value_t>(*instance),
+				*instance->GetHandle(),
 				native_handle,
 				nullptr,
 				reinterpret_cast<VkSurfaceKHR*>(&surface.native_handle)
@@ -64,7 +64,7 @@ namespace Engine::Rendering::Vulkan
 	{
 		delete swapchain;
 
-		instance->GetHandle().destroySurfaceKHR(surface.native_handle);
+		(*instance->GetHandle()).destroySurfaceKHR(surface.native_handle);
 
 		glfwDestroyWindow(native_handle);
 	}
@@ -98,7 +98,8 @@ namespace Engine::Rendering::Vulkan
 	void Window::CreateSwapchain()
 	{
 		// Get device and surface Swap Chain capabilities
-		SwapChainSupportDetails swap_chain_support = surface.QueryVulkanSwapChainSupport(instance->GetPhysicalDevice());
+		SwapChainSupportDetails swap_chain_support = surface.QueryVulkanSwapChainSupport(*instance->GetPhysicalDevice()
+		);
 
 		VkExtent2D extent = ChooseVulkanSwapExtent(this, swap_chain_support.capabilities);
 
@@ -129,38 +130,47 @@ namespace Engine::Rendering::Vulkan
 		LogicalDevice* logical_device = instance->GetLogicalDevice();
 
 		auto& render_target = swapchain->GetRenderTarget(current_frame);
-		// auto& frame_sync_objects = sync_objects[current_frame];
 
 		// Wait for fence
-		vkWaitForFences(logical_device->GetHandle(), 1, &render_target.sync_objects.in_flight, VK_TRUE, UINT64_MAX);
+		{
+			vk::Result result =
+				logical_device->GetHandle().waitForFences(*render_target.sync_objects.in_flight, vk::True, UINT64_MAX);
+			if (result != vk::Result::eSuccess)
+			{
+				throw std::runtime_error("Failed waiting for fences in DrawFrame!");
+			}
+		}
 
 		// Reset fence after wait is over
 		// (fence has to be reset before being used again)
-		vkResetFences(logical_device->GetHandle(), 1, &render_target.sync_objects.in_flight);
+		logical_device->GetHandle().resetFences(*render_target.sync_objects.in_flight);
 
 		// Index of framebuffer in vk_swap_chain_framebuffers
-		uint32_t image_index	= 0;
+		uint32_t image_index = 0;
 		// Acquire render target
 		// the render target is an image in the swap chain
-		VkResult acquire_result = vkAcquireNextImageKHR(
-			logical_device->GetHandle(),
-			swapchain->GetHandle(),
-			UINT64_MAX,
-			render_target.sync_objects.image_available,
-			nullptr,
-			&image_index
-		);
-
-		// Framebuffer is being resized
-		if (acquire_result == VK_ERROR_OUT_OF_DATE_KHR || instance->GetWindow()->status.is_resized ||
-			acquire_result == VK_SUBOPTIMAL_KHR)
 		{
-			return;
-		}
+			vk::Result result;
+			std::tie(result, image_index) =
+				swapchain->GetHandle().acquireNextImage(UINT64_MAX, *render_target.sync_objects.image_available, {});
+			/* std::tie(result, image_index) = (**logical_device->GetHandle())
+												.acquireNextImageKHR(
+													*swapchain->GetHandle(),
+													UINT64_MAX,
+													*render_target.sync_objects->image_available,
+													{}
+												); */
 
-		if (acquire_result != VK_SUCCESS)
-		{
-			throw std::runtime_error("Failed to acquire swap chain image!");
+			// Framebuffer is being resized
+			if (result == vk::Result::eErrorOutOfDateKHR || result == vk::Result::eSuboptimalKHR)
+			{
+				return;
+			}
+
+			if (result != vk::Result::eSuccess)
+			{
+				throw std::runtime_error("Failed to acquire swap chain image!");
+			}
 		}
 
 		// Reset command buffer to initial state´
@@ -169,59 +179,33 @@ namespace Engine::Rendering::Vulkan
 		// Records render into command buffer
 		swapchain->RenderFrame(render_target.command_buffer, image_index, render_callback, user_data);
 
-		VkSubmitInfo submit_info{};
-		submit_info.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+		std::array<vk::CommandBuffer, 1> command_buffers = {*render_target.command_buffer->GetHandle()};
 
-		std::array<VkCommandBuffer, 1> command_buffers = {render_target.command_buffer->GetHandle()};
+		vk::Semaphore wait_semaphores[] = {*(render_target.sync_objects.image_available)};
+		vk::PipelineStageFlags wait_stages[] =
+			{vk::PipelineStageFlagBits::eColorAttachmentOutput /* VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT */};
+		vk::Semaphore signal_semaphores[] = {*(render_target.sync_objects.present_ready)};
 
-		// Wait semaphores
-		VkSemaphore wait_semaphores[]	   = {render_target.sync_objects.image_available};
-		VkPipelineStageFlags wait_stages[] = {VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT};
-		submit_info.waitSemaphoreCount	   = 1;
-		submit_info.pWaitSemaphores		   = wait_semaphores;
-		submit_info.pWaitDstStageMask	   = wait_stages;
-		submit_info.commandBufferCount	   = static_cast<uint32_t>(command_buffers.size());
-		submit_info.pCommandBuffers		   = command_buffers.data();
-
-		// Signal semaphores to be signaled once
-		// all submit_info.pCommandBuffers finish executing
-		VkSemaphore signal_semaphores[]	 = {render_target.sync_objects.present_ready};
-		submit_info.signalSemaphoreCount = 1;
-		submit_info.pSignalSemaphores	 = signal_semaphores;
+		vk::SubmitInfo submit_info(wait_semaphores, wait_stages, command_buffers, signal_semaphores, {});
 
 		// Submit to queue
 		// passed fence will be signaled when command buffer execution is finished
-		if (vkQueueSubmit(
-				logical_device->GetGraphicsQueue().GetHandle(),
-				1,
-				&submit_info,
-				render_target.sync_objects.in_flight
-			) != VK_SUCCESS)
-		{
-			throw std::runtime_error("Failed to submit draw command buffer!");
-		}
+		logical_device->GetGraphicsQueue().submit(submit_info, *render_target.sync_objects.in_flight);
 
 		// Increment current frame
-		// current_frame = 0;
 		current_frame = (current_frame + 1) % max_frames_in_flight;
 
-		VkPresentInfoKHR present_info{};
-		present_info.sType				= VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
-		// Wait for present_ready_semaphores to be signaled
-		// (when signaled = image is ready to be presented)
-		present_info.waitSemaphoreCount = 1;
-		present_info.pWaitSemaphores	= signal_semaphores;
+		vk::SwapchainKHR swap_chains[] = {*swapchain->GetHandle()};
 
-		VkSwapchainKHR swap_chains[] = {swapchain->GetHandle()};
-		present_info.swapchainCount	 = 1;
-		present_info.pSwapchains	 = swap_chains;
-		present_info.pImageIndices	 = &image_index;
-		present_info.pResults		 = nullptr; // Optional
+		vk::PresentInfoKHR present_info(signal_semaphores, swap_chains, image_index, {}, {});
 
 		// Present current image to the screen
-		if (vkQueuePresentKHR(logical_device->GetPresentQueue().GetHandle(), &present_info) != VK_SUCCESS)
 		{
-			throw std::runtime_error("Failed to present queue!");
+			vk::Result result = logical_device->GetPresentQueue().presentKHR(present_info);
+			if (result != vk::Result::eSuccess)
+			{
+				throw std::runtime_error("Failed presenting swapchain!");
+			}
 		}
 	}
 

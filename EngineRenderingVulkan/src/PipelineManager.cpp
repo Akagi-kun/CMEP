@@ -71,22 +71,22 @@ namespace Engine::Rendering::Vulkan
 	PipelineUserRef::PipelineUserRef(InstanceOwned::value_t with_instance, Pipeline* with_origin)
 		: InstanceOwned(with_instance), origin(with_origin)
 	{
-		origin->AllocateNewUserData(user_data);
+		user_data = origin->AllocateNewUserData();
 	}
 
 	PipelineUserRef::~PipelineUserRef()
 	{
-		for (auto* uniform_buffer : user_data.uniform_buffers)
+		for (auto* uniform_buffer : user_data->uniform_buffers)
 		{
 			delete uniform_buffer;
 		}
 
-		instance->GetLogicalDevice()->GetHandle().destroyDescriptorPool(user_data.descriptor_pool);
+		delete user_data;
 	}
 
 	void PipelineUserRef::UpdateDescriptorSets(per_frame_array<vk::WriteDescriptorSet> with_writes)
 	{
-		Pipeline::UpdateDescriptorSets(instance->GetLogicalDevice()->GetHandle(), user_data, with_writes);
+		Pipeline::UpdateDescriptorSets(instance->GetLogicalDevice()->GetHandle(), *user_data, with_writes);
 	}
 
 	void PipelineUserRef::UpdateDescriptorSetsAll(const vk::WriteDescriptorSet& with_write)

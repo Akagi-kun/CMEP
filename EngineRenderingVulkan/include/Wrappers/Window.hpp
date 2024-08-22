@@ -102,14 +102,14 @@ namespace Engine::Rendering::Vulkan
 
 	private:
 		ScreenSize size;
+		uint32_t current_frame = 0;
 
 		Swapchain* swapchain = nullptr;
-		Surface surface; // TODO: Make this a pointer
+		Surface surface;
 
 		// Rendering related
 		std::function<void(Vulkan::CommandBuffer*, uint32_t, void*)> render_callback;
-		void* user_data		   = nullptr;
-		uint32_t current_frame = 0;
+		void* user_data = nullptr;
 
 		static Window* GetWindowPtrFromGLFW(GLFWwindow* window);
 

@@ -10,21 +10,18 @@
 
 namespace Engine::Rendering::Vulkan
 {
-	CommandBuffer::CommandBuffer(InstanceOwned::value_t with_instance, vk::CommandPool from_pool)
-		: InstanceOwned(with_instance), owning_pool(from_pool)
+	CommandBuffer::CommandBuffer(InstanceOwned::value_t with_instance, vk::raii::CommandPool& from_pool)
+		: InstanceOwned(with_instance), owning_pool(*from_pool)
 	{
-		vk::CommandBufferAllocateInfo alloc_info(from_pool, vk::CommandBufferLevel::ePrimary, 1, {});
+		vk::CommandBufferAllocateInfo alloc_info(owning_pool, vk::CommandBufferLevel::ePrimary, 1, {});
 
 		LogicalDevice* logical_device = instance->GetLogicalDevice();
 
-		native_handle = logical_device->GetHandle().allocateCommandBuffers(alloc_info)[0];
+		native_handle = std::move(logical_device->GetHandle().allocateCommandBuffers(alloc_info)[0]);
 	}
 
 	CommandBuffer::~CommandBuffer()
 	{
-		LogicalDevice* logical_device = instance->GetLogicalDevice();
-
-		logical_device->GetHandle().freeCommandBuffers(owning_pool, native_handle);
 	}
 
 	void CommandBuffer::BeginCmdBuffer(vk::CommandBufferUsageFlags usage_flags)
@@ -57,27 +54,21 @@ namespace Engine::Rendering::Vulkan
 		EndCmdBuffer();
 		QueueSubmit(device->GetGraphicsQueue());
 
-		device->GetGraphicsQueue().WaitQueueIdle();
+		device->GetGraphicsQueue().waitIdle();
 	}
 
-	void CommandBuffer::QueueSubmit(vk::Queue to_queue)
+	void CommandBuffer::QueueSubmit(const vk::raii::Queue& to_queue)
 	{
 		vk::SubmitInfo submit_info{};
-		submit_info.setCommandBuffers(native_handle);
+		submit_info.setCommandBuffers(*native_handle);
 
 		to_queue.submit(submit_info);
 	}
 
-	void CommandBuffer::BufferBufferCopy(Buffer* from_buffer, Buffer* to_buffer, std::vector<VkBufferCopy> regions)
+	void CommandBuffer::BufferBufferCopy(Buffer* from_buffer, Buffer* to_buffer, std::vector<vk::BufferCopy> regions)
 	{
 		RecordCmds([&](CommandBuffer* handle) {
-			vkCmdCopyBuffer(
-				handle->native_handle,
-				from_buffer->GetHandle(),
-				to_buffer->GetHandle(),
-				static_cast<uint32_t>(regions.size()),
-				regions.data()
-			);
+			handle->native_handle.copyBuffer(*from_buffer->GetHandle(), *to_buffer->GetHandle(), regions);
 		});
 	}
 
@@ -86,32 +77,26 @@ namespace Engine::Rendering::Vulkan
 		ImageSize image_size = to_image->GetSize();
 
 		// Sane defaults
-		VkBufferImageCopy region{};
-		region.bufferOffset		 = 0;
-		region.bufferRowLength	 = 0;
-		region.bufferImageHeight = 0;
-
-		region.imageSubresource.aspectMask	   = VK_IMAGE_ASPECT_COLOR_BIT;
-		region.imageSubresource.mipLevel	   = 0;
-		region.imageSubresource.baseArrayLayer = 0;
-		region.imageSubresource.layerCount	   = 1;
-
-		region.imageOffset = {0, 0, 0};
-		region.imageExtent = Utils::ConvertToExtent<vk::Extent3D>(image_size, 1);
+		vk::BufferImageCopy region(
+			{},
+			{},
+			{},
+			{vk::ImageAspectFlagBits::eColor, 0, 0, 1},
+			{0, 0, 0},
+			Utils::ConvertToExtent<vk::Extent3D>(image_size, 1)
+		);
 
 		RecordCmds([&](CommandBuffer* with_buf) {
-			vkCmdCopyBufferToImage(
-				with_buf->native_handle,
-				from_buffer->GetHandle(),
-				static_cast<VkImage>(to_image->GetHandle()),
-				VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
-				1,
-				&region
+			with_buf->native_handle.copyBufferToImage(
+				*from_buffer->GetHandle(),
+				*to_image->GetHandle(),
+				vk::ImageLayout::eTransferDstOptimal,
+				region
 			);
 		});
 	}
 
-	void CommandBuffer::BeginRenderPass(const vk::RenderPassBeginInfo* with_info)
+	void CommandBuffer::BeginRenderPass(const vk::RenderPassBeginInfo& with_info)
 	{
 		native_handle.beginRenderPass(with_info, vk::SubpassContents::eInline);
 	}

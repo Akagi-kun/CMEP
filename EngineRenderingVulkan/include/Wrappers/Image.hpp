@@ -12,7 +12,7 @@
 
 namespace Engine::Rendering::Vulkan
 {
-	class Image : public InstanceOwned, public HoldsVMA, public HandleWrapper<vk::Image>
+	class Image : public InstanceOwned, public HoldsVMA, public HandleWrapper<vk::raii::Image>
 	{
 	public:
 		Image(
@@ -30,7 +30,7 @@ namespace Engine::Rendering::Vulkan
 
 		void AddImageView(vk::ImageAspectFlags with_aspect_flags = vk::ImageAspectFlagBits::eColor);
 
-		[[nodiscard]] vk::ImageView& GetNativeViewHandle()
+		[[nodiscard]] vk::raii::ImageView* GetNativeViewHandle()
 		{
 			return native_view_handle;
 		}
@@ -43,7 +43,7 @@ namespace Engine::Rendering::Vulkan
 	protected:
 		vk::ImageLayout current_layout = vk::ImageLayout::eUndefined;
 		vk::Format image_format		   = vk::Format::eUndefined;
-		vk::ImageView native_view_handle;
+		vk::raii::ImageView* native_view_handle;
 
 		ImageSize size{};
 

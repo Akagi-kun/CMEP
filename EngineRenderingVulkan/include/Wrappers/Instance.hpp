@@ -16,7 +16,7 @@
 
 namespace Engine::Rendering::Vulkan
 {
-	class Instance final : public Logging::SupportsLogging, public HandleWrapper<vk::Instance>
+	class Instance final : public Logging::SupportsLogging, public HandleWrapper<vk::raii::Instance>
 	{
 	public:
 		struct WindowParams
@@ -41,7 +41,7 @@ namespace Engine::Rendering::Vulkan
 			return msaa_samples;
 		}
 
-		[[nodiscard]] PhysicalDevice GetPhysicalDevice()
+		[[nodiscard]] PhysicalDevice* GetPhysicalDevice()
 		{
 			return physical_device;
 		}
@@ -62,11 +62,13 @@ namespace Engine::Rendering::Vulkan
 		}
 
 	private:
-		vk::DebugUtilsMessengerEXT debug_messenger = VK_NULL_HANDLE;
+		vk::raii::DebugUtilsMessengerEXT debug_messenger = nullptr;
 
-		PhysicalDevice physical_device;
-		LogicalDevice* logical_device = nullptr;
-		Window* window				  = nullptr;
+		vk::raii::Context context;
+
+		PhysicalDevice* physical_device = nullptr;
+		LogicalDevice* logical_device	= nullptr;
+		Window* window					= nullptr;
 
 		MemoryAllocator* memory_allocator = nullptr;
 
@@ -80,6 +82,6 @@ namespace Engine::Rendering::Vulkan
 		void InitDevice();
 
 		static bool CheckVulkanValidationLayers();
-		static vk::SampleCountFlagBits GetMaxUsableSampleCount(vk::PhysicalDevice device);
+		static vk::SampleCountFlagBits GetMaxUsableSampleCount(const vk::raii::PhysicalDevice& device);
 	};
 } // namespace Engine::Rendering::Vulkan

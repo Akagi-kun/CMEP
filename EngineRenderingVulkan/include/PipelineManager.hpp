@@ -47,7 +47,7 @@ namespace Engine::Rendering::Vulkan
 	struct PipelineUserRef final : public InstanceOwned
 	{
 	public:
-		Pipeline::UserData user_data{};
+		Pipeline::UserData* user_data = nullptr;
 
 		PipelineUserRef(InstanceOwned::value_t with_instance, Pipeline* with_origin);
 		~PipelineUserRef();
@@ -62,14 +62,14 @@ namespace Engine::Rendering::Vulkan
 		}
 
 		[[nodiscard]] auto GetUniformBuffer(uint32_t current_frame
-		) -> decltype(user_data.GetUniformBuffer(current_frame))
+		) const -> decltype(user_data->GetUniformBuffer(current_frame))
 		{
-			return user_data.GetUniformBuffer(current_frame);
+			return user_data->GetUniformBuffer(current_frame);
 		}
 
 		void BindPipeline(vk::CommandBuffer with_command_buffer, uint32_t current_frame)
 		{
-			origin->BindPipeline(user_data, with_command_buffer, current_frame);
+			origin->BindPipeline(*user_data, with_command_buffer, current_frame);
 		}
 
 		void UpdateDescriptorSets(per_frame_array<vk::WriteDescriptorSet> with_writes);

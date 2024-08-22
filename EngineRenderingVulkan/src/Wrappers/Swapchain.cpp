@@ -24,18 +24,17 @@ namespace Engine::Rendering::Vulkan
 
 		// Query details for support of swapchains
 		SwapChainSupportDetails swap_chain_support = with_surface->QueryVulkanSwapChainSupport(
-			instance->GetPhysicalDevice()
+			*instance->GetPhysicalDevice()
 		);
-		vk::SurfaceFormatKHR surface_format = Vulkan::Utils::ChooseVulkanSwapSurfaceFormat(swap_chain_support.formats);
+		surface_format = Vulkan::Utils::ChooseVulkanSwapSurfaceFormat(swap_chain_support.formats);
 
 		vk::PresentModeKHR present_mode = Vulkan::Utils::ChooseVulkanSwapPresentMode(swap_chain_support.present_modes);
 
 		QueueFamilyIndices queue_indices = logical_device->GetQueueFamilies();
-		uint32_t queue_family_indices[] = {queue_indices.graphics_family.value(), queue_indices.present_family.value()};
 
-		bool identical_queue_families = queue_indices.graphics_family != queue_indices.present_family;
+		uint32_t queue_family_indices[] = {queue_indices.graphics_family, queue_indices.present_family};
 
-		image_format = surface_format.format;
+		bool queue_families_same = queue_indices.graphics_family != queue_indices.present_family;
 
 		vk::SwapchainCreateInfoKHR create_info(
 			{},
@@ -46,9 +45,9 @@ namespace Engine::Rendering::Vulkan
 			with_extent,
 			1,
 			vk::ImageUsageFlagBits::eColorAttachment,
-			identical_queue_families ? vk::SharingMode::eConcurrent : vk::SharingMode::eExclusive,
-			identical_queue_families ? 2 : uint32_t{},
-			identical_queue_families ? queue_family_indices : nullptr,
+			queue_families_same ? vk::SharingMode::eConcurrent : vk::SharingMode::eExclusive,
+			queue_families_same ? 2 : uint32_t{},
+			queue_families_same ? queue_family_indices : nullptr,
 			swap_chain_support.capabilities.currentTransform,
 			vk::CompositeAlphaFlagBitsKHR::eOpaque,
 			present_mode,
@@ -57,11 +56,10 @@ namespace Engine::Rendering::Vulkan
 
 		native_handle = logical_device->GetHandle().createSwapchainKHR(create_info);
 
-		image_handles = logical_device->GetHandle().getSwapchainImagesKHR(native_handle);
+		image_handles = native_handle.getImages();
 
 		// Create image views
-		this->image_view_handles.resize(this->image_handles.size());
-		for (size_t i = 0; i < this->image_handles.size(); i++)
+		for (size_t i = 0; i < image_handles.size(); i++)
 		{
 			vk::ImageViewCreateInfo view_create_info(
 				{},
@@ -72,77 +70,70 @@ namespace Engine::Rendering::Vulkan
 				{vk::ImageAspectFlagBits::eColor, 0, 1, 0, 1}
 			);
 
-			image_view_handles[i] = logical_device->GetHandle().createImageView(view_create_info);
+			image_view_handles.push_back(logical_device->GetHandle().createImageView(view_create_info));
 		}
 
-		vk::Format depth_format = instance->GetPhysicalDevice().FindSupportedDepthFormat();
+		vk::Format depth_format = instance->GetPhysicalDevice()->FindSupportedDepthFormat();
 
-		this->depth_buffer = new Image(
+		depth_buffer = new Image(
 			instance,
-			{this->extent.width, this->extent.height},
+			{extent.width, extent.height},
 			instance->GetMSAASamples(),
 			depth_format,
 			vk::ImageUsageFlagBits::eDepthStencilAttachment
 		);
-		this->depth_buffer->AddImageView(vk::ImageAspectFlagBits::eDepth);
+		depth_buffer->AddImageView(vk::ImageAspectFlagBits::eDepth);
 
-		this->multisampled_color_image = new Image(
+		multisampled_color_image = new Image(
 			instance,
-			{this->extent.width, this->extent.height},
+			{extent.width, extent.height},
 			instance->GetMSAASamples(),
-			image_format,
+			surface_format.format,
 			vk::ImageUsageFlagBits::eTransientAttachment | vk::ImageUsageFlagBits::eColorAttachment
 		);
-		this->multisampled_color_image->AddImageView(vk::ImageAspectFlagBits::eColor);
+		multisampled_color_image->AddImageView(vk::ImageAspectFlagBits::eColor);
 
-		this->render_pass = new RenderPass(instance, image_format);
+		render_pass = new RenderPass(instance, surface_format.format);
 
-		this->framebuffers.resize(image_view_handles.size());
+		framebuffers.resize(image_view_handles.size());
 
 		for (size_t i = 0; i < image_view_handles.size(); i++)
 		{
 			per_frame_array<vk::ImageView> attachments = {
-				multisampled_color_image->GetNativeViewHandle(),
-				depth_buffer->GetNativeViewHandle(),
-				image_view_handles[i]
+				**multisampled_color_image->GetNativeViewHandle(),
+				**depth_buffer->GetNativeViewHandle(),
+				*image_view_handles[i]
 			};
 
 			vk::FramebufferCreateInfo
-				framebuffer_create_info({}, render_pass->native_handle, attachments, extent.width, extent.height, 1);
+				framebuffer_create_info({}, *render_pass->native_handle, attachments, extent.width, extent.height, 1);
 
-			framebuffers[i] = logical_device->GetHandle().createFramebuffer(framebuffer_create_info);
+			framebuffers[i] = new vk::raii::Framebuffer(
+				logical_device->GetHandle().createFramebuffer(framebuffer_create_info)
+			);
 		}
 
-		for (auto& target : this->render_targets)
+		for (auto& target : render_targets)
 		{
-			this->CreateRenderTarget(target);
+			target = new RenderTarget(instance->GetCommandPool(), instance->GetLogicalDevice()->GetHandle());
 		}
 	}
 
 	Swapchain::~Swapchain()
 	{
-		LogicalDevice* logical_device = instance->GetLogicalDevice();
-
-		for (auto framebuffer : framebuffers)
+		for (auto* framebuffer : framebuffers)
 		{
-			logical_device->GetHandle().destroyFramebuffer(framebuffer);
+			delete framebuffer;
 		}
-
-		for (auto image_view : image_view_handles)
-		{
-			logical_device->GetHandle().destroyImageView(image_view);
-		}
-
-		logical_device->GetHandle().destroySwapchainKHR(native_handle);
 
 		delete multisampled_color_image;
 		delete depth_buffer;
 
 		delete render_pass;
 
-		for (auto& target : this->render_targets)
+		for (auto* target : render_targets)
 		{
-			this->CleanupRenderTarget(target);
+			delete target;
 		}
 	}
 
@@ -152,20 +143,15 @@ namespace Engine::Rendering::Vulkan
 		clear_values[0].setColor({0.0f, 0.0f, 0.0f, 1.0f}); // TODO: configurable
 		clear_values[1].setDepthStencil({1.f, 0});
 
-		vk::RenderPassBeginInfo
-			render_pass_info(render_pass->native_handle, framebuffers[image_index], {{0, 0}, extent}, clear_values, {});
+		vk::RenderPassBeginInfo render_pass_info(
+			*render_pass->native_handle,
+			**framebuffers[image_index],
+			{{0, 0}, extent},
+			clear_values,
+			{}
+		);
 
-		/* VkRenderPassBeginInfo render_pass_info{};
-		render_pass_info.sType			   = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-		render_pass_info.renderPass		   = this->render_pass->native_handle;
-		render_pass_info.framebuffer	   = this->framebuffers[image_index];
-		render_pass_info.renderArea.offset = {0, 0};
-		render_pass_info.renderArea.extent = this->extent;
-
-		render_pass_info.clearValueCount = 2;
-		render_pass_info.pClearValues	 = clear_values.data(); */
-
-		with_buffer->BeginRenderPass(&render_pass_info);
+		with_buffer->BeginRenderPass(render_pass_info);
 	}
 
 	void Swapchain::RenderFrame(
@@ -198,35 +184,26 @@ namespace Engine::Rendering::Vulkan
 		command_buffer->EndCmdBuffer();
 	}
 
-#pragma region Private
-
-	void Swapchain::CreateRenderTarget(RenderTargetData& target)
+	RenderTarget::RenderTarget(CommandPool* with_command_pool, vk::raii::Device& with_device)
 	{
-		target.command_buffer = instance->GetCommandPool()->AllocateCommandBuffer();
-
-		this->CreateSyncObjects(target.sync_objects);
-	}
-
-	void Swapchain::CreateSyncObjects(SyncObjects& sync_objects)
-	{
-		LogicalDevice* logical_device = instance->GetLogicalDevice();
+		command_buffer = with_command_pool->AllocateCommandBuffer();
 
 		static constexpr vk::SemaphoreCreateInfo semaphore_create_info({}, {});
 		static constexpr vk::FenceCreateInfo fence_create_info(vk::FenceCreateFlagBits::eSignaled, {});
 
-		sync_objects.image_available = logical_device->GetHandle().createSemaphore(semaphore_create_info);
-		sync_objects.present_ready	 = logical_device->GetHandle().createSemaphore(semaphore_create_info);
-		sync_objects.in_flight		 = logical_device->GetHandle().createFence(fence_create_info);
+		sync_objects = SyncObjects{
+			with_device.createSemaphore(semaphore_create_info),
+			with_device.createSemaphore(semaphore_create_info),
+			with_device.createFence(fence_create_info),
+		};
 	}
 
-	void Swapchain::CleanupRenderTarget(RenderTargetData& target)
+	RenderTarget::~RenderTarget()
 	{
-		LogicalDevice* logical_device = instance->GetLogicalDevice();
-
-		logical_device->GetHandle().destroySemaphore(target.sync_objects.present_ready);
-		logical_device->GetHandle().destroySemaphore(target.sync_objects.image_available);
-		logical_device->GetHandle().destroyFence(target.sync_objects.in_flight);
-
-		delete target.command_buffer;
+		// delete sync_objects;
+		delete command_buffer;
 	}
+
+#pragma region Private
+
 } // namespace Engine::Rendering::Vulkan

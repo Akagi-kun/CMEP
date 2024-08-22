@@ -26,14 +26,14 @@ namespace Engine::Rendering::Vulkan
 		int preference_score = 0;	  // Higher better
 		bool supported		 = false; // Must be true
 
-		DeviceScore(PhysicalDevice with_device, const Surface* with_surface);
+		DeviceScore(const PhysicalDevice& with_device, const Surface* with_surface);
 
 		static const std::vector<const char*> device_extensions;
-		static bool CheckDeviceExtensionSupport(vk::PhysicalDevice device);
+		static bool CheckDeviceExtensionSupport(const vk::raii::PhysicalDevice& device);
 
 		operator bool() const
 		{
-			return device_scored && supported && (preference_score > 0);
+			return /* device_scored && */ supported && (preference_score > 0);
 		}
 
 		bool operator<(const DeviceScore& other) const

@@ -22,7 +22,7 @@ namespace Engine::Rendering::Vulkan
 	{
 		LogicalDevice* logical_device = instance->GetLogicalDevice();
 
-		vk::PhysicalDeviceProperties device_properties = instance->GetPhysicalDevice().GetHandle().getProperties();
+		vk::PhysicalDeviceProperties device_properties = instance->GetPhysicalDevice()->getProperties();
 
 		texture_sampler = logical_device->GetHandle().createSampler({
 			{},
@@ -45,10 +45,4 @@ namespace Engine::Rendering::Vulkan
 		});
 	}
 
-	SampledImage::~SampledImage()
-	{
-		LogicalDevice* logical_device = instance->GetLogicalDevice();
-
-		logical_device->GetHandle().destroySampler(texture_sampler);
-	}
 } // namespace Engine::Rendering::Vulkan

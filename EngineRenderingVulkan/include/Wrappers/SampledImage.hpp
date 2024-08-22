@@ -8,7 +8,7 @@ namespace Engine::Rendering::Vulkan
 	class SampledImage : public Image
 	{
 	public:
-		VkSampler texture_sampler;
+		vk::raii::Sampler texture_sampler = nullptr;
 
 		SampledImage(
 			InstanceOwned::value_t with_instance,
@@ -22,7 +22,7 @@ namespace Engine::Rendering::Vulkan
 			vk::ImageTiling with_tiling		   = vk::ImageTiling::eOptimal
 		);
 
-		~SampledImage();
+		~SampledImage() = default;
 
 	private:
 		const vk::Filter use_filter;

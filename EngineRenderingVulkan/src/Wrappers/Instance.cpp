@@ -89,7 +89,7 @@ namespace Engine::Rendering::Vulkan
 		InitDevice();
 		logical_device = new LogicalDevice(this, window->GetSurface());
 
-		memory_allocator = new MemoryAllocator(this, *logical_device);
+		memory_allocator = new MemoryAllocator(this, *logical_device->GetHandle());
 
 		command_pool = new CommandPool(this);
 
@@ -107,11 +107,6 @@ namespace Engine::Rendering::Vulkan
 		delete memory_allocator;
 
 		delete logical_device;
-
-		if (enable_vk_validation_layers)
-		{
-			native_handle.destroyDebugUtilsMessengerEXT(debug_messenger);
-		}
 
 		glfwTerminate();
 	}
@@ -152,8 +147,7 @@ namespace Engine::Rendering::Vulkan
 			instance_layers.insert(instance_layers.end(), validation_layers.begin(), validation_layers.end());
 		}
 
-		// Create an instance
-		native_handle = vk::createInstance({
+		native_handle = context.createInstance(vk::InstanceCreateInfo{
 			{},
 			&app_info,
 			validation_layers,
@@ -161,7 +155,7 @@ namespace Engine::Rendering::Vulkan
 		});
 
 		// Load instance functions in dispatcher
-		VULKAN_HPP_DEFAULT_DISPATCHER.init(native_handle);
+		VULKAN_HPP_DEFAULT_DISPATCHER.init(*native_handle);
 
 		this->logger->SimpleLog(Logging::LogLevel::Info, LOGPFX_CURRENT "Created a Vulkan instance");
 
@@ -170,7 +164,7 @@ namespace Engine::Rendering::Vulkan
 		{
 			this->logger->SimpleLog(Logging::LogLevel::Debug2, LOGPFX_CURRENT "Creating debug messenger");
 
-			vk::DebugUtilsMessengerCreateInfoEXT debug_messenger_create_info(
+			vk::DebugUtilsMessengerCreateInfoEXT messenger_create_info(
 				{},
 				vk::DebugUtilsMessageSeverityFlagBitsEXT::eVerbose |
 					vk::DebugUtilsMessageSeverityFlagBitsEXT::eWarning |
@@ -181,7 +175,7 @@ namespace Engine::Rendering::Vulkan
 				this
 			);
 
-			debug_messenger = native_handle.createDebugUtilsMessengerEXT(debug_messenger_create_info);
+			debug_messenger = native_handle.createDebugUtilsMessengerEXT(messenger_create_info);
 
 			this->logger->SimpleLog(Logging::LogLevel::Debug2, LOGPFX_CURRENT "Created debug messenger");
 		}
@@ -220,7 +214,7 @@ namespace Engine::Rendering::Vulkan
 		this->logger->SimpleLog(Logging::LogLevel::Debug2, LOGPFX_CURRENT "Initializing vulkan device");
 
 		// Get physical devices
-		std::vector<vk::PhysicalDevice> physical_devices = native_handle.enumeratePhysicalDevices();
+		std::vector<vk::raii::PhysicalDevice> physical_devices = native_handle.enumeratePhysicalDevices();
 
 		// Sorted (by score) vector of all devices
 		std::vector<DeviceScore> candidates;
@@ -250,13 +244,13 @@ namespace Engine::Rendering::Vulkan
 		{
 			if (candidate)
 			{
-				physical_device = candidate.device_scored;
-				msaa_samples	= GetMaxUsableSampleCount(physical_device);
+				physical_device = new PhysicalDevice(candidate.device_scored);
+				msaa_samples	= GetMaxUsableSampleCount(*physical_device);
 
 				this->logger->SimpleLog(
 					Logging::LogLevel::Info,
 					LOGPFX_CURRENT "Found a capable physical device: '%s'",
-					physical_device.GetDeviceName().c_str()
+					physical_device->GetDeviceName().c_str()
 				);
 				this->logger->SimpleLog(Logging::LogLevel::Info, LOGPFX_CURRENT "Using MSAAx%u", msaa_samples);
 
@@ -267,7 +261,7 @@ namespace Engine::Rendering::Vulkan
 		throw std::runtime_error("No physical device found!");
 	}
 
-	vk::SampleCountFlagBits Instance::GetMaxUsableSampleCount(vk::PhysicalDevice device)
+	vk::SampleCountFlagBits Instance::GetMaxUsableSampleCount(const vk::raii::PhysicalDevice& device)
 	{
 		vk::PhysicalDeviceProperties physical_device_properties = device.getProperties();
 
