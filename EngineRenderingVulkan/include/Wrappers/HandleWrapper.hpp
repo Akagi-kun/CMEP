@@ -61,10 +61,10 @@ namespace Engine::Rendering::Vulkan
 			{
 				return nullptr;
 			}
-			else
+			/* else
 			{
 				static_assert(false, "Cannot default construct or nullptr construct this handle!");
-			}
+			} */
 		}
 
 		static_assert(!std::is_same<value_t, std::nullptr_t>(), "nullptr_t is not a valid handle type");
