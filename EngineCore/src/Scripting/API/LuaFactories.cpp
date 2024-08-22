@@ -6,15 +6,15 @@
 #include "Scripting/API/SceneManager_API.hpp"
 #include "Scripting/API/Scene_API.hpp"
 
-#define CMEP_USE_FACTORY_TRAMPOLINE
-// #define CMEP_USE_FACTORY_NEW_PUSH
-// #define CMEP_USE_FACTORY_OLD_PUSH
-#include "Scripting/API/framework.hpp"
-
-#include "lua.h"
+#include "lua.hpp"
 
 #include <memory>
 #include <utility>
+
+#define CMEP_USE_FACTORY_TRAMPOLINE
+#undef CMEP_USE_FACTORY_NEW_PUSH
+#undef CMEP_USE_FACTORY_OLD_PUSH
+#include "Scripting/API/FactoryMappings.hpp"
 
 namespace Engine::Scripting::API::LuaFactories
 {

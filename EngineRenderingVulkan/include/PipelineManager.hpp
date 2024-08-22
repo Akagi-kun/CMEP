@@ -1,13 +1,17 @@
 #pragma once
 
+#include "fwd.hpp"
+
 #include "Rendering/SupplyData.hpp"
 
 #include "Logging/Logging.hpp"
 
-#include "VulkanStructDefs.hpp"
-#include "Wrappers/InstanceOwned.hpp"
-#include "Wrappers/Pipeline.hpp"
+#include "common/InstanceOwned.hpp"
+#include "common/StructDefs.hpp"
+#include "rendering/Pipeline.hpp"
+#include "rendering/PipelineSettings.hpp"
 
+#include <filesystem>
 #include <utility>
 
 namespace Engine::Rendering::Vulkan
@@ -16,11 +20,11 @@ namespace Engine::Rendering::Vulkan
 
 	struct ExtendedPipelineSettings
 	{
-		VulkanPipelineSettings short_setting;
+		PipelineSettings short_setting;
 
 		std::vector<RendererSupplyData> supply_data;
 
-		ExtendedPipelineSettings(VulkanPipelineSettings from_setting) : short_setting(std::move(from_setting))
+		ExtendedPipelineSettings(PipelineSettings from_setting) : short_setting(std::move(from_setting))
 		{
 		}
 	};

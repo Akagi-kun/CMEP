@@ -72,8 +72,7 @@ list(APPEND STATIC_LIBRARIES EngineLogging EngineRenderingVulkan)
 add_library(EngineCore SHARED ${SRC_FILES})
 
 target_compile_features(EngineCore PUBLIC cxx_std_17)
-set_target_properties(EngineCore PROPERTIES CXX_STANDARD_REQUIRED ON)
-set_target_properties(EngineCore PROPERTIES CXX_EXTENSIONS OFF)
+set_target_properties(EngineCore PROPERTIES CXX_STANDARD_REQUIRED ON CXX_EXTENSIONS OFF)
 
 target_compile_options(EngineCore PRIVATE ${ENGINE_COMPILE_OPTIONS})
 

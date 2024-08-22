@@ -1,3 +1,3 @@
 #pragma once
 
-#include "../include/VulkanStructDefs.hpp" // IWYU pragma: export
+#include "../include/common/StructDefs.hpp" // IWYU pragma: export

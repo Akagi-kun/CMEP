@@ -13,7 +13,8 @@ namespace Engine::Rendering
 
 		std::string text;
 
-		Vulkan::SampledImage* texture_image = nullptr;
+		// TODO: Remove
+		Vulkan::SampledImage<Vulkan::ViewedImage>* texture_image = nullptr;
 
 		std::shared_ptr<Rendering::Font> font = nullptr;
 

@@ -1,14 +1,14 @@
 #pragma once
 
-#include "../../../include/PipelineManager.hpp"		   // IWYU pragma: export
-#include "../../../include/VulkanStructDefs.hpp"	   // IWYU pragma: export
-#include "../../../include/VulkanUtilities.hpp"		   // IWYU pragma: export
-#include "../../../include/Wrappers/Buffer.hpp"		   // IWYU pragma: export
-#include "../../../include/Wrappers/CommandBuffer.hpp" // IWYU pragma: export
-#include "../../../include/Wrappers/CommandPool.hpp"   // IWYU pragma: export
-#include "../../../include/Wrappers/Image.hpp"		   // IWYU pragma: export
-#include "../../../include/Wrappers/Instance.hpp"	   // IWYU pragma: export
-#include "../../../include/Wrappers/Pipeline.hpp"	   // IWYU pragma: export
-#include "../../../include/Wrappers/RenderPass.hpp"	   // IWYU pragma: export
-#include "../../../include/Wrappers/SampledImage.hpp"  // IWYU pragma: export
-#include "../../../include/Wrappers/Swapchain.hpp"	   // IWYU pragma: export
+#include "../../../include/PipelineManager.hpp"		  // IWYU pragma: export
+#include "../../../include/backend/Instance.hpp"	  // IWYU pragma: export
+#include "../../../include/common/StructDefs.hpp"	  // IWYU pragma: export
+#include "../../../include/common/Utilities.hpp"	  // IWYU pragma: export
+#include "../../../include/objects/Buffer.hpp"		  // IWYU pragma: export
+#include "../../../include/objects/CommandBuffer.hpp" // IWYU pragma: export
+#include "../../../include/objects/CommandPool.hpp"	  // IWYU pragma: export
+#include "../../../include/objects/Image.hpp"		  // IWYU pragma: export
+#include "../../../include/objects/SampledImage.hpp"  // IWYU pragma: export
+#include "../../../include/rendering/Pipeline.hpp"	  // IWYU pragma: export
+#include "../../../include/rendering/RenderPass.hpp"  // IWYU pragma: export
+#include "../../../include/rendering/Swapchain.hpp"	  // IWYU pragma: export

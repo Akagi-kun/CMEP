@@ -15,42 +15,8 @@ namespace Engine::Rendering
 	// Interface for Renderers
 	class IRenderer : public InternalEngineObject
 	{
-	private:
-		VulkanPipelineSettings settings;
-
-	protected:
-		Transform transform;
-		Transform parent_transform;
-		ScreenSize screen;
-
-		// Renderer configuration
-		std::string_view pipeline_name;
-		Vulkan::PipelineUserRef* pipeline;
-		// Vulkan::Pipeline* pipeline = nullptr;
-		// size_t pipeline_user_index = 0;
-		std::shared_ptr<Vulkan::PipelineManager> pipeline_manager;
-
-		IMeshBuilder* mesh_builder = nullptr;
-		MeshBuildContext mesh_context{};
-
-		std::shared_ptr<Rendering::Texture> texture = nullptr;
-		RendererMatrixData matrix_data;
-
-		// When false, UpdateDescriptorSets shall be internally called on next Render
-		bool has_updated_descriptors = false;
-		void UpdateDescriptorSets();
-
-		// When false, UpdateMatrices will be called
-		// Note that UpdateMatrices is also manually called from SceneManager
-		bool has_updated_matrices = false;
-
 	public:
-		IRenderer(
-			Engine* with_engine,
-			IMeshBuilder* with_builder,
-			// Vulkan::PipelineManager* with_pipeline_manager,
-			std::string_view with_pipeline_program
-		);
+		IRenderer(Engine* with_engine, IMeshBuilder* with_builder, std::string_view with_pipeline_program);
 		virtual ~IRenderer();
 
 		// Renderers shall implement this to get textures, fonts etc.
@@ -80,6 +46,35 @@ namespace Engine::Rendering
 		}
 
 		void Render(Vulkan::CommandBuffer* command_buffer, uint32_t current_frame);
+
+	protected:
+		Transform transform;
+		Transform parent_transform;
+		ScreenSize screen;
+
+		// Renderer configuration
+		std::string_view pipeline_name;
+		Vulkan::PipelineUserRef* pipeline;
+		// Vulkan::Pipeline* pipeline = nullptr;
+		// size_t pipeline_user_index = 0;
+		std::shared_ptr<Vulkan::PipelineManager> pipeline_manager;
+
+		IMeshBuilder* mesh_builder = nullptr;
+		MeshBuildContext mesh_context{};
+
+		std::shared_ptr<Rendering::Texture> texture = nullptr;
+		RendererMatrixData matrix_data;
+
+		// When false, UpdateDescriptorSets shall be internally called on next Render
+		bool has_updated_descriptors = false;
+		void UpdateDescriptorSets();
+
+		// When false, UpdateMatrices will be called
+		// Note that UpdateMatrices is also manually called from SceneManager
+		bool has_updated_matrices = false;
+
+	private:
+		Vulkan::PipelineSettings settings;
 	};
 
 	class Renderer3D final : public IRenderer

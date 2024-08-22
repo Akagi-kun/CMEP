@@ -2,27 +2,27 @@ cmake_minimum_required(VERSION 3.12)
 project(EngineCore CXX)
 
 set(SRC_FILES
-	src/VmaImplementation.cpp
-	src/DispatchLoaderDynamic.cpp
+	src/lib_impl.cpp
 
-	src/PipelineManager.cpp
+	src/backend/Instance.cpp
+	src/backend/DeviceScore.cpp
+	src/backend/LogicalDevice.cpp
+	src/backend/PhysicalDevice.cpp
+	src/backend/MemoryAllocator.cpp
 	
-	src/Wrappers/LogicalDevice.cpp
-	src/Wrappers/MemoryAllocator.cpp
-	src/Wrappers/Instance.cpp
-	src/Wrappers/Surface.cpp
-	src/Wrappers/Window.cpp
-	src/Wrappers/ShaderModule.cpp
-	src/Wrappers/Pipeline.cpp
-	src/Wrappers/Image.cpp
-	src/Wrappers/SampledImage.cpp
-	src/Wrappers/RenderPass.cpp
-	src/Wrappers/Swapchain.cpp
-	src/Wrappers/Buffer.cpp
-	src/Wrappers/DeviceScore.cpp
-	src/Wrappers/PhysicalDevice.cpp
-	src/Wrappers/CommandPool.cpp
-	src/Wrappers/CommandBuffer.cpp
+	src/rendering/Window.cpp
+	src/rendering/Surface.cpp
+	src/rendering/Pipeline.cpp
+	src/rendering/Swapchain.cpp
+	src/rendering/RenderPass.cpp
+	src/rendering/ShaderModule.cpp
+	src/rendering/PipelineManager.cpp
+
+	src/objects/Image.cpp
+	src/objects/Buffer.cpp
+	src/objects/CommandPool.cpp
+	src/objects/SampledImage.cpp
+	src/objects/CommandBuffer.cpp
 	)
 
 if(WIN32)
@@ -47,9 +47,7 @@ list(APPEND STATIC_LIBRARIES EngineLogging)
 add_library(EngineRenderingVulkan STATIC ${SRC_FILES})
 
 target_compile_features(EngineRenderingVulkan PUBLIC cxx_std_17)
-set_target_properties(EngineRenderingVulkan PROPERTIES CXX_STANDARD_REQUIRED ON)
-set_target_properties(EngineRenderingVulkan PROPERTIES CXX_EXTENSIONS OFF)
-set_target_properties(EngineRenderingVulkan PROPERTIES POSITION_INDEPENDENT_CODE ON)
+set_target_properties(EngineRenderingVulkan PROPERTIES CXX_STANDARD_REQUIRED ON CXX_EXTENSIONS OFF POSITION_INDEPENDENT_CODE ON)
 
 target_compile_definitions(EngineRenderingVulkan PRIVATE VULKAN_HPP_DISPATCH_LOADER_DYNAMIC=1)
 

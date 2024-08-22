@@ -21,10 +21,10 @@ namespace Engine::Rendering
 
 	struct TextureData
 	{
-		std::vector<unsigned char> data;
 		ImageSize size;
-		int color_fmt						= 4;
-		Vulkan::SampledImage* texture_image = nullptr;
+		int color_fmt = 4;
+		std::vector<unsigned char> data;
+		Vulkan::SampledImage<Vulkan::ViewedImage>* texture_image = nullptr;
 	};
 
 	class Texture final : public InternalEngineObject
@@ -37,22 +37,22 @@ namespace Engine::Rendering
 
 		[[nodiscard]] ImageSize GetSize() const
 		{
-			return this->data->size;
+			return data->size;
 		}
 
 		[[nodiscard]] std::vector<unsigned char>& GetData() const
 		{
-			return this->data->data;
+			return data->data;
 		}
 
-		[[nodiscard]] Vulkan::SampledImage* GetTextureImage() const
+		[[nodiscard]] auto GetTextureImage() const
 		{
-			return this->data->texture_image;
+			return data->texture_image;
 		}
 
 		[[nodiscard]] int GetColorFormat() const
 		{
-			return this->data->color_fmt;
+			return data->color_fmt;
 		}
 
 	private:

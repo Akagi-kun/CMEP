@@ -10,12 +10,7 @@
 
 namespace Engine::Rendering
 {
-	IRenderer::IRenderer(
-		Engine* with_engine,
-		IMeshBuilder* with_builder,
-		// Vulkan::PipelineManager* with_pipeline_manager,
-		std::string_view with_pipeline_program
-	)
+	IRenderer::IRenderer(Engine* with_engine, IMeshBuilder* with_builder, std::string_view with_pipeline_program)
 		: InternalEngineObject(with_engine), pipeline_name(with_pipeline_program),
 		  pipeline_manager(with_engine->GetVulkanPipelineManager()), mesh_builder(with_builder)
 	{
@@ -24,7 +19,7 @@ namespace Engine::Rendering
 		settings =
 			{instance->GetWindow()->GetSwapchain()->GetExtent(), pipeline_name, mesh_builder->GetSupportedTopology()};
 
-		settings.descriptor_layout_settings.push_back(VulkanDescriptorLayoutSettings{
+		settings.descriptor_layout_settings.push_back(Vulkan::DescriptorLayoutSettings{
 			1,
 			1,
 			vk::DescriptorType::eCombinedImageSampler,
@@ -87,11 +82,11 @@ namespace Engine::Rendering
 
 		if (texture)
 		{
-			Vulkan::SampledImage* texture_image = texture->GetTextureImage();
+			auto* texture_image = texture->GetTextureImage();
 
 			VkDescriptorImageInfo descriptor_image_info{};
 			descriptor_image_info.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-			descriptor_image_info.imageView	  = **texture_image->GetNativeViewHandle();
+			descriptor_image_info.imageView	  = *texture_image->GetNativeViewHandle();
 			descriptor_image_info.sampler	  = *texture_image->texture_sampler;
 
 			VkWriteDescriptorSet descriptor_write{};

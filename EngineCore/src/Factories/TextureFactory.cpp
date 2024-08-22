@@ -110,20 +110,21 @@ namespace Engine::Factories
 		Rendering::Vulkan::Buffer* staging_buffer =
 			new Rendering::Vulkan::StagingBuffer(vk_instance, raw_data.data(), memory_size);
 
-		texture_data->texture_image = new Rendering::Vulkan::SampledImage(
+		texture_data->texture_image = new Rendering::Vulkan::SampledImage<Rendering::Vulkan::ViewedImage>(
 			vk_instance,
 			{size.x, size.y},
 			vk::SampleCountFlagBits::e1,
 			vk::Format::eR8G8B8A8Srgb,
 			vk::ImageUsageFlagBits::eTransferDst | vk::ImageUsageFlagBits::eSampled,
-			filtering,			 // Filter for both mag and min
-			sampler_address_mode // sampler address mode
+			filtering,			  // Filter for both mag and min
+			sampler_address_mode, // sampler address mode
+			vk::ImageAspectFlagBits::eColor
 		);
 
 		// Transfer image layout to compatible with transfers
 		texture_data->texture_image->TransitionImageLayout(vk::ImageLayout::eTransferDstOptimal);
 
-		auto command_buffer = vk_instance->GetCommandPool()->AllocateTemporaryCommandBuffer();
+		auto command_buffer = vk_instance->GetCommandPool()->ConstructCommandBuffer();
 
 		command_buffer.BufferImageCopy(staging_buffer, texture_data->texture_image);
 
@@ -132,7 +133,7 @@ namespace Engine::Factories
 		// Transfer image layout to compatible with rendering
 		texture_data->texture_image->TransitionImageLayout(vk::ImageLayout::eShaderReadOnlyOptimal);
 
-		texture_data->texture_image->AddImageView();
+		// texture_data->texture_image->AddImageView();
 
 		return 0;
 	}

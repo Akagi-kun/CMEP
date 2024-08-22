@@ -1,0 +1,20 @@
+#include "rendering/ShaderModule.hpp"
+
+#include "backend/LogicalDevice.hpp"
+#include "common/Utilities.hpp"
+
+namespace Engine::Rendering::Vulkan
+{
+	ShaderModule::ShaderModule(LogicalDevice* with_device, std::filesystem::path with_path, const std::string& filename)
+	{
+		const auto shader_code = Vulkan::Utility::ReadShaderFile(with_path.append(filename));
+
+		vk::ShaderModuleCreateInfo create_info(
+			{},
+			shader_code.size(),
+			reinterpret_cast<const uint32_t*>(shader_code.data())
+		);
+
+		native_handle = with_device->GetHandle().createShaderModule(create_info);
+	}
+} // namespace Engine::Rendering::Vulkan

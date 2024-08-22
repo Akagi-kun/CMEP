@@ -45,6 +45,9 @@ InsertNewlineAtEOF: true
 SortIncludes: CaseSensitive
 IncludeBlocks: Regroup
 IncludeCategories:
+  - Regex:           '^"[a-zA-Z/]*fwd.hpp"'
+    Priority:        1
+    CaseSensitive:   false
   - Regex:           '^"(Scripting)/'
     Priority:        5
     CaseSensitive:   true
@@ -62,8 +65,8 @@ IncludeCategories:
     CaseSensitive:   true
   - Regex:           '^".*'
     Priority:        12
-    CaseSensitive:   true
+    CaseSensitive:   false
   - Regex:           '^<.*'
     Priority:        15
-    CaseSensitive:   true
+    CaseSensitive:   false
 ...
