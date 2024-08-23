@@ -6,6 +6,7 @@
 #include <chrono>
 #include <cstdarg>
 #include <cstdio>
+#include <cstring>
 #include <thread>
 
 // Prefixes for logging messages
