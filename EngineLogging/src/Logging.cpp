@@ -129,7 +129,7 @@ namespace Logging
 
 				if (!use_thread_name)
 				{
-					sprintf(threadid_buf, "%04hx", thread_id);
+					snprintf(threadid_buf, threadid_buf_len, "%04hx", thread_id);
 				}
 
 				fprintf(
