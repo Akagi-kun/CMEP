@@ -176,8 +176,10 @@ GENERATOR_FUNCTION = function(supplier, world_x, world_y, world_z)
 					end
 
 					-- if previous Y (vertical) position has air (block boundary)
-					if tblcontains(game_defs.blocks_transparent, map_prev_y) or
-						tblcontains(game_defs.blocks_crossfaced, map_prev_y) then
+					-- check only pos > 1 so that we avoid vertices on the bottom of the map
+					if map_pos_y > 1 and
+						(tblcontains(game_defs.blocks_transparent, map_prev_y) or
+						tblcontains(game_defs.blocks_crossfaced, map_prev_y)) then
 						faceYielder(map_val, dynagen_defs.faces.YNEG, map_pos_x, map_pos_z, map_pos_y)
 					end
 

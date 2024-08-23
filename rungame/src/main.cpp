@@ -42,6 +42,12 @@ static int RunEngine(bool verbose)
 #else
 	logfile = fopen(logfile_name, "w");
 #endif
+	if (logfile == nullptr)
+	{
+		using namespace std::string_literals;
+
+		assert(false && "Could not open "s.append(logfile_name).c_str());
+	}
 
 	my_logger->AddOutputHandle(loglevel, stdout, true);
 	my_logger->AddOutputHandle(Logging::LogLevel::Debug3, logfile, false);
@@ -67,7 +73,6 @@ static int RunEngine(bool verbose)
 		{
 			// The exception was caught but is different from expected?
 			assert(false && "ABI exception check failed");
-			throw;
 		}
 	}
 

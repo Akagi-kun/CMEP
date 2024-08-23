@@ -54,7 +54,7 @@ namespace Engine::Rendering
 
 		// Renderer configuration
 		std::string_view pipeline_name;
-		Vulkan::PipelineUserRef* pipeline;
+		Vulkan::PipelineUserRef* pipeline = nullptr;
 		// Vulkan::Pipeline* pipeline = nullptr;
 		// size_t pipeline_user_index = 0;
 		std::shared_ptr<Vulkan::PipelineManager> pipeline_manager;

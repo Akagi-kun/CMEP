@@ -42,6 +42,7 @@ end
 
 local generate_chunk = function(xpos, zpos)
 	local map_data = ffi.C.malloc(ffi.sizeof("uint16_t") * config.chunk_size_x * config.chunk_size_y * config.chunk_size_z)
+	assert(map_data, "Could not allocate chunk buffer")
 	local cast_map_data = ffi.cast("uint16_t*", map_data)
 
 	local tree_placement_data = {}
@@ -107,69 +108,73 @@ local generate_chunk = function(xpos, zpos)
 
 	-- Places flowers at selected positions
 	for flower_k, flower_v in ipairs(flower_placement_data) do
-		local offset = calculateMapOffset(flower_v[1], flower_v[2] + 1, flower_v[3])
-		cast_map_data[offset] = game_defs.block_types.FLOWER
+		print(flower_k)
+--		local offset = calculateMapOffset(flower_v[1], flower_v[2] + 1, flower_v[3])
+--		cast_map_data[offset] = game_defs.block_types.FLOWER
 	end
 
 	local chunk_x = xpos / config.chunk_size_x
 	local chunk_z = zpos / config.chunk_size_z
+
+--	local this_chunk = cast_map_data
+
+--	if chunks[chunk_x][chunk_z - 1] ~= nil and chunks[chunk_x][chunk_z - 1].data ~= nil then
+--		local prev_chunk = chunks[chunk_x][chunk_z - 1].data
+--
+--		for x = 1, config.chunk_size_x do
+--			for y = 1, config.chunk_size_y do
+--				local offset1 = calculateMapOffset(x, y, 1)
+--				local offset2 = calculateMapOffset(x, y, config.chunk_size_z)
+--				if prev_chunk[offset2] ~= 0 and this_chunk[offset1] < 128 and this_chunk[offset1] ~= 0 then
+--					this_chunk[offset1] = this_chunk[offset1] + 128
+--				end
+--			end
+--		end
+--	end
+--	if chunks[chunk_x][chunk_z + 1] ~= nil and chunks[chunk_x][chunk_z + 1].data ~= nil then
+--		local next_chunk = chunks[chunk_x][chunk_z + 1].data
+--
+--		for x = 1, config.chunk_size_x do
+--			for y = 1, config.chunk_size_y do
+--				local offset1 = calculateMapOffset(x, y, config.chunk_size_z)
+--				local offset2 = calculateMapOffset(x, y, 1)
+--				if next_chunk[offset2] ~= 0 and this_chunk[offset1] < 128 and this_chunk[offset1] ~= 0 then
+--					this_chunk[offset1] = this_chunk[offset1] + 128
+--				end
+--			end
+--		end
+--	end
+--
+--	if chunks[chunk_x - 1] ~= nil and chunks[chunk_x - 1][chunk_z] ~= nil and chunks[chunk_x - 1][chunk_z].data ~= nil then
+--		local prev_chunk = chunks[chunk_x - 1][chunk_z].data
+--
+--		for z = 1, config.chunk_size_z do
+--			for y = 1, config.chunk_size_y do
+--				local offset1 = calculateMapOffset(1, y, z)
+--				local offset2 = calculateMapOffset(config.chunk_size_x, y, z)
+--				if prev_chunk[offset2] ~= 0 and this_chunk[offset1] < 256 and this_chunk[offset1] ~= 0 then
+--					this_chunk[offset1] = this_chunk[offset1] + 256
+--				end
+--			end
+--		end
+--	end
+--	if chunks[chunk_x + 1] ~= nil and chunks[chunk_x + 1][chunk_z] ~= nil and chunks[chunk_x + 1][chunk_z].data ~= nil then
+--		local next_chunk = chunks[chunk_x + 1][chunk_z].data
+--
+--		for z = 1, config.chunk_size_z do
+--			for y = 1, config.chunk_size_y do
+--				local offset1 = calculateMapOffset(config.chunk_size_x, y, z)
+--				local offset2 = calculateMapOffset(1, y, z)
+--				if next_chunk[offset2] ~= 0 and this_chunk[offset1] < 256 and this_chunk[offset1] ~= 0 then
+--					this_chunk[offset1] = this_chunk[offset1] + 256
+--				end
+--			end
+--		end
+--	end
+	
+	if chunks[chunk_x] == nil then chunks[chunk_x] = {} end
+	if chunks[chunk_x][chunk_z] == nil then chunks[chunk_x][chunk_z] = {} end
 	chunks[chunk_x][chunk_z].data = cast_map_data
-
-	local this_chunk = cast_map_data
-
-	if chunks[chunk_x][chunk_z - 1] ~= nil and chunks[chunk_x][chunk_z - 1].data ~= nil then
-		local prev_chunk = chunks[chunk_x][chunk_z - 1].data
-
-		for x = 1, config.chunk_size_x do
-			for y = 1, config.chunk_size_y do
-				local offset1 = calculateMapOffset(x, y, 1)
-				local offset2 = calculateMapOffset(x, y, config.chunk_size_z)
-				if prev_chunk[offset2] ~= 0 and this_chunk[offset1] < 128 and this_chunk[offset1] ~= 0 then
-					this_chunk[offset1] = this_chunk[offset1] + 128
-				end
-			end
-		end
-	end
-	if chunks[chunk_x][chunk_z + 1] ~= nil and chunks[chunk_x][chunk_z + 1].data ~= nil then
-		local next_chunk = chunks[chunk_x][chunk_z + 1].data
-
-		for x = 1, config.chunk_size_x do
-			for y = 1, config.chunk_size_y do
-				local offset1 = calculateMapOffset(x, y, config.chunk_size_z)
-				local offset2 = calculateMapOffset(x, y, 1)
-				if next_chunk[offset2] ~= 0 and this_chunk[offset1] < 128 and this_chunk[offset1] ~= 0 then
-					this_chunk[offset1] = this_chunk[offset1] + 128
-				end
-			end
-		end
-	end
-
-	if chunks[chunk_x - 1] ~= nil and chunks[chunk_x - 1][chunk_z] ~= nil and chunks[chunk_x - 1][chunk_z].data ~= nil then
-		local prev_chunk = chunks[chunk_x - 1][chunk_z].data
-
-		for z = 1, config.chunk_size_z do
-			for y = 1, config.chunk_size_y do
-				local offset1 = calculateMapOffset(1, y, z)
-				local offset2 = calculateMapOffset(config.chunk_size_x, y, z)
-				if prev_chunk[offset2] ~= 0 and this_chunk[offset1] < 256 and this_chunk[offset1] ~= 0 then
-					this_chunk[offset1] = this_chunk[offset1] + 256
-				end
-			end
-		end
-	end
-	if chunks[chunk_x + 1] ~= nil and chunks[chunk_x + 1][chunk_z] ~= nil and chunks[chunk_x + 1][chunk_z].data ~= nil then
-		local next_chunk = chunks[chunk_x + 1][chunk_z].data
-
-		for z = 1, config.chunk_size_z do
-			for y = 1, config.chunk_size_y do
-				local offset1 = calculateMapOffset(config.chunk_size_x, y, z)
-				local offset2 = calculateMapOffset(1, y, z)
-				if next_chunk[offset2] ~= 0 and this_chunk[offset1] < 256 and this_chunk[offset1] ~= 0 then
-					this_chunk[offset1] = this_chunk[offset1] + 256
-				end
-			end
-		end
-	end
 end
 
 terrain_generator = function(...)
@@ -295,32 +300,32 @@ onInit = function(event)
 	--object3:SetRotation(0, -100, 180)
 	--scene:AddObject("test3dsprite", object3)
 
+	print("Generating chunks...")
 	for chunk_x = -chunks_x, chunks_x, 1 do -- chunks_x, chunks_x, 1
-		chunks[chunk_x] = {}
+--		chunks[chunk_x] = {}
 		for chunk_z = -chunks_z, chunks_z, 1 do
-			chunks[chunk_x][chunk_z] = {}
+--			chunks[chunk_x][chunk_z] = {}
 
+			--print("Generating chunk "..chunk_x.." "..chunk_z)
 			generate_chunk(chunk_x * config.chunk_size_x, chunk_z * config.chunk_size_z)
 		end
 	end
 
-	for chunk_x = -chunks_x, chunks_x, 1 do -- chunks_x, chunks_x, 1
-		--chunks[chunk_x] = {}
-		for chunk_z = -chunks_z, chunks_z, 1 do
-			local chunk_obj = engine.CreateSceneObject(asset_manager, "renderer_3d/generator", "terrain", {
-				{"texture", "atlas"}, {"generator_script", "testgen"}, {"generator_supplier", "script0/terrain_generator"}
-			})
-			chunk_obj:SetPosition(chunk_x * config.chunk_size_x, 0.0, chunk_z * config.chunk_size_z)
-			chunk_obj:SetSize(1, 1, 1)
-			chunk_obj:SetRotation(0, 0, 0)
-			scene:AddObject(string.format("chunk_%i_%i", chunk_x, chunk_z), chunk_obj)
-			chunks[chunk_x][chunk_z].object = {chunk_obj}
-			--print(string.format("Building chunk [%i,%i]",chunk_x, chunk_z))
-			--engine.RendererForceBuild(chunk_obj.renderer)
-		end
-	end
+--	for chunk_x = -chunks_x, chunks_x, 1 do -- chunks_x, chunks_x, 1
+--		--chunks[chunk_x] = {}
+--		for chunk_z = -chunks_z, chunks_z, 1 do
+--			local chunk_obj = engine.CreateSceneObject(asset_manager, "renderer_3d/generator", "terrain", {
+--				{"texture", "atlas"}, {"generator_script", "testgen"}, {"generator_supplier", "script0/terrain_generator"}
+--			})
+--			chunk_obj:SetPosition(chunk_x * config.chunk_size_x, 0.0, chunk_z * config.chunk_size_z)
+--			chunk_obj:SetSize(1, 1, 1)
+--			chunk_obj:SetRotation(0, 0, 0)
+--			scene:AddObject(string.format("chunk_%i_%i", chunk_x, chunk_z), chunk_obj)
+--			chunks[chunk_x][chunk_z].object = {chunk_obj}
+--			--print(string.format("Building chunk [%i,%i]",chunk_x, chunk_z))
+--			--engine.RendererForceBuild(chunk_obj.renderer)
+--		end
+--	end
 
-	print("Hi!")
-
-	return 0
+	return 1
 end

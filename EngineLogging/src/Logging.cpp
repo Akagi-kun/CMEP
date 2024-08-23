@@ -1,7 +1,7 @@
+#include <cassert>
 #define ENGINELOGGING_LIBRARY_IMPLEMENTATION
-#include "Logging.hpp"
-
 #include "ConsoleColors.hpp"
+#include "Logging.hpp"
 
 #include <chrono>
 #include <cstdarg>
@@ -24,6 +24,7 @@ static const char* level_to_color_table[] = {
 
 static const char* const level_to_string_table[] = {"DBG3", "DBG2", "DBG1", "INFO", "WARN", "ERROR", "EXCEPTION"};
 
+static_assert((sizeof(level_to_color_table) / sizeof(char*)) == (sizeof(level_to_string_table) / sizeof(char*)));
 // static constexpr size_t level_count =
 //	std::min(sizeof(level_to_color_table) / sizeof(char*), sizeof(level_to_string_table) / sizeof(char*));
 
@@ -31,13 +32,13 @@ namespace Logging
 {
 	Logger::Logger()
 	{
-		this->state = new LoggerInternalState();
+		state = new LoggerInternalState();
 	}
 
 	Logger::~Logger()
 	{
 		// Close all handles
-		for (auto& output : this->state->outputs)
+		for (auto& output : state->outputs)
 		{
 			if (output.handle != stdout)
 			{
@@ -45,7 +46,7 @@ namespace Logging
 			}
 		}
 
-		delete this->state;
+		delete state;
 	}
 
 	void Logger::AddOutputHandle(Logging::LogLevel min_level, FILE* handle, bool use_colors)
@@ -64,7 +65,7 @@ namespace Logging
 		new_map.use_colors			  = use_colors;
 
 		// Add new mapping to list
-		this->state->outputs.push_back(new_map);
+		state->outputs.push_back(new_map);
 	}
 
 	static inline uint16_t GetCurrentThreadID()
@@ -76,13 +77,13 @@ namespace Logging
 	void Logger::MapCurrentThreadToName(std::string name)
 	{
 		// Protect member access
-		this->state->thread_mutex.lock();
+		state->thread_mutex.lock();
 
 		uint16_t thread_id = GetCurrentThreadID();
 
-		this->state->threadid_name_map.emplace(thread_id, name);
+		state->threadid_name_map.emplace(thread_id, name);
 
-		this->state->thread_mutex.unlock();
+		state->thread_mutex.unlock();
 	}
 
 	void Logger::StartLog(Logging::LogLevel level)
@@ -94,14 +95,15 @@ namespace Logging
 		}
 
 		// Protect IO and member access
-		this->state->thread_mutex.lock();
+		state->thread_mutex.lock();
 
 		// Get color and string representation of LogLevel
 		const char* const color_str = level_to_color_table[static_cast<int>(level)];
 		const char* const level_str = level_to_string_table[static_cast<int>(level)];
 
-		static constexpr size_t threadid_buf_len   = 8;
+		static constexpr size_t threadid_buf_len   = 12;
 		static char threadid_buf[threadid_buf_len] = {};
+		memset(threadid_buf, 0, threadid_buf_len);
 
 		// Get current time
 		const std::time_t tmp = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
@@ -113,7 +115,7 @@ namespace Logging
 #endif
 
 		// For all outputs
-		for (auto& output : this->state->outputs)
+		for (auto& output : state->outputs)
 		{
 			// Log only if selected level is higher than output's minimum
 			if (level >= output.min_level)
@@ -121,8 +123,8 @@ namespace Logging
 				output.has_started_logging = true;
 
 				uint16_t thread_id	 = GetCurrentThreadID();
-				auto find_result	 = this->state->threadid_name_map.find(thread_id);
-				bool use_thread_name = (find_result != this->state->threadid_name_map.end());
+				auto find_result	 = state->threadid_name_map.find(thread_id);
+				bool use_thread_name = (find_result != state->threadid_name_map.end());
 
 				if (!use_thread_name)
 				{
@@ -145,8 +147,10 @@ namespace Logging
 
 	void Logger::Log(const char* format, ...)
 	{
+		assert(format != nullptr);
+
 		// Log for all outputs
-		for (auto& output : this->state->outputs)
+		for (auto& output : state->outputs)
 		{
 			if (output.has_started_logging)
 			{
@@ -161,7 +165,7 @@ namespace Logging
 	void Logger::StopLog()
 	{
 		// StopLog for all outputs
-		for (auto& output : this->state->outputs)
+		for (auto& output : state->outputs)
 		{
 			if (output.has_started_logging)
 			{
@@ -175,15 +179,15 @@ namespace Logging
 		}
 
 		// All logging must end with StopLog, unlock mutex here
-		this->state->thread_mutex.unlock();
+		state->thread_mutex.unlock();
 	}
 
 	void Logger::SimpleLog(LogLevel level, const char* format, ...)
 	{
-		this->StartLog(level);
+		StartLog(level);
 
 		// Log for all outputs
-		for (auto& output : this->state->outputs)
+		for (auto& output : state->outputs)
 		{
 			if (level >= output.min_level)
 			{
@@ -194,6 +198,6 @@ namespace Logging
 			}
 		}
 
-		this->StopLog();
+		StopLog();
 	}
 } // namespace Logging
