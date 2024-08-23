@@ -209,9 +209,27 @@ namespace Engine::Scripting
 		std::filesystem::path script_path = this->path;
 
 		// Load file and compile it
-		int errload			  = luaL_loadfile(state, script_path.string().c_str());
-		int errexec			  = lua_pcall(state, 0, LUA_MULTRET, 0);
-		const char* errorexec = lua_tostring(state, -1);
+		// this can raise syntax errors
+		int load_return = luaL_loadfile(state, script_path.string().c_str());
+		if (load_return != LUA_OK)
+		{
+			using namespace std::string_literals;
+
+			throw std::runtime_error("Exception compiling Lua script! loadfile: "s.append(std::to_string(load_return))
+										 .append("\n\t"s)
+										 .append(lua_tostring(state, -1)));
+		}
+
+		// "Interpret" the script
+		int pcall_return = lua_pcall(state, 0, LUA_MULTRET, 0);
+		if (pcall_return != LUA_OK)
+		{
+			using namespace std::string_literals;
+
+			throw std::runtime_error("Exception compiling Lua script! pcall: "s.append(std::to_string(pcall_return))
+										 .append("\n\t")
+										 .append(lua_tostring(state, -1)));
+		}
 
 		// Uncomment this to disable JIT compiler
 		// luaJIT_setmode(state, 0, LUAJIT_MODE_ENGINE | LUAJIT_MODE_OFF);
@@ -221,22 +239,6 @@ namespace Engine::Scripting
 
 		// Register exception-handling wrapper
 		RegisterWrapper(state);
-
-		if (errload != LUA_OK || errexec != LUA_OK)
-		{
-			this->logger->SimpleLog(
-				Logging::LogLevel::Error,
-				LOGPFX_CURRENT "Error when loading and compiling Lua script "
-							   "'%s'\n   Error codes:\n    load: %i\n    compile: "
-							   "%i\n  Compilation error: %s",
-				script_path.string().c_str(),
-				errload,
-				errexec,
-				errorexec
-			);
-
-			return 3;
-		}
 
 		this->logger->SimpleLog(
 			Logging::LogLevel::Debug1,
@@ -263,6 +265,7 @@ namespace Engine::Scripting
 		}
 
 		int return_code = this->LoadAndCompileScript();
+		// TODO: Remove
 		if (return_code != 0)
 		{
 			throw std::runtime_error(

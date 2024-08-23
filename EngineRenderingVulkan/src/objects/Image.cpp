@@ -48,7 +48,7 @@ namespace Engine::Rendering::Vulkan
 		vma_alloc_info.flags		 = 0;
 		vma_alloc_info.requiredFlags = static_cast<VkMemoryPropertyFlags>(properties);
 
-		native_handle = logical_device->GetHandle().createImage(create_info);
+		native_handle = logical_device->createImage(create_info);
 
 		if (vmaAllocateMemoryForImage(
 				allocator->GetHandle(),
@@ -71,9 +71,9 @@ namespace Engine::Rendering::Vulkan
 
 	Image::~Image()
 	{
-		LogicalDevice* logical_device = instance->GetLogicalDevice();
+		// LogicalDevice* logical_device = instance->GetLogicalDevice();
 
-		logical_device->GetHandle().waitIdle();
+		// logical_device->GetHandle().waitIdle();
 
 		// delete native_view_handle;
 
@@ -121,13 +121,13 @@ namespace Engine::Rendering::Vulkan
 			throw std::invalid_argument("Unsupported layout transition!");
 		}
 
-		auto* command_buffer = instance->GetCommandPool()->AllocateCommandBuffer();
+		auto command_buffer = instance->GetCommandPool()->ConstructCommandBuffer();
 
-		command_buffer->RecordCmds([&](CommandBuffer* with_buffer) {
-			with_buffer->GetHandle().pipelineBarrier(src_stage, dst_stage, {}, {}, {}, barrier);
+		command_buffer.RecordCmds([&](vk::raii::CommandBuffer* with_buffer) {
+			with_buffer->pipelineBarrier(src_stage, dst_stage, {}, {}, {}, barrier);
 		});
 
-		delete command_buffer;
+		// delete command_buffer;
 
 		this->current_layout = new_layout;
 	}
@@ -155,22 +155,7 @@ namespace Engine::Rendering::Vulkan
 			{with_aspect_flags, 0, 1, 0, 1}
 		);
 
-		native_view_handle = logical_device->GetHandle().createImageView(view_create_info);
+		native_view_handle = logical_device->createImageView(view_create_info);
 	}
 
-	/* void ViewedImage::AddImageView(vk::ImageAspectFlags with_aspect_flags)
-	{
-		LogicalDevice* logical_device = instance->GetLogicalDevice();
-
-		vk::ImageViewCreateInfo view_create_info(
-			{},
-			*native_handle,
-			vk::ImageViewType::e2D,
-			image_format,
-			{},
-			{with_aspect_flags, 0, 1, 0, 1}
-		);
-
-		native_view_handle = logical_device->GetHandle().createImageView(view_create_info);
-	} */
 } // namespace Engine::Rendering::Vulkan

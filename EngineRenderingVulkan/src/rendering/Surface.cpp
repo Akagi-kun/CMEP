@@ -4,7 +4,7 @@ namespace Engine::Rendering::Vulkan
 {
 #pragma region Public
 
-	SwapChainSupportDetails Surface::QueryVulkanSwapChainSupport(const vk::raii::PhysicalDevice& device) const
+	SwapChainSupportDetails Surface::QuerySwapChainSupport(const vk::raii::PhysicalDevice& device) const
 	{
 		SwapChainSupportDetails details;
 		details.capabilities  = device.getSurfaceCapabilitiesKHR(native_handle);

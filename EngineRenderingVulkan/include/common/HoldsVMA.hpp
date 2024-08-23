@@ -7,7 +7,7 @@ namespace Engine::Rendering::Vulkan
 	class HoldsVMA
 	{
 	public:
-		HoldsVMA() = delete;
+		HoldsVMA() = default;
 		HoldsVMA(MemoryAllocator* with_allocator) : allocator(with_allocator)
 		{
 		}

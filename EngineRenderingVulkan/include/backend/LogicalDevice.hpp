@@ -1,16 +1,15 @@
 #pragma once
 
 #include "ImportVulkan.hpp"
-#include "common/HandleWrapper.hpp"
 #include "common/InstanceOwned.hpp"
 #include "common/StructDefs.hpp"
 
 namespace Engine::Rendering::Vulkan
 {
-	class LogicalDevice : public InstanceOwned, public HandleWrapper<vk::raii::Device>
+	class LogicalDevice : public InstanceOwned, public vk::raii::Device
 	{
 	public:
-		LogicalDevice(LogicalDevice& other) = delete;
+		LogicalDevice(LogicalDevice&) = delete;
 
 		LogicalDevice(InstanceOwned::value_t with_instance, const Surface* with_surface);
 
@@ -34,6 +33,7 @@ namespace Engine::Rendering::Vulkan
 		vk::raii::Queue graphics_queue = nullptr;
 		vk::raii::Queue present_queue  = nullptr;
 
-		static const std::vector<const char*> vk_validation_layers;
+		vk::raii::Device CreateDevice(Instance* with_instance, const Surface* with_surface);
+		// static const std::vector<const char*> device_validation_layers;
 	};
 } // namespace Engine::Rendering::Vulkan

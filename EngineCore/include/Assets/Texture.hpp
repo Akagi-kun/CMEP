@@ -45,7 +45,7 @@ namespace Engine::Rendering
 			return data->data;
 		}
 
-		[[nodiscard]] auto GetTextureImage() const
+		[[nodiscard]] auto& GetTextureImage() const
 		{
 			return data->texture_image;
 		}

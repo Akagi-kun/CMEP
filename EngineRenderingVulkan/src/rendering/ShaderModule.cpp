@@ -15,6 +15,6 @@ namespace Engine::Rendering::Vulkan
 			reinterpret_cast<const uint32_t*>(shader_code.data())
 		);
 
-		native_handle = with_device->GetHandle().createShaderModule(create_info);
+		native_handle = with_device->createShaderModule(create_info);
 	}
 } // namespace Engine::Rendering::Vulkan

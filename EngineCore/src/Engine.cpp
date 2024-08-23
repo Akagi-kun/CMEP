@@ -3,6 +3,7 @@
 #include "Assets/AssetManager.hpp"
 #include "Rendering/MeshBuilders/AxisMeshBuilder.hpp"
 #include "Rendering/Renderers/Renderer.hpp"
+#include "Rendering/Vulkan/backend.hpp"
 #include "Rendering/Vulkan/exports.hpp"
 
 #include "Scripting/ILuaScript.hpp"

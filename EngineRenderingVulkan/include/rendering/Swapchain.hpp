@@ -2,6 +2,7 @@
 
 #include "fwd.hpp"
 
+#include "common/InstanceOwned.hpp"
 #include "common/StructDefs.hpp"
 #include "objects/CommandBuffer.hpp"
 
@@ -14,6 +15,9 @@ namespace Engine::Rendering::Vulkan
 		vk::raii::Semaphore image_available = nullptr;
 		vk::raii::Semaphore present_ready	= nullptr; // render_finished_semaphores
 		vk::raii::Fence in_flight			= nullptr;
+
+		SyncObjects() = default;
+		SyncObjects(vk::raii::Device& with_device);
 	};
 
 	struct RenderTarget final

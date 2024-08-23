@@ -1,8 +1,6 @@
-#include "InternalEngineObject.hpp"
+#include "Rendering/Vulkan/backend.hpp"
 
-#include <cstddef>
-#include <cstdint>
-#include <stdexcept>
+#include "InternalEngineObject.hpp"
 
 #pragma warning(push, 2)
 #include "lodepng.h"
@@ -17,6 +15,10 @@
 // Prefixes for logging messages
 #define LOGPFX_CURRENT LOGPFX_CLASS_TEXTURE_FACTORY
 #include "Logging/LoggingPrefix.hpp" // IWYU pragma: keep
+
+#include <cstddef>
+#include <cstdint>
+#include <stdexcept>
 
 namespace Engine::Factories
 {

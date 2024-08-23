@@ -16,17 +16,17 @@ namespace Engine::Rendering::Vulkan
 			logical_device->GetQueueFamilies().graphics_family
 		);
 
-		native_handle = logical_device->GetHandle().createCommandPool(pool_info);
+		native_handle = logical_device->createCommandPool(pool_info);
 	}
 
 	[[nodiscard]] CommandBuffer* CommandPool::AllocateCommandBuffer()
 	{
-		return new CommandBuffer(instance, native_handle);
+		return new CommandBuffer(instance->GetLogicalDevice(), native_handle);
 	}
 
 	[[nodiscard]] CommandBuffer CommandPool::ConstructCommandBuffer()
 	{
-		return {instance, native_handle};
+		return {instance->GetLogicalDevice(), native_handle};
 	}
 
 } // namespace Engine::Rendering::Vulkan

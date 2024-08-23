@@ -5,7 +5,7 @@
 #include "Rendering/Transform.hpp"
 
 #include "ImportVulkan.hpp"
-#include "backend/Instance.hpp"
+#include "backend/LogicalDevice.hpp"
 #include "common/InstanceOwned.hpp"
 #include "objects/Image.hpp"
 
@@ -40,7 +40,7 @@ namespace Engine::Rendering::Vulkan
 
 			vk::PhysicalDeviceProperties device_properties = this->instance->GetPhysicalDevice()->getProperties();
 
-			texture_sampler = logical_device->GetHandle().createSampler(
+			texture_sampler = logical_device->createSampler(
 				GetSamplerCreateInfo(use_filter, use_address_mode, device_properties.limits.maxSamplerAnisotropy)
 			);
 		}
@@ -67,7 +67,7 @@ namespace Engine::Rendering::Vulkan
 
 			vk::PhysicalDeviceProperties device_properties = this->instance->GetPhysicalDevice()->getProperties();
 
-			texture_sampler = logical_device->GetHandle().createSampler(
+			texture_sampler = logical_device->createSampler(
 				GetSamplerCreateInfo(use_filter, use_address_mode, device_properties.limits.maxSamplerAnisotropy)
 			);
 		}
@@ -75,10 +75,10 @@ namespace Engine::Rendering::Vulkan
 		~SampledImage() = default;
 
 	private:
-		const vk::Filter use_filter;
-		const vk::SamplerAddressMode use_address_mode;
+		vk::Filter use_filter;
+		vk::SamplerAddressMode use_address_mode;
 
-		[[nodiscard]] static const vk::SamplerCreateInfo& GetSamplerCreateInfo(
+		[[nodiscard]] static vk::SamplerCreateInfo GetSamplerCreateInfo(
 			vk::Filter use_filter,
 			vk::SamplerAddressMode use_address_mode,
 			float max_anisotropy

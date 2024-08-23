@@ -1,5 +1,7 @@
 #include "Scene.hpp"
 
+#include "Rendering/Vulkan/backend.hpp"
+
 #include "Factories/ObjectFactory.hpp"
 
 #include "Logging/Logging.hpp"

@@ -1,61 +1,42 @@
 #include "objects/CommandBuffer.hpp"
 
 #include "ImportVulkan.hpp"
-#include "backend/Instance.hpp"
 #include "backend/LogicalDevice.hpp"
-#include "common/InstanceOwned.hpp"
 #include "common/Utilities.hpp"
 #include "objects/Buffer.hpp"
 #include "objects/Image.hpp"
 
 namespace Engine::Rendering::Vulkan
 {
-	CommandBuffer::CommandBuffer(InstanceOwned::value_t with_instance, vk::raii::CommandPool& from_pool)
-		: InstanceOwned(with_instance), owning_pool(*from_pool)
+	CommandBuffer::CommandBuffer(LogicalDevice* with_device, vk::raii::CommandPool& from_pool) : device(with_device)
 	{
-		vk::CommandBufferAllocateInfo alloc_info(owning_pool, vk::CommandBufferLevel::ePrimary, 1, {});
+		vk::CommandBufferAllocateInfo alloc_info(*from_pool, vk::CommandBufferLevel::ePrimary, 1, {});
 
-		LogicalDevice* logical_device = instance->GetLogicalDevice();
-
-		native_handle = std::move(logical_device->GetHandle().allocateCommandBuffers(alloc_info)[0]);
+		native_handle = std::move(device->allocateCommandBuffers(alloc_info)[0]);
 	}
 
-	void CommandBuffer::BeginCmdBuffer(vk::CommandBufferUsageFlags usage_flags)
+	vk::CommandBufferBeginInfo CommandBuffer::GetBeginInfo(vk::CommandBufferUsageFlags usage_flags)
 	{
-		native_handle.reset();
-
-		native_handle.begin({usage_flags, {}, {}});
+		return {usage_flags, {}, {}};
 	}
 
-	void CommandBuffer::RecordCmds(std::function<void(CommandBuffer*)> const& lambda)
+	void CommandBuffer::RecordCmds(std::function<void(vk::raii::CommandBuffer*)> const& lambda)
 	{
-		LogicalDevice* device = instance->GetLogicalDevice();
-
 		// TODO: Check if we should really pass non-zero here
-		BeginCmdBuffer(vk::CommandBufferUsageFlagBits::eOneTimeSubmit);
+		native_handle.begin(GetBeginInfo(vk::CommandBufferUsageFlagBits::eOneTimeSubmit));
 
-		// TODO: Don't pass this here
-		lambda(this);
+		lambda(&native_handle);
 
 		native_handle.end();
-		// EndCmdBuffer();
-		QueueSubmit(device->GetGraphicsQueue());
+		device->GetGraphicsQueue().submit(vk::SubmitInfo().setCommandBuffers(*native_handle));
 
 		device->GetGraphicsQueue().waitIdle();
 	}
 
-	void CommandBuffer::QueueSubmit(const vk::raii::Queue& to_queue)
-	{
-		vk::SubmitInfo submit_info{};
-		submit_info.setCommandBuffers(*native_handle);
-
-		to_queue.submit(submit_info);
-	}
-
 	void CommandBuffer::BufferBufferCopy(Buffer* from_buffer, Buffer* to_buffer, std::vector<vk::BufferCopy> regions)
 	{
-		RecordCmds([&](CommandBuffer* handle) {
-			handle->native_handle.copyBuffer(*from_buffer->GetHandle(), *to_buffer->GetHandle(), regions);
+		RecordCmds([&](vk::raii::CommandBuffer* handle) {
+			handle->copyBuffer(*from_buffer->GetHandle(), *to_buffer->GetHandle(), regions);
 		});
 	}
 
@@ -73,8 +54,8 @@ namespace Engine::Rendering::Vulkan
 			Utility::ConvertToExtent<vk::Extent3D>(image_size, 1)
 		);
 
-		RecordCmds([&](CommandBuffer* with_buf) {
-			with_buf->native_handle.copyBufferToImage(
+		RecordCmds([&](vk::raii::CommandBuffer* with_buf) {
+			with_buf->copyBufferToImage(
 				*from_buffer->GetHandle(),
 				*to_image->GetHandle(),
 				vk::ImageLayout::eTransferDstOptimal,

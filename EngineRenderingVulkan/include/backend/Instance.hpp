@@ -81,6 +81,5 @@ namespace Engine::Rendering::Vulkan
 		void InitDevice();
 
 		static bool CheckVulkanValidationLayers();
-		static vk::SampleCountFlagBits GetMaxUsableSampleCount(const vk::raii::PhysicalDevice& device);
 	};
 } // namespace Engine::Rendering::Vulkan

@@ -4,6 +4,7 @@
 #include "Assets/Texture.hpp"
 
 #include "Engine.hpp"
+#include "backend/Instance.hpp"
 
 #include <iterator>
 

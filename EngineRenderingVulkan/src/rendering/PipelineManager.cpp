@@ -86,7 +86,7 @@ namespace Engine::Rendering::Vulkan
 
 	void PipelineUserRef::UpdateDescriptorSets(per_frame_array<vk::WriteDescriptorSet> with_writes)
 	{
-		Pipeline::UpdateDescriptorSets(instance->GetLogicalDevice()->GetHandle(), *user_data, with_writes);
+		Pipeline::UpdateDescriptorSets(*instance->GetLogicalDevice(), *user_data, with_writes);
 	}
 
 	void PipelineUserRef::UpdateDescriptorSetsAll(const vk::WriteDescriptorSet& with_write)

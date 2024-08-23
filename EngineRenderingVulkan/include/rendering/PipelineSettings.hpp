@@ -30,8 +30,7 @@ namespace Engine::Rendering::Vulkan
 		PipelineSettings(
 			const vk::Extent2D with_extent,
 			const std::string_view with_shader,
-			const vk::PrimitiveTopology with_topology =
-				vk::PrimitiveTopology::eTriangleList // VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST
+			const vk::PrimitiveTopology with_topology
 		)
 			: input_topology(with_topology), extent(with_extent), shader(with_shader),
 			  scissor(vk::Rect2D{{0, 0}, with_extent})
@@ -79,18 +78,18 @@ namespace Engine::Rendering::Vulkan
 			return topo_match && extent_match && shader_match && scissor_match && settings_match;
 		}
 
-		static const vk::PipelineInputAssemblyStateCreateInfo* GetInputAssemblySettings(
+		static vk::PipelineInputAssemblyStateCreateInfo GetInputAssemblySettings(
 			vk::PrimitiveTopology with_topology,
 			bool enable_primitive_restart = false
 		)
 		{
-			static vk::PipelineInputAssemblyStateCreateInfo input_assembly(
+			vk::PipelineInputAssemblyStateCreateInfo input_assembly(
 				{},
 				with_topology,
 				static_cast<vk::Bool32>(enable_primitive_restart)
 			);
 
-			return &input_assembly;
+			return input_assembly;
 		}
 
 		static const vk::Viewport* GetViewportSettings(vk::Extent2D extent)
@@ -110,7 +109,12 @@ namespace Engine::Rendering::Vulkan
 				vk::PolygonMode::eFill,
 				vk::CullModeFlagBits::eFront,
 				vk::FrontFace::eClockwise,
-				vk::False
+				vk::False,
+				{},
+				{},
+				{},
+				1.f,
+				{}
 			);
 
 			return &rasterizer;

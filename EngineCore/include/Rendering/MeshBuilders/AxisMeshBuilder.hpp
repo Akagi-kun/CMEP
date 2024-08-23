@@ -16,7 +16,7 @@ namespace Engine::Rendering
 
 		[[nodiscard]] vk::PrimitiveTopology GetSupportedTopology() const noexcept override
 		{
-			return vk::PrimitiveTopology::eLineList; // VK_PRIMITIVE_TOPOLOGY_LINE_LIST;
+			return vk::PrimitiveTopology::eLineList;
 		}
 
 		static constexpr bool supports_2d = false;

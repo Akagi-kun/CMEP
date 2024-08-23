@@ -3,13 +3,13 @@
 namespace Engine::Rendering::Vulkan
 {
 	template <typename base_t>
-	[[nodiscard]] const vk::SamplerCreateInfo& SampledImage<base_t>::GetSamplerCreateInfo(
+	[[nodiscard]] vk::SamplerCreateInfo SampledImage<base_t>::GetSamplerCreateInfo(
 		vk::Filter use_filter,
 		vk::SamplerAddressMode use_address_mode,
 		float max_anisotropy
 	)
 	{
-		static const vk::SamplerCreateInfo create_info = {
+		const vk::SamplerCreateInfo create_info = {
 			{},
 			use_filter,
 			use_filter,

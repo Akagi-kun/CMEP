@@ -9,12 +9,12 @@ namespace Engine::Rendering::Vulkan
 	public:
 		using value_t = Instance*;
 
-		InstanceOwned() = delete;
+		InstanceOwned() = default;
 		InstanceOwned(value_t with_instance) : instance(with_instance)
 		{
 		}
 
 	protected:
-		value_t instance;
+		value_t instance = nullptr;
 	};
 } // namespace Engine::Rendering::Vulkan

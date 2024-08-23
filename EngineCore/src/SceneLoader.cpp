@@ -65,8 +65,22 @@ namespace Engine
 		this->logger
 			->SimpleLog(Logging::LogLevel::Debug1, LOGPFX_CURRENT "Loading scene prefix is: %s", scene_path.c_str());
 
-		// Load Assets
-		this->LoadSceneAssets(data, scene_path);
+		try
+		{
+			// Load Assets
+			this->LoadSceneAssets(data, scene_path);
+		}
+		catch (std::exception& e)
+		{
+			this->logger->SimpleLog(
+				Logging::LogLevel::Exception,
+				LOGPFX_CURRENT "Failed on asset load! e.what(): %s",
+				e.what()
+			);
+
+			throw;
+			// std::runtime_error(std::string("Failed on asset load!\n ").append(e.what()));
+		}
 
 		try
 		{
@@ -78,8 +92,11 @@ namespace Engine
 		}
 		catch (std::exception& e)
 		{
-			this->logger
-				->SimpleLog(Logging::LogLevel::Exception, "Failed on post-asset scene load! e.what(): %s", e.what());
+			this->logger->SimpleLog(
+				Logging::LogLevel::Exception,
+				LOGPFX_CURRENT "Failed on post-asset scene load! e.what(): %s",
+				e.what()
+			);
 
 			throw;
 		}

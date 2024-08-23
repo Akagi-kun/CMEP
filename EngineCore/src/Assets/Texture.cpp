@@ -21,10 +21,6 @@ namespace Engine::Rendering
 	{
 		this->logger->SimpleLog(Logging::LogLevel::Debug3, LOGPFX_CURRENT "Destructor called");
 
-		Vulkan::Instance* instance = this->owner_engine->GetVulkanInstance();
-
-		instance->GetLogicalDevice()->GetHandle().waitIdle();
-
 		delete this->data->texture_image;
 
 		this->data.reset();

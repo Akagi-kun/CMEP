@@ -30,7 +30,7 @@ namespace Engine::Rendering::Vulkan
 		vma_alloc_info.flags				   = 0;
 		vma_alloc_info.requiredFlags		   = static_cast<VkMemoryPropertyFlags>(with_properties);
 
-		native_handle = logical_device->GetHandle().createBuffer(create_info);
+		native_handle = logical_device->createBuffer(create_info);
 
 		if (vmaAllocateMemoryForBuffer(
 				allocator->GetHandle(),
@@ -55,7 +55,7 @@ namespace Engine::Rendering::Vulkan
 	{
 		LogicalDevice* logical_device = instance->GetLogicalDevice();
 
-		logical_device->GetHandle().waitIdle();
+		logical_device->waitIdle();
 
 		vmaFreeMemory(allocator->GetHandle(), allocation);
 	}
@@ -64,15 +64,15 @@ namespace Engine::Rendering::Vulkan
 	{
 		LogicalDevice* logical_device = instance->GetLogicalDevice();
 
-		mapped_data = (*logical_device->GetHandle())
-						  .mapMemory(allocation_info.deviceMemory, allocation_info.offset, allocation_info.size);
+		mapped_data =
+			(**logical_device).mapMemory(allocation_info.deviceMemory, allocation_info.offset, allocation_info.size);
 	}
 
 	void Buffer::UnmapMemory()
 	{
 		LogicalDevice* logical_device = instance->GetLogicalDevice();
 
-		(*logical_device->GetHandle()).unmapMemory(allocation_info.deviceMemory);
+		(**logical_device).unmapMemory(allocation_info.deviceMemory);
 
 		// ensure mapped_data is never non-null when not mapped
 		mapped_data = nullptr;

@@ -50,13 +50,13 @@ namespace Engine::Rendering
 
 				context = MeshBuildContext();
 				context.RebuildVBO(instance, mesh);
-				needs_rebuild = false;
 			}
 			else
 			{
 				// Renderers shall skip the render if there are no vertices
 				context.vbo_vert_count = 0;
 			}
+			needs_rebuild = false;
 		}
 	}
 } // namespace Engine::Rendering

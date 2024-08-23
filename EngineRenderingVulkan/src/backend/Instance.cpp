@@ -4,6 +4,7 @@
 
 #include "backend/DeviceScore.hpp"
 #include "backend/MemoryAllocator.hpp"
+#include "common/Utilities.hpp"
 #include "objects/CommandPool.hpp"
 #include "rendering/Surface.hpp"
 
@@ -87,7 +88,7 @@ namespace Engine::Rendering::Vulkan
 		InitDevice();
 		logical_device = new LogicalDevice(this, window->GetSurface());
 
-		memory_allocator = new MemoryAllocator(this, *logical_device->GetHandle());
+		memory_allocator = new MemoryAllocator(this, *logical_device);
 
 		command_pool = new CommandPool(this);
 
@@ -96,7 +97,7 @@ namespace Engine::Rendering::Vulkan
 
 	Instance::~Instance()
 	{
-		logical_device->GetHandle().waitIdle();
+		logical_device->waitIdle();
 
 		delete window;
 
@@ -134,21 +135,19 @@ namespace Engine::Rendering::Vulkan
 
 		// Get our required extensions
 		std::vector<const char*> instance_extensions(glfw_extensions, glfw_extensions + glfw_extension_count);
-		std::vector<const char*> instance_layers{};
+		std::vector<const char*> instance_layers = enable_vk_validation_layers ? validation_layers
+																			   : std::vector<const char*>{};
 
 		// Enable validation layer extension if it's a debug build
 		if (enable_vk_validation_layers)
 		{
 			instance_extensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
-
-			// Append validation layers if they're enabled
-			instance_layers.insert(instance_layers.end(), validation_layers.begin(), validation_layers.end());
 		}
 
 		native_handle = context.createInstance(vk::InstanceCreateInfo{
 			{},
 			&app_info,
-			validation_layers,
+			instance_layers,
 			instance_extensions,
 		});
 
@@ -236,68 +235,23 @@ namespace Engine::Rendering::Vulkan
 			}
 		}
 
+		if (candidates.empty())
+		{
+			throw std::runtime_error("No physical device found!");
+		}
+
 		std::sort(candidates.begin(), candidates.end());
 
-		for (const auto& candidate : candidates)
-		{
-			if (candidate)
-			{
-				physical_device = new PhysicalDevice(candidate.device_scored);
-				msaa_samples	= GetMaxUsableSampleCount(*physical_device);
+		// First device has to be the "best" after sorting
+		physical_device = new PhysicalDevice(candidates[0].device_scored);
+		msaa_samples	= Utility::GetMaxFramebufferSampleCount(*physical_device);
 
-				this->logger->SimpleLog(
-					Logging::LogLevel::Info,
-					LOGPFX_CURRENT "Found a capable physical device: '%s'",
-					physical_device->GetDeviceName().c_str()
-				);
-				this->logger->SimpleLog(Logging::LogLevel::Info, LOGPFX_CURRENT "Using MSAAx%u", msaa_samples);
-
-				return;
-			}
-		}
-
-		throw std::runtime_error("No physical device found!");
-	}
-
-	vk::SampleCountFlagBits Instance::GetMaxUsableSampleCount(const vk::raii::PhysicalDevice& device)
-	{
-		vk::PhysicalDeviceProperties physical_device_properties = device.getProperties();
-
-		// Check which sample counts are supported by the framebuffers
-		vk::SampleCountFlags counts = physical_device_properties.limits.framebufferColorSampleCounts &
-									  physical_device_properties.limits.framebufferDepthSampleCounts;
-
-		if (!counts)
-		{
-			return vk::SampleCountFlagBits::e1;
-		}
-
-		if (counts & vk::SampleCountFlagBits::e64)
-		{
-			return vk::SampleCountFlagBits::e64;
-		}
-		if (counts & vk::SampleCountFlagBits::e32)
-		{
-			return vk::SampleCountFlagBits::e32;
-		}
-		if (counts & vk::SampleCountFlagBits::e16)
-		{
-			return vk::SampleCountFlagBits::e16;
-		}
-		if (counts & vk::SampleCountFlagBits::e8)
-		{
-			return vk::SampleCountFlagBits::e8;
-		}
-		if (counts & vk::SampleCountFlagBits::e4)
-		{
-			return vk::SampleCountFlagBits::e4;
-		}
-		if (counts & vk::SampleCountFlagBits::e2)
-		{
-			return vk::SampleCountFlagBits::e2;
-		}
-
-		return vk::SampleCountFlagBits::e1;
+		this->logger->SimpleLog(
+			Logging::LogLevel::Info,
+			LOGPFX_CURRENT "Found a capable physical device: '%s'",
+			physical_device->GetDeviceName().c_str()
+		);
+		this->logger->SimpleLog(Logging::LogLevel::Info, LOGPFX_CURRENT "Using MSAAx%u", msaa_samples);
 	}
 
 #pragma endregion

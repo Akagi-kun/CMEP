@@ -2,6 +2,7 @@
 
 #include "Assets/Texture.hpp"
 #include "Rendering/SupplyData.hpp"
+#include "Rendering/Vulkan/backend.hpp"
 #include "Rendering/Vulkan/exports.hpp"
 #include "Rendering/framework.hpp"
 

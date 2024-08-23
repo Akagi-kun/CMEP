@@ -80,7 +80,7 @@ namespace Engine::Rendering::Vulkan
 
 		LogicalDevice* logical_device = instance->GetLogicalDevice();
 
-		native_handle = logical_device->GetHandle().createRenderPass(create_info);
+		native_handle = logical_device->createRenderPass(create_info);
 	}
 
 } // namespace Engine::Rendering::Vulkan

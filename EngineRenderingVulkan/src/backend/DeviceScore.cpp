@@ -65,7 +65,7 @@ namespace Engine::Rendering::Vulkan
 		}
 
 		bool swap_chain_adequate				   = false;
-		SwapChainSupportDetails swap_chain_support = with_surface->QueryVulkanSwapChainSupport(with_device);
+		SwapChainSupportDetails swap_chain_support = with_surface->QuerySwapChainSupport(with_device);
 		swap_chain_adequate = !swap_chain_support.formats.empty() && !swap_chain_support.present_modes.empty();
 
 		if (!swap_chain_adequate)

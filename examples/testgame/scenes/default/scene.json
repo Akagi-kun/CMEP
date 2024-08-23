@@ -10,19 +10,25 @@
             "file": "script0",
             "function": "onUpdate"
         },
+        
+        {
+            "type": "on_update",
+            "file": "script1",
+            "function": "onMovementTick"
+        },
         {
             "type": "on_key_down",
-            "file": "script0",
+            "file": "script1",
             "function": "onKeyDown"
         },
         {
             "type": "on_key_up",
-            "file": "script0",
+            "file": "script1",
             "function": "onKeyUp"
         },
         {
             "type": "on_mouse_moved",
-            "file": "script0",
+            "file": "script1",
             "function": "onMouseMoved"
         }
     ],
@@ -44,6 +50,11 @@
             "type": "script",
             "name": "script0",
             "location": "scripts/eventHandlers.lua"
+        },
+        {
+            "type": "script",
+            "name": "script1",
+            "location": "scripts/inputHandlers.lua"
         },
         {
             "type": "script",

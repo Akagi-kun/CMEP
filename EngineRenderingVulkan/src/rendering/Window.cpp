@@ -98,8 +98,7 @@ namespace Engine::Rendering::Vulkan
 	void Window::CreateSwapchain()
 	{
 		// Get device and surface Swap Chain capabilities
-		SwapChainSupportDetails swap_chain_support = surface.QueryVulkanSwapChainSupport(*instance->GetPhysicalDevice()
-		);
+		SwapChainSupportDetails swap_chain_support = surface.QuerySwapChainSupport(*instance->GetPhysicalDevice());
 
 		vk::Extent2D extent = ChooseVulkanSwapExtent(this, swap_chain_support.capabilities);
 
@@ -134,7 +133,7 @@ namespace Engine::Rendering::Vulkan
 		// Wait for fence
 		{
 			vk::Result result =
-				logical_device->GetHandle().waitForFences(*render_target.sync_objects.in_flight, vk::True, UINT64_MAX);
+				logical_device->waitForFences(*render_target.sync_objects.in_flight, vk::True, UINT64_MAX);
 			if (result != vk::Result::eSuccess)
 			{
 				throw std::runtime_error("Failed waiting for fences in DrawFrame!");
@@ -143,7 +142,7 @@ namespace Engine::Rendering::Vulkan
 
 		// Reset fence after wait is over
 		// (fence has to be reset before being used again)
-		logical_device->GetHandle().resetFences(*render_target.sync_objects.in_flight);
+		logical_device->resetFences(*render_target.sync_objects.in_flight);
 
 		// Index of framebuffer in vk_swap_chain_framebuffers
 		uint32_t image_index = 0;
@@ -303,7 +302,7 @@ namespace Engine::Rendering::Vulkan
 			glfwWaitEvents();
 		} while (framebuffer.x == 0 || framebuffer.y == 0);
 
-		logical_device->GetHandle().waitIdle();
+		logical_device->waitIdle();
 
 		// Clean up old swap chain
 		delete swapchain;

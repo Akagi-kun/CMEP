@@ -85,14 +85,14 @@ namespace Engine::Rendering::Vulkan
 
 		vk::DescriptorSetLayoutCreateInfo layout_create_info({}, bindings, &layout_flags_info);
 
-		descriptor_set_layout = logical_device->GetHandle().createDescriptorSetLayout(layout_create_info);
+		descriptor_set_layout = logical_device->createDescriptorSetLayout(layout_create_info);
 
 		/************************************/
 		// Create Graphics Pipeline Layout
 
 		vk::PipelineLayoutCreateInfo pipeline_layout_info({}, *descriptor_set_layout, {});
 
-		pipeline_layout = logical_device->GetHandle().createPipelineLayout(pipeline_layout_info);
+		pipeline_layout = logical_device->createPipelineLayout(pipeline_layout_info);
 
 		/************************************/
 		// Create Graphics Pipeline
@@ -100,11 +100,14 @@ namespace Engine::Rendering::Vulkan
 		vk::PipelineViewportStateCreateInfo
 			viewport_state({}, 1, PipelineSettings::GetViewportSettings(settings.extent), 1, &settings.scissor, {});
 
+		// Make local copy of input assembly
+		const auto input_assembly = PipelineSettings::GetInputAssemblySettings(settings.input_topology);
+
 		vk::GraphicsPipelineCreateInfo pipeline_info(
 			{},
 			shader_stages,
 			&vertex_input_info,
-			PipelineSettings::GetInputAssemblySettings(settings.input_topology),
+			&input_assembly,
 			{},
 			&viewport_state,
 			PipelineSettings::GetRasterizerSettings(),
@@ -119,7 +122,7 @@ namespace Engine::Rendering::Vulkan
 			{}
 		);
 
-		native_handle = logical_device->GetHandle().createGraphicsPipeline(nullptr, pipeline_info);
+		native_handle = logical_device->createGraphicsPipeline(nullptr, pipeline_info);
 
 		/************************************/
 		// Create Descriptor Pool Sizes
@@ -197,7 +200,7 @@ namespace Engine::Rendering::Vulkan
 			);
 		}
 
-		UpdateDescriptorSets(instance->GetLogicalDevice()->GetHandle(), *into, descriptor_writes);
+		UpdateDescriptorSets(*instance->GetLogicalDevice(), *into, descriptor_writes);
 
 		return into;
 	}
@@ -216,7 +219,7 @@ namespace Engine::Rendering::Vulkan
 			pool_sizes
 		);
 
-		data_ref.descriptor_pool = logical_device->GetHandle().createDescriptorPool(pool_create_info);
+		data_ref.descriptor_pool = logical_device->createDescriptorPool(pool_create_info);
 	}
 
 	void Pipeline::AllocateNewDescriptorSets(Pipeline::UserData& data_ref)
@@ -226,7 +229,7 @@ namespace Engine::Rendering::Vulkan
 		std::vector<vk::DescriptorSetLayout> layouts(max_frames_in_flight, *descriptor_set_layout);
 		vk::DescriptorSetAllocateInfo alloc_info(*data_ref.descriptor_pool, layouts);
 
-		data_ref.descriptor_sets = vk::raii::DescriptorSets(logical_device->GetHandle(), alloc_info);
+		data_ref.descriptor_sets = vk::raii::DescriptorSets(*logical_device, alloc_info);
 	}
 
 #pragma endregion
