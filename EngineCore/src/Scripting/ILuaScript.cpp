@@ -232,7 +232,7 @@ namespace Engine::Scripting
 		}
 
 		// Uncomment this to disable JIT compiler
-		//luaJIT_setmode(state, 0, LUAJIT_MODE_ENGINE | LUAJIT_MODE_OFF);
+		// luaJIT_setmode(state, 0, LUAJIT_MODE_ENGINE | LUAJIT_MODE_OFF);
 
 		// Register c callback functions
 		RegisterCallbacks(state, this->logger);

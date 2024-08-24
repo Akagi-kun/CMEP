@@ -18,6 +18,8 @@
 #include "lua.h"
 #include "lua.hpp"
 
+#include <charconv>
+
 // Prefixes for logging messages
 #define LOGPFX_CURRENT LOGPFX_LUA_MAPPED
 #include "Logging/LoggingPrefix.hpp" // IWYU pragma: keep
@@ -33,6 +35,10 @@ namespace Engine::Scripting::Mappings
 
 		int PrintReplace(lua_State* state)
 		{
+			// LuaJIT has no guarantees to the ID of CDATA type
+			// It can be checked manually against 'lj_obj_typename' symbol
+			static constexpr int cdata_type_id = 10;
+
 			// CMEP_LUACHECK_FN_ARGC(state, 1)
 			int argc = lua_gettop(state);
 
@@ -50,8 +56,44 @@ namespace Engine::Scripting::Mappings
 
 				for (int arg = 1; arg <= argc; arg++)
 				{
-					const char* string = lua_tostring(state, arg);
-					locked_logger->Log("%s\t", string);
+					std::string string;
+
+					switch (lua_type(state, arg))
+					{
+						case LUA_TBOOLEAN:
+							string = (lua_toboolean(state, arg) == 1) ? "true" : "false";
+							break;
+						case LUA_TNIL:
+							string = "nil";
+							break;
+						case LUA_TNUMBER:
+							string = std::to_string(lua_tonumber(state, arg));
+							break;
+						case LUA_TNONE:
+							string = "none";
+							break;
+						case cdata_type_id:
+						{
+							using namespace std::string_literals;
+							auto value = *reinterpret_cast<const uintptr_t*>(lua_topointer(state, arg));
+
+							static constexpr size_t buffer_len = 32;
+							char ptr_buffer[buffer_len]		   = {};
+							memset(ptr_buffer, 0, buffer_len);
+
+							std::to_chars(ptr_buffer, ptr_buffer + (buffer_len - 1), value, 16);
+
+							string = "cdata<? ? ?>: 0x"s.append(ptr_buffer).append(">");
+							break;
+						}
+						case LUA_TSTRING:
+							[[fallthrough]];
+						default:
+							string = lua_tostring(state, arg);
+							break;
+					}
+
+					locked_logger->Log("%s\t", string.c_str());
 				}
 
 				locked_logger->StopLog();

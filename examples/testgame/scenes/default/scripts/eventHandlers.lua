@@ -44,6 +44,7 @@ local generate_chunk = function(xpos, zpos)
 	local size = config.chunk_size_x * config.chunk_size_y * config.chunk_size_z
 	local map_data = ffi.C.malloc(ffi.sizeof("uint16_t") * size)
 	assert(map_data, "Could not allocate chunk buffer")
+	print(map_data, string.format("0x%x", ffi.sizeof("uint16_t") * size))
 	local cast_map_data = ffi.cast("uint16_t*", map_data)
 
 	local tree_placement_data = {}
@@ -185,7 +186,7 @@ terrain_generator = function(...)
 	local chunk_x = xpos / config.chunk_size_x
 	local chunk_z = zpos / config.chunk_size_z
 
-	generate_chunk(xpos, zpos)
+	--generate_chunk(xpos, zpos)
 
 	assert(chunks[chunk_x][chunk_z].data, "No chunk buffer exists for this chunk!")
 
@@ -311,6 +312,8 @@ onInit = function(event)
 
 			--print("Generating chunk "..chunk_x.." "..chunk_z)
 			generate_chunk(chunk_x * config.chunk_size_x, chunk_z * config.chunk_size_z)
+
+			collectgarbage()
 		end
 	end
 
