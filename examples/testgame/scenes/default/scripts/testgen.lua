@@ -1,6 +1,7 @@
 local dynagen_defs = require("dynagen_defs")
 local config = require("config")
 local game_defs = require("game_defs")
+local util = require("util")
 --require("perlin")
 
 --[[ local tracemap = {}
@@ -34,15 +35,6 @@ function print_trace()
 end
 
 debug.sethook(trace, "lc", 1) ]]
-
-local calculateMapOffsetY = function(y)
-	return ((y) * config.chunk_size_x * config.chunk_size_z)
-end
-
-
-local calculateMapOffset = function(x, y, z)
-	return (x - 1) + calculateMapOffsetY(y - 1) + ((z - 1) * config.chunk_size_x)
-end
 
 --local tblpack = function(...)
 --    return {n = select("#", ...), ...}
@@ -120,7 +112,7 @@ GENERATOR_FUNCTION = function(supplier, world_x, world_y, world_z)
 		for map_pos_z = 1, config.chunk_size_z do
 			for map_pos_x = 1, config.chunk_size_x do
 
-				local offset = calculateMapOffset(map_pos_x, map_pos_y, map_pos_z)
+				local offset = util.calculateMapOffset(map_pos_x, map_pos_y, map_pos_z)
 
 				local map_val = map[offset]
 
@@ -164,10 +156,10 @@ GENERATOR_FUNCTION = function(supplier, world_x, world_y, world_z)
 					if is_bordered_Z and map_pos_z == 1 then map_prev_z = map_val end
 
 					local map_next_y = 0
-					if map_pos_y < config.chunk_size_y then map_next_y = map[offset + calculateMapOffsetY(1)] end
+					if map_pos_y < config.chunk_size_y then map_next_y = map[offset + util.calculateMapOffsetY(1)] end
 
 					local map_prev_y = 0
-					if map_pos_y > 1 then map_prev_y = map[offset - calculateMapOffsetY(1)] end
+					if map_pos_y > 1 then map_prev_y = map[offset - util.calculateMapOffsetY(1)] end
 
 					-- if current and next Y (vertical) position has air (block boundary)
 					if tblcontains(game_defs.blocks_transparent, map_next_y) or

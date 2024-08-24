@@ -1,5 +1,6 @@
 local config = require("config")
 local ffi = require("ffi")
+local util = require("util")
 local game_defs = require("game_defs")
 require("perlin")
 
@@ -17,22 +18,18 @@ ffi.cdef[[
 void *malloc( size_t size );
 ]]
 
-local calculateMapOffsetY = function(y)
-	return ((y) * config.chunk_size_x * config.chunk_size_z)
-end
-
-local calculateMapOffset = function(x, y, z)
-	return (x - 1) + calculateMapOffsetY(y - 1) + ((z - 1) * config.chunk_size_x)
-end
-
 local generateTree = function(map_data, x, y, z)
 	for y_layer = 1, #(game_defs.tree_def) do
 		for x_off = -2, 2 do
 			for z_off = -2, 2 do
 				local value = game_defs.tree_def[y_layer][x_off + 3 + (z_off + 2) * 5]
 
+				if not util.validateX(x + x_off) then break end
+				if not util.validateY(y + y_layer) then break end
+				if not util.validateZ(z + z_off) then break end
+
 				if value ~= 0 then
-					local offset = calculateMapOffset(x + x_off, y + y_layer, z + z_off)
+					local offset = util.calculateMapOffset(x + x_off, y + y_layer, z + z_off)
 					map_data[offset] = value
 				end
 			end
@@ -44,7 +41,6 @@ local generate_chunk = function(xpos, zpos)
 	local size = config.chunk_size_x * config.chunk_size_y * config.chunk_size_z
 	local map_data = ffi.C.malloc(ffi.sizeof("uint16_t") * size)
 	assert(map_data, "Could not allocate chunk buffer")
-	print(map_data, string.format("0x%x", ffi.sizeof("uint16_t") * size))
 	local cast_map_data = ffi.cast("uint16_t*", map_data)
 
 	local tree_placement_data = {}
@@ -67,7 +63,7 @@ local generate_chunk = function(xpos, zpos)
 			--print(string.format("[%i, %i, %f, %f]", x + xpos, z + zpos, noise_adjusted1, noise_adjusted2))
 
 			for y = 1, config.chunk_size_y do
-				local offset = calculateMapOffset(x, y, z)
+				local offset = util.calculateMapOffset(x, y, z)
 				
 				-- Primary terrain generator step
 				if y > random_y then
@@ -103,30 +99,33 @@ local generate_chunk = function(xpos, zpos)
 		end
 	end
 
-	-- Places trees at selected positions
+	-- Tree generator step
 	for tree_k, tree_v in ipairs(tree_placement_data) do
 		generateTree(cast_map_data, tree_v[1], tree_v[2], tree_v[3])
 	end
 
-	-- Places flowers at selected positions
+	-- Flower generator step
 --	for flower_k, flower_v in ipairs(flower_placement_data) do
 --		print(flower_k)
---		local offset = calculateMapOffset(flower_v[1], flower_v[2] + 1, flower_v[3])
+--		local offset = util.calculateMapOffset(flower_v[1], flower_v[2] + 1, flower_v[3])
 --		cast_map_data[offset] = game_defs.block_types.FLOWER
 --	end
 
 	local chunk_x = xpos / config.chunk_size_x
 	local chunk_z = zpos / config.chunk_size_z
 
---	local this_chunk = cast_map_data
-
+	-- Chunk boundary marking step
+	--
+	-- Marks blocks that neighbor a non-opaque block in a neighboring chunk
+	-- So we don't have to generate a side mesh for them
+	--  
 	if chunks[chunk_x] ~= nil and chunks[chunk_x][chunk_z - 1] ~= nil and chunks[chunk_x][chunk_z - 1].data ~= nil then
 		local prev_chunk = chunks[chunk_x][chunk_z - 1].data
 
 		for x = 1, config.chunk_size_x do
 			for y = 1, config.chunk_size_y do
-				local offset1 = calculateMapOffset(x, y, 1)
-				local offset2 = calculateMapOffset(x, y, config.chunk_size_z)
+				local offset1 = util.calculateMapOffset(x, y, 1)
+				local offset2 = util.calculateMapOffset(x, y, config.chunk_size_z)
 				if prev_chunk[offset2] ~= 0 and cast_map_data[offset1] < 128 and cast_map_data[offset1] ~= 0 then
 					cast_map_data[offset1] = cast_map_data[offset1] + 128
 				end
@@ -138,8 +137,8 @@ local generate_chunk = function(xpos, zpos)
 
 		for x = 1, config.chunk_size_x do
 			for y = 1, config.chunk_size_y do
-				local offset1 = calculateMapOffset(x, y, config.chunk_size_z)
-				local offset2 = calculateMapOffset(x, y, 1)
+				local offset1 = util.calculateMapOffset(x, y, config.chunk_size_z)
+				local offset2 = util.calculateMapOffset(x, y, 1)
 				if next_chunk[offset2] ~= 0 and cast_map_data[offset1] < 128 and cast_map_data[offset1] ~= 0 then
 					cast_map_data[offset1] = cast_map_data[offset1] + 128
 				end
@@ -152,8 +151,8 @@ local generate_chunk = function(xpos, zpos)
 
 		for z = 1, config.chunk_size_z do
 			for y = 1, config.chunk_size_y do
-				local offset1 = calculateMapOffset(1, y, z)
-				local offset2 = calculateMapOffset(config.chunk_size_x, y, z)
+				local offset1 = util.calculateMapOffset(1, y, z)
+				local offset2 = util.calculateMapOffset(config.chunk_size_x, y, z)
 				if prev_chunk[offset2] ~= 0 and cast_map_data[offset1] < 256 and cast_map_data[offset1] ~= 0 then
 					cast_map_data[offset1] = cast_map_data[offset1] + 256
 				end
@@ -165,8 +164,8 @@ local generate_chunk = function(xpos, zpos)
 
 		for z = 1, config.chunk_size_z do
 			for y = 1, config.chunk_size_y do
-				local offset1 = calculateMapOffset(config.chunk_size_x, y, z)
-				local offset2 = calculateMapOffset(1, y, z)
+				local offset1 = util.calculateMapOffset(config.chunk_size_x, y, z)
+				local offset2 = util.calculateMapOffset(1, y, z)
 				if next_chunk[offset2] ~= 0 and cast_map_data[offset1] < 256 and cast_map_data[offset1] ~= 0 then
 					cast_map_data[offset1] = cast_map_data[offset1] + 256
 				end

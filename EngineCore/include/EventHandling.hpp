@@ -17,11 +17,15 @@ namespace Engine::EventHandling
 	{
 		MIN_ENUM = 0x00,
 
-		ON_INIT		  = 0x1,
-		ON_UPDATE	  = 0x2,
-		ON_KEYDOWN	  = 0x4,
-		ON_KEYUP	  = 0x8,
-		ON_MOUSEMOVED = 0x10,
+		ON_INIT	  = 1,
+		ON_UNLOAD = 2,
+
+		ON_UPDATE = 8,
+
+		ON_KEYDOWN = 16,
+		ON_KEYUP   = 18,
+
+		ON_MOUSEMOVED = 24,
 
 		MAX_ENUM = 0xFF,
 	};
@@ -31,8 +35,9 @@ namespace Engine::EventHandling
 		const EventType event_type;
 		Engine* const raised_from = nullptr;
 
+		// delta time shall be specified for every event 
 		double delta_time = 0.0;
-		union {
+		union { // event specific data
 			uint16_t keycode = 0;	   // ON_KEYDOWN/ON_KEYUP events
 			glm::vec<2, double> mouse; // ON_MOUSEMOVED event
 		};

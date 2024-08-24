@@ -69,6 +69,7 @@ namespace Engine::Scripting
 		std::string error_msg = "\n--- BEGIN LUA STACK UNWIND ---\n\nError that caused this stack unwind:\n";
 
 		std::istringstream caused_by(lua_tostring(of_state, -1));
+		lua_pop(of_state, 1);
 
 		std::string line;
 		while (std::getline(caused_by, line))
@@ -194,7 +195,8 @@ namespace Engine::Scripting
 		// last value on stack when returning has to
 		// be an error object - original or another
 		//
-		(void)(state);
+		//(void)(state);
+		lua_pushstring(state, UnwindStack(state).c_str());
 
 		// Simply pass the error object through to pcall
 		return 1;
@@ -305,7 +307,7 @@ namespace Engine::Scripting
 			this->logger->SimpleLog(
 				Logging::LogLevel::Warning,
 				LOGPFX_CURRENT "Error when calling Lua\n\tscript '%s'\n\tfunction: "
-							   "'%s'\n\terrorcode: %i\n\terrormsg: '%s'",
+							   "'%s'\n\terrorcode: %i\n%s",
 				this->path.c_str(),
 				function.c_str(),
 				errcall,
