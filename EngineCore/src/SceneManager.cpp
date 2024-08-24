@@ -153,6 +153,15 @@ namespace Engine
 		static constexpr float y_min	= y_center - 90.f;
 		static constexpr float y_max	= y_center + 89.9f;
 
+		if(std::isnan(hvrotation.y))
+		{
+			hvrotation.y = y_center;
+		}
+		if(std::isnan(hvrotation.x))
+		{
+			hvrotation.x = 0;
+		}
+
 		// Clamp Y so you cannot do a backflip
 		hvrotation.y = std::clamp(hvrotation.y, y_min, y_max);
 

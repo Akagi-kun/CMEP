@@ -27,7 +27,7 @@ namespace Engine
 		return this->renderer;
 	}
 
-	void Object::UpdateRenderer() noexcept
+	void Object::UpdateRenderer()
 	{
 		if (this->renderer != nullptr)
 		{
@@ -35,14 +35,14 @@ namespace Engine
 		}
 	}
 
-	void Object::ScreenSizeInform(Rendering::ScreenSize with_screen_size) noexcept
+	void Object::ScreenSizeInform(Rendering::ScreenSize with_screen_size)
 	{
 		this->screen = with_screen_size;
 
 		this->UpdateRenderer();
 	}
 
-	void Object::SetPosition(const glm::vec3 with_pos) noexcept
+	void Object::SetPosition(const glm::vec3 with_pos)
 	{
 		this->transform.pos = with_pos;
 		this->UpdateRenderer();
@@ -54,7 +54,7 @@ namespace Engine
 		}
 	}
 
-	void Object::SetSize(const glm::vec3 with_size) noexcept
+	void Object::SetSize(const glm::vec3 with_size)
 	{
 		this->transform.size = with_size;
 		this->UpdateRenderer();
@@ -66,7 +66,7 @@ namespace Engine
 		}
 	}
 
-	void Object::SetRotation(const glm::vec3 with_rotation) noexcept
+	void Object::SetRotation(const glm::vec3 with_rotation)
 	{
 		this->transform.rotation = with_rotation;
 

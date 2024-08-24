@@ -107,6 +107,8 @@ namespace Engine::Rendering::Vulkan
 
 		delete logical_device;
 
+		delete physical_device;
+
 		glfwTerminate();
 	}
 

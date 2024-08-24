@@ -232,7 +232,7 @@ namespace Engine::Scripting
 		}
 
 		// Uncomment this to disable JIT compiler
-		// luaJIT_setmode(state, 0, LUAJIT_MODE_ENGINE | LUAJIT_MODE_OFF);
+		//luaJIT_setmode(state, 0, LUAJIT_MODE_ENGINE | LUAJIT_MODE_OFF);
 
 		// Register c callback functions
 		RegisterCallbacks(state, this->logger);
@@ -252,7 +252,7 @@ namespace Engine::Scripting
 #pragma region Public functions
 
 	ILuaScript::ILuaScript(Engine* with_engine, std::string with_path, bool with_enable_profiling)
-		: InternalEngineObject(with_engine), enable_profiling(with_enable_profiling), path(std::move(with_path))
+		: InternalEngineObject(with_engine), path(std::move(with_path)), enable_profiling(with_enable_profiling)
 	{
 		this->state = luaL_newstate();
 		luaL_openlibs(this->state);

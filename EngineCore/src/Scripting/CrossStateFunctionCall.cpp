@@ -6,7 +6,7 @@
 
 namespace Engine::Scripting
 {
-	int CrossStateFunctionCall::CrossStateArgMove(lua_State* origin, lua_State* target)
+	static int CrossStateArgMove(lua_State* origin, lua_State* target)
 	{
 		// LuaJIT has no guarantees to the ID of CDATA type
 		// It can be checked manually against 'lj_obj_typename' symbol
@@ -60,7 +60,7 @@ namespace Engine::Scripting
 		return arg_vals;
 	}
 
-	int CrossStateFunctionCall::InternalCallFn(lua_State* caller_state)
+	static int InternalCallFn(lua_State* caller_state)
 	{
 		lua_State* callee_state			 = *static_cast<lua_State**>(lua_touserdata(caller_state, lua_upvalueindex(1)));
 		const char* callee_function_name = lua_tostring(caller_state, lua_upvalueindex(2));
@@ -89,7 +89,7 @@ namespace Engine::Scripting
 		return ret_vals - 1;
 	}
 
-	void CrossStateFunctionCall::PushFunction(lua_State** from, const std::string& from_fn, lua_State* into)
+	void CreateCrossStateCallBridge(lua_State** from, const std::string& from_fn, lua_State* into)
 	{
 		lua_pushlightuserdata(into, reinterpret_cast<void*>(from));
 		lua_pushstring(into, from_fn.c_str());

@@ -14,9 +14,14 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE ${VAR_BUILD_DIRECTORY} CACHE PATH "Bu
 
 if(MSVC)
 # TODO: Remove /wd4996 after deprecation fixes
-	set(ENGINE_COMPILE_OPTIONS /W3 /WX /wd4996 /wd4068) # /std:c++17
+	set(ENGINE_COMPILE_OPTIONS /W3 /WX /wd4996 /wd4068)
 else()
-	set(ENGINE_COMPILE_OPTIONS -Wall -Wno-unknown-pragmas -Wno-nullability -Wno-nullability-completeness) # -Wextra -Wpedantic -Werror -std=c++17
+	set(ENGINE_COMPILE_OPTIONS -Wall -Wpedantic -Wno-unknown-pragmas) # -Wextra -Werror
+
+	if(APPLE)
+		list(APPEND ENGINE_COMPILE_OPTIONS -Wno-nullability -Wno-nullability-completeness)
+	else()
+	endif()
 endif()
 
 if(DEFINED ENV{VULKAN_SDK})

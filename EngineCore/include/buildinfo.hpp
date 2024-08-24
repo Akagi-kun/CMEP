@@ -33,7 +33,6 @@
 #	define BUILDINFO_COMPILED_BY "MSVC " MACRO_STR(_MSC_FULL_VER) "." MACRO_STR(_MSC_BUILD)
 // Any GNU-like compiler
 #elif defined(__GNUC__)
-#	pragma message("Compiler GNU-like detected")
 #	define SEMANTICS_COMPILER_ANY_GNU
 //	Compilers that use LLVM as backend
 #	if defined(__llvm__)

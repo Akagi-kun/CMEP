@@ -3,7 +3,6 @@
 #include "Logging/Logging.hpp"
 
 #include <memory>
-#include <utility>
 
 namespace Engine
 {
@@ -11,9 +10,6 @@ namespace Engine
 
 	class InternalEngineObject : public Logging::SupportsLogging
 	{
-	protected:
-		Engine* owner_engine = nullptr;
-
 	public:
 		InternalEngineObject() = delete;
 		InternalEngineObject(Engine* with_engine);
@@ -27,5 +23,8 @@ namespace Engine
 		{
 			return this->logger;
 		}
+
+	protected:
+		Engine* owner_engine = nullptr;
 	};
 } // namespace Engine

@@ -15,4 +15,4 @@ IF NOT "%CURRENTCFG%"=="Debug" IF NOT "%CURRENTCFG%"=="Release" (
 ECHO Building %CURRENTCFG%
 
 cmake -DCMAKE_BUILD_TYPE=$CURRENTCFG .
-cmake --build . -j --parallel --target rungame --config %CURRENTCFG%
+cmake --build . -j 6 --parallel 6 --target rungame --config %CURRENTCFG%

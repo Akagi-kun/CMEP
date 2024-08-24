@@ -6,8 +6,6 @@
 #include "Rendering/Vulkan/backend.hpp"
 #include "Rendering/Vulkan/exports.hpp"
 
-#include "Scripting/ILuaScript.hpp"
-
 #include "Factories/ObjectFactory.hpp"
 
 #include "Logging/Logging.hpp"
@@ -262,27 +260,34 @@ namespace Engine
 
 		auto prev_clock = std::chrono::steady_clock::now();
 
+		bool first_frame = true;
 		// hot loop
 		while (!glfw_window->GetShouldClose())
 		{
 			const auto next_clock	= std::chrono::steady_clock::now();
-			const double delta_time = static_cast<double>((next_clock - prev_clock).count()) / nano_to_sec;
+			static constexpr double min_delta = 0.1f / sec_to_msec;
+			static constexpr double max_delta = 100000.f;
+			const double delta_time = std::clamp(static_cast<double>((next_clock - prev_clock).count()) / nano_to_sec, min_delta, max_delta);
 			last_delta_time			= delta_time;
 
-			HandleInput(delta_time);
-
 			// Check return code of FireEvent (events should return non-zero codes as failure)
-			on_update_event.delta_time = delta_time;
-			const auto ret			   = FireEvent(on_update_event);
-			if (ret != 0)
+			if (!first_frame)
 			{
-				this->logger->SimpleLog(
-					Logging::LogLevel::Error,
-					LOGPFX_CURRENT "Firing event ON_UPDATE returned %u! Exiting event-loop",
-					ret
-				);
-				break;
+				HandleInput(delta_time);
+
+				on_update_event.delta_time = delta_time;
+				const auto ret			   = FireEvent(on_update_event);
+				if (ret != 0)
+				{
+					this->logger->SimpleLog(
+						Logging::LogLevel::Error,
+						LOGPFX_CURRENT "Firing event ON_UPDATE returned %u! Exiting event-loop",
+						ret
+					);
+					break;
+				}
 			}
+			first_frame = false;
 
 			const auto event_clock = std::chrono::steady_clock::now();
 

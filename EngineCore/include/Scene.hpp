@@ -15,10 +15,6 @@ namespace Engine
 {
 	class Scene : public InternalEngineObject
 	{
-	private:
-		std::unordered_map<std::string, Object*> objects;
-		std::unordered_map<std::string, Factories::ObjectFactory::ObjectTemplate> templates;
-
 	public:
 		std::multimap<EventHandling::EventType, std::pair<std::shared_ptr<Scripting::ILuaScript>, std::string>>
 			lua_event_handlers;
@@ -34,5 +30,9 @@ namespace Engine
 		void RemoveObject(const std::string& name);
 
 		void LoadTemplatedObject(const std::string& name, const Factories::ObjectFactory::ObjectTemplate& object);
+
+	private:
+		std::unordered_map<std::string, Object*> objects;
+		std::unordered_map<std::string, Factories::ObjectFactory::ObjectTemplate> templates;
 	};
 } // namespace Engine

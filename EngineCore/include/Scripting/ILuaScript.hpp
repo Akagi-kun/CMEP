@@ -21,19 +21,6 @@ namespace Engine::Scripting
 
 	class ILuaScript : public InternalEngineObject
 	{
-	private:
-		const bool enable_profiling;
-
-	protected:
-		lua_State* state;
-		ScriptPerfState* profiler_state = nullptr;
-
-		std::string path;
-
-		int LoadAndCompileScript();
-
-		virtual int InternalCall(const std::string& function, void* data) = 0;
-
 	public:
 		ILuaScript(Engine* with_engine, std::string with_path, bool with_enable_profiling = false);
 		virtual ~ILuaScript();
@@ -54,5 +41,18 @@ namespace Engine::Scripting
 		{
 			return this->path;
 		}
+
+	protected:
+		lua_State* state;
+		ScriptPerfState* profiler_state = nullptr;
+
+		std::string path;
+
+		int LoadAndCompileScript();
+
+		virtual int InternalCall(const std::string& function, void* data) = 0;
+
+	private:
+		const bool enable_profiling;
 	};
 } // namespace Engine::Scripting

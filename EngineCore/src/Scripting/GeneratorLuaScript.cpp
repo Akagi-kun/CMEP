@@ -35,7 +35,7 @@ namespace Engine::Scripting
 		{
 			auto* state_ptr = locked_supplier->GetState();
 
-			CrossStateFunctionCall::PushFunction(&(state_ptr), supplier->name, coroutine);
+			CreateCrossStateCallBridge(&(state_ptr), supplier->name, coroutine);
 		}
 
 		lua_pushnumber(coroutine, static_cast<lua_Number>(world_pos->x));

@@ -12,22 +12,6 @@ namespace Engine
 
 	class SceneManager final : public InternalEngineObject
 	{
-	private:
-		std::unordered_map<std::string, std::shared_ptr<Scene>> scenes;
-		std::string current_scene_name = "_default";
-
-		glm::vec3 camera_transform{};	// XYZ position
-		glm::vec2 camera_hv_rotation{}; // Horizontal and Vertical rotation
-
-		static constexpr float initial_fov = 45.0f;
-
-		// TODO: Remove?
-		glm::vec3 light_position{};
-
-		std::unique_ptr<SceneLoader> scene_loader;
-
-		void OnCameraUpdated();
-
 	public:
 		float field_of_vision = initial_fov;
 
@@ -51,5 +35,21 @@ namespace Engine
 
 		void SetCameraTransform(glm::vec3 transform);
 		void SetCameraHVRotation(glm::vec2 hvrotation);
+
+	private:
+		std::unordered_map<std::string, std::shared_ptr<Scene>> scenes;
+		std::string current_scene_name = "_default";
+
+		glm::vec3 camera_transform{};	// XYZ position
+		glm::vec2 camera_hv_rotation{}; // Horizontal and Vertical rotation
+
+		static constexpr float initial_fov = 45.0f;
+
+		// TODO: Remove?
+		glm::vec3 light_position{};
+
+		std::unique_ptr<SceneLoader> scene_loader;
+
+		void OnCameraUpdated();
 	};
 } // namespace Engine

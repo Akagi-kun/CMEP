@@ -13,9 +13,6 @@ namespace Engine
 
 	class CMEP_EXPORT_CLASS OpaqueEngine
 	{
-	private:
-		std::unique_ptr<Engine> d_engine;
-
 	public:
 		CMEP_EXPORT OpaqueEngine(std::shared_ptr<Logging::Logger>& logger) noexcept;
 		CMEP_EXPORT ~OpaqueEngine() noexcept;
@@ -26,5 +23,8 @@ namespace Engine
 		CMEP_EXPORT void Run();
 
 		CMEP_EXPORT void ConfigFile(const char* path);
+
+	private:
+		std::unique_ptr<Engine> d_engine;
 	};
 } // namespace Engine
