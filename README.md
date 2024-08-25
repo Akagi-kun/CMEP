@@ -12,11 +12,13 @@ Before you build the engine you first have to install the Vulkan SDK, download i
 
 Depending on your platform (Linux needs this, untested on MacOS), it might be necessary to set the `VULKAN_SDK` environment variable to a valid Vulkan SDK location so cmake finds all includes. Use either the `setup-env.sh` script (`source path/to/vulkansdk/setup-env.sh`) that comes with the Vulkan SDK or set it manually.
 
+---
 #### Clone repository and submodules
 First use `git clone "https://github.com/Snezhnaya-chan/CMEP.git"` in a new clean directory to clone repository.
 
 Then `git submodule init` and `git submodule update --recursive` to initialize and clone dependency submodules.
 
+---
 #### Project build
 To build the core libraries and rungame executable use the `build.sh` and `build.bat` scripts depending on your platform.
 Both can be used as follows:
@@ -27,7 +29,7 @@ or
 ```
 ./build.bat <CONFIG>
 ```
-> [!NOTE]
+> [!IMPORTANT]
 > Where `<CONFIG>` can be omitted (which builds Debug by default) and if provided is a valid configuration value (Either `Debug` or `Release`, case-sensitive)
 
 Optionally you can also build manually by directly invoking cmake (useful if the build scripts do not work for you):
@@ -41,23 +43,24 @@ cmake --build . --target rungame --config <CONFIG>
 > [!WARNING]
 > By default most generators build the Debug configuration if none is specified, this may not be what you want 
 
+---
 #### Build an example
 
 To build any of the examples, use cmake:
 ```
 cmake --build . --target <examplename>
 ```
-> [!NOTE]
+> [!IMPORTANT]
 > Where `<examplename>` is a name of a subdirectory under `./examples/` (e.g. `floppybirb`)
 
 > [!NOTE]
 > Examples do not use the `--config` syntax and therefore it isn't necessary to provide it
 
+---
 #### Running
 To start the engine use the `rungame` executable. This is located under the `./build/` subdirectory if the build is successful. A `./build/game/` directory with valid content is necessary for startup, this can be created by building an example.
 
 ---
-
 ### Dependencies
 This project depends on:
 - LuaJIT and the Lua programming language

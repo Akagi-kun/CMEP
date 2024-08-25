@@ -2,8 +2,8 @@ cmake_minimum_required(VERSION 3.5)
 project(CMEP)
 
 #enable_testing()
-include(FindVulkan)
 
+find_package(Vulkan REQUIRED)
 if(NOT Vulkan_FOUND)
 	message("Vulkan not found")
 endif()
