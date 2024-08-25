@@ -64,8 +64,6 @@ else()
 		)
 endif()
 
-list(APPEND STATIC_LIBRARIES EngineLogging EngineRenderingVulkan)
-
 add_library(EngineCore SHARED ${SRC_FILES})
 
 target_compile_features(EngineCore PUBLIC cxx_std_17)
@@ -88,4 +86,4 @@ target_include_directories(EngineCore PUBLIC include
 											 ${Vulkan_INCLUDE_DIRS}
 											 )
 
-target_link_libraries(EngineCore ${STATIC_LIBRARIES} Vulkan::Vulkan)
+target_link_libraries(EngineCore EngineLogging EngineRenderingVulkan ${STATIC_LIBRARIES} Vulkan::Vulkan)

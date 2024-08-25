@@ -405,3 +405,4 @@ cov-int
 util/*.png
 util/*.csv
 *.dir/
+docs/output/*

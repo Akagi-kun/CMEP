@@ -6,7 +6,6 @@ namespace Engine::Rendering
 {
 	struct MeshBuildContext
 	{
-		// On build finish
 		Vulkan::Buffer* vbo;
 		size_t vbo_vert_count;
 
@@ -14,7 +13,6 @@ namespace Engine::Rendering
 		{
 			delete vbo;
 			vbo			   = new Vulkan::VertexBuffer(with_instance, mesh);
-			// vbo			= Vulkan::VulkanRenderingEngine::CreateVertexBufferFromData(with_instance, mesh);
 			vbo_vert_count = mesh.size();
 		}
 	};

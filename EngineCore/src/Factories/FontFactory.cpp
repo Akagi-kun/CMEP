@@ -5,13 +5,13 @@
 #include "Logging/Logging.hpp"
 
 #include "Engine.hpp"
+#include "Exception.hpp"
 #include "KVPairHelper.hpp"
 
 #include <cstring>
 #include <filesystem>
 #include <fstream>
 #include <sstream>
-#include <stdexcept>
 #include <unordered_map>
 
 // Prefixes for logging messages
@@ -247,14 +247,9 @@ namespace Engine::Factories
 					this->ParseBmfontEntryPage(font, line_stream);
 					return;
 				}
-				catch (std::exception& e)
+				catch (...)
 				{
-					this->logger->SimpleLog(
-						Logging::LogLevel::Exception,
-						LOGPFX_CURRENT "Could not initialize a Font page texture! e.what(): %s",
-						e.what()
-					);
-					throw;
+					std::throw_with_nested(ENGINE_EXCEPTION("Could not initialize a Font page texture!"));
 				}
 			}
 			default:

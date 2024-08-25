@@ -19,7 +19,6 @@ else()
 		glfw
 		)
 endif()
-list(APPEND STATIC_LIBRARIES EngineLogging)
 
 add_executable(rungame ${SRC_FILES})
 
@@ -42,16 +41,4 @@ target_include_directories(rungame PUBLIC include
 										  ${Vulkan_INCLUDE_DIRS}
 										  )
 
-#if(DEFINED ENV{VULKAN_SDK})
-#	if(WIN32)
-#		target_link_directories(rungame PUBLIC $ENV{VULKAN_SDK}/Lib)
-#		target_include_directories(rungame PUBLIC $ENV{VULKAN_SDK}/Include)
-#	else()
-#		target_link_directories(rungame PUBLIC $ENV{VULKAN_SDK}/lib)
-#		target_include_directories(rungame PUBLIC $ENV{VULKAN_SDK}/include)
-#	endif()
-#else()
-#	message("Warning! Vulkan SDK environment variable not found!")
-#endif()
-
-target_link_libraries(rungame EngineCore ${STATIC_LIBRARIES} Vulkan::Vulkan)
+target_link_libraries(rungame EngineCore EngineLogging ${STATIC_LIBRARIES} Vulkan::Vulkan)

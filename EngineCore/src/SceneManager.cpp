@@ -6,6 +6,7 @@
 #include "Logging/Logging.hpp"
 
 #include "Engine.hpp"
+#include "Exception.hpp"
 #include "InternalEngineObject.hpp"
 #include "SceneLoader.hpp"
 #include "glm/ext/matrix_clip_space.hpp"
@@ -21,31 +22,31 @@ namespace Engine
 	SceneManager::SceneManager(Engine* with_engine) : InternalEngineObject(with_engine)
 	{
 		// Reset transform and rotation
-		this->logger = this->owner_engine->GetLogger();
+		this->logger = owner_engine->GetLogger();
 
 		std::shared_ptr<Scene> default_scene = std::make_shared<Scene>(with_engine);
 
-		this->scenes.emplace("_default", default_scene);
+		scenes.emplace("_default", default_scene);
 
-		this->scene_loader = std::make_unique<SceneLoader>(with_engine);
+		scene_loader = std::make_unique<SceneLoader>(with_engine);
 
 		// Reset transform and rotation
-		this->SetCameraHVRotation({0.0, 0.0});
-		this->SetCameraTransform({0.0, 0.0, 0.0});
+		SetCameraHVRotation({0.0, 0.0});
+		SetCameraTransform({0.0, 0.0, 0.0});
 	}
 
 	SceneManager::~SceneManager()
 	{
 		this->logger->SimpleLog(Logging::LogLevel::Info, LOGPFX_CURRENT "Destructor called");
 
-		this->scenes.clear();
+		scenes.clear();
 
-		this->scene_loader.reset();
+		scene_loader.reset();
 	}
 
 	void SceneManager::OnCameraUpdated()
 	{
-		auto& current_scene = this->scenes.at(this->current_scene_name);
+		auto& current_scene = scenes.at(current_scene_name);
 
 		// Explicitly update matrices of all objects
 		// since otherwise they'd update them only on transform updates
@@ -60,44 +61,51 @@ namespace Engine
 
 	void SceneManager::SetSceneLoadPrefix(const std::string& scene_prefix)
 	{
-		this->scene_loader->scene_prefix = scene_prefix;
+		scene_loader->scene_prefix = scene_prefix;
 	}
 
 	void SceneManager::LoadScene(std::string scene_name)
 	{
-		assert(this->owner_engine != nullptr);
+		assert(owner_engine != nullptr);
 
-		this->scenes.emplace(scene_name, this->scene_loader->LoadScene(scene_name));
+		try
+		{
+			scenes.emplace(scene_name, scene_loader->LoadScene(scene_name));
+		}
+		catch (...)
+		{
+			std::throw_with_nested(ENGINE_EXCEPTION("Could not load scene"));
+		}
 	}
 
 	void SceneManager::SetScene(const std::string& scene_name)
 	{
-		this->current_scene_name = scene_name;
+		current_scene_name = scene_name;
 	}
 
 	std::shared_ptr<Scene>& SceneManager::GetSceneCurrent()
 	{
-		return this->scenes.at(this->current_scene_name);
+		return scenes.at(current_scene_name);
 	}
 
 	glm::vec3 SceneManager::GetLightTransform()
 	{
-		return this->light_position;
+		return light_position;
 	}
 
 	void SceneManager::SetLightTransform(glm::vec3 newpos)
 	{
-		this->light_position = newpos;
+		light_position = newpos;
 	}
 
 	glm::vec3 SceneManager::GetCameraTransform()
 	{
-		return this->camera_transform;
+		return camera_transform;
 	}
 
 	glm::vec2 SceneManager::GetCameraHVRotation()
 	{
-		return this->camera_hv_rotation;
+		return camera_hv_rotation;
 	}
 
 	glm::mat4 SceneManager::GetProjectionMatrix(Rendering::ScreenSize screen) const
@@ -106,7 +114,7 @@ namespace Engine
 		static constexpr float farplane	 = 1000.0f;
 
 		return glm::perspective<float>(
-			glm::radians(this->field_of_vision),
+			glm::radians(field_of_vision),
 			static_cast<float>(screen.x) / static_cast<float>(screen.y),
 			nearplane,
 			farplane
@@ -120,8 +128,8 @@ namespace Engine
 
 	glm::mat4 SceneManager::GetCameraViewMatrix()
 	{
-		auto pitch = glm::radians(this->camera_hv_rotation.y);
-		auto yaw   = glm::radians(this->camera_hv_rotation.x);
+		auto pitch = glm::radians(camera_hv_rotation.y);
+		auto yaw   = glm::radians(camera_hv_rotation.x);
 
 		// Points forward
 		glm::vec3 direction = {
@@ -136,15 +144,15 @@ namespace Engine
 		// Points up
 		glm::vec3 up_local = glm::normalize(glm::cross(right, forward));
 
-		glm::mat4 view_matrix = glm::lookAt(this->camera_transform, this->camera_transform + forward, up_local);
+		glm::mat4 view_matrix = glm::lookAt(camera_transform, camera_transform + forward, up_local);
 
 		return view_matrix;
 	}
 
 	void SceneManager::SetCameraTransform(glm::vec3 transform)
 	{
-		this->camera_transform = transform;
-		this->OnCameraUpdated();
+		camera_transform = transform;
+		OnCameraUpdated();
 	}
 
 	void SceneManager::SetCameraHVRotation(glm::vec2 hvrotation)
@@ -153,11 +161,12 @@ namespace Engine
 		static constexpr float y_min	= y_center - 90.f;
 		static constexpr float y_max	= y_center + 89.9f;
 
-		if(std::isnan(hvrotation.y))
+		// Account for rotation possibly being NaN
+		if (std::isnan(hvrotation.y))
 		{
 			hvrotation.y = y_center;
 		}
-		if(std::isnan(hvrotation.x))
+		if (std::isnan(hvrotation.x))
 		{
 			hvrotation.x = 0;
 		}
@@ -178,7 +187,7 @@ namespace Engine
 			hvrotation.x = x_max;
 		}
 
-		this->camera_hv_rotation = hvrotation;
-		this->OnCameraUpdated();
+		camera_hv_rotation = hvrotation;
+		OnCameraUpdated();
 	}
 } // namespace Engine

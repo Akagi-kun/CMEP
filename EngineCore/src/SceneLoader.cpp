@@ -10,9 +10,9 @@
 #include "Engine.hpp"
 #include "EnumStringConvertor.hpp"
 #include "EventHandling.hpp"
+#include "Exception.hpp"
 
 #include <fstream>
-#include <stdexcept>
 #include <string>
 
 // Prefixes for logging messages
@@ -28,18 +28,18 @@ namespace Engine
 
 	std::shared_ptr<Scene> SceneLoader::LoadScene(std::string scene_name)
 	{
-		std::shared_ptr<Scene> new_scene = std::make_shared<Scene>(this->owner_engine);
+		std::shared_ptr<Scene> new_scene = std::make_shared<Scene>(owner_engine);
 
 		this->logger->SimpleLog(Logging::LogLevel::Info, LOGPFX_CURRENT "Loading scene: '%s'", scene_name.c_str());
 
-		this->LoadSceneInternal(new_scene, scene_name);
+		LoadSceneInternal(new_scene, scene_name);
 
 		return new_scene;
 	}
 
 	void SceneLoader::LoadSceneInternal(std::shared_ptr<Scene>& scene, std::string& scene_name)
 	{
-		std::string scene_path = this->scene_prefix + scene_name + "/";
+		std::string scene_path = scene_prefix + scene_name + "/";
 
 		nlohmann::json data;
 		try
@@ -50,15 +50,9 @@ namespace Engine
 
 			file.close();
 		}
-		catch (std::exception& e)
+		catch (...)
 		{
-			this->logger->SimpleLog(
-				Logging::LogLevel::Exception,
-				LOGPFX_CURRENT "Error parsing scene.json '%s'! e.what(): %s",
-				std::string(this->scene_prefix + "/" + scene_name + "/scene.json").c_str(),
-				e.what()
-			);
-			throw;
+			std::throw_with_nested(ENGINE_EXCEPTION("Failed on json parse"));
 		}
 
 		this->logger
@@ -67,66 +61,51 @@ namespace Engine
 		try
 		{
 			// Load Assets
-			this->LoadSceneAssets(data, scene_path);
+			LoadSceneAssets(data, scene_path);
 		}
-		catch (std::exception& e)
+		catch (...)
 		{
-			this->logger->SimpleLog(
-				Logging::LogLevel::Exception,
-				LOGPFX_CURRENT "Failed on asset load! e.what(): %s",
-				e.what()
-			);
-
-			throw;
-			// std::runtime_error(std::string("Failed on asset load!\n ").append(e.what()));
+			std::throw_with_nested(ENGINE_EXCEPTION("Failed on asset load"));
 		}
 
 		try
 		{
 			// Load Event Handlers
-			this->LoadSceneEventHandlers(data, scene);
+			LoadSceneEventHandlers(data, scene);
 
 			// Load Templates
-			this->LoadSceneTemplates(data, scene);
+			LoadSceneTemplates(data, scene);
 		}
-		catch (std::exception& e)
+		catch (...)
 		{
-			this->logger->SimpleLog(
-				Logging::LogLevel::Exception,
-				LOGPFX_CURRENT "Failed on post-asset scene load! e.what(): %s",
-				e.what()
-			);
-
-			throw;
+			std::throw_with_nested(ENGINE_EXCEPTION("Failed on post-asset scene load"));
 		}
 	}
 
 	void SceneLoader::LoadSceneEventHandlers(nlohmann::json& data, std::shared_ptr<Scene>& scene)
 	{
-		std::weak_ptr<AssetManager> asset_manager = this->owner_engine->GetAssetManager();
+		std::weak_ptr<AssetManager> asset_manager = owner_engine->GetAssetManager();
 		if (auto locked_asset_manager = asset_manager.lock())
 		{
 			// Load scene event handlers
 			for (const auto& event_handler_entry : data["event_handlers"])
 			{
-				std::string event_handler_type	   = event_handler_entry["type"].get<std::string>();
-				std::string event_handler_file	   = event_handler_entry["file"].get<std::string>();
-				std::string event_handler_function = event_handler_entry["function"].get<std::string>();
+				std::string event_handler_type = event_handler_entry["type"].get<std::string>();
+				std::string script_name		   = event_handler_entry["file"].get<std::string>();
+				std::string script_function	   = event_handler_entry["function"].get<std::string>();
 
 				EventHandling::EventType event_type = EnumStringConvertor<EventHandling::EventType>(event_handler_type);
 
-				std::shared_ptr<Scripting::ILuaScript> event_handler = locked_asset_manager->GetLuaScript(
-					event_handler_file
-				);
+				std::shared_ptr<Scripting::ILuaScript> event_handler = locked_asset_manager->GetLuaScript(script_name);
 
 				if (event_handler == nullptr)
 				{
 					throw std::runtime_error(
-						"'script' type asset '" + event_handler_file + "' required to serve defined event handlers!"
+						"Asset type 'script' script '" + script_name + "' required to serve defined event handlers!"
 					);
 				}
 
-				scene->lua_event_handlers.emplace(event_type, std::make_pair(event_handler, event_handler_function));
+				scene->lua_event_handlers.emplace(event_type, std::make_pair(event_handler, script_function));
 			}
 
 			this->logger->SimpleLog(Logging::LogLevel::Debug2, LOGPFX_CURRENT "Done stage: Event Handlers");
@@ -135,7 +114,7 @@ namespace Engine
 
 	void SceneLoader::LoadSceneTemplates(nlohmann::json& data, std::shared_ptr<Scene>& scene)
 	{
-		std::weak_ptr<AssetManager> asset_manager = this->owner_engine->GetAssetManager();
+		std::weak_ptr<AssetManager> asset_manager = owner_engine->GetAssetManager();
 		if (auto locked_asset_manager = asset_manager.lock())
 		{
 			// Load scene object templates
@@ -173,7 +152,7 @@ namespace Engine
 
 	void SceneLoader::LoadSceneAssets(nlohmann::json& data, std::string& scene_path)
 	{
-		std::weak_ptr<AssetManager> asset_manager = this->owner_engine->GetAssetManager();
+		std::weak_ptr<AssetManager> asset_manager = owner_engine->GetAssetManager();
 
 		if (auto locked_asset_manager = asset_manager.lock())
 		{
@@ -219,16 +198,14 @@ namespace Engine
 						if (asset_entry.contains("is_generator"))
 						{
 							script = std::make_shared<Scripting::GeneratorLuaScript>(
-								this->owner_engine,
+								owner_engine,
 								scene_path + asset_location
 							);
 						}
 						else
 						{
-							script = std::make_shared<Scripting::EventLuaScript>(
-								this->owner_engine,
-								scene_path + asset_location
-							);
+							script =
+								std::make_shared<Scripting::EventLuaScript>(owner_engine, scene_path + asset_location);
 						}
 
 						locked_asset_manager->AddLuaScript(asset_name, script);
@@ -259,15 +236,6 @@ namespace Engine
 						throw std::invalid_argument(
 							"Unknown type '"s.append(asset_type).append("' for asset '").append(asset_name).append("'")
 						);
-
-						/* this->logger->SimpleLog(
-							Logging::LogLevel::Warning,
-							LOGPFX_CURRENT "Unknown type '%s' for asset '%s'",
-							asset_type.c_str(),
-							asset_name.c_str()
-						);
-						continue;
-						*/
 					}
 
 					this->logger->SimpleLog(
@@ -277,15 +245,10 @@ namespace Engine
 						asset_type.c_str()
 					);
 				}
-				catch (std::exception& e)
+				catch (...)
 				{
-					this->logger->SimpleLog(
-						Logging::LogLevel::Exception,
-						LOGPFX_CURRENT "Exception when loading assets (check scene.json) e.what(): %s",
-						e.what()
-					);
-					// TODO: This should not rethrow (safe handling?)
-					throw;
+					// TODO: Potentially handle safely?
+					std::throw_with_nested(ENGINE_EXCEPTION("Caught exception when loading assets"));
 				}
 			}
 

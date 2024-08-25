@@ -14,7 +14,7 @@ namespace Engine::Rendering
 
 		[[nodiscard]] vk::PrimitiveTopology GetSupportedTopology() const noexcept override
 		{
-			return vk::PrimitiveTopology::eTriangleList; // VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
+			return vk::PrimitiveTopology::eTriangleList;
 		}
 
 		static constexpr bool supports_2d = true;

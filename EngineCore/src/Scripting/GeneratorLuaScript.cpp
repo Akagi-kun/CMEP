@@ -10,13 +10,11 @@
 
 #include <stdexcept>
 #include <string>
-#include <utility>
-
 
 namespace Engine::Scripting
 {
-	GeneratorLuaScript::GeneratorLuaScript(Engine* with_engine, std::string with_path)
-		: ILuaScript(with_engine, std::move(with_path), false)
+	GeneratorLuaScript::GeneratorLuaScript(Engine* with_engine, const std::filesystem::path& with_path)
+		: ILuaScript(with_engine, with_path, false)
 	{
 	}
 
@@ -100,18 +98,6 @@ namespace Engine::Scripting
 			lua_pop(coroutine, 2);
 
 			mesh->emplace_back(vertex, color, texcoord, normal);
-
-			/* this->logger->SimpleLog(
-				Logging::LogLevel::Debug3,
-				"Generated vertex [i] = vertex{ %f, %f, %f }, color{ %f, %f, %f }",
-				// idx,
-				static_cast<double>(vertex.x),
-				static_cast<double>(vertex.y),
-				static_cast<double>(vertex.z),
-				static_cast<double>(color.r),
-				static_cast<double>(color.g),
-				static_cast<double>(color.b)
-			); */
 
 		} while (last_ret == LUA_YIELD);
 

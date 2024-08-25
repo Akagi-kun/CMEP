@@ -28,11 +28,48 @@ static void InitConsoleWin32()
 #	define DEFAULT_LOG_LEVEL Logging::LogLevel::Debug1
 #endif
 
+// prints the explanatory string of an exception. If the exception is nested,
+// recurses to print the explanatory of the exception it holds
+static void PrintException(
+	std::shared_ptr<Logging::Logger>& with_logger,
+	const std::exception& caught_exception,
+	int level = 0
+)
+{
+	if (level == 0)
+	{
+		with_logger->StartLog(Logging::LogLevel::Exception);
+		with_logger->Log("Unrolling nested exceptions...");
+	}
+
+	with_logger->Log("\n\texception (%i): %s", level, caught_exception.what());
+
+	try
+	{
+		std::rethrow_if_nested(caught_exception);
+	}
+	catch (const std::exception& nested_exception)
+	{
+		PrintException(with_logger, nested_exception, level - 1);
+	}
+	catch (...)
+	{
+		throw;
+	}
+
+	if (level == 0)
+	{
+		with_logger->StopLog();
+	}
+}
+
 static int RunEngine(bool verbose)
 {
 	std::shared_ptr<Logging::Logger> my_logger = std::make_shared<Logging::Logger>();
 
 	Logging::LogLevel loglevel = verbose ? Logging::LogLevel::Debug3 : DEFAULT_LOG_LEVEL;
+
+	my_logger->AddOutputHandle(loglevel, stdout, true);
 
 	constexpr const char* logfile_name = "latest.log";
 
@@ -42,15 +79,18 @@ static int RunEngine(bool verbose)
 #else
 	logfile = fopen(logfile_name, "w");
 #endif
-	if (logfile == nullptr)
+	if (logfile != nullptr)
 	{
-		using namespace std::string_literals;
-
-		assert(false && "Could not open "s.append(logfile_name).c_str());
+		my_logger->AddOutputHandle(Logging::LogLevel::Debug3, logfile, false);
 	}
-
-	my_logger->AddOutputHandle(loglevel, stdout, true);
-	my_logger->AddOutputHandle(Logging::LogLevel::Debug3, logfile, false);
+	else
+	{
+		my_logger->SimpleLog(
+			Logging::LogLevel::Warning,
+			"Failed opening logfile '%s', will log only to stdout",
+			logfile_name
+		);
+	}
 
 	my_logger->SimpleLog(Logging::LogLevel::Info, "Logger initialized");
 
@@ -76,8 +116,6 @@ static int RunEngine(bool verbose)
 		}
 	}
 
-	// return 0;
-
 	// Initialize engine, load config
 	try
 	{
@@ -86,7 +124,8 @@ static int RunEngine(bool verbose)
 	}
 	catch (std::exception& e)
 	{
-		my_logger->SimpleLog(Logging::LogLevel::Exception, "Exception loading config! e.what(): %s", e.what());
+		my_logger->SimpleLog(Logging::LogLevel::Exception, "Caught exception loading config!");
+		PrintException(my_logger, e);
 		return 1;
 	}
 
@@ -97,7 +136,8 @@ static int RunEngine(bool verbose)
 	}
 	catch (std::exception& e)
 	{
-		my_logger->SimpleLog(Logging::LogLevel::Exception, "Exception running engine! e.what(): %s", e.what());
+		my_logger->SimpleLog(Logging::LogLevel::Exception, "Caught exception running engine!");
+		PrintException(my_logger, e);
 		return 2;
 	}
 

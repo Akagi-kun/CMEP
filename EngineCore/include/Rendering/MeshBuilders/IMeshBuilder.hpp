@@ -9,15 +9,6 @@ namespace Engine::Rendering
 {
 	class IMeshBuilder : public InternalEngineObject
 	{
-	protected:
-		std::vector<RenderingVertex> mesh;
-		bool needs_rebuild = true;
-
-		MeshBuildContext context = {};
-		Vulkan::Instance* instance;
-
-		glm::vec3 world_pos;
-
 	public:
 		IMeshBuilder() = delete;
 		IMeshBuilder(Engine* engine);
@@ -54,5 +45,14 @@ namespace Engine::Rendering
 		{
 			return this->needs_rebuild;
 		}
+
+	protected:
+		std::vector<RenderingVertex> mesh;
+		bool needs_rebuild = true;
+
+		MeshBuildContext context = {};
+		Vulkan::Instance* instance;
+
+		glm::vec3 world_pos;
 	};
 } // namespace Engine::Rendering

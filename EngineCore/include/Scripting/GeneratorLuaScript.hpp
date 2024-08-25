@@ -7,7 +7,7 @@ namespace Engine::Scripting
 	class GeneratorLuaScript final : public ILuaScript
 	{
 	public:
-		GeneratorLuaScript(Engine* with_engine, std::string with_path);
+		GeneratorLuaScript(Engine* with_engine, const std::filesystem::path& with_path);
 
 	private:
 		int InternalCall(const std::string& function, void* data) override;

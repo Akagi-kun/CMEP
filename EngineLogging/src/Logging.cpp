@@ -1,8 +1,9 @@
-#include <cassert>
 #define ENGINELOGGING_LIBRARY_IMPLEMENTATION
-#include "ConsoleColors.hpp"
 #include "Logging.hpp"
 
+#include "ConsoleColors.hpp"
+
+#include <cassert>
 #include <chrono>
 #include <cstdarg>
 #include <cstdio>
@@ -26,8 +27,6 @@ static const char* level_to_color_table[] = {
 static const char* const level_to_string_table[] = {"DBG3", "DBG2", "DBG1", "INFO", "WARN", "ERROR", "EXCEPTION"};
 
 static_assert((sizeof(level_to_color_table) / sizeof(char*)) == (sizeof(level_to_string_table) / sizeof(char*)));
-// static constexpr size_t level_count =
-//	std::min(sizeof(level_to_color_table) / sizeof(char*), sizeof(level_to_string_table) / sizeof(char*));
 
 namespace Logging
 {

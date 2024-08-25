@@ -188,8 +188,6 @@ namespace Engine::Rendering
 				};
 
 				generated_mesh.insert(generated_mesh.end(), vertices.begin(), vertices.end());
-
-				texture_image = texture->GetTextureImage();
 			}
 		}
 

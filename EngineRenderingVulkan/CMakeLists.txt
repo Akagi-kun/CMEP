@@ -39,8 +39,6 @@ else()
 		)
 endif()
 
-list(APPEND STATIC_LIBRARIES EngineLogging)
-
 add_library(EngineRenderingVulkan STATIC ${SRC_FILES})
 
 target_compile_features(EngineRenderingVulkan PUBLIC cxx_std_17)
@@ -61,4 +59,4 @@ target_include_directories(EngineRenderingVulkan PUBLIC include
 											 ${Vulkan_INCLUDE_DIRS}
 											 )
 
-target_link_libraries(EngineRenderingVulkan ${STATIC_LIBRARIES} Vulkan::Vulkan)
+target_link_libraries(EngineRenderingVulkan EngineLogging ${STATIC_LIBRARIES} Vulkan::Vulkan)

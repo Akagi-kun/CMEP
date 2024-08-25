@@ -10,11 +10,6 @@ namespace Engine::Rendering
 {
 	class GeneratorMeshBuilder final : public IMeshBuilder
 	{
-	private:
-		std::shared_ptr<Scripting::ILuaScript> generator_script;
-
-		GeneratorSupplierData generator_supplier;
-
 	public:
 		using IMeshBuilder::IMeshBuilder;
 		using IMeshBuilder::SupplyData;
@@ -30,5 +25,10 @@ namespace Engine::Rendering
 
 		static constexpr bool supports_2d = true;
 		static constexpr bool supports_3d = true;
+
+	private:
+		std::shared_ptr<Scripting::ILuaScript> generator_script;
+
+		GeneratorSupplierData generator_supplier;
 	};
 } // namespace Engine::Rendering

@@ -10,6 +10,7 @@ namespace Engine
 {
 	template <typename T> struct EnumStringConvertor final
 	{
+	public:
 		using self_t  = EnumStringConvertor<T>;
 		using value_t = T;
 		using map_t	  = const std::unordered_map<std::string_view, value_t>;

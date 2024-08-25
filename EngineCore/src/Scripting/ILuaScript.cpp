@@ -284,8 +284,9 @@ namespace Engine::Scripting
 		{
 			const char* errormsg = lua_tostring(state, -1);
 
+			// TODO: Throw
 			this->logger->SimpleLog(
-				Logging::LogLevel::Warning,
+				Logging::LogLevel::Error,
 				LOGPFX_CURRENT "Error when calling Lua\n\tscript '%s'\n\tfunction: "
 							   "'%s'\n\terrorcode: %i\n%s",
 				path.c_str(),

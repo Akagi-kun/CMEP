@@ -10,6 +10,7 @@
 
 #include "Logging/Logging.hpp"
 
+#include "Exception.hpp"
 #include "GLFW/glfw3.h"
 #include "Object.hpp"
 #include "buildinfo.hpp"
@@ -150,15 +151,9 @@ namespace Engine
 		{
 			data = nlohmann::json::parse(file);
 		}
-		catch (std::exception& e)
+		catch (...)
 		{
-			this->logger->SimpleLog(
-				Logging::LogLevel::Exception,
-				LOGPFX_CURRENT "Error parsing config json '%s', e.what(): %s",
-				config_path.c_str(),
-				e.what()
-			);
-			exit(1);
+			std::throw_with_nested(ENGINE_EXCEPTION("Exception parsing config!"));
 		}
 
 		config->window.title  = data["window"]["title"].get<std::string>();
@@ -189,14 +184,9 @@ namespace Engine
 			{
 				ptr->GetRenderer()->Render(command_buffer, current_frame);
 			}
-			catch (const std::exception& e)
+			catch (...)
 			{
-				engine_cast->logger->SimpleLog(
-					Logging::LogLevel::Exception,
-					LOGPFX_CURRENT "Caught exception while rendering object! e.what(): %s",
-					e.what()
-				);
-				throw;
+				std::throw_with_nested(ENGINE_EXCEPTION("Caught exception rendering object!"));
 			}
 		}
 	}
@@ -264,11 +254,12 @@ namespace Engine
 		// hot loop
 		while (!glfw_window->GetShouldClose())
 		{
-			const auto next_clock	= std::chrono::steady_clock::now();
-			static constexpr double min_delta = 0.1f / sec_to_msec;
-			static constexpr double max_delta = 100000.f;
-			const double delta_time = std::clamp(static_cast<double>((next_clock - prev_clock).count()) / nano_to_sec, min_delta, max_delta);
-			last_delta_time			= delta_time;
+			const auto next_clock			  = std::chrono::steady_clock::now();
+			static constexpr double min_delta = 0.1 / sec_to_msec;
+			static constexpr double max_delta = 100000.0;
+			const double delta_time =
+				std::clamp(static_cast<double>((next_clock - prev_clock).count()) / nano_to_sec, min_delta, max_delta);
+			last_delta_time = delta_time;
 
 			// Check return code of FireEvent (events should return non-zero codes as failure)
 			if (!first_frame)
@@ -409,14 +400,9 @@ namespace Engine
 		{
 			HandleConfig();
 		}
-		catch (std::exception& e)
+		catch (...)
 		{
-			this->logger->SimpleLog(
-				Logging::LogLevel::Exception,
-				LOGPFX_CURRENT "Exception parsing config! e.what(): %s",
-				e.what()
-			);
-			throw;
+			std::throw_with_nested(ENGINE_EXCEPTION("Exception parsing config!"));
 		}
 
 		// Order matters here due to interdependency
