@@ -3,6 +3,7 @@
 #include "InternalEngineObject.hpp"
 #include "lua.hpp"
 
+#include <filesystem>
 #include <string>
 
 namespace Engine::Scripting
@@ -22,33 +23,33 @@ namespace Engine::Scripting
 	class ILuaScript : public InternalEngineObject
 	{
 	public:
-		ILuaScript(Engine* with_engine, std::string with_path, bool with_enable_profiling = false);
+		ILuaScript(Engine* with_engine, std::filesystem::path with_path, bool with_enable_profiling = false);
 		virtual ~ILuaScript();
 
 		int CallFunction(const std::string& function, void* data);
 
-		[[nodiscard]] const ScriptPerfState* GetProfilerState() const
+		[[nodiscard]] const ScriptPerfState& GetProfilerState() const
 		{
-			return this->profiler_state;
+			return profiler_state;
 		}
 
 		[[nodiscard]] lua_State* GetState()
 		{
-			return this->state;
+			return state;
 		}
 
-		[[nodiscard]] std::string_view GetPath() const
+		[[nodiscard]] const std::filesystem::path& GetPath() const
 		{
-			return this->path;
+			return path;
 		}
 
 	protected:
 		lua_State* state;
-		ScriptPerfState* profiler_state = nullptr;
+		ScriptPerfState profiler_state;
 
-		std::string path;
+		std::filesystem::path path;
 
-		int LoadAndCompileScript();
+		void LoadAndCompileScript();
 
 		virtual int InternalCall(const std::string& function, void* data) = 0;
 

@@ -148,7 +148,7 @@ namespace Engine::Scripting
 		}
 		catch (const char* str)
 		{
-			return luaL_error(state, str);
+			return luaL_error(state, "Exception wrapper caught exception! e.what(): %s", str);
 		}
 		catch (std::exception& e)
 		{
@@ -173,7 +173,7 @@ namespace Engine::Scripting
 
 		using namespace std::literals;
 		// Check whether this works on other systems
-		std::string require_path_str = (/* require_origin_str + "/?.lua;"s + */ require_origin_str + "/modules/?.lua"s);
+		std::string require_path_str = (require_origin_str + "/modules/?.lua"s);
 
 		lua_pushstring(state, require_path_str.c_str());
 		lua_setfield(state, -2, "path");
@@ -188,35 +188,29 @@ namespace Engine::Scripting
 
 	int LuaErrorHandler(lua_State* state)
 	{
-		// We can handle errors here if necessary
-		//
-		// last value on stack is the error object
-		//
-		// last value on stack when returning has to
-		// be an error object - original or another
-		//
-		//(void)(state);
+		// Describe error by unwinding the stack
 		lua_pushstring(state, UnwindStack(state).c_str());
 
-		// Simply pass the error object through to pcall
+		// UnwindStack pops the error string
+		// so we return only a single string containing the stack trace
 		return 1;
 	}
 
 #pragma endregion
 
-	int ILuaScript::LoadAndCompileScript()
+	void ILuaScript::LoadAndCompileScript()
 	{
+		using namespace std::string_literals;
+
 		RegisterRequirePath(state, this);
 
-		std::filesystem::path script_path = this->path;
+		std::filesystem::path script_path = path;
 
 		// Load file and compile it
 		// this can raise syntax errors
 		int load_return = luaL_loadfile(state, script_path.string().c_str());
 		if (load_return != LUA_OK)
 		{
-			using namespace std::string_literals;
-
 			throw std::runtime_error("Exception compiling Lua script! loadfile: "s.append(std::to_string(load_return))
 										 .append("\n\t"s)
 										 .append(lua_tostring(state, -1)));
@@ -226,8 +220,6 @@ namespace Engine::Scripting
 		int pcall_return = lua_pcall(state, 0, LUA_MULTRET, 0);
 		if (pcall_return != LUA_OK)
 		{
-			using namespace std::string_literals;
-
 			throw std::runtime_error("Exception compiling Lua script! pcall: "s.append(std::to_string(pcall_return))
 										 .append("\n\t")
 										 .append(lua_tostring(state, -1)));
@@ -247,58 +239,46 @@ namespace Engine::Scripting
 			LOGPFX_CURRENT "Loaded and compiled Lua script: '%s'",
 			script_path.string().c_str()
 		);
-
-		return 0;
 	}
 
 #pragma region Public functions
 
-	ILuaScript::ILuaScript(Engine* with_engine, std::string with_path, bool with_enable_profiling)
+	ILuaScript::ILuaScript(Engine* with_engine, std::filesystem::path with_path, bool with_enable_profiling)
 		: InternalEngineObject(with_engine), path(std::move(with_path)), enable_profiling(with_enable_profiling)
 	{
-		this->state = luaL_newstate();
-		luaL_openlibs(this->state);
-
-		this->profiler_state = new ScriptPerfState();
+		state = luaL_newstate();
+		luaL_openlibs(state);
 
 		if (with_enable_profiling)
 		{
-			luaJIT_profile_start(this->state, "fl", &ProfilerCallback, this->profiler_state);
+			luaJIT_profile_start(state, "fl", &ProfilerCallback, &profiler_state);
 		}
 
-		int return_code = this->LoadAndCompileScript();
-		// TODO: Remove
-		if (return_code != 0)
-		{
-			throw std::runtime_error(
-				"Could not compile script '" + this->path + "' (errcode = " + std::to_string(return_code) + ")"
-			);
-		}
+		LoadAndCompileScript();
 	}
 
 	ILuaScript::~ILuaScript()
 	{
-		if (this->enable_profiling)
+		if (enable_profiling)
 		{
-			luaJIT_profile_stop(this->state);
+			luaJIT_profile_stop(state);
 
-			printf(
+			this->logger->SimpleLog(
+				Logging::LogLevel::Debug2,
 				"Profiling result:\n E:%i N:%i I:%i\n",
-				this->profiler_state->engine_count,
-				this->profiler_state->native_count,
-				this->profiler_state->interpreted_count
+				profiler_state.engine_count,
+				profiler_state.native_count,
+				profiler_state.interpreted_count
 			);
 		}
 
-		delete this->profiler_state;
-
-		lua_close(this->state);
+		lua_close(state);
 	}
 
 	int ILuaScript::CallFunction(const std::string& function, void* data)
 	{
 		// Perform actual call
-		int errcall = this->InternalCall(function, data);
+		int errcall = InternalCall(function, data);
 
 		if (errcall != LUA_OK)
 		{
@@ -308,7 +288,7 @@ namespace Engine::Scripting
 				Logging::LogLevel::Warning,
 				LOGPFX_CURRENT "Error when calling Lua\n\tscript '%s'\n\tfunction: "
 							   "'%s'\n\terrorcode: %i\n%s",
-				this->path.c_str(),
+				path.c_str(),
 				function.c_str(),
 				errcall,
 				errormsg

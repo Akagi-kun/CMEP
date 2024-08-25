@@ -1,13 +1,13 @@
 return {
     -- Number of chunks to render in every direction
-    render_distance = 10,
+    render_distance = 8,
 
     -- Noise multiplier
     noise_intensity = 50,
     noise_layer = 0.0, -- Y slice of noise to pick from
 
     -- Offset of noise from 0
-    floor_level = 3,
+    floor_level = 2,
     water_table_level = 28,
 
     tree_generation_chance = 150, -- 360

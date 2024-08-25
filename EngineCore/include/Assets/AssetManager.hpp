@@ -37,12 +37,12 @@ namespace Engine
 
 		void AddTexture(
 			const std::string& name,
-			const std::string& path,
+			const std::filesystem::path& path,
 			Rendering::Texture_InitFiletype filetype,
 			vk::Filter filtering				= vk::Filter::eLinear,
 			vk::SamplerAddressMode address_mode = vk::SamplerAddressMode::eRepeat
 		);
-		void AddFont(const std::string& name, const std::string& path);
+		void AddFont(const std::string& name, const std::filesystem::path& path);
 
 		void AddLuaScript(const std::string& name, const std::shared_ptr<Scripting::ILuaScript>& script);
 

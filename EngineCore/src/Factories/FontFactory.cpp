@@ -16,11 +16,12 @@
 
 // Prefixes for logging messages
 #define LOGPFX_CURRENT LOGPFX_CLASS_FONT_FACTORY
-#include "Logging/LoggingPrefix.hpp"
+#include "Logging/LoggingPrefix.hpp" // IWYU pragma: keep
 
 namespace Engine::Factories
 {
-	std::shared_ptr<Rendering::Font> FontFactory::InitBMFont(const std::string& font_path)
+#pragma region Public
+	std::shared_ptr<Rendering::Font> FontFactory::InitBMFont(const std::filesystem::path& font_path)
 	{
 		std::shared_ptr<Rendering::Font> font = std::make_shared<Rendering::Font>(this->owner_engine);
 
@@ -51,19 +52,12 @@ namespace Engine::Factories
 		return font;
 	}
 
-	static std::string StreamGetNextToken(std::stringstream& from_sstream)
-	{
-		std::string entry;
-
-		from_sstream >> entry;
-
-		return entry;
-	}
-
 	static std::tuple<std::string, std::string> GetNextKVPair(std::stringstream& from_stream)
 	{
-		return Utility::SplitKVPair(StreamGetNextToken(from_stream), "=");
+		return Utility::SplitKVPair(Utility::StreamGetNextToken(from_stream), "=");
 	}
+
+#pragma region Private
 
 	void FontFactory::ParseBmfont(std::unique_ptr<Rendering::FontData>& font, std::ifstream& font_file)
 	{
@@ -143,7 +137,9 @@ namespace Engine::Factories
 			if (result_offset != struct_offsets.end())
 			{
 				// Offset in memory (pointing to the member of struct)
-				int* fchar_entry_ptr = reinterpret_cast<int*>(&fchar_memory[result_offset->second]);
+				int* fchar_entry_ptr = reinterpret_cast<Rendering::FontChar::value_t*>(
+					&fchar_memory[result_offset->second]
+				);
 
 				// Finally fill the member of the struct
 				(*fchar_entry_ptr) = std::stoi(value);
@@ -162,12 +158,9 @@ namespace Engine::Factories
 		int page_idx = -1;
 		std::filesystem::path page_path;
 
-		std::string key;
-		std::string value;
-
 		do
 		{
-			tie(key, value) = GetNextKVPair(line_stream);
+			auto [key, value] = GetNextKVPair(line_stream);
 
 			if (key == "file")
 			{
@@ -228,7 +221,7 @@ namespace Engine::Factories
 				// Add every entry of the line
 				while (!line_stream.eof())
 				{
-					tie(key, value) = Utility::SplitKVPair(StreamGetNextToken(line_stream), "=");
+					tie(key, value) = Utility::SplitKVPair(Utility::StreamGetNextToken(line_stream), "=");
 					font->info.emplace(key, value);
 				}
 
@@ -237,7 +230,7 @@ namespace Engine::Factories
 			case BmFontLineType::CHARS:
 			{
 				// chars has only a single entry (the count of chars), no loop required
-				tie(key, value)	 = Utility::SplitKVPair(StreamGetNextToken(line_stream), "=");
+				tie(key, value)	 = Utility::SplitKVPair(Utility::StreamGetNextToken(line_stream), "=");
 				font->char_count = static_cast<unsigned int>(std::stoi(value));
 
 				break;

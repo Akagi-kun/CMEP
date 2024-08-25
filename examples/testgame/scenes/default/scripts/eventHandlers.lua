@@ -14,6 +14,9 @@ local chunks_x = config.render_distance
 local chunks_z = config.render_distance
 local chunks = {}
 
+-- Forward declaration
+local generate_chunk
+
 ffi.cdef[[
 void *malloc( size_t size );
 ]]
@@ -37,7 +40,111 @@ local generateTree = function(map_data, x, y, z)
 	end
 end
 
-local generate_chunk = function(xpos, zpos)
+-- Chunk boundary marking step
+--
+-- Marks blocks that neighbor a non-opaque block in a neighboring chunk
+-- So we don't have to generate a side mesh for them
+--  
+local generate_boundary_info = function(chunk_x, chunk_z)
+	assert(chunks[chunk_x] ~= nil and chunks[chunk_x][chunk_z] ~= nil and chunks[chunk_x][chunk_z].data ~= nil)
+	local this_chunk = chunks[chunk_x][chunk_z].data
+
+	local bounds_check = chunk_z >= -chunks_z and chunk_z <= chunks_z and chunk_x >= -chunks_x and chunk_x <= chunks_x
+
+	::before_check1::
+	if chunks[chunk_x][chunk_z - 1] ~= nil and chunks[chunk_x][chunk_z - 1].data ~= nil then
+		local prev_chunk = chunks[chunk_x][chunk_z - 1].data
+
+		for x = 1, config.chunk_size_x do
+			for y = 1, config.chunk_size_y do
+				local offset1 = util.calculateMapOffset(x, y, 1)
+				local offset2 = util.calculateMapOffset(x, y, config.chunk_size_z)
+				if prev_chunk[offset2] ~= 0 and this_chunk[offset1] < 128 and this_chunk[offset1] ~= 0 then
+					this_chunk[offset1] = this_chunk[offset1] + 128
+				end
+			end
+		end
+	else
+		if bounds_check then
+			generate_chunk(chunk_x, chunk_z - 1)
+			goto before_check1
+--		else
+--			print("Skipping generation for chunk outside range")
+		end
+	end
+
+	::before_check2::
+	if chunks[chunk_x][chunk_z + 1] ~= nil and chunks[chunk_x][chunk_z + 1].data ~= nil then
+		local next_chunk = chunks[chunk_x][chunk_z + 1].data
+
+		for x = 1, config.chunk_size_x do
+			for y = 1, config.chunk_size_y do
+				local offset1 = util.calculateMapOffset(x, y, config.chunk_size_z)
+				local offset2 = util.calculateMapOffset(x, y, 1)
+				if next_chunk[offset2] ~= 0 and this_chunk[offset1] < 128 and this_chunk[offset1] ~= 0 then
+					this_chunk[offset1] = this_chunk[offset1] + 128
+				end
+			end
+		end
+	else
+		if bounds_check then
+			generate_chunk(chunk_x, chunk_z + 1)
+			goto before_check2
+--		else
+--			print("Skipping generation for chunk outside range")
+		end
+	end
+
+	::before_check3::
+	if chunks[chunk_x - 1] ~= nil and chunks[chunk_x - 1][chunk_z] ~= nil and chunks[chunk_x - 1][chunk_z].data ~= nil then
+		local prev_chunk = chunks[chunk_x - 1][chunk_z].data
+
+		for z = 1, config.chunk_size_z do
+			for y = 1, config.chunk_size_y do
+				local offset1 = util.calculateMapOffset(1, y, z)
+				local offset2 = util.calculateMapOffset(config.chunk_size_x, y, z)
+				if prev_chunk[offset2] ~= 0 and this_chunk[offset1] < 256 and this_chunk[offset1] ~= 0 then
+					this_chunk[offset1] = this_chunk[offset1] + 256
+				end
+			end
+		end
+	else
+		if bounds_check then
+			generate_chunk(chunk_x - 1, chunk_z)
+			goto before_check3
+--		else
+--			print("Skipping generation for chunk outside range")
+		end
+	end
+
+	::before_check4::
+	if chunks[chunk_x + 1] ~= nil and chunks[chunk_x + 1][chunk_z] ~= nil and chunks[chunk_x + 1][chunk_z].data ~= nil then
+		local next_chunk = chunks[chunk_x + 1][chunk_z].data
+
+		for z = 1, config.chunk_size_z do
+			for y = 1, config.chunk_size_y do
+				local offset1 = util.calculateMapOffset(config.chunk_size_x, y, z)
+				local offset2 = util.calculateMapOffset(1, y, z)
+				if next_chunk[offset2] ~= 0 and this_chunk[offset1] < 256 and this_chunk[offset1] ~= 0 then
+					this_chunk[offset1] = this_chunk[offset1] + 256
+				end
+			end
+		end
+	else
+		if bounds_check then
+			generate_chunk(chunk_x + 1, chunk_z)
+			goto before_check4
+--		else
+--			print("Skipping generation for chunk outside range")
+		end
+	end
+end
+
+generate_chunk = function(chunk_x, chunk_z)
+	print("Attempting generate for chunk", chunk_x, chunk_z)
+	local xpos = chunk_x * config.chunk_size_x
+	local zpos = chunk_z * config.chunk_size_z
+
 	local size = config.chunk_size_x * config.chunk_size_y * config.chunk_size_z
 	local map_data = ffi.C.malloc(ffi.sizeof("uint16_t") * size)
 	assert(map_data, "Could not allocate chunk buffer")
@@ -111,71 +218,11 @@ local generate_chunk = function(xpos, zpos)
 --		cast_map_data[offset] = game_defs.block_types.FLOWER
 --	end
 
-	local chunk_x = xpos / config.chunk_size_x
-	local chunk_z = zpos / config.chunk_size_z
-
-	-- Chunk boundary marking step
-	--
-	-- Marks blocks that neighbor a non-opaque block in a neighboring chunk
-	-- So we don't have to generate a side mesh for them
-	--  
-	if chunks[chunk_x] ~= nil and chunks[chunk_x][chunk_z - 1] ~= nil and chunks[chunk_x][chunk_z - 1].data ~= nil then
-		local prev_chunk = chunks[chunk_x][chunk_z - 1].data
-
-		for x = 1, config.chunk_size_x do
-			for y = 1, config.chunk_size_y do
-				local offset1 = util.calculateMapOffset(x, y, 1)
-				local offset2 = util.calculateMapOffset(x, y, config.chunk_size_z)
-				if prev_chunk[offset2] ~= 0 and cast_map_data[offset1] < 128 and cast_map_data[offset1] ~= 0 then
-					cast_map_data[offset1] = cast_map_data[offset1] + 128
-				end
-			end
-		end
-	end
-	if chunks[chunk_x] ~= nil and chunks[chunk_x][chunk_z + 1] ~= nil and chunks[chunk_x][chunk_z + 1].data ~= nil then
-		local next_chunk = chunks[chunk_x][chunk_z + 1].data
-
-		for x = 1, config.chunk_size_x do
-			for y = 1, config.chunk_size_y do
-				local offset1 = util.calculateMapOffset(x, y, config.chunk_size_z)
-				local offset2 = util.calculateMapOffset(x, y, 1)
-				if next_chunk[offset2] ~= 0 and cast_map_data[offset1] < 128 and cast_map_data[offset1] ~= 0 then
-					cast_map_data[offset1] = cast_map_data[offset1] + 128
-				end
-			end
-		end
-	end
-
-	if chunks[chunk_x - 1] ~= nil and chunks[chunk_x - 1][chunk_z] ~= nil and chunks[chunk_x - 1][chunk_z].data ~= nil then
-		local prev_chunk = chunks[chunk_x - 1][chunk_z].data
-
-		for z = 1, config.chunk_size_z do
-			for y = 1, config.chunk_size_y do
-				local offset1 = util.calculateMapOffset(1, y, z)
-				local offset2 = util.calculateMapOffset(config.chunk_size_x, y, z)
-				if prev_chunk[offset2] ~= 0 and cast_map_data[offset1] < 256 and cast_map_data[offset1] ~= 0 then
-					cast_map_data[offset1] = cast_map_data[offset1] + 256
-				end
-			end
-		end
-	end
-	if chunks[chunk_x + 1] ~= nil and chunks[chunk_x + 1][chunk_z] ~= nil and chunks[chunk_x + 1][chunk_z].data ~= nil then
-		local next_chunk = chunks[chunk_x + 1][chunk_z].data
-
-		for z = 1, config.chunk_size_z do
-			for y = 1, config.chunk_size_y do
-				local offset1 = util.calculateMapOffset(config.chunk_size_x, y, z)
-				local offset2 = util.calculateMapOffset(1, y, z)
-				if next_chunk[offset2] ~= 0 and cast_map_data[offset1] < 256 and cast_map_data[offset1] ~= 0 then
-					cast_map_data[offset1] = cast_map_data[offset1] + 256
-				end
-			end
-		end
-	end
-	
 	if chunks[chunk_x] == nil then chunks[chunk_x] = {} end
 	if chunks[chunk_x][chunk_z] == nil then chunks[chunk_x][chunk_z] = {} end
 	chunks[chunk_x][chunk_z].data = cast_map_data
+
+	generate_boundary_info(chunk_x, chunk_z)
 end
 
 terrain_generator = function(...)
@@ -187,35 +234,39 @@ terrain_generator = function(...)
 
 	--generate_chunk(xpos, zpos)
 
-	assert(chunks[chunk_x][chunk_z].data, "No chunk buffer exists for this chunk!")
+	if chunks[chunk_x] == nil or chunks[chunk_x][chunk_z] == nil or chunks[chunk_x][chunk_z].data == nil then
+		print("Generator supplier could not find chunk data! Regenerating")
+		generate_chunk(chunk_x, chunk_z)
+	end
+
+	--assert(chunks[chunk_x][chunk_z].data, "No chunk buffer exists for this chunk!")
 
 	return chunks[chunk_x][chunk_z].data
 end
 
-check_chunks_loaded = function(asset_manager, scene)
-	for chunk_x = -chunks_x, chunks_x, 1 do
-		if chunks[chunk_x] == nil then chunks[chunk_x] = {} end
-		for chunk_z = -chunks_z, chunks_z, 1 do
-			if chunks[chunk_x][chunk_z] == nil then
---				print(chunk_x, chunk_z);
+--check_chunks_loaded = function(asset_manager, scene)
+--	for chunk_x = -chunks_x, chunks_x, 1 do
+--		if chunks[chunk_x] == nil then chunks[chunk_x] = {} end
+--		for chunk_z = -chunks_z, chunks_z, 1 do
+--			if chunks[chunk_x][chunk_z] == nil then
+--
+--				local chunk_obj = engine.CreateSceneObject(asset_manager, "renderer_3d/generator", "terrain", {
+--					{"texture", "atlas"}, {"generator_script", "testgen"}, {"generator_supplier", "script0/terrain_generator"}
+--				})
+--				chunk_obj:SetPosition((chunk_x) * config.chunk_size_x, 0.0, (chunk_z) * config.chunk_size_z)
+--				chunk_obj:SetSize(1, 1, 1)
+--				chunk_obj:SetRotation(0, 0, 0)
+--				scene:AddObject(string.format("chunk_%i_%i", chunk_x, chunk_z), chunk_obj)
+--				engine.RendererForceBuild(chunk_obj.renderer)
+--				chunks[chunk_x][chunk_z] = {chunk_obj}
+--
+--				coroutine.yield()
+--			end
+--		end
+--	end
+--end
 
-				local chunk_obj = engine.CreateSceneObject(asset_manager, "renderer_3d/generator", "terrain", {
-					{"texture", "atlas"}, {"generator_script", "testgen"}, {"generator_supplier", "script0/terrain_generator"}
-				})
-				chunk_obj:SetPosition((chunk_x) * config.chunk_size_x, 0.0, (chunk_z) * config.chunk_size_z)
-				chunk_obj:SetSize(1, 1, 1)
-				chunk_obj:SetRotation(0, 0, 0)
-				scene:AddObject(string.format("chunk_%i_%i", chunk_x, chunk_z), chunk_obj)
-				engine.RendererForceBuild(chunk_obj.renderer)
-				chunks[chunk_x][chunk_z] = {chunk_obj}
-
-				coroutine.yield()
-			end
-		end
-	end
-end
-
-load_chunks_coro = coroutine.create(check_chunks_loaded)
+--load_chunks_coro = coroutine.create(check_chunks_loaded)
 
 -- ON_UPDATE event
 -- 
@@ -304,17 +355,14 @@ onInit = function(event)
 	--scene:AddObject("test3dsprite", object3)
 
 	print("Generating chunks...")
-	for chunk_x = -chunks_x, chunks_x, 1 do -- chunks_x, chunks_x, 1
---		chunks[chunk_x] = {}
-		for chunk_z = -chunks_z, chunks_z, 1 do
---			chunks[chunk_x][chunk_z] = {}
-
-			--print("Generating chunk "..chunk_x.." "..chunk_z)
-			generate_chunk(chunk_x * config.chunk_size_x, chunk_z * config.chunk_size_z)
-
-			collectgarbage()
-		end
-	end
+	generate_chunk(0, 0)
+	--for chunk_x = -chunks_x, chunks_x, 1 do
+	--	for chunk_z = -chunks_z, chunks_z, 1 do
+	--		--print("Generating chunk "..chunk_x.." "..chunk_z)
+	--		generate_chunk(chunk_x, chunk_z) -- multiplied by chunk size
+	--	end
+	--end
+	collectgarbage()
 
 	for chunk_x = -chunks_x, chunks_x, 1 do -- chunks_x, chunks_x, 1
 		--chunks[chunk_x] = {}

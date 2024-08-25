@@ -18,4 +18,4 @@ fi
 echo Building "$CURRENTCFG"
 
 cmake -DCMAKE_BUILD_TYPE=$CURRENTCFG .
-cmake --build . -j 6 --parallel 6 --target rungame --config $CURRENTCFG
+cmake --build . -j 6 --parallel 6 --target rungame

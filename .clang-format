@@ -36,7 +36,7 @@ NamespaceIndentation: All
 IndentPPDirectives: AfterHash
 AccessModifierOffset: -4
 # Compact if statements
-AllowShortIfStatementsOnASingleLine: false
+AllowShortIfStatementsOnASingleLine: true
 # Fixes
 FixNamespaceComments: true
 BitFieldColonSpacing: Both

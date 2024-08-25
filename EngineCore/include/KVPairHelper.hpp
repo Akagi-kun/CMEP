@@ -1,9 +1,19 @@
 #pragma once
 
+#include <sstream>
 #include <string>
 
 namespace Engine::Utility
 {
+	inline std::string StreamGetNextToken(std::stringstream& from_sstream)
+	{
+		std::string entry;
+
+		from_sstream >> entry;
+
+		return entry;
+	}
+
 	inline std::pair<std::string, std::string> SplitKVPair(const std::string& from_string, std::string_view delimiter)
 	{
 		// Get position of delimiter in entry

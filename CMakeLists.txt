@@ -2,6 +2,11 @@ cmake_minimum_required(VERSION 3.5)
 project(CMEP)
 
 #enable_testing()
+include(FindVulkan)
+
+if(NOT Vulkan_FOUND)
+	message("Vulkan not found")
+endif()
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
@@ -22,18 +27,6 @@ else()
 		list(APPEND ENGINE_COMPILE_OPTIONS -Wno-nullability -Wno-nullability-completeness)
 	else()
 	endif()
-endif()
-
-if(DEFINED ENV{VULKAN_SDK})
-	if(WIN32)
-		set(ENGINE_VULKAN_LINK_PATH $ENV{VULKAN_SDK}/Lib)
-		set(ENGINE_VULKAN_INCLUDE_PATH $ENV{VULKAN_SDK}/Include)
-	else()
-		set(ENGINE_VULKAN_LINK_PATH $ENV{VULKAN_SDK}/lib)
-		set(ENGINE_VULKAN_INCLUDE_PATH $ENV{VULKAN_SDK}/include)
-	endif()
-else()
-	message("Warning! Vulkan SDK environment variable not found!")
 endif()
 
 # Global compile options

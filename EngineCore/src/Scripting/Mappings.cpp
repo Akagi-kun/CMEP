@@ -39,16 +39,11 @@ namespace Engine::Scripting::Mappings
 			// It can be checked manually against 'lj_obj_typename' symbol
 			static constexpr int cdata_type_id = 10;
 
-			// CMEP_LUACHECK_FN_ARGC(state, 1)
 			int argc = lua_gettop(state);
-
-			// const char* string = lua_tostring(state, 1);
 
 			std::weak_ptr<Logging::Logger> logger = *static_cast<std::weak_ptr<Logging::Logger>*>(
 				lua_touserdata(state, lua_upvalueindex(1))
 			);
-
-			// std::weak_ptr<Logging::Logger> logger = Scripting::API::LuaFactories::MetaLoggerFactory(state);
 
 			if (auto locked_logger = logger.lock())
 			{

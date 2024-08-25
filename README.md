@@ -27,24 +27,31 @@ or
 ```
 ./build.bat <CONFIG>
 ```
+> [!NOTE]
 > Where `<CONFIG>` can be omitted (which builds Debug by default) and if provided is a valid configuration value (Either `Debug` or `Release`, case-sensitive)
 
-Optionally you can also build manually by directly invoking cmake (not recommended):
+Optionally you can also build manually by directly invoking cmake (useful if the build scripts do not work for you):
 ```
 cmake -DCMAKE_BUILD_TYPE=<CONFIG> .
 cmake --build . --target rungame --config <CONFIG>
 ```
-> Note: that although the configuration can be omitted here, it is not recommended as the default depends on build system used
+> [!TIP]
+> It is not necessary to specify *both* CMAKE_BUILD_TYPE (only used by Makefile generators) and --config (only used by multi-config generators), you may instead specify only the one your generator will use
+
+> [!WARNING]
+> By default most generators build the Debug configuration if none is specified, this may not be what you want 
 
 #### Build an example
 
 To build any of the examples, use cmake:
 ```
-cmake .
 cmake --build . --target <examplename>
 ```
+> [!NOTE]
 > Where `<examplename>` is a name of a subdirectory under `./examples/` (e.g. `floppybirb`)
-> Note: examples currently do not use the `--config` syntax and therefore it isn't necessary to provide it
+
+> [!NOTE]
+> Examples do not use the `--config` syntax and therefore it isn't necessary to provide it
 
 #### Running
 To start the engine use the `rungame` executable. This is located under the `./build/` subdirectory if the build is successful. A `./build/game/` directory with valid content is necessary for startup, this can be created by building an example.

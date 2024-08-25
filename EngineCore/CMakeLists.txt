@@ -49,19 +49,16 @@ set(SRC_FILES
 
 if(WIN32)
 	set(STATIC_LIBRARIES
-		vulkan-1
 		glfw3
 		lua51
 		)
 elseif(APPLE)
 	set(STATIC_LIBRARIES
-		vulkan
 		glfw
 		luajit
 		)
 else()
 	set(STATIC_LIBRARIES
-		vulkan
 		glfw
 		luajit
 		)
@@ -73,13 +70,11 @@ add_library(EngineCore SHARED ${SRC_FILES})
 
 target_compile_features(EngineCore PUBLIC cxx_std_17)
 set_target_properties(EngineCore PROPERTIES CXX_STANDARD_REQUIRED ON CXX_EXTENSIONS OFF)
-
 target_compile_options(EngineCore PRIVATE ${ENGINE_COMPILE_OPTIONS})
 
 target_precompile_headers(EngineCore PRIVATE [["ImportVulkan.hpp"]] [["glm/glm.hpp"]] [["EnumStringConvertor.hpp"]] [["lua.hpp"]])
 
 target_link_directories(EngineCore PUBLIC ../build ${ENGINE_VULKAN_LINK_PATH})
-
 target_include_directories(EngineCore PUBLIC include
 											 ../EngineLogging/export_include
 											 ../EngineRenderingVulkan/export_include
@@ -90,7 +85,7 @@ target_include_directories(EngineCore PUBLIC include
 											 ../external/lodepng
 											 ../external/glm
 											 ../common_include
-											 ${ENGINE_VULKAN_INCLUDE_PATH}
+											 ${Vulkan_INCLUDE_DIRS}
 											 )
 
-target_link_libraries(EngineCore ${STATIC_LIBRARIES})
+target_link_libraries(EngineCore ${STATIC_LIBRARIES} Vulkan::Vulkan)

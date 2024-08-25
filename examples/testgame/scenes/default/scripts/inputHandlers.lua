@@ -45,7 +45,7 @@ local forwardVector = function(yaw, pitch)
 	return front_x, front_y, front_z
 end
 
-local keystates = {false, false, false, false, false}
+local keystates = {false, false, false, false, false, false}
 
 -- ON_KEYDOWN event
 -- 
@@ -78,6 +78,9 @@ onKeyDown = function(event)
 	   end,
 	   [340] = function() -- shift key is value 340
 			keystates[5] = true
+	   end,
+	   [string.byte(' ')] = function() -- spacebar can be represented by space
+			keystates[6] = true
 	   end
 	};
 	
@@ -108,6 +111,9 @@ onKeyUp = function(event)
 	   end,
 	   [340] = function() -- shift key is value 340
 			keystates[5] = false
+	   end,
+	   [string.byte(' ')] = function() -- spacebar can be represented by space
+			keystates[6] = false
 	   end
 	};
 
@@ -163,10 +169,15 @@ onMovementTick = function(event)
 			transform_x = transform_x - up_x * moveSpeed;
 			transform_y = transform_y - up_y * moveSpeed;
 			transform_z = transform_z - up_z * moveSpeed;
+	   end,
+	   function() -- up
+			transform_x = transform_x + up_x * moveSpeed;
+			transform_y = transform_y + up_y * moveSpeed;
+			transform_z = transform_z + up_z * moveSpeed;
 	   end
 	};
 	
-	for i = 1, 5 do
+	for i = 1, #keycodeSwitchTbl do
 		if keystates[i] == true then
 			keycodeSwitchTbl[i]();
 

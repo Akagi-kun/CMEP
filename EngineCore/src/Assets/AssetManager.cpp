@@ -43,7 +43,7 @@ namespace Engine
 #pragma region Adding Assets
 	void AssetManager::AddTexture(
 		const std::string& name,
-		const std::string& path,
+		const std::filesystem::path& path,
 		Rendering::Texture_InitFiletype filetype,
 		vk::Filter filtering,
 		vk::SamplerAddressMode address_mode
@@ -61,7 +61,7 @@ namespace Engine
 		);
 	}
 
-	void AssetManager::AddFont(const std::string& name, const std::string& path)
+	void AssetManager::AddFont(const std::string& name, const std::filesystem::path& path)
 	{
 		std::shared_ptr<Rendering::Font> font = this->font_factory->InitBMFont(path);
 		this->fonts.emplace(name, std::move(font));

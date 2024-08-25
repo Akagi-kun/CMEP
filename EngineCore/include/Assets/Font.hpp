@@ -13,15 +13,17 @@ namespace Engine
 
 		struct FontChar
 		{
-			int x;
-			int y;
-			int width;
-			int height;
-			int xoffset;
-			int yoffset;
-			int xadvance;
-			int page;
-			int channel;
+			using value_t = int;
+
+			value_t x;
+			value_t y;
+			value_t width;
+			value_t height;
+			value_t xoffset;
+			value_t yoffset;
+			value_t xadvance;
+			value_t page;
+			value_t channel;
 		};
 
 		struct FontData
