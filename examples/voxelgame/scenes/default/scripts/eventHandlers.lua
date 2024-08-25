@@ -346,14 +346,6 @@ onInit = function(event)
 	object1:SetSize(24, 24, 1.0)
 	scene:AddObject("_debug_info2", object1)
 
-	--local object3 = engine.CreateSceneObject(asset_manager, "renderer_3d/sprite", "sprite", {
-	--	{"texture", "sprite0"}
-	--})
-	--object3:SetPosition(-2.0, 1.0, 0.0)
-	--object3:SetSize(1, 1, 1)
-	--object3:SetRotation(0, -100, 180)
-	--scene:AddObject("test3dsprite", object3)
-
 	print("Generating chunks...")
 	generate_chunk(0, 0)
 	--for chunk_x = -chunks_x, chunks_x, 1 do

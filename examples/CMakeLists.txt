@@ -58,4 +58,4 @@ function(add_example_directory VAR_DIRECTORY)
 endfunction()
 
 add_example_directory(floppybirb)
-add_example_directory(testgame)
+add_example_directory(voxelgame)
