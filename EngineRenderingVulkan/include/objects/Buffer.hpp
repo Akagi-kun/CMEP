@@ -1,11 +1,12 @@
 #pragma once
 
-#include "ImportVulkan.hpp"
+#include "fwd.hpp"
+
 #include "backend/MemoryAllocator.hpp"
 #include "common/HoldsVMA.hpp"
 #include "common/InstanceOwned.hpp"
 #include "common/StructDefs.hpp"
-#include "fwd.hpp"
+#include "vulkan/vulkan_raii.hpp"
 
 #include <cstring>
 #include <vector>

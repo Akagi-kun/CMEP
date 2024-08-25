@@ -21,14 +21,6 @@ namespace Engine
 
 	class AssetManager final : public InternalEngineObject
 	{
-	private:
-		std::unordered_map<std::string, std::shared_ptr<Scripting::ILuaScript>> luascripts;
-		std::unordered_map<std::string, std::shared_ptr<Rendering::Texture>> textures;
-		std::unordered_map<std::string, std::shared_ptr<Rendering::Font>> fonts;
-
-		std::unique_ptr<Factories::FontFactory> font_factory;
-		std::unique_ptr<Factories::TextureFactory> texture_factory;
-
 	public:
 		Scripting::LuaScriptExecutor* lua_executor{};
 
@@ -49,5 +41,21 @@ namespace Engine
 		std::shared_ptr<Rendering::Texture> GetTexture(const std::string& name);
 		std::shared_ptr<Rendering::Font> GetFont(const std::string& name);
 		std::shared_ptr<Scripting::ILuaScript> GetLuaScript(const std::string& name);
+
+	private:
+		struct
+		{
+			// Offset initial values so that they don't match up
+			uint_least32_t script  = 0;
+			uint_least32_t font	   = std::numeric_limits<uint_least32_t>::max() / 3;
+			uint_least32_t texture = std::numeric_limits<uint_least32_t>::max() / 3 * 2;
+		} last_uid;
+
+		std::unordered_map<std::string, std::shared_ptr<Scripting::ILuaScript>> luascripts;
+		std::unordered_map<std::string, std::shared_ptr<Rendering::Texture>> textures;
+		std::unordered_map<std::string, std::shared_ptr<Rendering::Font>> fonts;
+
+		std::unique_ptr<Factories::FontFactory> font_factory;
+		std::unique_ptr<Factories::TextureFactory> texture_factory;
 	};
 } // namespace Engine

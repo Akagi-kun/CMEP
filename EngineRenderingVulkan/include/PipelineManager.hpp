@@ -2,8 +2,6 @@
 
 #include "fwd.hpp"
 
-#include "Rendering/SupplyData.hpp"
-
 #include "Logging/Logging.hpp"
 
 #include "common/InstanceOwned.hpp"
@@ -18,17 +16,6 @@ namespace Engine::Rendering::Vulkan
 {
 	struct PipelineUserRef;
 
-	struct ExtendedPipelineSettings
-	{
-		PipelineSettings short_setting;
-
-		std::vector<RendererSupplyData> supply_data;
-
-		ExtendedPipelineSettings(PipelineSettings from_setting) : short_setting(std::move(from_setting))
-		{
-		}
-	};
-
 	class PipelineManager final : public Logging::SupportsLogging, public InstanceOwned
 	{
 	public:
@@ -39,13 +26,13 @@ namespace Engine::Rendering::Vulkan
 		);
 		~PipelineManager();
 
-		PipelineUserRef* GetPipeline(const ExtendedPipelineSettings& with_settings);
+		PipelineUserRef* GetPipeline(const PipelineSettings& with_settings);
 
 	private:
 		std::filesystem::path shader_path;
-		std::vector<std::pair<ExtendedPipelineSettings, Pipeline*>> pipelines;
+		std::vector<std::pair<PipelineSettings, Pipeline*>> pipelines;
 
-		std::pair<Pipeline*, std::string_view> FindPipeline(const ExtendedPipelineSettings& with_settings);
+		std::pair<Pipeline*, std::string_view> FindPipeline(const PipelineSettings& with_settings);
 	};
 
 	struct PipelineUserRef final : public InstanceOwned

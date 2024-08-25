@@ -1,10 +1,10 @@
 #pragma once
 
-#include "ImportVulkan.hpp"
 #include "common/HoldsVMA.hpp"
 #include "common/InstanceOwned.hpp"
 #include "common/StructDefs.hpp"
 #include "rendering/PipelineSettings.hpp"
+#include "vulkan/vulkan_raii.hpp"
 
 #include <filesystem>
 

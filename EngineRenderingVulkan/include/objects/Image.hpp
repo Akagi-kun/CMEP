@@ -4,13 +4,14 @@
 
 #include "Rendering/Transform.hpp"
 
-#include "ImportVulkan.hpp"
 #include "backend/MemoryAllocator.hpp"
 #include "common/HandleWrapper.hpp"
 #include "common/HoldsVMA.hpp"
 #include "common/InstanceOwned.hpp"
+#include "vulkan/vulkan_raii.hpp"
 
 #include <cassert>
+
 
 namespace Engine::Rendering::Vulkan
 {
@@ -35,17 +36,9 @@ namespace Engine::Rendering::Vulkan
 			return size;
 		}
 
-		/* void AddImageView(vk::ImageAspectFlags with_aspect_flags = vk::ImageAspectFlagBits::eColor);
-
-		[[nodiscard]] vk::raii::ImageView* GetNativeViewHandle()
-		{
-			return native_view_handle;
-		} */
-
 	protected:
 		vk::ImageLayout current_layout = vk::ImageLayout::eUndefined;
 		vk::Format image_format		   = vk::Format::eUndefined;
-		// vk::raii::ImageView* native_view_handle;
 
 		ImageSize size{};
 

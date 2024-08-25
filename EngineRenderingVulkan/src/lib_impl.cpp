@@ -1,7 +1,7 @@
 // Provides a source file for once-per-project instantiation of libraries
 
 // Provide storage for the dynamic dispatcher
-#include "ImportVulkan.hpp"
+#include "vulkan/vulkan.hpp"
 VULKAN_HPP_DEFAULT_DISPATCH_LOADER_DYNAMIC_STORAGE;
 
 // Uncomment this to log all allocations to stdout

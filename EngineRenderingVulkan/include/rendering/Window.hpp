@@ -4,12 +4,13 @@
 
 #include "Rendering/Transform.hpp"
 
-#include "ImportVulkan.hpp"
 #include "Surface.hpp"
 #include "common/HandleWrapper.hpp"
 #include "common/InstanceOwned.hpp"
+#include "vulkan/vulkan_raii.hpp"
 
 #include <functional>
+
 
 // Include GLFW
 #define GLFW_INCLUDE_NONE

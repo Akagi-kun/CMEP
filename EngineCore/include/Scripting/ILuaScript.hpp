@@ -1,6 +1,7 @@
 #pragma once
 
 #include "InternalEngineObject.hpp"
+#include "assets/Asset.hpp"
 #include "lua.hpp"
 
 #include <filesystem>
@@ -20,7 +21,7 @@ namespace Engine::Scripting
 	std::string UnwindStack(lua_State* of_state);
 	int LuaErrorHandler(lua_State* state);
 
-	class ILuaScript : public InternalEngineObject
+	class ILuaScript : public InternalEngineObject, public Asset
 	{
 	public:
 		ILuaScript(Engine* with_engine, std::filesystem::path with_path, bool with_enable_profiling = false);

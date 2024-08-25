@@ -6,14 +6,15 @@
 
 #include "Logging/Logging.hpp"
 
-#include "ImportVulkan.hpp"
 #include "backend/LogicalDevice.hpp"
 #include "backend/MemoryAllocator.hpp"
 #include "backend/PhysicalDevice.hpp"
 #include "common/HandleWrapper.hpp"
 #include "rendering/Window.hpp"
+#include "vulkan/vulkan_raii.hpp"
 
 #include <vector>
+
 
 namespace Engine::Rendering::Vulkan
 {

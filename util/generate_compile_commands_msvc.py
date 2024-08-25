@@ -128,7 +128,7 @@ if __name__ == '__main__':
 	output_path = './'
 	root_path = Path().absolute()
 
-	print(f"Generating cmake-tidy files at '{output_path}' from projects at '{vs_project_path}'")
+	print(f"Generating compile_commands.json at '{output_path}' from projects at '{vs_project_path}'")
 	print(f"- Root is '{str(root_path)}'")
 
 	default_includes = get_default_includes()

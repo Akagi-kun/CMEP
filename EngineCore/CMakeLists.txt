@@ -72,7 +72,7 @@ target_compile_features(EngineCore PUBLIC cxx_std_17)
 set_target_properties(EngineCore PROPERTIES CXX_STANDARD_REQUIRED ON CXX_EXTENSIONS OFF)
 target_compile_options(EngineCore PRIVATE ${ENGINE_COMPILE_OPTIONS})
 
-target_precompile_headers(EngineCore PRIVATE [["ImportVulkan.hpp"]] [["glm/glm.hpp"]] [["EnumStringConvertor.hpp"]] [["lua.hpp"]])
+target_precompile_headers(EngineCore PRIVATE [["vulkan/vulkan.hpp"]] [["glm/glm.hpp"]] [["EnumStringConvertor.hpp"]] [["lua.hpp"]])
 
 target_link_directories(EngineCore PUBLIC ../build ${ENGINE_VULKAN_LINK_PATH})
 target_include_directories(EngineCore PUBLIC include

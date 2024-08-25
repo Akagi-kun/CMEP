@@ -7,7 +7,7 @@
 #include "Rendering/framework.hpp"
 
 #include "Engine.hpp"
-#include "ImportVulkan.hpp"
+#include "vulkan/vulkan.hpp"
 
 namespace Engine::Rendering
 {
@@ -20,12 +20,15 @@ namespace Engine::Rendering
 		settings =
 			{instance->GetWindow()->GetSwapchain()->GetExtent(), pipeline_name, mesh_builder->GetSupportedTopology()};
 
-		settings.descriptor_layout_settings.push_back(Vulkan::DescriptorLayoutSettings{
+		settings.descriptor_settings.emplace(
 			1,
-			1,
-			vk::DescriptorType::eCombinedImageSampler,
-			vk::ShaderStageFlagBits::eFragment
-		});
+			Vulkan::DescriptorBindingSetting{
+				1,
+				vk::DescriptorType::eCombinedImageSampler,
+				vk::ShaderStageFlagBits::eFragment,
+				{} // TODO: Use opt_bindname
+			}
+		);
 	}
 
 	IRenderer::~IRenderer()
@@ -73,13 +76,16 @@ namespace Engine::Rendering
 	{
 		has_updated_descriptors = true;
 
-		auto extended_settings = Vulkan::ExtendedPipelineSettings{settings};
+		// auto extended_settings = Vulkan::ExtendedPipelineSettings{settings};
+
 		if (texture)
 		{
-			extended_settings.supply_data.emplace_back(RendererSupplyDataType::TEXTURE, texture);
+			settings.descriptor_settings[1].opt_match_hash = std::hash<Asset>{}(*texture);
+			// extended_settings.short_setting.descriptor_settings[1].opt_match_hash = std::hash<Asset>{}(*texture);
+			//  extended_settings.supply_data.emplace_back(RendererSupplyDataType::TEXTURE, texture);
 		}
 
-		pipeline = pipeline_manager->GetPipeline(extended_settings);
+		pipeline = pipeline_manager->GetPipeline(settings);
 
 		if (texture)
 		{

@@ -35,5 +35,5 @@ namespace Engine::Rendering::Vulkan
 	class Pipeline;
 
 	class ShaderModule;
-	struct PipelineSettings;
+	struct PipelineSettingsN;
 } // namespace Engine::Rendering::Vulkan

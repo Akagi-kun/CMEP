@@ -16,17 +16,17 @@ namespace Engine
 {
 	AssetManager::AssetManager(Engine* with_engine) : InternalEngineObject(with_engine)
 	{
-		this->font_factory	  = std::make_unique<Factories::FontFactory>(with_engine);
-		this->texture_factory = std::make_unique<Factories::TextureFactory>(with_engine);
+		font_factory	= std::make_unique<Factories::FontFactory>(with_engine);
+		texture_factory = std::make_unique<Factories::TextureFactory>(with_engine);
 	}
 
 	AssetManager::~AssetManager()
 	{
 		this->logger->SimpleLog(Logging::LogLevel::Info, LOGPFX_CURRENT "Destructor called");
 
-		this->fonts.clear();
+		fonts.clear();
 
-		for (auto& texture : this->textures)
+		for (auto& texture : textures)
 		{
 			this->logger->SimpleLog(
 				Logging::LogLevel::Debug3,
@@ -37,7 +37,7 @@ namespace Engine
 			texture.second.reset();
 		}
 
-		this->textures.clear();
+		textures.clear();
 	}
 
 #pragma region Adding Assets
@@ -50,9 +50,11 @@ namespace Engine
 	)
 	{
 		std::shared_ptr<Rendering::Texture> texture =
-			this->texture_factory->InitFile(path, filetype, filtering, address_mode);
+			texture_factory->InitFile(path, filetype, filtering, address_mode);
 
-		this->textures.emplace(name, texture);
+		texture->AssignUID(last_uid.texture++);
+
+		textures.emplace(name, texture);
 		this->logger->SimpleLog(
 			Logging::LogLevel::Debug2,
 			LOGPFX_CURRENT "Added texture '%s' as '%s'",
@@ -63,13 +65,16 @@ namespace Engine
 
 	void AssetManager::AddFont(const std::string& name, const std::filesystem::path& path)
 	{
-		std::shared_ptr<Rendering::Font> font = this->font_factory->InitBMFont(path);
-		this->fonts.emplace(name, std::move(font));
+		std::shared_ptr<Rendering::Font> font = font_factory->InitBMFont(path);
+		font->AssignUID(last_uid.font++);
+
+		fonts.emplace(name, std::move(font));
 	}
 
 	void AssetManager::AddLuaScript(const std::string& name, const std::shared_ptr<Scripting::ILuaScript>& script)
 	{
-		this->luascripts.emplace(name, script);
+		script->AssignUID(last_uid.script++);
+		luascripts.emplace(name, script);
 	}
 
 #pragma endregion
@@ -77,9 +82,9 @@ namespace Engine
 #pragma region Getting Assets
 	std::shared_ptr<Rendering::Texture> AssetManager::GetTexture(const std::string& name)
 	{
-		if (this->textures.find(name) != this->textures.end())
+		if (textures.find(name) != textures.end())
 		{
-			return this->textures.at(name);
+			return textures.at(name);
 		}
 
 		this->logger->SimpleLog(Logging::LogLevel::Error, LOGPFX_CURRENT "Texture asset '%s' not found", name.c_str());
@@ -89,9 +94,9 @@ namespace Engine
 
 	std::shared_ptr<Rendering::Font> AssetManager::GetFont(const std::string& name)
 	{
-		if (this->fonts.find(name) != this->fonts.end())
+		if (fonts.find(name) != fonts.end())
 		{
-			return this->fonts.at(name);
+			return fonts.at(name);
 		}
 
 		this->logger->SimpleLog(Logging::LogLevel::Error, LOGPFX_CURRENT "Font asset '%s' not found", name.c_str());
@@ -101,9 +106,9 @@ namespace Engine
 
 	std::shared_ptr<Scripting::ILuaScript> AssetManager::GetLuaScript(const std::string& name)
 	{
-		if (this->luascripts.find(name) != this->luascripts.end())
+		if (luascripts.find(name) != luascripts.end())
 		{
-			return this->luascripts.at(name);
+			return luascripts.at(name);
 		}
 
 		this->logger

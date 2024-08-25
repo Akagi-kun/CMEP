@@ -4,10 +4,11 @@
 
 #include "Rendering/Transform.hpp"
 
-#include "ImportVulkan.hpp"
 #include "backend/LogicalDevice.hpp"
 #include "common/InstanceOwned.hpp"
 #include "objects/Image.hpp"
+#include "vulkan/vulkan_raii.hpp"
+
 
 namespace Engine::Rendering::Vulkan
 {

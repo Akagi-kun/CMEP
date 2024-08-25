@@ -1,7 +1,7 @@
 #pragma once
 
 #include "IMeshBuilder.hpp"
-#include "ImportVulkan.hpp"
+#include "vulkan/vulkan_raii.hpp"
 
 namespace Engine::Rendering
 {

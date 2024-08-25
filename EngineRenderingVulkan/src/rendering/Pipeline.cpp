@@ -1,11 +1,11 @@
 #include "rendering/Pipeline.hpp"
 
-#include "ImportVulkan.hpp"
 #include "backend/Instance.hpp"
 #include "backend/LogicalDevice.hpp"
 #include "objects/Buffer.hpp"
 #include "rendering/RenderPass.hpp"
 #include "rendering/ShaderModule.hpp"
+#include "vulkan/vulkan_raii.hpp"
 
 #include <string>
 
@@ -63,17 +63,18 @@ namespace Engine::Rendering::Vulkan
 		// Create Vulkan Descriptor Set Layout
 
 		// Binding 0 of vertex shader always must be uniform buffer
-		settings.descriptor_layout_settings.push_back(
-			DescriptorLayoutSettings{0, 1, vk::DescriptorType::eUniformBuffer, vk::ShaderStageFlagBits::eVertex}
+		settings.descriptor_settings.emplace(
+			0,
+			DescriptorBindingSetting{1, vk::DescriptorType::eUniformBuffer, vk::ShaderStageFlagBits::eVertex, {}}
 		);
 
 		std::vector<vk::DescriptorSetLayoutBinding> bindings  = {};
 		std::vector<vk::DescriptorBindingFlags> binding_flags = {};
 
-		for (auto& setting : settings.descriptor_layout_settings)
+		for (const auto& [binding_idx, setting] : settings.descriptor_settings)
 		{
 			vk::DescriptorSetLayoutBinding
-				new_binding(setting.binding, setting.type, setting.descriptor_count, setting.stage_flags, {});
+				new_binding(binding_idx, setting.type, setting.descriptor_count, setting.stage_flags, {});
 
 			bindings.push_back(new_binding);
 
@@ -97,8 +98,10 @@ namespace Engine::Rendering::Vulkan
 		/************************************/
 		// Create Graphics Pipeline
 
-		vk::PipelineViewportStateCreateInfo
-			viewport_state({}, 1, PipelineSettings::GetViewportSettings(settings.extent), 1, &settings.scissor, {});
+		// Make local copy of viewport settings
+		const auto viewport_settings = PipelineSettings::GetViewportSettings(settings.extent);
+
+		vk::PipelineViewportStateCreateInfo viewport_state({}, 1, &viewport_settings, 1, &settings.scissor, {});
 
 		// Make local copy of input assembly
 		const auto input_assembly = PipelineSettings::GetInputAssemblySettings(settings.input_topology);
@@ -127,13 +130,10 @@ namespace Engine::Rendering::Vulkan
 		/************************************/
 		// Create Descriptor Pool Sizes
 
-		pool_sizes.resize(settings.descriptor_layout_settings.size());
-		for (size_t i = 0; i < settings.descriptor_layout_settings.size(); i++)
+		pool_sizes.resize(settings.descriptor_settings.size());
+		for (const auto& [binding, setting] : settings.descriptor_settings)
 		{
-			pool_sizes[i] = vk::DescriptorPoolSize(
-				settings.descriptor_layout_settings[i].type,
-				settings.descriptor_layout_settings[i].descriptor_count * max_frames_in_flight
-			);
+			pool_sizes[binding] = vk::DescriptorPoolSize(setting.type, setting.descriptor_count * max_frames_in_flight);
 		}
 
 		/************************************/

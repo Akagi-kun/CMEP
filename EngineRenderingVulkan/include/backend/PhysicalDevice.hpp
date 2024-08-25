@@ -1,13 +1,14 @@
 #pragma once
 
-#include "ImportVulkan.hpp"
 #include "common/StructDefs.hpp"
 #include "rendering/Surface.hpp"
+#include "vulkan/vulkan_raii.hpp"
 
 #include <optional>
 #include <string>
 #include <utility>
 #include <vector>
+
 
 namespace Engine::Rendering::Vulkan
 {

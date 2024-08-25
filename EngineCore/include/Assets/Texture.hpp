@@ -3,6 +3,7 @@
 #include "Rendering/Transform.hpp"
 #include "Rendering/Vulkan/exports.hpp"
 
+#include "Asset.hpp"
 #include "InternalEngineObject.hpp"
 
 #include <memory>
@@ -27,7 +28,7 @@ namespace Engine::Rendering
 		Vulkan::SampledImage<Vulkan::ViewedImage>* texture_image = nullptr;
 	};
 
-	class Texture final : public InternalEngineObject
+	class Texture final : public InternalEngineObject, public Asset
 	{
 	public:
 		Texture(Engine* with_engine, std::unique_ptr<TextureData> init_data);
@@ -38,11 +39,6 @@ namespace Engine::Rendering
 		[[nodiscard]] ImageSize GetSize() const
 		{
 			return data->size;
-		}
-
-		[[nodiscard]] std::vector<unsigned char>& GetData() const
-		{
-			return data->data;
 		}
 
 		[[nodiscard]] auto& GetTextureImage() const
@@ -60,3 +56,16 @@ namespace Engine::Rendering
 	};
 
 } // namespace Engine::Rendering
+
+/* namespace std
+{
+	// Specialize std::hash for Texture
+	template <> struct hash<Engine::Rendering::Texture>
+	{
+		size_t operator()(const Engine::Rendering::Texture& obj)
+		{
+			return 0;
+		}
+	};
+} // namespace std
+ */

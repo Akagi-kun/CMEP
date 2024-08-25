@@ -1,20 +1,33 @@
 #pragma once
 
-#include "ImportVulkan.hpp"
+#include "vulkan/vulkan.hpp"
+
+#include <map>
+#include <optional>
 
 namespace Engine::Rendering::Vulkan
 {
-	struct DescriptorLayoutSettings
+	struct DescriptorBindingSetting
 	{
-		uint32_t binding;
 		uint32_t descriptor_count;
 		vk::DescriptorType type;
 		vk::ShaderStageFlags stage_flags;
 
-		bool operator==(const DescriptorLayoutSettings& other) const
+		// Specify this only if this binding has some identifiable information
+		// that should be used in operator== to compare with other settings
+		// if .has_value() is false, this hash will be ignored
+		std::optional<size_t> opt_match_hash;
+
+		bool operator==(const DescriptorBindingSetting& other) const
 		{
-			return (binding == other.binding) && (descriptor_count == other.descriptor_count) && (type == other.type) &&
-				   (stage_flags == other.stage_flags);
+			bool opt_match = true;
+			if (opt_match_hash.has_value() && other.opt_match_hash.has_value())
+			{
+				opt_match = (opt_match_hash.value() == other.opt_match_hash.value());
+			}
+
+			return /* (binding == other.binding) && */ (descriptor_count == other.descriptor_count) &&
+				   (type == other.type) && (stage_flags == other.stage_flags) && opt_match;
 		}
 	};
 
@@ -24,7 +37,8 @@ namespace Engine::Rendering::Vulkan
 		vk::Extent2D extent;
 		std::string shader;
 		vk::Rect2D scissor;
-		std::vector<DescriptorLayoutSettings> descriptor_layout_settings;
+		// maps binding->setting
+		std::map<uint32_t, DescriptorBindingSetting> descriptor_settings;
 
 		PipelineSettings() = default;
 		PipelineSettings(
@@ -51,16 +65,16 @@ namespace Engine::Rendering::Vulkan
 								 (scissor.offset.y == other.scissor.offset.y);
 
 			// If this results in false, the final value will also have to be false
-			bool settings_match = descriptor_layout_settings.size() == other.descriptor_layout_settings.size();
+			bool settings_match = descriptor_settings.size() == other.descriptor_settings.size();
 
 			// O(pow(N, 2))
-			for (const auto& setting : descriptor_layout_settings)
+			for (const auto& [binding, setting] : descriptor_settings)
 			{
 				// Check every value of other for a match of value in this
 				bool tmp_bool = false;
-				for (const auto& other_setting : other.descriptor_layout_settings)
+				for (const auto& [other_binding, other_setting] : other.descriptor_settings)
 				{
-					if (setting == other_setting)
+					if (binding == other_binding && setting == other_setting)
 					{
 						tmp_bool = true;
 						break;
@@ -92,12 +106,12 @@ namespace Engine::Rendering::Vulkan
 			return input_assembly;
 		}
 
-		static const vk::Viewport* GetViewportSettings(vk::Extent2D extent)
+		static vk::Viewport GetViewportSettings(vk::Extent2D extent)
 		{
-			static vk::Viewport
+			vk::Viewport
 				viewport(0.f, 0.f, static_cast<float>(extent.width), static_cast<float>(extent.height), 0.f, 1.f);
 
-			return &viewport;
+			return viewport;
 		}
 
 		static const vk::PipelineRasterizationStateCreateInfo* GetRasterizerSettings()

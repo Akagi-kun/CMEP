@@ -48,7 +48,7 @@ set_target_properties(EngineRenderingVulkan PROPERTIES CXX_STANDARD_REQUIRED ON 
 target_compile_definitions(EngineRenderingVulkan PRIVATE VULKAN_HPP_DISPATCH_LOADER_DYNAMIC=1)
 target_compile_options(EngineRenderingVulkan PRIVATE ${ENGINE_COMPILE_OPTIONS})
 
-target_precompile_headers(EngineRenderingVulkan PRIVATE [["ImportVulkan.hpp"]])
+target_precompile_headers(EngineRenderingVulkan PRIVATE [["vulkan/vulkan.hpp"]] [["vulkan/vulkan_raii.hpp"]])
 
 target_link_directories(EngineRenderingVulkan PUBLIC ../build ${ENGINE_VULKAN_LINK_PATH})
 target_include_directories(EngineRenderingVulkan PUBLIC include

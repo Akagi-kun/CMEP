@@ -32,7 +32,7 @@ namespace Engine::Rendering::Vulkan
 		pipelines.clear();
 	}
 
-	PipelineUserRef* PipelineManager::GetPipeline(const ExtendedPipelineSettings& with_settings)
+	PipelineUserRef* PipelineManager::GetPipeline(const PipelineSettings& with_settings)
 	{
 		Pipeline* pipeline = nullptr;
 		std::string_view reason;
@@ -57,7 +57,7 @@ namespace Engine::Rendering::Vulkan
 		pipeline = new Vulkan::Pipeline(
 			instance,
 			instance->GetWindow()->GetSwapchain()->GetRenderPass(),
-			with_settings.short_setting,
+			with_settings,
 			shader_path
 		);
 
@@ -102,22 +102,17 @@ namespace Engine::Rendering::Vulkan
 #pragma region Private
 
 	// string_view is guaranteed to be null-terminated
-	std::pair<Pipeline*, std::string_view> PipelineManager::FindPipeline(const ExtendedPipelineSettings& with_settings)
+	std::pair<Pipeline*, std::string_view> PipelineManager::FindPipeline(const PipelineSettings& with_settings)
 	{
-		std::string_view reasons[] = {"no setting match", "setting match, no supply data match"};
+		std::string_view reasons[] = {"no setting match"};
 		int reached_point		   = 0;
 
 		// O(N)
 		for (const auto& [settings, pipeline_ptr] : this->pipelines)
 		{
-			if (settings.short_setting == with_settings.short_setting)
+			if (settings == with_settings)
 			{
-				if (settings.supply_data == with_settings.supply_data)
-				{
-					return {pipeline_ptr, {}};
-				}
-
-				reached_point = 1;
+				return {pipeline_ptr, {}};
 			}
 		}
 

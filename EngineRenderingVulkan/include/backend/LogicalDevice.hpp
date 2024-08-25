@@ -1,8 +1,9 @@
 #pragma once
 
-#include "ImportVulkan.hpp"
 #include "common/InstanceOwned.hpp"
 #include "common/StructDefs.hpp"
+#include "vulkan/vulkan_raii.hpp"
+
 
 namespace Engine::Rendering::Vulkan
 {
