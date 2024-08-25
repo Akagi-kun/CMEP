@@ -1,7 +1,8 @@
 #pragma once
 
+#include "Assets/Asset.hpp"
+
 #include "InternalEngineObject.hpp"
-#include "assets/Asset.hpp"
 #include "lua.hpp"
 
 #include <filesystem>
