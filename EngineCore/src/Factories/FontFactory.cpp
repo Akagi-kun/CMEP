@@ -1,6 +1,8 @@
 #include "Factories/FontFactory.hpp"
 
 #include "Assets/AssetManager.hpp"
+#include "Assets/Font.hpp"
+#include "Assets/Texture.hpp"
 
 #include "Logging/Logging.hpp"
 
@@ -8,100 +10,38 @@
 #include "Exception.hpp"
 #include "KVPairHelper.hpp"
 
+#include <array>
+#include <cassert>
+#include <cstddef>
 #include <cstring>
+#include <exception>
 #include <filesystem>
 #include <fstream>
+#include <memory>
 #include <sstream>
+#include <stdexcept>
+#include <string>
+#include <tuple>
 #include <unordered_map>
+#include <utility>
 
 // Prefixes for logging messages
 #define LOGPFX_CURRENT LOGPFX_CLASS_FONT_FACTORY
-#include "Logging/LoggingPrefix.hpp" // IWYU pragma: keep
+#include "Logging/LoggingPrefix.hpp"
 
 namespace Engine::Factories
 {
-#pragma region Public
-	std::shared_ptr<Rendering::Font> FontFactory::InitBMFont(const std::filesystem::path& font_path)
-	{
-		std::shared_ptr<Rendering::Font> font = std::make_shared<Rendering::Font>(this->owner_engine);
-
-		std::ifstream font_file(font_path);
-
-		if (!font_file.is_open())
-		{
-			this->logger->SimpleLog(
-				Logging::LogLevel::Error,
-				LOGPFX_CURRENT "FontFile %s unexpectedly not open",
-				font_path.c_str()
-			);
-			return nullptr;
-		}
-
-		this->logger->SimpleLog(Logging::LogLevel::Debug2, LOGPFX_CURRENT "Loading file %s", font_path.c_str());
-
-		std::unique_ptr<Rendering::FontData> font_data = std::make_unique<Rendering::FontData>();
-		this->ParseBmfont(font_data, font_file);
-
-		this->logger
-			->SimpleLog(Logging::LogLevel::Debug1, LOGPFX_CURRENT "File %s loaded successfully", font_path.c_str());
-
-		font_file.close();
-
-		font->Init(std::move(font_data));
-
-		return font;
-	}
+#pragma region Static
 
 	static std::tuple<std::string, std::string> GetNextKVPair(std::stringstream& from_stream)
 	{
 		return Utility::SplitKVPair(Utility::StreamGetNextToken(from_stream), "=");
 	}
 
-#pragma region Private
-
-	void FontFactory::ParseBmfont(std::unique_ptr<Rendering::FontData>& font, std::ifstream& font_file)
-	{
-		static constexpr size_t buffer_size = 255;
-		std::array<char, buffer_size> data{};
-
-		while (!font_file.eof())
-		{
-			data.fill(0);
-
-			// Get a line from file
-			font_file.getline(data.data(), data.size());
-
-			std::stringstream line_data(data.data());
-
-			// parse line
-			while (!line_data.eof())
-			{
-				std::string line_type_str;
-				line_data >> line_type_str;
-
-				static const std::unordered_map<std::string, BmFontLineType> entry_type_val = {
-					{"info", BmFontLineType::INFO},
-					{"char", BmFontLineType::CHAR},
-					{"common", BmFontLineType::COMMON},
-					{"page", BmFontLineType::PAGE},
-					{"chars", BmFontLineType::CHARS},
-				};
-
-				auto result = entry_type_val.find(line_type_str);
-
-				if (result != entry_type_val.end())
-				{
-					// Read in the rest of the line
-					std::stringstream line_remainder;
-					line_data >> line_remainder.rdbuf();
-
-					this->ParseBmfontLine(font, result->second, line_remainder);
-				}
-			}
-		}
-	}
-
-	static void ParseBmfontEntryChar(std::unique_ptr<Rendering::FontData>& font, std::stringstream& line_stream)
+	static void ParseBmfontEntryChar(
+		std::unique_ptr<Rendering::FontData>& font,
+		std::stringstream& line_stream
+	)
 	{
 		// When reading the code in this function,
 		// take care to not die from pain as you see the horrible code I have written here.
@@ -153,7 +93,108 @@ namespace Engine::Factories
 		font->chars.emplace(fchar_id, fchar);
 	}
 
-	void FontFactory::ParseBmfontEntryPage(std::unique_ptr<Rendering::FontData>& font, std::stringstream& line_stream)
+#pragma endregion
+
+#pragma region Public
+	std::shared_ptr<Rendering::Font> FontFactory::CreateFont(
+		const std::filesystem::path& font_path,
+		const pageload_callback_t& opt_callback
+	)
+	{
+		std::shared_ptr<Rendering::Font> font = std::make_shared<Rendering::Font>(owner_engine);
+
+		std::ifstream font_file(font_path);
+
+		if (!font_file.is_open())
+		{
+			this->logger->SimpleLog(
+				Logging::LogLevel::Error,
+				LOGPFX_CURRENT "FontFile %s unexpectedly not open",
+				font_path.c_str()
+			);
+			return nullptr;
+		}
+
+		this->logger->SimpleLog(
+			Logging::LogLevel::Debug2,
+			LOGPFX_CURRENT "Loading file %s",
+			font_path.c_str()
+		);
+
+		std::unique_ptr<Rendering::FontData> font_data =
+			ParseBmfont(font_path, font_file, opt_callback);
+
+		this->logger->SimpleLog(
+			Logging::LogLevel::Debug1,
+			LOGPFX_CURRENT "File %s loaded successfully",
+			font_path.c_str()
+		);
+
+		font_file.close();
+
+		font->Init(std::move(font_data));
+
+		return font;
+	}
+
+#pragma region Private
+
+	std::unique_ptr<Rendering::FontData> FontFactory::ParseBmfont(
+		const std::filesystem::path& font_path,
+		std::ifstream& font_file,
+		const pageload_callback_t& pageload_cb
+	)
+	{
+		std::unique_ptr<Rendering::FontData> font = std::make_unique<Rendering::FontData>();
+
+		static constexpr size_t buffer_size = 255;
+		std::array<char, buffer_size> data{};
+
+		while (!font_file.eof())
+		{
+			data.fill(0);
+
+			// Get a line from file
+			font_file.getline(data.data(), data.size());
+
+			std::stringstream line_data(data.data());
+
+			// parse line
+			while (!line_data.eof())
+			{
+				std::string line_type_str;
+				line_data >> line_type_str;
+
+				static const std::unordered_map<std::string, BmFontLineType> entry_type_val = {
+					{"info", BmFontLineType::INFO},
+					{"char", BmFontLineType::CHAR},
+					{"common", BmFontLineType::COMMON},
+					{"page", BmFontLineType::PAGE},
+					{"chars", BmFontLineType::CHARS},
+				};
+
+				auto result = entry_type_val.find(line_type_str);
+
+				if (result != entry_type_val.end())
+				{
+					// Read in the rest of the line
+					std::stringstream line_remainder;
+					line_data >> line_remainder.rdbuf();
+
+					ParseBmfontLine(font_path, font, result->second, line_remainder, pageload_cb);
+				}
+			}
+		}
+
+		return font;
+	}
+
+	void FontFactory::ParseBmfontEntryPage(
+		std::filesystem::path font_path,
+		std::unique_ptr<Rendering::FontData>& font,
+		std::stringstream& line_stream,
+		const pageload_callback_t& pageload_cb
+	)
 	{
 		int page_idx = -1;
 		std::filesystem::path page_path;
@@ -166,7 +207,10 @@ namespace Engine::Factories
 			{
 				// Remove quotes around filename
 				assert(value.size() > 2);
-				value = value.substr(1, value.size() - 2);
+				if (value.front() == '"' && value.back() == '"')
+				{
+					value = value.substr(1, value.size() - 2);
+				}
 
 				// TODO: Generate a proper path and potentially load the page here
 				page_path = value;
@@ -184,30 +228,38 @@ namespace Engine::Factories
 			page_path.c_str()
 		);
 
-		auto asset_manager = this->owner_engine->GetAssetManager();
+		auto asset_manager = owner_engine->GetAssetManager();
 
 		if (auto locked_asset_manager = asset_manager.lock())
 		{
-			std::shared_ptr<Rendering::Texture> texture = locked_asset_manager->GetTexture(page_path.string());
+			std::shared_ptr<Rendering::Texture> texture = locked_asset_manager->GetTexture(
+				page_path.string()
+			);
 
-			if (texture != nullptr)
+			if (texture == nullptr)
 			{
-				// Add page and it's texture to map
-				font->pages.insert(std::pair<int, std::shared_ptr<Rendering::Texture>>(page_idx, std::move(texture)));
-
-				return;
+				std::filesystem::path asset_path = font_path.remove_filename();
+				asset_path /= page_path;
+				texture = pageload_cb(asset_path);
 			}
 
-			throw std::runtime_error("Texture could not be found!");
+			// Add page and it's texture to map
+			font->pages.insert(
+				std::pair<int, std::shared_ptr<Rendering::Texture>>(page_idx, std::move(texture))
+			);
+
+			return;
 		}
 
 		throw std::runtime_error("AssetManager could not be locked!");
 	}
 
 	void FontFactory::ParseBmfontLine(
+		const std::filesystem::path& font_path,
 		std::unique_ptr<Rendering::FontData>& font,
 		const BmFontLineType line_type,
-		std::stringstream& line_stream
+		std::stringstream& line_stream,
+		const pageload_callback_t& pageload_cb
 	)
 	{
 		std::string key;
@@ -221,7 +273,8 @@ namespace Engine::Factories
 				// Add every entry of the line
 				while (!line_stream.eof())
 				{
-					tie(key, value) = Utility::SplitKVPair(Utility::StreamGetNextToken(line_stream), "=");
+					tie(key, value
+					) = Utility::SplitKVPair(Utility::StreamGetNextToken(line_stream), "=");
 					font->info.emplace(key, value);
 				}
 
@@ -230,7 +283,8 @@ namespace Engine::Factories
 			case BmFontLineType::CHARS:
 			{
 				// chars has only a single entry (the count of chars), no loop required
-				tie(key, value)	 = Utility::SplitKVPair(Utility::StreamGetNextToken(line_stream), "=");
+				tie(key,
+					value) = Utility::SplitKVPair(Utility::StreamGetNextToken(line_stream), "=");
 				font->char_count = static_cast<unsigned int>(std::stoi(value));
 
 				break;
@@ -244,12 +298,12 @@ namespace Engine::Factories
 			{
 				try
 				{
-					this->ParseBmfontEntryPage(font, line_stream);
+					ParseBmfontEntryPage(font_path, font, line_stream, pageload_cb);
 					return;
 				}
 				catch (...)
 				{
-					std::throw_with_nested(ENGINE_EXCEPTION("Could not initialize a Font page texture!"));
+					std::throw_with_nested(ENGINE_EXCEPTION("Could not initialize a Font page!"));
 				}
 			}
 			default:

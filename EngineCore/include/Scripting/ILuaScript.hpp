@@ -10,8 +10,6 @@
 
 namespace Engine::Scripting
 {
-	class LuaScriptExecutor;
-
 	struct ScriptPerfState
 	{
 		int native_count	  = 0;

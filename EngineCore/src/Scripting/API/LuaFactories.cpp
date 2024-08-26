@@ -41,7 +41,10 @@ namespace Engine::Scripting::API::LuaFactories
 		return luaL_error(state, "Mapping '%s' not found by __index metafn!", index);
 	}
 
-	static int CreateMappingTrampoline(lua_State* state, std::unordered_map<std::string, const lua_CFunction>* mapping)
+	static int CreateMappingTrampoline(
+		lua_State* state,
+		std::unordered_map<std::string, const lua_CFunction>* mapping
+	)
 	{
 		// Index -1 must contain a table
 		assert(lua_istable(state, -1) == true);
@@ -136,7 +139,8 @@ namespace Engine::Scripting::API::LuaFactories
 		lua_getglobal(state, "engine");
 		lua_getfield(state, -1, "logger");
 		lua_getfield(state, -1, "_smart_ptr");
-		std::weak_ptr<Logging::Logger> logger = *static_cast<std::weak_ptr<Logging::Logger>*>(lua_touserdata(state, -1)
+		std::weak_ptr<Logging::Logger> logger = *static_cast<std::weak_ptr<Logging::Logger>*>(
+			lua_touserdata(state, -1)
 		);
 
 		return logger;

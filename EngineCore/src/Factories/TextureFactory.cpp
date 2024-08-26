@@ -14,7 +14,7 @@
 
 // Prefixes for logging messages
 #define LOGPFX_CURRENT LOGPFX_CLASS_TEXTURE_FACTORY
-#include "Logging/LoggingPrefix.hpp" // IWYU pragma: keep
+#include "Logging/LoggingPrefix.hpp"
 
 #include <cstddef>
 #include <cstdint>
@@ -36,11 +36,15 @@ namespace Engine::Factories
 			throw std::invalid_argument("Cannot initialize a texture from a nonexistent path!");
 		}
 
-		this->logger
-			->SimpleLog(Logging::LogLevel::Debug2, LOGPFX_CURRENT "Initializing texture from file %s", path.c_str());
+		this->logger->SimpleLog(
+			Logging::LogLevel::Debug2,
+			LOGPFX_CURRENT "Initializing texture from file %s",
+			path.c_str()
+		);
 
 		std::vector<unsigned char> data;
-		std::unique_ptr<Rendering::TextureData> texture_data = std::make_unique<Rendering::TextureData>();
+		std::unique_ptr<Rendering::TextureData> texture_data =
+			std::make_unique<Rendering::TextureData>();
 
 		switch (filetype)
 		{
@@ -50,7 +54,8 @@ namespace Engine::Factories
 				unsigned int error;
 
 				// lodepng uses references for output
-				// this makes it incompatible with ImageSize when defined with different sized integer
+				// this makes it incompatible with ImageSize when defined with different sized
+				// integer
 				{
 					unsigned int size_x;
 					unsigned int size_y;
@@ -112,16 +117,17 @@ namespace Engine::Factories
 		Rendering::Vulkan::Buffer* staging_buffer =
 			new Rendering::Vulkan::StagingBuffer(vk_instance, raw_data.data(), memory_size);
 
-		texture_data->texture_image = new Rendering::Vulkan::SampledImage<Rendering::Vulkan::ViewedImage>(
-			vk_instance,
-			{size.x, size.y},
-			vk::SampleCountFlagBits::e1,
-			vk::Format::eR8G8B8A8Srgb,
-			vk::ImageUsageFlagBits::eTransferDst | vk::ImageUsageFlagBits::eSampled,
-			filtering,			  // Filter for both mag and min
-			sampler_address_mode, // sampler address mode
-			vk::ImageAspectFlagBits::eColor
-		);
+		texture_data->texture_image =
+			new Rendering::Vulkan::SampledImage<Rendering::Vulkan::ViewedImage>(
+				vk_instance,
+				{size.x, size.y},
+				vk::SampleCountFlagBits::e1,
+				vk::Format::eR8G8B8A8Srgb,
+				vk::ImageUsageFlagBits::eTransferDst | vk::ImageUsageFlagBits::eSampled,
+				filtering,			  // Filter for both mag and min
+				sampler_address_mode, // sampler address mode
+				vk::ImageAspectFlagBits::eColor
+			);
 
 		// Transfer image layout to compatible with transfers
 		texture_data->texture_image->TransitionImageLayout(vk::ImageLayout::eTransferDstOptimal);

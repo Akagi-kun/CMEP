@@ -23,7 +23,13 @@ namespace Engine
 		std::shared_ptr<Scene> LoadScene(std::string name);
 
 	protected:
-		void LoadSceneAssets(nlohmann::json& data, std::string& scene_path);
+		void LoadSceneAsset(
+			std::shared_ptr<AssetManager>& asset_manager,
+			nlohmann::json& asset_entry,
+			const std::string& scene_path
+		);
+		void LoadSceneAssets(nlohmann::json& data, const std::string& scene_path);
+
 		void LoadSceneTemplates(nlohmann::json& data, std::shared_ptr<Scene>& scene);
 		void LoadSceneTree(nlohmann::json& data, std::shared_ptr<Scene>& scene);
 		void LoadSceneEventHandlers(nlohmann::json& data, std::shared_ptr<Scene>& scene);

@@ -16,7 +16,7 @@
 
 // Prefixes for logging messages
 #define LOGPFX_CURRENT LOGPFX_CLASS_VULKAN_INSTANCE
-#include "Logging/LoggingPrefix.hpp" // IWYU pragma: keep
+#include "Logging/LoggingPrefix.hpp"
 
 namespace Engine::Rendering::Vulkan
 {
@@ -38,12 +38,16 @@ namespace Engine::Rendering::Vulkan
 		if (auto locked_logger = (static_cast<Logging::SupportsLogging*>(pUserData))->GetLogger())
 		{
 			// Log as error only if error bit set
-			Logging::LogLevel log_level = (messageSeverity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT) != 0
+			Logging::LogLevel log_level = (messageSeverity &
+										   VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT) != 0
 											  ? Logging::LogLevel::Error
 											  : Logging::LogLevel::Warning;
 
-			locked_logger
-				->SimpleLog(log_level, LOGPFX_CURRENT "Vulkan validation layer reported:\n%s", pCallbackData->pMessage);
+			locked_logger->SimpleLog(
+				log_level,
+				LOGPFX_CURRENT "Vulkan validation layer reported:\n%s",
+				pCallbackData->pMessage
+			);
 		}
 
 		return VK_FALSE;
@@ -54,7 +58,8 @@ namespace Engine::Rendering::Vulkan
 	{
 		using namespace std::string_literals;
 
-		throw std::runtime_error("GLFW error handler callback called! Code: '"s.append(std::to_string(error))
+		throw std::runtime_error("GLFW error handler callback called! Code: '"s
+									 .append(std::to_string(error))
 									 .append("'; description: '")
 									 .append(description)
 									 .append("'"));
@@ -64,7 +69,10 @@ namespace Engine::Rendering::Vulkan
 
 #pragma region Public
 
-	Instance::Instance(SupportsLogging::logger_t with_logger, const WindowParams&& with_window_parameters)
+	Instance::Instance(
+		SupportsLogging::logger_t with_logger,
+		const WindowParams&& with_window_parameters
+	)
 		: SupportsLogging(std::move(with_logger))
 	{
 		if (glfwInit() == GLFW_FALSE)
@@ -82,8 +90,12 @@ namespace Engine::Rendering::Vulkan
 
 		this->logger->SimpleLog(Logging::LogLevel::Info, LOGPFX_CURRENT "Instance initialized");
 
-		window =
-			new Window(this, with_window_parameters.size, with_window_parameters.title, with_window_parameters.hints);
+		window = new Window(
+			this,
+			with_window_parameters.size,
+			with_window_parameters.title,
+			with_window_parameters.hints
+		);
 
 		InitDevice();
 		logical_device = new LogicalDevice(this, window->GetSurface());
@@ -136,9 +148,13 @@ namespace Engine::Rendering::Vulkan
 		const char** glfw_extensions  = glfwGetRequiredInstanceExtensions(&glfw_extension_count);
 
 		// Get our required extensions
-		std::vector<const char*> instance_extensions(glfw_extensions, glfw_extensions + glfw_extension_count);
-		std::vector<const char*> instance_layers = enable_vk_validation_layers ? validation_layers
-																			   : std::vector<const char*>{};
+		std::vector<const char*> instance_extensions(
+			glfw_extensions,
+			glfw_extensions + glfw_extension_count
+		);
+		std::vector<const char*> instance_layers = enable_vk_validation_layers
+													   ? validation_layers
+													   : std::vector<const char*>{};
 
 		// Enable validation layer extension if it's a debug build
 		if (enable_vk_validation_layers)
@@ -156,19 +172,26 @@ namespace Engine::Rendering::Vulkan
 		// Load instance functions in dispatcher
 		VULKAN_HPP_DEFAULT_DISPATCHER.init(*native_handle);
 
-		this->logger->SimpleLog(Logging::LogLevel::Info, LOGPFX_CURRENT "Created a Vulkan instance");
+		this->logger->SimpleLog(
+			Logging::LogLevel::Info,
+			LOGPFX_CURRENT "Created a Vulkan instance"
+		);
 
 		// If it's a debug build, add a debug callback to Vulkan
 		if (enable_vk_validation_layers)
 		{
-			this->logger->SimpleLog(Logging::LogLevel::Debug2, LOGPFX_CURRENT "Creating debug messenger");
+			this->logger->SimpleLog(
+				Logging::LogLevel::Debug2,
+				LOGPFX_CURRENT "Creating debug messenger"
+			);
 
 			vk::DebugUtilsMessengerCreateInfoEXT messenger_create_info(
 				{},
 				vk::DebugUtilsMessageSeverityFlagBitsEXT::eVerbose |
 					vk::DebugUtilsMessageSeverityFlagBitsEXT::eWarning |
 					vk::DebugUtilsMessageSeverityFlagBitsEXT::eError,
-				vk::DebugUtilsMessageTypeFlagBitsEXT::eGeneral | vk::DebugUtilsMessageTypeFlagBitsEXT::eValidation |
+				vk::DebugUtilsMessageTypeFlagBitsEXT::eGeneral |
+					vk::DebugUtilsMessageTypeFlagBitsEXT::eValidation |
 					vk::DebugUtilsMessageTypeFlagBitsEXT::ePerformance,
 				VulkanDebugCallback,
 				this
@@ -176,7 +199,10 @@ namespace Engine::Rendering::Vulkan
 
 			debug_messenger = native_handle.createDebugUtilsMessengerEXT(messenger_create_info);
 
-			this->logger->SimpleLog(Logging::LogLevel::Debug2, LOGPFX_CURRENT "Created debug messenger");
+			this->logger->SimpleLog(
+				Logging::LogLevel::Debug2,
+				LOGPFX_CURRENT "Created debug messenger"
+			);
 		}
 	}
 
@@ -210,10 +236,14 @@ namespace Engine::Rendering::Vulkan
 
 	void Instance::InitDevice()
 	{
-		this->logger->SimpleLog(Logging::LogLevel::Debug2, LOGPFX_CURRENT "Initializing vulkan device");
+		this->logger->SimpleLog(
+			Logging::LogLevel::Debug2,
+			LOGPFX_CURRENT "Initializing vulkan device"
+		);
 
 		// Get physical devices
-		std::vector<vk::raii::PhysicalDevice> physical_devices = native_handle.enumeratePhysicalDevices();
+		std::vector<vk::raii::PhysicalDevice> physical_devices =
+			native_handle.enumeratePhysicalDevices();
 
 		// Sorted (by score) vector of all devices
 		std::vector<DeviceScore> candidates;
@@ -253,7 +283,8 @@ namespace Engine::Rendering::Vulkan
 			LOGPFX_CURRENT "Found a capable physical device: '%s'",
 			physical_device->GetDeviceName().c_str()
 		);
-		this->logger->SimpleLog(Logging::LogLevel::Info, LOGPFX_CURRENT "Using MSAAx%u", msaa_samples);
+		this->logger
+			->SimpleLog(Logging::LogLevel::Info, LOGPFX_CURRENT "Using MSAAx%u", msaa_samples);
 	}
 
 #pragma endregion

@@ -3,19 +3,19 @@
 #include "Factories/ObjectFactory.hpp"
 
 #include "EventHandling.hpp"
-#include "vulkan/vulkan_raii.hpp"
 
 namespace Engine
 {
 	using namespace std::literals::string_view_literals;
 
 	template <>
-	EnumStringConvertor<EventHandling::EventType>::map_t EnumStringConvertor<EventHandling::EventType>::type_map = {
-		{"on_init"sv, value_t::ON_INIT},
-		{"on_mouse_moved"sv, value_t::ON_MOUSEMOVED},
-		{"on_key_down"sv, value_t::ON_KEYDOWN},
-		{"on_key_up"sv, value_t::ON_KEYUP},
-		{"on_update"sv, value_t::ON_UPDATE},
+	EnumStringConvertor<EventHandling::EventType>::map_t
+		EnumStringConvertor<EventHandling::EventType>::type_map = {
+			{"on_init"sv, value_t::ON_INIT},
+			{"on_mouse_moved"sv, value_t::ON_MOUSEMOVED},
+			{"on_key_down"sv, value_t::ON_KEYDOWN},
+			{"on_key_up"sv, value_t::ON_KEYUP},
+			{"on_update"sv, value_t::ON_UPDATE},
 	};
 
 	using namespace Factories::ObjectFactory;
@@ -41,26 +41,36 @@ namespace Engine
 	};
 
 	template <>
-	EnumStringConvertor<vk::SamplerAddressMode>::map_t EnumStringConvertor<vk::SamplerAddressMode>::type_map = {
-		{"repeat"sv, vk::SamplerAddressMode::eRepeat},
-		{"clamp"sv, vk::SamplerAddressMode::eClampToEdge},
-		{"clamp_border"sv, vk::SamplerAddressMode::eClampToBorder},
+	EnumStringConvertor<vk::SamplerAddressMode>::map_t
+		EnumStringConvertor<vk::SamplerAddressMode>::type_map = {
+			{"repeat"sv, vk::SamplerAddressMode::eRepeat},
+			{"clamp"sv, vk::SamplerAddressMode::eClampToEdge},
+			{"clamp_border"sv, vk::SamplerAddressMode::eClampToBorder},
 	};
 
 	template <>
-	EnumStringConvertor<VkPrimitiveTopology>::map_t EnumStringConvertor<VkPrimitiveTopology>::type_map = {
-		{"lines"sv, VK_PRIMITIVE_TOPOLOGY_LINE_LIST},
-		{"triangles"sv, VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST}
+	EnumStringConvertor<VkPrimitiveTopology>::map_t
+		EnumStringConvertor<VkPrimitiveTopology>::type_map = {
+			{"lines"sv, VK_PRIMITIVE_TOPOLOGY_LINE_LIST},
+			{"triangles"sv, VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST}
 	};
 
 	using namespace Rendering;
 
 	template <>
-	EnumStringConvertor<RendererSupplyDataType>::map_t EnumStringConvertor<RendererSupplyDataType>::type_map = {
-		{"texture"sv, value_t::TEXTURE},
+	EnumStringConvertor<RendererSupplyDataType>::map_t
+		EnumStringConvertor<RendererSupplyDataType>::type_map = {
+			{"texture"sv, value_t::TEXTURE},
+			{"font"sv, value_t::FONT},
+			{"text"sv, value_t::TEXT},
+			{"generator_script"sv, value_t::GENERATOR_SCRIPT},
+			{"generator_supplier"sv, value_t::GENERATOR_SUPPLIER}
+	};
+
+	template <>
+	EnumStringConvertor<AssetType>::map_t EnumStringConvertor<AssetType>::type_map = {
 		{"font"sv, value_t::FONT},
-		{"text"sv, value_t::TEXT},
-		{"generator_script"sv, value_t::GENERATOR_SCRIPT},
-		{"generator_supplier"sv, value_t::GENERATOR_SUPPLIER}
+		{"texture"sv, value_t::TEXTURE},
+		{"script", value_t::SCRIPT},
 	};
 } // namespace Engine

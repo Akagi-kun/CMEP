@@ -22,11 +22,12 @@
 #include <fstream>
 #include <memory>
 #include <stdexcept>
+#include <string>
 #include <thread>
 
 // Prefixes for logging messages
 #define LOGPFX_CURRENT LOGPFX_CLASS_ENGINE
-#include "Logging/LoggingPrefix.hpp" // IWYU pragma: keep
+#include "Logging/LoggingPrefix.hpp"
 
 namespace Engine
 {
@@ -69,7 +70,9 @@ namespace Engine
 
 		// spin lock
 		const auto start = std::chrono::steady_clock::now();
-		while (static_cast<double>((std::chrono::steady_clock::now() - start).count()) / nano_to_sec < seconds)
+		while (static_cast<double>((std::chrono::steady_clock::now() - start).count()) /
+				   nano_to_sec <
+			   seconds)
 		{
 		}
 	}
@@ -81,7 +84,10 @@ namespace Engine
 
 		static glm::vec<2, double>
 			/* static Vector2<double> */
-			last_pos = {static_cast<double>(screen_size.x) / 2, static_cast<double>(screen_size.y) / 2};
+			last_pos = {
+				static_cast<double>(screen_size.x) / 2,
+				static_cast<double>(screen_size.y) / 2
+			};
 
 		static constexpr double clamp_difference = 128;
 
@@ -92,10 +98,16 @@ namespace Engine
 			{
 				auto event = EventHandling::Event(this, EventHandling::EventType::ON_MOUSEMOVED);
 
-				event.mouse.x =
-					std::clamp(window_data->cursor_position.x - last_pos.x, -clamp_difference, clamp_difference);
-				event.mouse.y =
-					std::clamp(window_data->cursor_position.y - last_pos.y, -clamp_difference, clamp_difference);
+				event.mouse.x = std::clamp(
+					window_data->cursor_position.x - last_pos.x,
+					-clamp_difference,
+					clamp_difference
+				);
+				event.mouse.y = std::clamp(
+					window_data->cursor_position.y - last_pos.y,
+					-clamp_difference,
+					clamp_difference
+				);
 
 				event.delta_time = delta_time;
 				FireEvent(event);
@@ -114,7 +126,7 @@ namespace Engine
 				case Rendering::Vulkan::InputEvent::KEY_PRESS:
 				case Rendering::Vulkan::InputEvent::KEY_REPEAT:
 				{
-					auto event		 = EventHandling::Event(this, EventHandling::EventType::ON_KEYDOWN);
+					auto event = EventHandling::Event(this, EventHandling::EventType::ON_KEYDOWN);
 					event.keycode	 = static_cast<uint16_t>(input_event.key);
 					event.delta_time = GetLastDeltaTime();
 					FireEvent(event);
@@ -123,8 +135,8 @@ namespace Engine
 				case Rendering::Vulkan::InputEvent::KEY_RELEASE:
 				{
 
-					auto event		 = EventHandling::Event(this, EventHandling::EventType::ON_KEYUP);
-					event.keycode	 = static_cast<uint16_t>(input_event.key);
+					auto event	  = EventHandling::Event(this, EventHandling::EventType::ON_KEYUP);
+					event.keycode = static_cast<uint16_t>(input_event.key);
 					event.delta_time = GetLastDeltaTime();
 					FireEvent(event);
 					break;
@@ -168,7 +180,11 @@ namespace Engine
 		config->shader_path = data["shader_path"].get<std::string>();
 	}
 
-	void Engine::RenderCallback(Rendering::Vulkan::CommandBuffer* command_buffer, uint32_t current_frame, void* engine)
+	void Engine::RenderCallback(
+		Rendering::Vulkan::CommandBuffer* command_buffer,
+		uint32_t current_frame,
+		void* engine
+	)
 	{
 		auto* engine_cast = static_cast<Engine*>(engine);
 
@@ -202,12 +218,9 @@ namespace Engine
 		// TODO: Remove this!
 		// Create axis object
 		{
-			auto* object =
-				Factories::ObjectFactory::CreateSceneObject<Rendering::Renderer3D, Rendering::AxisMeshBuilder>(
-					this,
-					"axis",
-					{}
-				);
+			auto* object = Factories::ObjectFactory::CreateSceneObject<
+				Rendering::Renderer3D,
+				Rendering::AxisMeshBuilder>(this, "axis", {});
 
 			scene->AddObject("_axis", object);
 		}
@@ -227,11 +240,17 @@ namespace Engine
 		this->logger->SimpleLog(Logging::LogLevel::Info, "Starting scene build");
 		for (const auto& [name, object] : scene->GetAllObjects())
 		{
-			this->logger->SimpleLog(Logging::LogLevel::Debug1, LOGPFX_CURRENT "Building object '%s'", name.c_str());
+			this->logger->SimpleLog(
+				Logging::LogLevel::Debug1,
+				LOGPFX_CURRENT "Building object '%s'",
+				name.c_str()
+			);
 			object->GetRenderer()->ForceBuild();
 		}
 
-		auto scene_build_time = static_cast<double>((std::chrono::steady_clock::now() - build_clock).count()) /
+		auto scene_build_time = static_cast<double>(
+									(std::chrono::steady_clock::now() - build_clock).count()
+								) /
 								nano_to_msec;
 
 		this->logger->SimpleLog(
@@ -257,8 +276,11 @@ namespace Engine
 			const auto next_clock			  = std::chrono::steady_clock::now();
 			static constexpr double min_delta = 0.1 / sec_to_msec;
 			static constexpr double max_delta = 100000.0;
-			const double delta_time =
-				std::clamp(static_cast<double>((next_clock - prev_clock).count()) / nano_to_sec, min_delta, max_delta);
+			const double delta_time			  = std::clamp(
+				  static_cast<double>((next_clock - prev_clock).count()) / nano_to_sec,
+				  min_delta,
+				  max_delta
+			  );
 			last_delta_time = delta_time;
 
 			// Check return code of FireEvent (events should return non-zero codes as failure)
@@ -292,9 +314,12 @@ namespace Engine
 
 			const auto poll_clock = std::chrono::steady_clock::now();
 
-			const double event_time = static_cast<double>((event_clock - next_clock).count()) / nano_to_msec;
-			const double draw_time	= static_cast<double>((draw_clock - event_clock).count()) / nano_to_msec;
-			const double poll_time	= static_cast<double>((poll_clock - draw_clock).count()) / nano_to_msec;
+			const double event_time = static_cast<double>((event_clock - next_clock).count()) /
+									  nano_to_msec;
+			const double draw_time = static_cast<double>((draw_clock - event_clock).count()) /
+									 nano_to_msec;
+			const double poll_time = static_cast<double>((poll_clock - draw_clock).count()) /
+									 nano_to_msec;
 
 			const auto time_sum = event_time + draw_time + poll_time;
 
@@ -318,7 +343,8 @@ namespace Engine
 
 			/* const auto frame_clock	= std::chrono::steady_clock::now();
 			const double sleep_secs = 1.0 / framerate_target -
-									  static_cast<double>((frame_clock - next_clock).count()) / nano_to_sec;
+									  static_cast<double>((frame_clock - next_clock).count()) /
+			nano_to_sec;
 			// spin sleep if sleep necessary and VSYNC disabled
 			if (sleep_secs > 0 && framerate_target != 0)
 			{
@@ -430,10 +456,13 @@ namespace Engine
 
 		vk_instance->GetWindow()->SetRenderCallback(Engine::RenderCallback, this);
 
-		pipeline_manager =
-			std::make_shared<Rendering::Vulkan::PipelineManager>(logger, vk_instance, config->shader_path);
+		pipeline_manager = std::make_shared<Rendering::Vulkan::PipelineManager>(
+			logger,
+			vk_instance,
+			config->game_path + config->shader_path
+		);
 
-		scene_manager->SetSceneLoadPrefix(config->scene_path);
+		scene_manager->SetSceneLoadPrefix(config->game_path + config->scene_path);
 		scene_manager->LoadScene(config->default_scene);
 		scene_manager->SetScene(config->default_scene);
 
@@ -443,7 +472,8 @@ namespace Engine
 
 		// Measure and log ON_INIT time
 		static constexpr double nano_to_msec = 1.e6;
-		double total = static_cast<double>((std::chrono::steady_clock::now() - start).count()) / nano_to_msec;
+		double total = static_cast<double>((std::chrono::steady_clock::now() - start).count()) /
+					   nano_to_msec;
 		this->logger->SimpleLog(
 			Logging::LogLevel::Info,
 			LOGPFX_CURRENT "Handling ON_INIT took %.3lf ms total and returned %i",

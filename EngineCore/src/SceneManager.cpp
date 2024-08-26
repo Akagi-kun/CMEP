@@ -15,7 +15,7 @@
 
 // Prefixes for logging messages
 #define LOGPFX_CURRENT LOGPFX_CLASS_SCENE_MANAGER
-#include "Logging/LoggingPrefix.hpp" // IWYU pragma: keep
+#include "Logging/LoggingPrefix.hpp"
 
 namespace Engine
 {

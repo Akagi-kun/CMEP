@@ -8,7 +8,7 @@ namespace Engine
 	class exception : public std::exception
 	{
 	public:
-		exception(const char* with_file, uint_least32_t with_line, const char* with_message)
+		exception(const char* with_file, uint_least32_t with_line, const std::string& with_message)
 			: message(std::string(with_file) + " at line " + std::to_string(with_line) + ":\n\t\t" + with_message)
 		{
 		}

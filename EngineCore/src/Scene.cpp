@@ -14,7 +14,7 @@
 
 // Prefixes for logging messages
 #define LOGPFX_CURRENT LOGPFX_CLASS_SCENE
-#include "Logging/LoggingPrefix.hpp" // IWYU pragma: keep
+#include "Logging/LoggingPrefix.hpp"
 
 namespace Engine
 {
@@ -26,7 +26,11 @@ namespace Engine
 
 		for (auto& [name, ptr] : this->objects)
 		{
-			this->logger->SimpleLog(Logging::LogLevel::Debug3, LOGPFX_CURRENT "Deleting object '%s'", name.c_str());
+			this->logger->SimpleLog(
+				Logging::LogLevel::Debug3,
+				LOGPFX_CURRENT "Deleting object '%s'",
+				name.c_str()
+			);
 			delete ptr;
 		}
 
@@ -44,14 +48,18 @@ namespace Engine
 
 		if (templated_object != this->templates.end())
 		{
-			Object* obj =
-				Factories::ObjectFactory::InstantiateObjectTemplate(this->GetOwnerEngine(), templated_object->second);
+			Object* obj = Factories::ObjectFactory::InstantiateObjectTemplate(
+				this->GetOwnerEngine(),
+				templated_object->second
+			);
 
 			this->AddObject(name, obj);
 		}
 		else
 		{
-			throw std::invalid_argument("Template with name '" + template_name + "' could not be found!");
+			throw std::invalid_argument(
+				"Template with name '" + template_name + "' could not be found!"
+			);
 		}
 	}
 
@@ -59,7 +67,11 @@ namespace Engine
 	{
 		if (ptr != nullptr)
 		{
-			this->logger->SimpleLog(Logging::LogLevel::Debug3, LOGPFX_CURRENT "Adding object '%s'", name.c_str());
+			this->logger->SimpleLog(
+				Logging::LogLevel::Debug3,
+				LOGPFX_CURRENT "Adding object '%s'",
+				name.c_str()
+			);
 
 			const auto* window_data = this->owner_engine->GetVulkanInstance()->GetWindow();
 			const auto& screen_size = window_data->GetFramebufferSize();
@@ -99,7 +111,10 @@ namespace Engine
 		}
 	}
 
-	void Scene::LoadTemplatedObject(const std::string& name, const Factories::ObjectFactory::ObjectTemplate& object)
+	void Scene::LoadTemplatedObject(
+		const std::string& name,
+		const Factories::ObjectFactory::ObjectTemplate& object
+	)
 	{
 		this->templates.emplace(name, object);
 	}

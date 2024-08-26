@@ -8,13 +8,18 @@
 
 namespace Engine::Factories
 {
-
 	class FontFactory : public InternalEngineObject
 	{
 	public:
 		using InternalEngineObject::InternalEngineObject;
 
-		std::shared_ptr<Rendering::Font> InitBMFont(const std::filesystem::path& font_path);
+		using pageload_callback_t =
+			std::function<Rendering::FontData::page_t(const std::filesystem::path&)>;
+
+		std::shared_ptr<Rendering::Font> CreateFont(
+			const std::filesystem::path& font_path,
+			const pageload_callback_t& opt_callback
+		);
 
 	private:
 		enum class BmFontLineType : uint8_t
@@ -28,12 +33,25 @@ namespace Engine::Factories
 			MAX_ENUM = 0xFF
 		};
 
-		void ParseBmfont(std::unique_ptr<Rendering::FontData>& font, std::ifstream& font_file);
+		std::unique_ptr<Rendering::FontData> ParseBmfont(
+			const std::filesystem::path& font_path,
+			std::ifstream& font_file,
+			const pageload_callback_t& pageload_cb
+		);
+
 		void ParseBmfontLine(
+			const std::filesystem::path& font_path,
 			std::unique_ptr<Rendering::FontData>& font,
 			BmFontLineType line_type,
-			std::stringstream& line_stream
+			std::stringstream& line_stream,
+			const pageload_callback_t& pageload_cb
 		);
-		void ParseBmfontEntryPage(std::unique_ptr<Rendering::FontData>& font, std::stringstream& line_stream);
+
+		void ParseBmfontEntryPage(
+			std::filesystem::path font_path,
+			std::unique_ptr<Rendering::FontData>& font,
+			std::stringstream& line_stream,
+			const pageload_callback_t& pageload_cb
+		);
 	};
 } // namespace Engine::Factories

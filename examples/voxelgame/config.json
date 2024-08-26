@@ -7,7 +7,7 @@
     "rendering": {
         "framerateTarget": 0
     },
-    "scene_path": "game/scenes/",
-    "shader_path": "game/shaders/",
+    "scene_path": "scenes/",
+    "shader_path": "shaders/",
     "default_scene": "default"
 }

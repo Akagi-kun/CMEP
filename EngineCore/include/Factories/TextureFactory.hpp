@@ -1,8 +1,14 @@
 #pragma once
 
 #include "Assets/Texture.hpp"
+#include "Rendering/Transform.hpp"
 
 #include "InternalEngineObject.hpp"
+#include "vulkan/vulkan_enums.hpp"
+
+#include <filesystem>
+#include <memory>
+#include <vector>
 
 namespace Engine::Factories
 {
@@ -11,7 +17,7 @@ namespace Engine::Factories
 	public:
 		using InternalEngineObject::InternalEngineObject;
 
-		std::shared_ptr<Rendering::Texture> InitFile(
+		[[nodiscard]] std::shared_ptr<Rendering::Texture> InitFile(
 			const std::filesystem::path& path,
 			Rendering::Texture_InitFiletype filetype,
 			vk::Filter filtering						= vk::Filter::eLinear,

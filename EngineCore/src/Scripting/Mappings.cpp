@@ -14,15 +14,13 @@
 #include "EnumStringConvertor.hpp"
 #include "KVPairHelper.hpp"
 #include "Logging.hpp"
-#include "lauxlib.h"
-#include "lua.h"
 #include "lua.hpp"
 
 #include <charconv>
 
 // Prefixes for logging messages
 #define LOGPFX_CURRENT LOGPFX_LUA_MAPPED
-#include "Logging/LoggingPrefix.hpp" // IWYU pragma: keep
+#include "Logging/LoggingPrefix.hpp"
 
 #undef CMEP_LUAMAPPING_DEFINE
 #define CMEP_LUAMAPPING_DEFINE(mapping) {#mapping, Functions::mapping}
@@ -70,7 +68,9 @@ namespace Engine::Scripting::Mappings
 						case cdata_type_id:
 						{
 							using namespace std::string_literals;
-							auto value = *reinterpret_cast<const uintptr_t*>(lua_topointer(state, arg));
+							auto value = *reinterpret_cast<const uintptr_t*>(
+								lua_topointer(state, arg)
+							);
 
 							static constexpr size_t buffer_len = 32;
 							char ptr_buffer[buffer_len]		   = {};
@@ -92,8 +92,6 @@ namespace Engine::Scripting::Mappings
 				}
 
 				locked_logger->StopLog();
-
-				// locked_logger->SimpleLog(Logging::LogLevel::Info, LOGPFX_CURRENT "%s", string);
 			}
 			else
 			{
@@ -126,7 +124,10 @@ namespace Engine::Scripting::Mappings
 
 			const char* text = lua_tostring(state, 2);
 
-			Rendering::RendererSupplyData text_supply = {Rendering::RendererSupplyDataType::TEXT, text};
+			Rendering::RendererSupplyData text_supply = {
+				Rendering::RendererSupplyDataType::TEXT,
+				text
+			};
 			renderer->SupplyData(text_supply);
 
 			return 0;
@@ -139,11 +140,13 @@ namespace Engine::Scripting::Mappings
 			auto* renderer = static_cast<Rendering::IRenderer*>(lua_touserdata(state, 1));
 
 			lua_getfield(state, 2, "_smart_ptr");
-			std::shared_ptr<Rendering::Texture> texture = *static_cast<std::shared_ptr<Rendering::Texture>*>(
-				lua_touserdata(state, -1)
-			);
+			std::shared_ptr<Rendering::Texture> texture =
+				*static_cast<std::shared_ptr<Rendering::Texture>*>(lua_touserdata(state, -1));
 
-			Rendering::RendererSupplyData texture_supply = {Rendering::RendererSupplyDataType::TEXTURE, texture};
+			Rendering::RendererSupplyData texture_supply = {
+				Rendering::RendererSupplyDataType::TEXTURE,
+				texture
+			};
 			renderer->SupplyData(texture_supply);
 
 			return 0;
@@ -172,7 +175,9 @@ namespace Engine::Scripting::Mappings
 				}
 
 				lua_rawgeti(state, -1, 1);
-				EnumStringConvertor<Rendering::RendererSupplyDataType> type = std::string(lua_tostring(state, -1));
+				EnumStringConvertor<Rendering::RendererSupplyDataType> type = std::string(
+					lua_tostring(state, -1)
+				);
 
 				lua_rawgeti(state, -2, 2);
 				std::string value = lua_tostring(state, -1);
@@ -212,12 +217,18 @@ namespace Engine::Scripting::Mappings
 					auto supply_data = InterpretSupplyData(state, locked_asset_manager.get(), 4);
 
 					// Check if mesh builder type is valid, if so, get a factory for it
-					const auto factory =
-						Factories::ObjectFactory::GetSceneObjectFactory(renderer_type, mesh_builder_type);
+					const auto factory = Factories::ObjectFactory::GetSceneObjectFactory(
+						renderer_type,
+						mesh_builder_type
+					);
 
 					if (factory)
 					{
-						Object* obj = factory(locked_asset_manager->GetOwnerEngine(), shader_name, supply_data);
+						Object* obj = factory(
+							locked_asset_manager->GetOwnerEngine(),
+							shader_name,
+							supply_data
+						);
 
 						if (obj != nullptr)
 						{

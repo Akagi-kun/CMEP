@@ -4,11 +4,11 @@
 
 #include "Scripting/ILuaScript.hpp"
 
-#include "Factories/FontFactory.hpp"
-#include "Factories/TextureFactory.hpp"
-
 #include "InternalEngineObject.hpp"
 
+#include <cstdint>
+#include <limits>
+#include <memory>
 #include <string>
 #include <unordered_map>
 
@@ -19,28 +19,31 @@ namespace Engine
 		class Font;
 	}
 
+	enum class AssetType : uint8_t
+	{
+		FONT	= 2,
+		TEXTURE = 8,
+		SCRIPT	= 12
+	};
+
 	class AssetManager final : public InternalEngineObject
 	{
 	public:
-		Scripting::LuaScriptExecutor* lua_executor{};
-
 		AssetManager(Engine* with_engine);
 		~AssetManager();
 
-		void AddTexture(
+		void AddTexture(const std::string& name, const std::shared_ptr<Rendering::Texture>& asset);
+
+		void AddFont(const std::string& name, const std::shared_ptr<Rendering::Font>& asset);
+
+		void AddLuaScript(
 			const std::string& name,
-			const std::filesystem::path& path,
-			Rendering::Texture_InitFiletype filetype,
-			vk::Filter filtering				= vk::Filter::eLinear,
-			vk::SamplerAddressMode address_mode = vk::SamplerAddressMode::eRepeat
+			const std::shared_ptr<Scripting::ILuaScript>& asset
 		);
-		void AddFont(const std::string& name, const std::filesystem::path& path);
 
-		void AddLuaScript(const std::string& name, const std::shared_ptr<Scripting::ILuaScript>& script);
-
-		std::shared_ptr<Rendering::Texture> GetTexture(const std::string& name);
-		std::shared_ptr<Rendering::Font> GetFont(const std::string& name);
-		std::shared_ptr<Scripting::ILuaScript> GetLuaScript(const std::string& name);
+		[[nodiscard]] std::shared_ptr<Rendering::Texture> GetTexture(const std::string& name);
+		[[nodiscard]] std::shared_ptr<Rendering::Font> GetFont(const std::string& name);
+		[[nodiscard]] std::shared_ptr<Scripting::ILuaScript> GetLuaScript(const std::string& name);
 
 	private:
 		struct
@@ -54,8 +57,5 @@ namespace Engine
 		std::unordered_map<std::string, std::shared_ptr<Scripting::ILuaScript>> luascripts;
 		std::unordered_map<std::string, std::shared_ptr<Rendering::Texture>> textures;
 		std::unordered_map<std::string, std::shared_ptr<Rendering::Font>> fonts;
-
-		std::unique_ptr<Factories::FontFactory> font_factory;
-		std::unique_ptr<Factories::TextureFactory> texture_factory;
 	};
 } // namespace Engine

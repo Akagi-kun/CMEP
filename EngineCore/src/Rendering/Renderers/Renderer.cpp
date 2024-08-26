@@ -1,5 +1,6 @@
 #include "Rendering/Renderers/Renderer.hpp"
 
+#include "Assets/Font.hpp"
 #include "Assets/Texture.hpp"
 #include "Rendering/SupplyData.hpp"
 #include "Rendering/Vulkan/backend.hpp"
@@ -11,14 +12,21 @@
 
 namespace Engine::Rendering
 {
-	IRenderer::IRenderer(Engine* with_engine, IMeshBuilder* with_builder, std::string_view with_pipeline_program)
+	IRenderer::IRenderer(
+		Engine* with_engine,
+		IMeshBuilder* with_builder,
+		std::string_view with_pipeline_program
+	)
 		: InternalEngineObject(with_engine), pipeline_name(with_pipeline_program),
 		  pipeline_manager(with_engine->GetVulkanPipelineManager()), mesh_builder(with_builder)
 	{
 		Vulkan::Instance* instance = this->owner_engine->GetVulkanInstance();
 
-		settings =
-			{instance->GetWindow()->GetSwapchain()->GetExtent(), pipeline_name, mesh_builder->GetSupportedTopology()};
+		settings = {
+			instance->GetWindow()->GetSwapchain()->GetExtent(),
+			pipeline_name,
+			mesh_builder->GetSupportedTopology()
+		};
 
 		settings.descriptor_settings.emplace(
 			1,
@@ -26,7 +34,7 @@ namespace Engine::Rendering
 				1,
 				vk::DescriptorType::eCombinedImageSampler,
 				vk::ShaderStageFlagBits::eFragment,
-				{} // TODO: Use opt_bindname
+				{}
 			}
 		);
 	}
@@ -81,8 +89,10 @@ namespace Engine::Rendering
 		if (texture)
 		{
 			settings.descriptor_settings[1].opt_match_hash = std::hash<Asset>{}(*texture);
-			// extended_settings.short_setting.descriptor_settings[1].opt_match_hash = std::hash<Asset>{}(*texture);
-			//  extended_settings.supply_data.emplace_back(RendererSupplyDataType::TEXTURE, texture);
+			// extended_settings.short_setting.descriptor_settings[1].opt_match_hash =
+			// std::hash<Asset>{}(*texture);
+			//  extended_settings.supply_data.emplace_back(RendererSupplyDataType::TEXTURE,
+			//  texture);
 		}
 
 		pipeline = pipeline_manager->GetPipeline(settings);
@@ -130,13 +140,15 @@ namespace Engine::Rendering
 		// Render only if VBO non-empty
 		if (mesh_context.vbo_vert_count > 0)
 		{
-			pipeline->GetUniformBuffer(current_frame)->MemoryCopy(&matrix_data, sizeof(RendererMatrixData));
+			pipeline->GetUniformBuffer(current_frame)
+				->MemoryCopy(&matrix_data, sizeof(RendererMatrixData));
 
 			pipeline->BindPipeline(*command_buffer->GetHandle(), current_frame);
 
 			command_buffer->GetHandle().bindVertexBuffers(0, {*mesh_context.vbo->GetHandle()}, {0});
 
-			command_buffer->GetHandle().draw(static_cast<uint32_t>(mesh_context.vbo_vert_count), 1, 0, 0);
+			command_buffer->GetHandle()
+				.draw(static_cast<uint32_t>(mesh_context.vbo_vert_count), 1, 0, 0);
 		}
 	}
 

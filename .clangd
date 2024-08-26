@@ -4,10 +4,11 @@ If:
   PathMatch: [.*\**.hpp, .*\**.cpp]
   PathExclude: external/.*
 Diagnostics:
+  UnusedIncludes: Strict
   ClangTidy:
     FastCheckFilter: None
   Includes:
-    IgnoreHeader: [glm.hpp, ImportVulkan.hpp]
+    IgnoreHeader: [glm.hpp, Logging/LoggingPrefix.hpp]
 ---
 Completion:
   AllScopes: No

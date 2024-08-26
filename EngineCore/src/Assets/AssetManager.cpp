@@ -10,14 +10,12 @@
 
 // Prefixes for logging messages
 #define LOGPFX_CURRENT LOGPFX_CLASS_ASSET_MANAGER
-#include "Logging/LoggingPrefix.hpp" // IWYU pragma: keep
+#include "Logging/LoggingPrefix.hpp"
 
 namespace Engine
 {
 	AssetManager::AssetManager(Engine* with_engine) : InternalEngineObject(with_engine)
 	{
-		font_factory	= std::make_unique<Factories::FontFactory>(with_engine);
-		texture_factory = std::make_unique<Factories::TextureFactory>(with_engine);
 	}
 
 	AssetManager::~AssetManager()
@@ -43,38 +41,30 @@ namespace Engine
 #pragma region Adding Assets
 	void AssetManager::AddTexture(
 		const std::string& name,
-		const std::filesystem::path& path,
-		Rendering::Texture_InitFiletype filetype,
-		vk::Filter filtering,
-		vk::SamplerAddressMode address_mode
+		const std::shared_ptr<Rendering::Texture>& asset
 	)
 	{
-		std::shared_ptr<Rendering::Texture> texture =
-			texture_factory->InitFile(path, filetype, filtering, address_mode);
-
-		texture->AssignUID(last_uid.texture++);
-
-		textures.emplace(name, texture);
-		this->logger->SimpleLog(
-			Logging::LogLevel::Debug2,
-			LOGPFX_CURRENT "Added texture '%s' as '%s'",
-			path.c_str(),
-			name.c_str()
-		);
+		asset->AssignUID(last_uid.texture++);
+		textures.emplace(name, asset);
 	}
 
-	void AssetManager::AddFont(const std::string& name, const std::filesystem::path& path)
+	void AssetManager::AddFont(
+		const std::string& name,
+		const std::shared_ptr<Rendering::Font>& asset
+	)
 	{
-		std::shared_ptr<Rendering::Font> font = font_factory->InitBMFont(path);
-		font->AssignUID(last_uid.font++);
+		asset->AssignUID(last_uid.font++);
 
-		fonts.emplace(name, std::move(font));
+		fonts.emplace(name, asset);
 	}
 
-	void AssetManager::AddLuaScript(const std::string& name, const std::shared_ptr<Scripting::ILuaScript>& script)
+	void AssetManager::AddLuaScript(
+		const std::string& name,
+		const std::shared_ptr<Scripting::ILuaScript>& asset
+	)
 	{
-		script->AssignUID(last_uid.script++);
-		luascripts.emplace(name, script);
+		asset->AssignUID(last_uid.script++);
+		luascripts.emplace(name, asset);
 	}
 
 #pragma endregion
@@ -87,7 +77,11 @@ namespace Engine
 			return textures.at(name);
 		}
 
-		this->logger->SimpleLog(Logging::LogLevel::Error, LOGPFX_CURRENT "Texture asset '%s' not found", name.c_str());
+		this->logger->SimpleLog(
+			Logging::LogLevel::Debug2,
+			LOGPFX_CURRENT "Texture asset '%s' not found",
+			name.c_str()
+		);
 
 		return nullptr;
 	}
@@ -99,7 +93,11 @@ namespace Engine
 			return fonts.at(name);
 		}
 
-		this->logger->SimpleLog(Logging::LogLevel::Error, LOGPFX_CURRENT "Font asset '%s' not found", name.c_str());
+		this->logger->SimpleLog(
+			Logging::LogLevel::Debug2,
+			LOGPFX_CURRENT "Font asset '%s' not found",
+			name.c_str()
+		);
 
 		return nullptr;
 	}
@@ -111,8 +109,11 @@ namespace Engine
 			return luascripts.at(name);
 		}
 
-		this->logger
-			->SimpleLog(Logging::LogLevel::Error, LOGPFX_CURRENT "LuaScript asset '%s' not found", name.c_str());
+		this->logger->SimpleLog(
+			Logging::LogLevel::Debug2,
+			LOGPFX_CURRENT "LuaScript asset '%s' not found",
+			name.c_str()
+		);
 
 		return nullptr;
 	}

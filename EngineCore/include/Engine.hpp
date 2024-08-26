@@ -36,10 +36,11 @@ namespace Engine
 
 		unsigned int framerate_target = 0;
 
-		std::string scene_path	  = "game/scenes/";
-		std::string default_scene = "default";
+		std::string game_path	= "game/";
+		std::string scene_path	= "scenes/";
+		std::string shader_path = "shaders/";
 
-		std::string shader_path = "game/shaders/vulkan/";
+		std::string default_scene = "default";
 	};
 
 	class Engine final

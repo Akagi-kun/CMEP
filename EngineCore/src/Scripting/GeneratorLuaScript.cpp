@@ -13,7 +13,10 @@
 
 namespace Engine::Scripting
 {
-	GeneratorLuaScript::GeneratorLuaScript(Engine* with_engine, const std::filesystem::path& with_path)
+	GeneratorLuaScript::GeneratorLuaScript(
+		Engine* with_engine,
+		const std::filesystem::path& with_path
+	)
 		: ILuaScript(with_engine, with_path, false)
 	{
 	}
@@ -22,7 +25,7 @@ namespace Engine::Scripting
 	{
 		auto* generator_data = static_cast<std::array<void*, 3>*>(data);
 
-		auto* mesh		= static_cast<std::vector<Rendering::RenderingVertex>*>(generator_data->at(0));
+		auto* mesh = static_cast<std::vector<Rendering::RenderingVertex>*>(generator_data->at(0));
 		auto* supplier	= static_cast<Rendering::GeneratorSupplierData*>(generator_data->at(1));
 		auto* world_pos = static_cast<glm::vec3*>(generator_data->at(2));
 
@@ -57,9 +60,11 @@ namespace Engine::Scripting
 				{
 					using namespace std::string_literals;
 
-					throw std::runtime_error("Exception executing generator script! lua_resume error: "s
-												 .append(std::to_string(last_ret))
-												 .append(UnwindStack(coroutine)));
+					throw std::runtime_error(
+						"Exception executing generator script! lua_resume error: "s
+							.append(std::to_string(last_ret))
+							.append(UnwindStack(coroutine))
+					);
 				}
 
 				return 0;

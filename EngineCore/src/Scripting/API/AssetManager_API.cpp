@@ -4,6 +4,8 @@
 
 #include "Scripting/API/framework.hpp"
 
+#include "Factories/TextureFactory.hpp"
+
 #include <memory>
 
 namespace Engine::Scripting::API
@@ -37,7 +39,11 @@ namespace Engine::Scripting::API
 					return 1;
 				}
 
-				return luaL_error(state, "AssetManager returned nullptr; GetFont '%s'", name.c_str());
+				return luaL_error(
+					state,
+					"AssetManager returned nullptr; GetFont '%s'",
+					name.c_str()
+				);
 			}
 
 			return luaL_error(state, "Cannot lock AssetManager, invalid object passed");
@@ -55,7 +61,8 @@ namespace Engine::Scripting::API
 
 			if (auto locked_asset_manager = asset_manager.lock())
 			{
-				std::shared_ptr<Rendering::Texture> texture = locked_asset_manager->GetTexture(path);
+				std::shared_ptr<Rendering::Texture> texture = locked_asset_manager->GetTexture(path
+				);
 
 				if (texture != nullptr)
 				{
@@ -71,7 +78,11 @@ namespace Engine::Scripting::API
 					return 1;
 				}
 
-				return luaL_error(state, "AssetManager returned nullptr; GetTexture '%s'", path.c_str());
+				return luaL_error(
+					state,
+					"AssetManager returned nullptr; GetTexture '%s'",
+					path.c_str()
+				);
 			}
 
 			return luaL_error(state, "Cannot lock AssetManager, invalid object passed");
@@ -90,7 +101,14 @@ namespace Engine::Scripting::API
 
 			if (auto locked_asset_manager = asset_manager.lock())
 			{
-				locked_asset_manager->AddTexture(name, path, Rendering::Texture_InitFiletype::FILE_PNG);
+				static auto texture_factory = Factories::TextureFactory(
+					locked_asset_manager->GetOwnerEngine()
+				);
+
+				locked_asset_manager->AddTexture(
+					name,
+					texture_factory.InitFile(path, Rendering::Texture_InitFiletype::FILE_PNG)
+				);
 
 				return 1;
 			}

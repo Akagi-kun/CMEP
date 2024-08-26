@@ -13,7 +13,7 @@
 
 // Prefixes for logging messages
 #define LOGPFX_CURRENT LOGPFX_LUA_SCRIPT
-#include "Logging/LoggingPrefix.hpp" // IWYU pragma: keep
+#include "Logging/LoggingPrefix.hpp"
 
 namespace Engine::Scripting
 {
@@ -25,7 +25,7 @@ namespace Engine::Scripting
 
 		size_t dump_len						 = 0;
 		static constexpr uint_fast16_t depth = 5;
-		const char* stack_dump				 = luaJIT_profile_dumpstack(state, "fZ;", depth, &dump_len);
+		const char* stack_dump = luaJIT_profile_dumpstack(state, "fZ;", depth, &dump_len);
 
 		printf("Stack:\n'");
 
@@ -66,7 +66,8 @@ namespace Engine::Scripting
 
 	std::string UnwindStack(lua_State* of_state)
 	{
-		std::string error_msg = "\n--- BEGIN LUA STACK UNWIND ---\n\nError that caused this stack unwind:\n";
+		std::string error_msg =
+			"\n--- BEGIN LUA STACK UNWIND ---\n\nError that caused this stack unwind:\n";
 
 		std::istringstream caused_by(lua_tostring(of_state, -1));
 		lua_pop(of_state, 1);
@@ -169,9 +170,9 @@ namespace Engine::Scripting
 		}
 
 		std::filesystem::path require_origin = with_script->GetPath();
-		std::string require_origin_str		 = require_origin.remove_filename().parent_path().string();
+		std::string require_origin_str = require_origin.remove_filename().parent_path().string();
 
-		using namespace std::literals;
+		using namespace std::string_literals;
 		// Check whether this works on other systems
 		std::string require_path_str = (require_origin_str + "/modules/?.lua"s);
 
@@ -211,7 +212,8 @@ namespace Engine::Scripting
 		int load_return = luaL_loadfile(state, script_path.string().c_str());
 		if (load_return != LUA_OK)
 		{
-			throw std::runtime_error("Exception compiling Lua script! loadfile: "s.append(std::to_string(load_return))
+			throw std::runtime_error("Exception compiling Lua script! loadfile: "s
+										 .append(std::to_string(load_return))
 										 .append("\n\t"s)
 										 .append(lua_tostring(state, -1)));
 		}
@@ -220,7 +222,8 @@ namespace Engine::Scripting
 		int pcall_return = lua_pcall(state, 0, LUA_MULTRET, 0);
 		if (pcall_return != LUA_OK)
 		{
-			throw std::runtime_error("Exception compiling Lua script! pcall: "s.append(std::to_string(pcall_return))
+			throw std::runtime_error("Exception compiling Lua script! pcall: "s
+										 .append(std::to_string(pcall_return))
 										 .append("\n\t")
 										 .append(lua_tostring(state, -1)));
 		}
@@ -243,8 +246,13 @@ namespace Engine::Scripting
 
 #pragma region Public functions
 
-	ILuaScript::ILuaScript(Engine* with_engine, std::filesystem::path with_path, bool with_enable_profiling)
-		: InternalEngineObject(with_engine), path(std::move(with_path)), enable_profiling(with_enable_profiling)
+	ILuaScript::ILuaScript(
+		Engine* with_engine,
+		std::filesystem::path with_path,
+		bool with_enable_profiling
+	)
+		: InternalEngineObject(with_engine), path(std::move(with_path)),
+		  enable_profiling(with_enable_profiling)
 	{
 		state = luaL_newstate();
 		luaL_openlibs(state);

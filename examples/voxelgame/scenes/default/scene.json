@@ -38,13 +38,7 @@
         {
             "type": "font",
             "name": "myfont",
-            "location": "fonts/myfont/myfont.fnt",
-            "textures": [
-                {
-                    "name": "myfont_0.png",
-                    "location": "fonts/myfont/myfont_0.png"
-                }
-            ]
+            "location": "fonts/myfont/myfont.fnt"
         },
         {
             "type": "script",

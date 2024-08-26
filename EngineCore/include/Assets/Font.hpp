@@ -27,8 +27,10 @@ namespace Engine::Rendering
 
 	struct FontData
 	{
+		using page_t = std::shared_ptr<Texture>;
+
 		std::unordered_map<std::string, std::string> info;
-		std::unordered_map<int, std::shared_ptr<Texture>> pages;
+		std::unordered_map<int, page_t> pages;
 		std::unordered_map<int, FontChar> chars;
 		unsigned int char_count = 0;
 	};

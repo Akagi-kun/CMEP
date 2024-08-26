@@ -40,17 +40,20 @@ namespace Engine::Scripting
 					break;
 				case cdata_type_id:
 					// Beware! cross-state dependency!
-					// Pushing managed memory will result in bugs when that memory is garbage collected
-					// ( use ffi.C.malloc or similar explicit allocation )
+					// Pushing managed memory will result in bugs when that memory is garbage
+					// collected ( use ffi.C.malloc or similar explicit allocation )
 					lua_pushinteger(
 						target,
-						*const_cast<int64_t*>(static_cast<const int64_t*>(lua_topointer(origin, arg_vals)))
+						*const_cast<int64_t*>(
+							static_cast<const int64_t*>(lua_topointer(origin, arg_vals))
+						)
 					);
 					break;
 				default:
 				{
 					using namespace std::string_literals;
-					throw std::runtime_error("Cannot handle type '"s.append(lua_typename(origin, idx_type))
+					throw std::runtime_error("Cannot handle type '"s
+												 .append(lua_typename(origin, idx_type))
 												 .append("' ")
 												 .append(std::to_string(idx_type)));
 				}
@@ -62,7 +65,9 @@ namespace Engine::Scripting
 
 	static int InternalCallFn(lua_State* caller_state)
 	{
-		lua_State* callee_state			 = *static_cast<lua_State**>(lua_touserdata(caller_state, lua_upvalueindex(1)));
+		lua_State* callee_state = *static_cast<lua_State**>(
+			lua_touserdata(caller_state, lua_upvalueindex(1))
+		);
 		const char* callee_function_name = lua_tostring(caller_state, lua_upvalueindex(2));
 
 		lua_settop(callee_state, 0);
@@ -77,9 +82,11 @@ namespace Engine::Scripting
 		{
 			using namespace std::string_literals;
 
-			throw std::runtime_error("Exception executing a cross-state function call! lua_pcall error: "s
-										 .append(std::to_string(ret))
-										 .append(UnwindStack(callee_state)));
+			throw std::runtime_error(
+				"Exception executing a cross-state function call! lua_pcall error: "s
+					.append(std::to_string(ret))
+					.append(UnwindStack(callee_state))
+			);
 		}
 
 		// Passing arguments callee -> caller
