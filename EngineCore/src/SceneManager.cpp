@@ -64,7 +64,7 @@ namespace Engine
 		scene_loader->scene_prefix = scene_prefix;
 	}
 
-	void SceneManager::LoadScene(std::string scene_name)
+	void SceneManager::LoadScene(const std::string& scene_name)
 	{
 		assert(owner_engine != nullptr);
 

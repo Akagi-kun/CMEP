@@ -19,7 +19,7 @@ namespace Engine
 		~SceneManager();
 
 		void SetSceneLoadPrefix(const std::string& scene_prefix);
-		void LoadScene(std::string scene_name);
+		void LoadScene(const std::string& scene_name);
 		void SetScene(const std::string& scene_name);
 		std::shared_ptr<Scene>& GetSceneCurrent();
 

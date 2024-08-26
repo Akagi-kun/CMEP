@@ -24,9 +24,13 @@ static const char* level_to_color_table[] = {
 	Logging::Console::BLUE_FG
 };
 
-static const char* const level_to_string_table[] = {"DBG3", "DBG2", "DBG1", "INFO", "WARN", "ERROR", "EXCEPTION"};
+static const char* const level_to_string_table[] =
+	{"DBG3", "DBG2", "DBG1", "INFO", "WARN", "ERROR", "EXCEPTION"};
 
-static_assert((sizeof(level_to_color_table) / sizeof(char*)) == (sizeof(level_to_string_table) / sizeof(char*)));
+static_assert(
+	(sizeof(level_to_color_table) / sizeof(char*)) ==
+	(sizeof(level_to_string_table) / sizeof(char*))
+);
 
 namespace Logging
 {
@@ -68,11 +72,16 @@ namespace Logging
 		state->outputs.push_back(new_map);
 	}
 
-	static inline uint16_t GetCurrentThreadID()
+	namespace
 	{
-		static const uint16_t thread_id_mask = 0xFFFF;
-		return static_cast<uint16_t>(std::hash<std::thread::id>{}(std::this_thread::get_id()) & thread_id_mask);
-	}
+		uint16_t GetCurrentThreadID()
+		{
+			static const uint16_t thread_id_mask = 0xFFFF;
+			return static_cast<uint16_t>(
+				std::hash<std::thread::id>{}(std::this_thread::get_id()) & thread_id_mask
+			);
+		}
+	} // namespace
 
 	void Logger::MapCurrentThreadToName(std::string name)
 	{
@@ -106,7 +115,8 @@ namespace Logging
 		memset(threadid_buf, 0, threadid_buf_len);
 
 		// Get current time
-		const std::time_t tmp = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
+		const std::time_t tmp = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now(
+		));
 		std::tm cur_time	  = {};
 #if defined(_MSC_VER)
 		localtime_s(&cur_time, &tmp);

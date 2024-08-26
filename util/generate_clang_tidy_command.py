@@ -1,5 +1,6 @@
 import os
 import argparse
+from pathlib import Path
 
 build_str = "clang-tidy --verify-config && clang-tidy"
 
@@ -7,12 +8,12 @@ def handle_files(root, files):
 	global build_str
 	if len(files) > 0:
 		for file in files:
-			build_str += " " + os.path.join(root, file)
+			build_str += " " + str(Path(os.path.join(root, file)))
 		#print(files)
 
 def walk_path(dir):
 	for root, dirs, files in os.walk(dir):
-		handle_files(root, files)
+		handle_files(Path(root), files)
 
 		for dir in dirs:
 			walk_path(dir)
