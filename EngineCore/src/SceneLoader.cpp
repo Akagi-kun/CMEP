@@ -27,7 +27,6 @@
 #include <stdexcept>
 #include <string>
 #include <utility>
-#include <xstring>
 
 // Prefixes for logging messages
 #define LOGPFX_CURRENT LOGPFX_CLASS_SCENE_LOADER
