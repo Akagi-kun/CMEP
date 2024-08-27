@@ -3,7 +3,7 @@
 #include "fwd.hpp"
 
 #include "backend/Instance.hpp"
-#include "common/Utilities.hpp"
+#include "common/Utility.hpp"
 #include "objects/CommandBuffer.hpp"
 #include "objects/CommandPool.hpp"
 #include "vulkan/vulkan_raii.hpp"

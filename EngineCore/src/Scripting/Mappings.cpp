@@ -205,7 +205,8 @@ namespace Engine::Scripting::Mappings
 
 			// separates out params for the object
 			// valid format is 'renderer/mesh_builder'
-			auto [renderer_type, mesh_builder_type] = Utility::SplitKVPair(template_params, "/");
+			auto [renderer_type, mesh_builder_type] =
+				::Engine::Utility::SplitKVPair(template_params, "/");
 
 			std::string shader_name = lua_tostring(state, 3);
 

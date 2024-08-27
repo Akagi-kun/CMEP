@@ -1,6 +1,7 @@
 #include "Scripting/EventLuaScript.hpp"
 
 #include "Scripting/API/LuaFactories.hpp"
+#include "Scripting/Utility.hpp"
 
 #include "EventHandling.hpp"
 
@@ -12,7 +13,7 @@ namespace Engine::Scripting
 		lua_settop(state, 0);
 
 		// Push error handler
-		lua_pushcfunction(state, LuaErrorHandler);
+		lua_pushcfunction(state, Utility::LuaErrorHandler);
 
 		// Get start function
 		lua_getglobal(state, function.c_str());

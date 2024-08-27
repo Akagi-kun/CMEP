@@ -17,13 +17,14 @@ namespace Engine::Scripting
 		int engine_count	  = 0;
 	};
 
-	std::string UnwindStack(lua_State* of_state);
-	int LuaErrorHandler(lua_State* state);
-
 	class ILuaScript : public InternalEngineObject, public Asset
 	{
 	public:
-		ILuaScript(Engine* with_engine, std::filesystem::path with_path, bool with_enable_profiling = false);
+		ILuaScript(
+			Engine* with_engine,
+			std::filesystem::path with_path,
+			bool with_enable_profiling = false
+		);
 		virtual ~ILuaScript();
 
 		int CallFunction(const std::string& function, void* data);

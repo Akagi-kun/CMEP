@@ -387,11 +387,6 @@ namespace Engine
 		return sum;
 	}
 
-	double Engine::GetLastDeltaTime() const
-	{
-		return last_delta_time;
-	}
-
 	Engine::Engine(std::shared_ptr<Logging::Logger>& with_logger) : logger(with_logger)
 	{
 	}

@@ -2,7 +2,7 @@
 
 #include "backend/Instance.hpp"
 #include "common/StructDefs.hpp"
-#include "common/Utilities.hpp"
+#include "common/Utility.hpp"
 #include "objects/CommandBuffer.hpp"
 #include "objects/CommandPool.hpp"
 #include "objects/Image.hpp"

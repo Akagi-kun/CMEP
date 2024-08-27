@@ -1,11 +1,15 @@
 #include "rendering/ShaderModule.hpp"
 
 #include "backend/LogicalDevice.hpp"
-#include "common/Utilities.hpp"
+#include "common/Utility.hpp"
 
 namespace Engine::Rendering::Vulkan
 {
-	ShaderModule::ShaderModule(LogicalDevice* with_device, std::filesystem::path with_path, const std::string& filename)
+	ShaderModule::ShaderModule(
+		LogicalDevice* with_device,
+		std::filesystem::path with_path,
+		const std::string& filename
+	)
 	{
 		const auto shader_code = Vulkan::Utility::ReadShaderFile(with_path.append(filename));
 

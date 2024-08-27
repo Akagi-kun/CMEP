@@ -296,7 +296,7 @@ namespace Engine
 			{
 				try
 				{
-					this->LoadSceneAsset(locked_asset_manager, asset_entry, scene_path);
+					LoadSceneAsset(locked_asset_manager, asset_entry, scene_path);
 				}
 				catch (...)
 				{

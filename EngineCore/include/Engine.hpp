@@ -70,7 +70,10 @@ namespace Engine
 			return config->shader_path;
 		}
 
-		[[nodiscard]] double GetLastDeltaTime() const;
+		[[nodiscard]] double GetLastDeltaTime() const
+		{
+			return last_delta_time;
+		}
 
 		[[nodiscard]] std::shared_ptr<Logging::Logger> GetLogger() const noexcept
 		{

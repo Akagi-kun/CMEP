@@ -1,6 +1,6 @@
 #include "Scripting/CrossStateFunctionCall.hpp"
 
-#include "Scripting/ILuaScript.hpp"
+#include "Scripting/Utility.hpp"
 
 #include <stdexcept>
 
@@ -85,7 +85,7 @@ namespace Engine::Scripting
 			throw std::runtime_error(
 				"Exception executing a cross-state function call! lua_pcall error: "s
 					.append(std::to_string(ret))
-					.append(UnwindStack(callee_state))
+					.append(Utility::UnwindStack(callee_state))
 			);
 		}
 

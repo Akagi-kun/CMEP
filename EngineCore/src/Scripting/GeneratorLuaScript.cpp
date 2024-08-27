@@ -5,6 +5,7 @@
 
 #include "Scripting/CrossStateFunctionCall.hpp"
 #include "Scripting/ILuaScript.hpp"
+#include "Scripting/Utility.hpp"
 
 #include "lua.hpp"
 
@@ -63,7 +64,7 @@ namespace Engine::Scripting
 					throw std::runtime_error(
 						"Exception executing generator script! lua_resume error: "s
 							.append(std::to_string(last_ret))
-							.append(UnwindStack(coroutine))
+							.append(Utility::UnwindStack(coroutine))
 					);
 				}
 

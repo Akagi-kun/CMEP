@@ -3,10 +3,9 @@
 #include "Scripting/Mappings.hpp"
 
 #include "EventHandling.hpp"
-#include "lua.h"
+#include "lua.hpp"
 
 #include <filesystem>
-#include <sstream>
 #include <stdexcept>
 #include <string>
 #include <utility>
@@ -17,185 +16,129 @@
 
 namespace Engine::Scripting
 {
-	static void ProfilerCallback(void* data, lua_State* state, int samples, int vmstate)
-	{
-		(void)(samples);
-
-		auto* cast_data = static_cast<ScriptPerfState*>(data);
-
-		size_t dump_len						 = 0;
-		static constexpr uint_fast16_t depth = 5;
-		const char* stack_dump = luaJIT_profile_dumpstack(state, "fZ;", depth, &dump_len);
-
-		printf("Stack:\n'");
-
-		for (size_t i = 0; i < dump_len; i++)
-		{
-			fputc(stack_dump[i], stdout);
-		}
-
-		printf("'\n");
-
-		switch (vmstate)
-		{
-			case 'I':
-			{
-				cast_data->interpreted_count++;
-				break;
-			}
-			case 'N':
-			{
-				cast_data->native_count++;
-				break;
-			}
-			case 'C':
-			{
-				cast_data->engine_count++;
-
-				break;
-			}
-			default:
-			{
-				printf("Non-handled state '%c'\n", vmstate);
-				break;
-			}
-		}
-	}
-
 #pragma region Static functions
 
-	std::string UnwindStack(lua_State* of_state)
+	namespace
 	{
-		std::string error_msg =
-			"\n--- BEGIN LUA STACK UNWIND ---\n\nError that caused this stack unwind:\n";
-
-		std::istringstream caused_by(lua_tostring(of_state, -1));
-		lua_pop(of_state, 1);
-
-		std::string line;
-		while (std::getline(caused_by, line))
+		void ProfilerCallback(void* data, lua_State* state, int samples, int vmstate)
 		{
-			error_msg.append("\t").append(line).append("\n");
-		}
-		error_msg.append("\n");
+			(void)(samples);
 
-		int caller_level = 0;
-		while (true)
-		{
-			lua_Debug activation_record = {};
+			auto* cast_data = static_cast<ScriptPerfState*>(data);
 
-			if (lua_getstack(of_state, caller_level, &activation_record) != 1)
+			size_t dump_len						 = 0;
+			static constexpr uint_fast16_t depth = 5;
+			const char* stack_dump = luaJIT_profile_dumpstack(state, "fZ;", depth, &dump_len);
+
+			printf("Stack:\n'");
+
+			for (size_t i = 0; i < dump_len; i++)
 			{
-				break;
+				fputc(stack_dump[i], stdout);
 			}
 
-			lua_getinfo(of_state, "nS", &activation_record);
+			printf("'\n");
 
-			if (caller_level > 0)
+			switch (vmstate)
 			{
-				error_msg.append("called by ");
+				case 'I':
+				{
+					cast_data->interpreted_count++;
+					break;
+				}
+				case 'N':
+				{
+					cast_data->native_count++;
+					break;
+				}
+				case 'C':
+				{
+					cast_data->engine_count++;
+
+					break;
+				}
+				default:
+				{
+					printf("Non-handled state '%c'\n", vmstate);
+					break;
+				}
 			}
-			else
+		}
+
+		// Register C callback functions from mappings
+		void RegisterCallbacks(lua_State* state, const std::shared_ptr<Logging::Logger>& logger)
+		{
+			lua_newtable(state);
+
+			for (auto& mapping : Mappings::mappings)
 			{
-				error_msg.append("thrown by ");
+				lua_pushcfunction(state, mapping.second);
+				lua_setfield(state, -2, mapping.first.c_str());
 			}
 
-			error_msg.append(activation_record.source)
-				.append(":")
-				.append(std::to_string(activation_record.linedefined))
-				.append("\n");
+			lua_setglobal(state, "engine");
 
-			caller_level++;
+			// Replace print by a SimpleLog wrapper
+			void* ptr_obj = lua_newuserdata(state, sizeof(std::weak_ptr<Logging::Logger>));
+			new (ptr_obj) std::weak_ptr<Logging::Logger>(logger);
+
+			lua_pushcclosure(state, Mappings::Functions::PrintReplace, 1);
+			lua_setglobal(state, "print");
+
+			lua_settop(state, 0);
 		}
 
-		if (caller_level == 0)
+		int LuajitExceptionWrap(lua_State* state, lua_CFunction func)
 		{
-			error_msg.append("could not unwind stack for this error");
+			try
+			{
+				return func(state);
+			}
+			catch (const char* str)
+			{
+				return luaL_error(state, "Exception wrapper caught exception! e.what(): %s", str);
+			}
+			catch (std::exception& e)
+			{
+				return luaL_error(
+					state,
+					"Exception wrapper caught exception! e.what(): %s",
+					e.what()
+				);
+			}
+			catch (...)
+			{
+				return luaL_error(state, "Unknown error caught");
+			}
 		}
 
-		error_msg.append("\n--- END LUA STACK UNWIND ---\n");
-
-		return error_msg;
-	}
-
-	// Register C callback functions from mappings
-	static void RegisterCallbacks(lua_State* state, const std::shared_ptr<Logging::Logger>& logger)
-	{
-		lua_newtable(state);
-
-		for (auto& mapping : Mappings::mappings)
+		void RegisterRequirePath(lua_State* state, ILuaScript* with_script)
 		{
-			lua_pushcfunction(state, mapping.second);
-			lua_setfield(state, -2, mapping.first.c_str());
+			lua_getglobal(state, LUA_LOADLIBNAME);
+			if (!lua_istable(state, -1))
+			{
+				throw std::runtime_error("Lua Module 'package' is not loaded!");
+			}
+
+			std::filesystem::path require_origin = with_script->GetPath();
+			std::string require_origin_str = require_origin.remove_filename().parent_path().string(
+			);
+
+			using namespace std::string_literals;
+			// Check whether this works on other systems
+			std::string require_path_str = (require_origin_str + "/modules/?.lua"s);
+
+			lua_pushstring(state, require_path_str.c_str());
+			lua_setfield(state, -2, "path");
 		}
 
-		lua_setglobal(state, "engine");
-
-		// Replace print by a SimpleLog wrapper
-		void* ptr_obj = lua_newuserdata(state, sizeof(std::weak_ptr<Logging::Logger>));
-		new (ptr_obj) std::weak_ptr<Logging::Logger>(logger);
-
-		lua_pushcclosure(state, Mappings::Functions::PrintReplace, 1);
-		lua_setglobal(state, "print");
-
-		lua_settop(state, 0);
-	}
-
-	static int LuajitExceptionWrap(lua_State* state, lua_CFunction func)
-	{
-		try
+		void RegisterWrapper(lua_State* state)
 		{
-			return func(state);
+			lua_pushlightuserdata(state, reinterpret_cast<void*>(LuajitExceptionWrap));
+			luaJIT_setmode(state, -1, LUAJIT_MODE_WRAPCFUNC | LUAJIT_MODE_ON);
+			lua_pop(state, 1);
 		}
-		catch (const char* str)
-		{
-			return luaL_error(state, "Exception wrapper caught exception! e.what(): %s", str);
-		}
-		catch (std::exception& e)
-		{
-			return luaL_error(state, "Exception wrapper caught exception! e.what(): %s", e.what());
-		}
-		catch (...)
-		{
-			return luaL_error(state, "Unknown error caught");
-		}
-	}
-
-	static void RegisterRequirePath(lua_State* state, ILuaScript* with_script)
-	{
-		lua_getglobal(state, LUA_LOADLIBNAME);
-		if (!lua_istable(state, -1))
-		{
-			throw std::runtime_error("Lua Module 'package' is not loaded!");
-		}
-
-		std::filesystem::path require_origin = with_script->GetPath();
-		std::string require_origin_str = require_origin.remove_filename().parent_path().string();
-
-		using namespace std::string_literals;
-		// Check whether this works on other systems
-		std::string require_path_str = (require_origin_str + "/modules/?.lua"s);
-
-		lua_pushstring(state, require_path_str.c_str());
-		lua_setfield(state, -2, "path");
-	}
-
-	static void RegisterWrapper(lua_State* state)
-	{
-		lua_pushlightuserdata(state, reinterpret_cast<void*>(LuajitExceptionWrap));
-		luaJIT_setmode(state, -1, LUAJIT_MODE_WRAPCFUNC | LUAJIT_MODE_ON);
-		lua_pop(state, 1);
-	}
-
-	int LuaErrorHandler(lua_State* state)
-	{
-		// Describe error by unwinding the stack
-		lua_pushstring(state, UnwindStack(state).c_str());
-
-		// UnwindStack pops the error string
-		// so we return only a single string containing the stack trace
-		return 1;
-	}
+	} // namespace
 
 #pragma endregion
 
@@ -297,7 +240,7 @@ namespace Engine::Scripting
 				Logging::LogLevel::Error,
 				LOGPFX_CURRENT "Error when calling Lua\n\tscript '%s'\n\tfunction: "
 							   "'%s'\n\terrorcode: %i\n%s",
-				path.c_str(),
+				path.string().c_str(),
 				function.c_str(),
 				errcall,
 				errormsg

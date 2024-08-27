@@ -1,17 +1,18 @@
 #include "objects/CommandBuffer.hpp"
 
 #include "backend/LogicalDevice.hpp"
-#include "common/Utilities.hpp"
+#include "common/Utility.hpp"
 #include "objects/Buffer.hpp"
 #include "objects/Image.hpp"
 #include "vulkan/vulkan_raii.hpp"
 
-
 namespace Engine::Rendering::Vulkan
 {
-	CommandBuffer::CommandBuffer(LogicalDevice* with_device, vk::raii::CommandPool& from_pool) : device(with_device)
+	CommandBuffer::CommandBuffer(LogicalDevice* with_device, vk::raii::CommandPool& from_pool)
+		: device(with_device)
 	{
-		vk::CommandBufferAllocateInfo alloc_info(*from_pool, vk::CommandBufferLevel::ePrimary, 1, {});
+		vk::CommandBufferAllocateInfo
+			alloc_info(*from_pool, vk::CommandBufferLevel::ePrimary, 1, {});
 
 		native_handle = std::move(device->allocateCommandBuffers(alloc_info)[0]);
 	}
@@ -34,7 +35,11 @@ namespace Engine::Rendering::Vulkan
 		device->GetGraphicsQueue().waitIdle();
 	}
 
-	void CommandBuffer::BufferBufferCopy(Buffer* from_buffer, Buffer* to_buffer, std::vector<vk::BufferCopy> regions)
+	void CommandBuffer::BufferBufferCopy(
+		Buffer* from_buffer,
+		Buffer* to_buffer,
+		std::vector<vk::BufferCopy> regions
+	)
 	{
 		RecordCmds([&](vk::raii::CommandBuffer* handle) {
 			handle->copyBuffer(*from_buffer->GetHandle(), *to_buffer->GetHandle(), regions);

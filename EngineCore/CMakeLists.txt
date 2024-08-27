@@ -33,6 +33,7 @@ set(SRC_FILES
 	src/Scripting/EventLuaScript.cpp
 	src/Scripting/GeneratorLuaScript.cpp
 	
+	src/Scripting/Utility.cpp
 	src/Scripting/Mappings.cpp
 	src/Scripting/API/LuaFactories.cpp
 	src/Scripting/API/Engine_API.cpp

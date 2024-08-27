@@ -1,6 +1,6 @@
 #include "backend/PhysicalDevice.hpp"
 
-#include "common/Utilities.hpp"
+#include "common/Utility.hpp"
 #include "rendering/Surface.hpp"
 
 #include <stdexcept>

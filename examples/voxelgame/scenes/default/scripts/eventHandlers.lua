@@ -357,7 +357,6 @@ onInit = function(event)
 	collectgarbage()
 
 	for chunk_x = -chunks_x, chunks_x, 1 do -- chunks_x, chunks_x, 1
-		--chunks[chunk_x] = {}
 		for chunk_z = -chunks_z, chunks_z, 1 do
 			local chunk_obj = engine.CreateSceneObject(asset_manager, "renderer_3d/generator", "terrain", {
 				{"texture", "atlas"}, {"generator_script", "testgen"}, {"generator_supplier", "script0/terrain_generator"}
@@ -367,8 +366,6 @@ onInit = function(event)
 			chunk_obj:SetRotation(0, 0, 0)
 			scene:AddObject(string.format("chunk_%i_%i", chunk_x, chunk_z), chunk_obj)
 			chunks[chunk_x][chunk_z].object = {chunk_obj}
-			--print(string.format("Building chunk [%i,%i]",chunk_x, chunk_z))
-			--engine.RendererForceBuild(chunk_obj.renderer)
 		end
 	end
 
