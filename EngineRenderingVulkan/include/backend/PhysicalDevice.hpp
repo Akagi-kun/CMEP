@@ -9,15 +9,17 @@
 #include <utility>
 #include <vector>
 
-
 namespace Engine::Rendering::Vulkan
 {
 	class PhysicalDevice final : public vk::raii::PhysicalDevice
 	{
 	public:
-		PhysicalDevice(vk::raii::PhysicalDevice from_device) : vk::raii::PhysicalDevice(std::move(from_device))
+		PhysicalDevice(vk::raii::PhysicalDevice from_device)
+			: vk::raii::PhysicalDevice(std::move(from_device))
 		{
 		}
+
+		[[nodiscard]] vk::SampleCountFlagBits GetMSAASamples() const;
 
 		[[nodiscard]] std::string GetDeviceName() const;
 
@@ -29,7 +31,9 @@ namespace Engine::Rendering::Vulkan
 
 		[[nodiscard]] vk::Format FindSupportedDepthFormat() const;
 
-		[[nodiscard]] std::optional<QueueFamilyIndices> FindVulkanQueueFamilies(const Surface* with_surface) const;
+		[[nodiscard]] std::optional<QueueFamilyIndices> FindVulkanQueueFamilies(
+			const Surface* with_surface
+		) const;
 	};
 
 } // namespace Engine::Rendering::Vulkan

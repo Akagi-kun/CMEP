@@ -7,14 +7,14 @@
 
 #include <array>
 
-
 namespace Engine::Rendering::Vulkan
 {
-	RenderPass::RenderPass(InstanceOwned::value_t with_instance, vk::Format with_format) : InstanceOwned(with_instance)
+	RenderPass::RenderPass(InstanceOwned::value_t with_instance, vk::Format with_format)
+		: InstanceOwned(with_instance)
 	{
 		const auto& physical_device = instance->GetPhysicalDevice();
 
-		const auto msaa_samples = instance->GetMSAASamples();
+		const auto msaa_samples = physical_device->GetMSAASamples();
 
 		vk::AttachmentDescription color_attachment(
 			{},
@@ -53,8 +53,14 @@ namespace Engine::Rendering::Vulkan
 		);
 
 		vk::AttachmentReference color_attachment_ref(0, vk::ImageLayout::eColorAttachmentOptimal);
-		vk::AttachmentReference depth_attachment_ref(1, vk::ImageLayout::eDepthStencilAttachmentOptimal);
-		vk::AttachmentReference color_resolve_attachment_ref(2, vk::ImageLayout::eColorAttachmentOptimal);
+		vk::AttachmentReference depth_attachment_ref(
+			1,
+			vk::ImageLayout::eDepthStencilAttachmentOptimal
+		);
+		vk::AttachmentReference color_resolve_attachment_ref(
+			2,
+			vk::ImageLayout::eColorAttachmentOptimal
+		);
 
 		vk::SubpassDescription subpass(
 			{},
@@ -71,10 +77,13 @@ namespace Engine::Rendering::Vulkan
 		vk::SubpassDependency dependency(
 			vk::SubpassExternal,
 			{},
-			vk::PipelineStageFlagBits::eColorAttachmentOutput | vk::PipelineStageFlagBits::eEarlyFragmentTests,
-			vk::PipelineStageFlagBits::eColorAttachmentOutput | vk::PipelineStageFlagBits::eEarlyFragmentTests,
+			vk::PipelineStageFlagBits::eColorAttachmentOutput |
+				vk::PipelineStageFlagBits::eEarlyFragmentTests,
+			vk::PipelineStageFlagBits::eColorAttachmentOutput |
+				vk::PipelineStageFlagBits::eEarlyFragmentTests,
 			{},
-			vk::AccessFlagBits::eColorAttachmentWrite | vk::AccessFlagBits::eDepthStencilAttachmentWrite
+			vk::AccessFlagBits::eColorAttachmentWrite |
+				vk::AccessFlagBits::eDepthStencilAttachmentWrite
 		);
 
 		vk::RenderPassCreateInfo create_info({}, attachments, subpass, dependency, {});

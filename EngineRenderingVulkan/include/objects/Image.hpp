@@ -12,7 +12,6 @@
 
 #include <cassert>
 
-
 namespace Engine::Rendering::Vulkan
 {
 	class Image : public InstanceOwned, public HoldsVMA, public HandleWrapper<vk::raii::Image>
@@ -61,14 +60,12 @@ namespace Engine::Rendering::Vulkan
 			vk::ImageTiling with_tiling		   = vk::ImageTiling::eOptimal
 		);
 
-		// void AddImageView(vk::ImageAspectFlags with_aspect_flags = vk::ImageAspectFlagBits::eColor);
-
 		[[nodiscard]] vk::raii::ImageView& GetNativeViewHandle()
 		{
-			return native_view_handle;
+			return view_handle;
 		}
 
 	protected:
-		vk::raii::ImageView native_view_handle = nullptr;
+		vk::raii::ImageView view_handle = nullptr;
 	};
 } // namespace Engine::Rendering::Vulkan

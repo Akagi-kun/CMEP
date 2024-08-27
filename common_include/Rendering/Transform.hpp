@@ -1,6 +1,5 @@
 #pragma once
 
-// #include "DataTypes.hpp"
 #include "glm/glm.hpp"
 
 #include <cstdint>

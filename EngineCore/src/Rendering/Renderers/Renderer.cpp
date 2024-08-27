@@ -84,15 +84,9 @@ namespace Engine::Rendering
 	{
 		has_updated_descriptors = true;
 
-		// auto extended_settings = Vulkan::ExtendedPipelineSettings{settings};
-
 		if (texture)
 		{
 			settings.descriptor_settings[1].opt_match_hash = std::hash<Asset>{}(*texture);
-			// extended_settings.short_setting.descriptor_settings[1].opt_match_hash =
-			// std::hash<Asset>{}(*texture);
-			//  extended_settings.supply_data.emplace_back(RendererSupplyDataType::TEXTURE,
-			//  texture);
 		}
 
 		pipeline = pipeline_manager->GetPipeline(settings);

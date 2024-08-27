@@ -16,7 +16,11 @@ namespace Engine::Rendering
 	class IRenderer : public InternalEngineObject
 	{
 	public:
-		IRenderer(Engine* with_engine, IMeshBuilder* with_builder, std::string_view with_pipeline_program);
+		IRenderer(
+			Engine* with_engine,
+			IMeshBuilder* with_builder,
+			std::string_view with_pipeline_program
+		);
 		virtual ~IRenderer();
 
 		// Renderers shall implement this to get textures, fonts etc.

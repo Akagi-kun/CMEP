@@ -4,7 +4,6 @@
 
 #include "backend/DeviceScore.hpp"
 #include "backend/MemoryAllocator.hpp"
-#include "common/Utilities.hpp"
 #include "objects/CommandPool.hpp"
 #include "rendering/Surface.hpp"
 #include "vulkan/vulkan.hpp"
@@ -277,15 +276,18 @@ namespace Engine::Rendering::Vulkan
 
 		// First device has to be the "best" after sorting
 		physical_device = new PhysicalDevice(candidates[0].device_scored);
-		msaa_samples	= Utility::GetMaxFramebufferSampleCount(*physical_device);
+		// msaa_samples	= Utility::GetMaxFramebufferSampleCount(*physical_device);
 
 		this->logger->SimpleLog(
 			Logging::LogLevel::Info,
 			LOGPFX_CURRENT "Found a capable physical device: '%s'",
 			physical_device->GetDeviceName().c_str()
 		);
-		this->logger
-			->SimpleLog(Logging::LogLevel::Info, LOGPFX_CURRENT "Using MSAAx%u", msaa_samples);
+		this->logger->SimpleLog(
+			Logging::LogLevel::Info,
+			LOGPFX_CURRENT "Using MSAAx%u",
+			physical_device->GetMSAASamples()
+		);
 	}
 
 #pragma endregion

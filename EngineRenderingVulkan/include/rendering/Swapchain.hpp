@@ -20,13 +20,28 @@ namespace Engine::Rendering::Vulkan
 		SyncObjects(vk::raii::Device& with_device);
 	};
 
+	struct FramebufferData
+	{
+		const vk::ImageView* depth		   = nullptr;
+		const vk::ImageView* color		   = nullptr;
+		const vk::ImageView* color_resolve = nullptr;
+	};
+
 	struct RenderTarget final
 	{
 		SyncObjects sync_objects;
 		CommandBuffer* command_buffer = nullptr;
 
+		vk::raii::Framebuffer* framebuffer = nullptr;
+
 		RenderTarget() = default;
-		RenderTarget(CommandPool* with_command_pool, vk::raii::Device& with_device);
+		RenderTarget(
+			vk::raii::RenderPass& with_render_pass,
+			vk::Extent2D with_extent,
+			FramebufferData with_fb_data,
+			CommandPool* with_command_pool,
+			vk::raii::Device& with_device
+		);
 		~RenderTarget();
 
 		RenderTarget(RenderTarget&&)			= default;
@@ -85,6 +100,9 @@ namespace Engine::Rendering::Vulkan
 		std::vector<vk::Image> image_handles;
 		std::vector<vk::raii::ImageView> image_view_handles;
 
+		ViewedImage* depth_image = nullptr;
+		ViewedImage* color_image = nullptr;
+
 		per_frame_array<RenderTarget*> render_targets;
 
 		vk::SurfaceFormatKHR surface_format;
@@ -92,10 +110,7 @@ namespace Engine::Rendering::Vulkan
 
 		RenderPass* render_pass = nullptr;
 
-		// TODO: move framebuffers into RenderTargetData
-		std::vector<vk::raii::Framebuffer*> framebuffers;
-
-		ViewedImage* depth_buffer			  = nullptr;
-		ViewedImage* multisampled_color_image = nullptr;
+		// TODO: move framebuffers into RenderTarget
+		// std::vector<vk::raii::Framebuffer*> framebuffers;
 	};
 } // namespace Engine::Rendering::Vulkan

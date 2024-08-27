@@ -10,7 +10,6 @@
 
 #include <stdexcept>
 
-
 namespace Engine::Rendering::Vulkan
 {
 	Image::Image(
@@ -22,8 +21,8 @@ namespace Engine::Rendering::Vulkan
 		vk::MemoryPropertyFlags properties,
 		vk::ImageTiling tiling
 	)
-		: InstanceOwned(with_instance), HoldsVMA(with_instance->GetGraphicMemoryAllocator()), image_format(format),
-		  size(with_size)
+		: InstanceOwned(with_instance), HoldsVMA(with_instance->GetGraphicMemoryAllocator()),
+		  image_format(format), size(with_size)
 	{
 		LogicalDevice* logical_device = instance->GetLogicalDevice();
 
@@ -100,7 +99,8 @@ namespace Engine::Rendering::Vulkan
 		vk::PipelineStageFlags src_stage;
 		vk::PipelineStageFlags dst_stage;
 
-		if (current_layout == vk::ImageLayout::eUndefined && new_layout == vk::ImageLayout::eTransferDstOptimal)
+		if (current_layout == vk::ImageLayout::eUndefined &&
+			new_layout == vk::ImageLayout::eTransferDstOptimal)
 		{
 			barrier.srcAccessMask = {};
 			barrier.dstAccessMask = vk::AccessFlagBits::eTransferWrite;
@@ -156,7 +156,7 @@ namespace Engine::Rendering::Vulkan
 			{with_aspect_flags, 0, 1, 0, 1}
 		);
 
-		native_view_handle = logical_device->createImageView(view_create_info);
+		view_handle = logical_device->createImageView(view_create_info);
 	}
 
 } // namespace Engine::Rendering::Vulkan

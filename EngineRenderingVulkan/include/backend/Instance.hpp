@@ -15,7 +15,6 @@
 
 #include <vector>
 
-
 namespace Engine::Rendering::Vulkan
 {
 	class Instance final : public Logging::SupportsLogging, public HandleWrapper<vk::raii::Instance>
@@ -28,17 +27,15 @@ namespace Engine::Rendering::Vulkan
 			const std::vector<std::pair<int, int>>& hints;
 		};
 
-		Instance(SupportsLogging::logger_t with_logger, const WindowParams&& with_window_parameters);
+		Instance(
+			SupportsLogging::logger_t with_logger,
+			const WindowParams&& with_window_parameters
+		);
 		~Instance();
 
 		[[nodiscard]] Window* GetWindow()
 		{
 			return window;
-		}
-
-		[[nodiscard]] vk::SampleCountFlagBits GetMSAASamples() const
-		{
-			return msaa_samples;
 		}
 
 		[[nodiscard]] PhysicalDevice* GetPhysicalDevice()
@@ -74,7 +71,7 @@ namespace Engine::Rendering::Vulkan
 
 		CommandPool* command_pool = nullptr;
 
-		vk::SampleCountFlagBits msaa_samples = vk::SampleCountFlagBits::e1;
+		// vk::SampleCountFlagBits msaa_samples = vk::SampleCountFlagBits::e1;
 
 		static const std::vector<const char*> validation_layers;
 

@@ -1,5 +1,6 @@
 #include "backend/PhysicalDevice.hpp"
 
+#include "common/Utilities.hpp"
 #include "rendering/Surface.hpp"
 
 #include <stdexcept>
@@ -7,6 +8,11 @@
 namespace Engine::Rendering::Vulkan
 {
 #pragma region Public
+
+	vk::SampleCountFlagBits PhysicalDevice::GetMSAASamples() const
+	{
+		return Utility::GetMaxFramebufferSampleCount(*this);
+	}
 
 	std::string PhysicalDevice::GetDeviceName() const
 	{
@@ -23,12 +29,14 @@ namespace Engine::Rendering::Vulkan
 		{
 			vk::FormatProperties fmt_properties = getFormatProperties(format);
 
-			if (tiling == vk::ImageTiling::eLinear && (fmt_properties.linearTilingFeatures & features) == features)
+			if (tiling == vk::ImageTiling::eLinear &&
+				(fmt_properties.linearTilingFeatures & features) == features)
 			{
 				return format;
 			}
 
-			if (tiling == vk::ImageTiling::eOptimal && (fmt_properties.optimalTilingFeatures & features) == features)
+			if (tiling == vk::ImageTiling::eOptimal &&
+				(fmt_properties.optimalTilingFeatures & features) == features)
 			{
 				return format;
 			}
@@ -46,7 +54,9 @@ namespace Engine::Rendering::Vulkan
 		);
 	}
 
-	std::optional<QueueFamilyIndices> PhysicalDevice::FindVulkanQueueFamilies(const Surface* with_surface) const
+	std::optional<QueueFamilyIndices> PhysicalDevice::FindVulkanQueueFamilies(
+		const Surface* with_surface
+	) const
 	{
 		QueueFamilyIndices indices;
 
