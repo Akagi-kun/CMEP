@@ -1,5 +1,4 @@
 cmake_minimum_required(VERSION 3.10)
-project(CMEP)
 
 # Also build glfw
 add_subdirectory(glfw)
@@ -9,7 +8,6 @@ add_subdirectory(glfw)
 # We use the author's native build system (make for unix-like, msvcbuild.bat for windows)
 
 # Debug info
-#message("-- [EXTERNAL] Binary dir is: " ${CMAKE_CURRENT_BINARY_DIR})
 message("-- [EXTERNAL] Source dir is: " ${CMAKE_CURRENT_SOURCE_DIR})
 
 # Setup various platform-specific semantics

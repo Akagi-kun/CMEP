@@ -1,5 +1,6 @@
 #include "Rendering/Vulkan/backend.hpp"
 
+#include "Exception.hpp"
 #include "InternalEngineObject.hpp"
 
 #pragma warning(push, 2)
@@ -33,7 +34,12 @@ namespace Engine::Factories
 	{
 		if (!std::filesystem::exists(path))
 		{
-			throw std::invalid_argument("Cannot initialize a texture from a nonexistent path!");
+			using namespace std::string_literals;
+
+			throw ENGINE_EXCEPTION(
+				"Cannot initialize a texture from a nonexistent path! Path: "s + path.string()
+			);
+			// throw std::invalid_argument("Cannot initialize a texture from a nonexistent path!");
 		}
 
 		this->logger->SimpleLog(

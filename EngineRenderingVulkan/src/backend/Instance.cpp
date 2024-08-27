@@ -7,6 +7,7 @@
 #include "common/Utilities.hpp"
 #include "objects/CommandPool.hpp"
 #include "rendering/Surface.hpp"
+#include "vulkan/vulkan.hpp"
 
 #include <cstring>
 #include <stdexcept>

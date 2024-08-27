@@ -1,6 +1,3 @@
-cmake_minimum_required(VERSION 3.12)
-project(EngineLogging CXX)
-
 set(SRC_FILES
 	src/Logging.cpp
 	src/ConsoleColors.cpp

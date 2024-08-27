@@ -13,6 +13,12 @@ def parse_vcxproj(project_file):
 	defines = []
 	files = []
 	warning_level = 0
+	cpp_version = 11
+
+	cpp_version_lines = re.findall(r'<LanguageStandard>stdcpp([0-9]*?)</LanguageStandard>', data)
+	for line in cpp_version_lines:
+		cpp_version = int(line)
+
 
 	warning_level_lines = re.findall(r'<WarningLevel>Level(.*?)</WarningLevel>', data)
 	for line in warning_level_lines:
@@ -36,7 +42,7 @@ def parse_vcxproj(project_file):
 	file_lines = re.findall(r'<ClCompile Include="(.*?)"', data)
 	files.extend(file_lines)
 
-	return list(set(includes)), list(set(defines)), files, warning_level
+	return list(set(includes)), list(set(defines)), files, warning_level, cpp_version
 
 def generate_compile_commands(vs_project_path, output_path, root_path, default_includes : list):
 	compile_commands = []
@@ -47,7 +53,7 @@ def generate_compile_commands(vs_project_path, output_path, root_path, default_i
 
 	print(f"- Generating compile_commands.json")
 	for project_file in Path(vs_project_path).rglob('*.vcxproj'):
-		includes, defines, files, warning_level = parse_vcxproj(project_file)
+		includes, defines, files, warning_level, cpp_version = parse_vcxproj(project_file)
 		print(f"  Parsing {project_file}")
 
 		processed_file: str = str()
@@ -63,13 +69,14 @@ def generate_compile_commands(vs_project_path, output_path, root_path, default_i
 			else:
 				processed_includes.append(str(include_as_path))
 
-		arguments: list = ["cl", "/EHsc", "/std:c++17", "/showIncludes", f"/W{warning_level}"]
+		arguments: list = ["cl", "/EHsc", "/std:c++"+str(cpp_version), "/showIncludes", f"/W{warning_level}"]
 
 		for include in processed_includes:
 			arguments.append("/I" + include)
 
-		#for define in defines:
-		#	arguments.append("/D" + define)
+		for define in defines:
+			if not define.startswith("CMAKE"):
+				arguments.append("/D" + define)
 
 		arguments.extend(["/D_DEBUG", "/DDEBUG=1", "/DWIN32", "/D_WINDOWS", "/DCMAKE_INTDIR=\"Debug\""])
 

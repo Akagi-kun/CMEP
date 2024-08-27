@@ -1,10 +1,6 @@
-cmake_minimum_required(VERSION 3.12)
-project(CMEP CXX)
-
 set(SRC_FILES
 	src/main.cpp
 	)
-
 
 if(WIN32)
 	set(STATIC_LIBRARIES

@@ -1,6 +1,3 @@
-cmake_minimum_required(VERSION 3.10)
-project(examples)
-
 message("-- [EXAMPLES] Source dir is: " ${CMAKE_SOURCE_DIR})
 
 file(STRINGS 
