@@ -189,8 +189,6 @@ namespace Engine::Scripting::Mappings
 
 				if (factory)
 				{
-					throw ENGINE_EXCEPTION("message");
-
 					Object* obj = factory(
 						owner_engine,
 						shader_name,
