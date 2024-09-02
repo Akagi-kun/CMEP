@@ -36,10 +36,10 @@ namespace Engine::Rendering::Vulkan
 			  use_filter(with_filter), use_address_mode(with_address_mode)
 		{
 
-			LogicalDevice* logical_device = instance->GetLogicalDevice();
+			LogicalDevice* logical_device = this->instance->GetLogicalDevice();
 
 			vk::PhysicalDeviceProperties device_properties =
-				instance->GetPhysicalDevice()->getProperties();
+				this->instance->GetPhysicalDevice()->getProperties();
 
 			texture_sampler = logical_device->createSampler(GetSamplerCreateInfo(
 				use_filter,
@@ -75,10 +75,10 @@ namespace Engine::Rendering::Vulkan
 			  ),
 			  use_filter(with_filter), use_address_mode(with_address_mode)
 		{
-			LogicalDevice* logical_device = instance->GetLogicalDevice();
+			LogicalDevice* logical_device = this->instance->GetLogicalDevice();
 
 			vk::PhysicalDeviceProperties device_properties =
-				instance->GetPhysicalDevice()->getProperties();
+				this->instance->GetPhysicalDevice()->getProperties();
 
 			texture_sampler = logical_device->createSampler(GetSamplerCreateInfo(
 				use_filter,
