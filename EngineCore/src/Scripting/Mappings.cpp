@@ -219,56 +219,19 @@ namespace Engine::Scripting::Mappings
 
 #pragma region Renderer / MeshBuilder
 
-		/* static int RendererSupplyText(lua_State* state)
+		static int RendererSupplyData(lua_State* state)
 		{
-			CMEP_LUACHECK_FN_ARGC(state, 2)
+			CMEP_LUACHECK_FN_ARGC(state, 3)
 
 			auto* renderer = static_cast<Rendering::IRenderer*>(lua_touserdata(state, 1));
 
-			const char* text = lua_tostring(state, 2);
+			auto type  = Utility::LuaValue(state, 2);
+			auto value = Utility::LuaValue(state, 3);
 
-			Rendering::RendererSupplyData text_supply = {
-				Rendering::RendererSupplyData::Type::TEXT,
-				text
-			};
-			renderer->SupplyData(text_supply);
+			renderer->SupplyData(Factories::ObjectFactory::GenerateRendererSupplyData(type, value));
 
 			return 0;
 		}
-
-		static int RendererSupplyTexture(lua_State* state)
-		{
-			CMEP_LUACHECK_FN_ARGC(state, 2)
-
-			auto* renderer = static_cast<Rendering::IRenderer*>(lua_touserdata(state, 1));
-
-			lua_getfield(state, 2, "_smart_ptr");
-			std::shared_ptr<Rendering::Texture> texture =
-				*static_cast<std::shared_ptr<Rendering::Texture>*>(lua_touserdata(state, -1));
-
-			Rendering::RendererSupplyData texture_supply = {
-				Rendering::RendererSupplyData::Type::TEXTURE,
-				texture
-			};
-			renderer->SupplyData(texture_supply);
-
-			return 0;
-		} */
-
-		// TODO: Implement texture
-		/* static int RendererSupplyData(lua_State* state)
-		{
-			CMEP_LUACHECK_FN_ARGC(state, 3);
-
-			auto* renderer = static_cast<Rendering::IRenderer*>(lua_touserdata(state, 1));
-
-			EnumStringConvertor<Rendering::RendererSupplyData::Type> type = std::string(
-				lua_tostring(state, 2)
-			);
-			std::string value = lua_tostring(state, 3);
-
-			assert(type == Rendering::RendererSupplyData::Type::);
-		} */
 
 		static int MeshBuilderSupplyData(lua_State* state)
 		{
@@ -276,15 +239,12 @@ namespace Engine::Scripting::Mappings
 
 			auto* mesh_builder = static_cast<Rendering::IMeshBuilder*>(lua_touserdata(state, 1));
 
-			EnumStringConvertor<Rendering::MeshBuilderSupplyData::Type> type =
-				Utility::LuaValue(state, 2);
+			auto type  = Utility::LuaValue(state, 2);
+			auto value = Utility::LuaValue(state, 3);
 
-			std::string value = Utility::LuaValue(state, 3);
-
-			// TODO: Support other types beside text
-			assert(type == Rendering::MeshBuilderSupplyData::Type::TEXT);
-
-			mesh_builder->SupplyData({type, value});
+			mesh_builder->SupplyData(
+				Factories::ObjectFactory::GenerateMeshBuilderSupplyData(type, value)
+			);
 
 			return 0;
 		}
@@ -294,8 +254,7 @@ namespace Engine::Scripting::Mappings
 	} // namespace Functions
 
 	std::unordered_map<std::string, const lua_CFunction> mappings = {
-		// CMEP_LUAMAPPING_DEFINE(RendererSupplyText),
-		// CMEP_LUAMAPPING_DEFINE(RendererSupplyTexture),
+		CMEP_LUAMAPPING_DEFINE(RendererSupplyData),
 		CMEP_LUAMAPPING_DEFINE(MeshBuilderSupplyData),
 
 		CMEP_LUAMAPPING_DEFINE(CreateSceneObject)

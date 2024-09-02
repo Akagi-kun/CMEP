@@ -70,8 +70,6 @@ local generate_boundary_info = function(chunk_x, chunk_z)
 		if bounds_check then
 			generate_chunk(chunk_x, chunk_z - 1)
 			goto before_check1
---		else
---			print("Skipping generation for chunk outside range")
 		end
 	end
 
@@ -92,8 +90,6 @@ local generate_boundary_info = function(chunk_x, chunk_z)
 		if bounds_check then
 			generate_chunk(chunk_x, chunk_z + 1)
 			goto before_check2
---		else
---			print("Skipping generation for chunk outside range")
 		end
 	end
 
@@ -114,8 +110,6 @@ local generate_boundary_info = function(chunk_x, chunk_z)
 		if bounds_check then
 			generate_chunk(chunk_x - 1, chunk_z)
 			goto before_check3
---		else
---			print("Skipping generation for chunk outside range")
 		end
 	end
 
@@ -234,16 +228,12 @@ terrain_generator = function(...)
 	local chunk_x = xpos / config.chunk_size_x
 	local chunk_z = zpos / config.chunk_size_z
 
-	--generate_chunk(xpos, zpos)
-
 	if chunks[chunk_x] == nil or chunks[chunk_x][chunk_z] == nil or chunks[chunk_x][chunk_z].data == nil then
 		print("Generator supplier could not find chunk data! Regenerating")
 		generate_chunk(chunk_x, chunk_z)
 	end
 
-	--assert(chunks[chunk_x][chunk_z].data, "No chunk buffer exists for this chunk!")
-
-	return chunks[chunk_x][chunk_z].data
+	return assert(chunks[chunk_x][chunk_z].data, "No chunk buffer exists for this chunk!")
 end
 
 --check_chunks_loaded = function(asset_manager, scene)
@@ -293,8 +283,6 @@ onUpdate = function(event)
 	--[[ if coroutine.status(load_chunks_coro) ~= "dead" then
 		coroutine.resume(load_chunks_coro, asset_manager, scene)
 	end ]]
-
-	--onMovementTick(event.deltaTime, scene_manager)
 
 	-- Updates frametime counter, recommend to leave this here for debugging purposes
 	if deltaTime_accum >= 1.0 then
@@ -370,7 +358,6 @@ onInit = function(event)
 			local chunk_obj = engine.CreateSceneObject(event.engine, "renderer_3d/generator", "terrain",
 				{ {"texture", atlas_texture} }, { {"generator", cdefs.CreateGeneratorData(testgen_script, "generate_fn", supplier_script, "terrain_generator")} }
 			)
-			--{ {"texture", "atlas"} }
 			chunk_obj:SetPosition(chunk_x * config.chunk_size_x, 0.0, chunk_z * config.chunk_size_z)
 			chunk_obj:SetSize(1, 1, 1)
 			chunk_obj:SetRotation(0, 0, 0)

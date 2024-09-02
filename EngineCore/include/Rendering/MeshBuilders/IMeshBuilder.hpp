@@ -27,6 +27,7 @@ namespace Engine::Rendering
 			(void)(data);
 		}
 
+		// TODO: Remove
 		void SupplyWorldPosition(const glm::vec3& with_world_position)
 		{
 			world_pos = with_world_position;

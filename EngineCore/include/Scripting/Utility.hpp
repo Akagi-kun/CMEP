@@ -62,4 +62,5 @@ namespace Engine::Scripting::Utility
 
 	// Guaranteed to return null terminated string
 	std::string_view MappingReverseLookup(lua_CFunction lookup_function);
+
 } // namespace Engine::Scripting::Utility
