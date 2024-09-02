@@ -35,7 +35,7 @@ namespace Engine::Scripting::Utility
 			CDATA	  = lua_cdata_typeid
 		};
 
-		using value_t = std::variant<std::string, double, nullptr_t, void*, bool>;
+		using value_t = std::variant<std::string, double, std::nullptr_t, void*, bool>;
 
 		const Type type;
 		const value_t value;
