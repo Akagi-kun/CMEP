@@ -20,7 +20,7 @@ else()
 	set(ENGINE_COMPILE_OPTIONS -Wall -Wpedantic -Wno-unknown-pragmas) # -Wextra -Werror
 
 	if(APPLE)
-		list(APPEND ENGINE_COMPILE_OPTIONS -Wno-nullability -Wno-nullability-completeness)
+		list(APPEND ENGINE_COMPILE_OPTIONS -Wno-nullability -Wno-nullability-completeness -Wno-nullability-extension)
 	endif()
 endif()
 
