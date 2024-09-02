@@ -14,22 +14,24 @@
 
 namespace Engine::Rendering
 {
+#pragma region Public
+
 	Font::~Font()
 	{
-		this->logger->SimpleLog(Logging::LogLevel::Debug3, LOGPFX_CURRENT "Destructor called");
+		logger->SimpleLog(Logging::LogLevel::Debug3, LOGPFX_CURRENT "Destructor called");
 
-		this->data.reset();
+		data.reset();
 	}
 
 	void Font::Init(std::unique_ptr<FontData> init_data)
 	{
-		this->data = std::move(init_data);
+		data = std::move(init_data);
 	}
 
-	FontChar* Font::GetChar(char character_id)
+	const FontChar* Font::GetChar(char character_id) const
 	{
-		auto find_ret = this->data->chars.find(character_id);
-		if (find_ret != this->data->chars.end())
+		auto find_ret = data->chars.find(character_id);
+		if (find_ret != data->chars.end())
 		{
 			return &find_ret->second;
 		}
@@ -38,21 +40,33 @@ namespace Engine::Rendering
 
 	std::shared_ptr<Texture> Font::GetPageTexture(int page)
 	{
-		auto find_ret = this->data->pages.find(page);
-		if (find_ret != this->data->pages.end())
+		auto find_ret = data->pages.find(page);
+		if (find_ret != data->pages.end())
 		{
 			return find_ret->second;
 		}
 		return nullptr;
 	}
 
-	std::string* Font::GetFontInfoParameter(const std::string& name)
+	std::shared_ptr<const Texture> Font::GetPageTexture(int page) const
 	{
-		auto find_ret = this->data->info.find(name);
-		if (find_ret != this->data->info.end())
+		auto find_ret = data->pages.find(page);
+		if (find_ret != data->pages.end())
 		{
-			return &find_ret->second;
+			return find_ret->second;
 		}
 		return nullptr;
 	}
+
+	std::optional<std::string> Font::GetFontInfoParameter(const std::string& name) const
+	{
+		auto find_ret = data->info.find(name);
+		if (find_ret != data->info.end())
+		{
+			return find_ret->second;
+		}
+		return {};
+	}
+
+#pragma endregion
 } // namespace Engine::Rendering

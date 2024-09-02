@@ -406,3 +406,4 @@ util/*.png
 util/*.csv
 *.dir/
 docs/output/*
+common_include/cmake_cfg.hpp

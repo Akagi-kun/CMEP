@@ -6,6 +6,7 @@
 
 #include "Logging/Logging.hpp"
 
+#include "Exception.hpp"
 #include "InternalEngineObject.hpp"
 
 // Prefixes for logging messages
@@ -116,6 +117,32 @@ namespace Engine
 		);
 
 		return nullptr;
+	}
+
+	[[nodiscard]] std::shared_ptr<void> AssetManager::GetAsset(
+		AssetType with_type,
+		const std::string& name
+	)
+	{
+		switch (with_type)
+		{
+			case AssetType::FONT:
+			{
+				return GetFont(name);
+			}
+			case AssetType::SCRIPT:
+			{
+				return GetLuaScript(name);
+			}
+			case AssetType::TEXTURE:
+			{
+				return GetTexture(name);
+			}
+			default:
+			{
+				throw ENGINE_EXCEPTION("Invalid asset type!");
+			}
+		}
 	}
 #pragma endregion
 } // namespace Engine

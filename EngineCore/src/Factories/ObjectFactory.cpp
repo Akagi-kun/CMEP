@@ -8,16 +8,14 @@
 #include "Rendering/SupplyData.hpp"
 
 #include "EnumStringConvertor.hpp"
-#include "KVPairHelper.hpp"
+#include "Exception.hpp"
 
-#include <any>
 #include <cassert>
 #include <stdexcept>
 
 namespace Engine::Factories::ObjectFactory
 {
-	std::function<Object*(Engine*, std::string, const std::vector<Rendering::RendererSupplyData>&)>
-	GetSceneObjectFactory(
+	object_factory_t GetSceneObjectFactory(
 		EnumStringConvertor<RendererType> with_renderer,
 		EnumStringConvertor<MeshBuilderType> with_mesh_builder
 	)
@@ -105,66 +103,77 @@ namespace Engine::Factories::ObjectFactory
 
 	Object* InstantiateObjectTemplate(Engine* with_engine, ObjectTemplate& from_template)
 	{
-		const auto& factory = GetSceneObjectFactory(from_template.with_renderer, from_template.with_mesh_builder);
+		const auto& factory =
+			GetSceneObjectFactory(from_template.with_renderer, from_template.with_mesh_builder);
 
-		return factory(with_engine, from_template.with_shader, from_template.supply_list);
+		return factory(
+			with_engine,
+			from_template.with_shader,
+			from_template.renderer_supply_list,
+			from_template.meshbuilder_supply_list
+		);
 	}
 
-	void PushSupplyData(
-		AssetManager* asset_manager,
-		std::vector<Rendering::RendererSupplyData>& into_vector,
-		EnumStringConvertor<Rendering::RendererSupplyDataType> of_type,
-		std::any with_value
+	Rendering::RendererSupplyData GenerateRendererSupplyData(
+		EnumStringConvertor<Rendering::RendererSupplyData::Type> of_type,
+		valid_value_t with_value
 	)
 	{
-		if (with_value.has_value())
-		{
-			switch (of_type)
-			{
-				case Rendering::RendererSupplyDataType::TEXTURE:
-				{
-					into_vector.emplace_back(
-						of_type,
-						asset_manager->GetTexture(std::any_cast<std::string>(with_value))
-					);
-					return;
-				}
-				case Rendering::RendererSupplyDataType::FONT:
-				{
-					into_vector.emplace_back(of_type, asset_manager->GetFont(std::any_cast<std::string>(with_value)));
-					return;
-				}
-				case Rendering::RendererSupplyDataType::TEXT:
-				{
-					into_vector.emplace_back(of_type, std::any_cast<std::string>(with_value));
-					return;
-				}
-				case Rendering::RendererSupplyDataType::GENERATOR_SCRIPT:
-				{
-					into_vector.emplace_back(
-						of_type,
-						asset_manager->GetLuaScript(std::any_cast<std::string>(with_value))
-					);
-					return;
-				}
-				case Rendering::RendererSupplyDataType::GENERATOR_SUPPLIER:
-				{
-					const auto [key, val] = Utility::SplitKVPair(std::any_cast<std::string>(with_value), "/");
+		ENGINE_EXCEPTION_ON_ASSERT(with_value.index() != 0, "Invalid supply data value passed!")
 
-					into_vector.emplace_back(
-						of_type,
-						Rendering::GeneratorSupplierData{asset_manager->GetLuaScript(key), val}
-					);
-					return;
-				}
-				default:
-				{
-					throw std::invalid_argument("RendererSupplyDataType is unknown, invalid or missing!");
-				}
+		switch (of_type)
+		{
+			case Rendering::RendererSupplyData::Type::TEXTURE:
+			{
+				return {
+					of_type,
+					*static_cast<std::weak_ptr<Rendering::Texture>*>(std::get<void*>(with_value))
+				};
+			}
+			case Rendering::RendererSupplyData::Type::FONT:
+			{
+				return {
+					of_type,
+					*static_cast<std::weak_ptr<Rendering::Font>*>(std::get<void*>(with_value))
+				};
+			}
+			default:
+			{
+				using namespace std::string_literals;
+				throw ENGINE_EXCEPTION(
+					"RendererSupplyDataType is unknown, invalid or missing! Type: "s.append(of_type)
+				);
 			}
 		}
-
-		throw std::invalid_argument("Cannot PushSupplyData without a value to push! (std::any::has_value() is false)");
 	}
 
+	Rendering::MeshBuilderSupplyData GenerateMeshBuilderSupplyData(
+		EnumStringConvertor<Rendering::MeshBuilderSupplyData::Type> of_type,
+		valid_value_t with_value
+	)
+	{
+		ENGINE_EXCEPTION_ON_ASSERT(with_value.index() != 0, "Invalid supply data value passed!")
+
+		switch (of_type)
+		{
+			case Rendering::MeshBuilderSupplyData::Type::TEXT:
+			{
+				return {of_type, std::get<std::string>(with_value)};
+			}
+			case Rendering::MeshBuilderSupplyData::Type::GENERATOR:
+			{
+				auto* cdata_ptr = static_cast<Rendering::GeneratorData*>(std::get<void*>(with_value)
+				);
+
+				return {of_type, *cdata_ptr};
+			}
+			default:
+			{
+				using namespace std::string_literals;
+				throw ENGINE_EXCEPTION(
+					"MeshBuilderSupplyData is unknown, invalid or missing! Type: "s.append(of_type)
+				);
+			}
+		}
+	}
 } // namespace Engine::Factories::ObjectFactory

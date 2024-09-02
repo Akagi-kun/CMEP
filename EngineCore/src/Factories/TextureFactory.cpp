@@ -39,13 +39,12 @@ namespace Engine::Factories
 			throw ENGINE_EXCEPTION(
 				"Cannot initialize a texture from a nonexistent path! Path: "s + path.string()
 			);
-			// throw std::invalid_argument("Cannot initialize a texture from a nonexistent path!");
 		}
 
 		this->logger->SimpleLog(
 			Logging::LogLevel::Debug2,
 			LOGPFX_CURRENT "Initializing texture from file %s",
-			path.c_str()
+			path.string().c_str()
 		);
 
 		std::vector<unsigned char> data;
@@ -146,8 +145,6 @@ namespace Engine::Factories
 
 		// Transfer image layout to compatible with rendering
 		texture_data->texture_image->TransitionImageLayout(vk::ImageLayout::eShaderReadOnlyOptimal);
-
-		// texture_data->texture_image->AddImageView();
 
 		return 0;
 	}

@@ -10,7 +10,11 @@ namespace Engine
 	class Object final : public InternalEngineObject
 	{
 	public:
-		using InternalEngineObject::InternalEngineObject;
+		Object(
+			Engine* with_engine,
+			Rendering::IRenderer* with_renderer,
+			Rendering::IMeshBuilder* with_mesh_builder
+		);
 		~Object() noexcept;
 
 		void ScreenSizeInform(Rendering::ScreenSize with_screen_size);
@@ -20,8 +24,14 @@ namespace Engine
 		void SetSize(glm::vec3 with_size);
 		void SetRotation(glm::vec3 with_rotation);
 
-		void SetRenderer(Rendering::IRenderer* with_renderer);
-		Rendering::IRenderer* GetRenderer();
+		[[nodiscard]] Rendering::IRenderer* GetRenderer()
+		{
+			return renderer;
+		}
+		[[nodiscard]] Rendering::IMeshBuilder* GetMeshBuilder()
+		{
+			return mesh_builder;
+		}
 
 		[[nodiscard]] glm::vec3 GetPosition() const noexcept;
 		[[nodiscard]] glm::vec3 GetSize() const noexcept;
@@ -35,7 +45,7 @@ namespace Engine
 
 	private:
 		Rendering::Transform transform;
-		// Initialize parent transform so that it renders without parent properly
+		// Initialize parent transform so that the object renders without parent properly
 		Rendering::Transform parent_transform = {glm::vec3(0), glm::vec3(1, 1, 1), glm::vec3(0)};
 		Rendering::ScreenSize screen;
 
@@ -43,7 +53,8 @@ namespace Engine
 
 		std::vector<Object*> children;
 
-		Rendering::IRenderer* renderer = nullptr;
+		Rendering::IRenderer* renderer		  = nullptr;
+		Rendering::IMeshBuilder* mesh_builder = nullptr;
 
 		void UpdateRenderer();
 	};

@@ -9,7 +9,6 @@
 #include "objects/Image.hpp"
 #include "vulkan/vulkan_raii.hpp"
 
-
 namespace Engine::Rendering::Vulkan
 {
 	template <typename base_t> class SampledImage : public base_t
@@ -37,13 +36,16 @@ namespace Engine::Rendering::Vulkan
 			  use_filter(with_filter), use_address_mode(with_address_mode)
 		{
 
-			LogicalDevice* logical_device = this->instance->GetLogicalDevice();
+			LogicalDevice* logical_device = instance->GetLogicalDevice();
 
-			vk::PhysicalDeviceProperties device_properties = this->instance->GetPhysicalDevice()->getProperties();
+			vk::PhysicalDeviceProperties device_properties =
+				instance->GetPhysicalDevice()->getProperties();
 
-			texture_sampler = logical_device->createSampler(
-				GetSamplerCreateInfo(use_filter, use_address_mode, device_properties.limits.maxSamplerAnisotropy)
-			);
+			texture_sampler = logical_device->createSampler(GetSamplerCreateInfo(
+				use_filter,
+				use_address_mode,
+				device_properties.limits.maxSamplerAnisotropy
+			));
 		}
 
 		template <
@@ -61,16 +63,28 @@ namespace Engine::Rendering::Vulkan
 			vk::MemoryPropertyFlags properties = vk::MemoryPropertyFlagBits::eDeviceLocal,
 			vk::ImageTiling with_tiling		   = vk::ImageTiling::eOptimal
 		)
-			: ViewedImage(with_instance, with_size, num_samples, format, usage, with_aspect, properties, with_tiling),
+			: ViewedImage(
+				  with_instance,
+				  with_size,
+				  num_samples,
+				  format,
+				  usage,
+				  with_aspect,
+				  properties,
+				  with_tiling
+			  ),
 			  use_filter(with_filter), use_address_mode(with_address_mode)
 		{
-			LogicalDevice* logical_device = this->instance->GetLogicalDevice();
+			LogicalDevice* logical_device = instance->GetLogicalDevice();
 
-			vk::PhysicalDeviceProperties device_properties = this->instance->GetPhysicalDevice()->getProperties();
+			vk::PhysicalDeviceProperties device_properties =
+				instance->GetPhysicalDevice()->getProperties();
 
-			texture_sampler = logical_device->createSampler(
-				GetSamplerCreateInfo(use_filter, use_address_mode, device_properties.limits.maxSamplerAnisotropy)
-			);
+			texture_sampler = logical_device->createSampler(GetSamplerCreateInfo(
+				use_filter,
+				use_address_mode,
+				device_properties.limits.maxSamplerAnisotropy
+			));
 		}
 
 		~SampledImage() = default;

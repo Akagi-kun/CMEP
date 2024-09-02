@@ -49,7 +49,7 @@ local handleGroundLayer = function(scene, event, layer)
 	local g3_x, g3_y, g3_z = ground3:GetPosition()
 	g3_x = g3_x - (pipe_move_speed * 1.1) * event.deltaTime
 	
-	local last_x = g3_x;
+	local last_x = g3_x
 
 	for i = 0, 2 do
 		local ground = scene:FindObject(layer..i)
@@ -81,15 +81,17 @@ local checkCollisionsGrounds = function(birbx, birby)
 								 	  0.0,		util.pxToScreenY(util.screen_size_y - 60), 	1.0, 					 	util.pxToScreenY(60)))
 end
 
-local gameOnGameOver = function(asset_manager, scene_manager)
+local gameOnGameOver = function(owner_engine, asset_manager, scene_manager)
 	game_midgameover_state = true
 	birb_velocity = -0.4
 
 	print("Game over!")
 
-	local object = engine.CreateSceneObject(asset_manager, "renderer_2d/text", "text", {
-		{"font", "myfont"}, {"text", "GAME OVER"}
-	  })
+	local font = asset_manager:GetFont("myfont")
+
+	local object = engine.CreateSceneObject(owner_engine, "renderer_2d/text", "text", {
+		{"font", font}}, { {"text", "GAME OVER"} }
+	)
 	object:SetPosition(0.34, 0.45, -0.01)
 	object:SetSize(64, 64, 1.0)
 	scene_manager:GetSceneCurrent():AddObject("text_gameover", object)
@@ -195,7 +197,7 @@ onUpdate = function(event)
 		local deltaTime_avg = deltaTime_accum / deltaTime_count
 		--print(string.format("Frametime is: %f ms!", deltaTime_accum / deltaTime_count * 1000))
 		local object = scene:FindObject("_debug_info")
-		engine.RendererSupplyText(object.renderer, string.format("avg: %fms\nmin: %fms\nmax: %fms", deltaTime_avg * 1000, deltaTime_min * 1000, deltaTime_max * 1000))
+		engine.MeshBuilderSupplyData(object.meshbuilder, "text", string.format("avg: %fms\nmin: %fms\nmax: %fms", deltaTime_avg * 1000, deltaTime_min * 1000, deltaTime_max * 1000))
 
 		deltaTime_min = 2000.0
 		deltaTime_max = 0.0
@@ -249,7 +251,7 @@ onUpdate = function(event)
 				if util.checkCollisions2DBox(birbx, birby, util.pxToScreenX(config.birb_x_size), util.pxToScreenY(config.birb_y_size), x1, y1, util.pxToScreenX(config.pipe_x_size), util.pxToScreenY(config.pipe_y_size)) or -- pipe 1
 				   util.checkCollisions2DBox(birbx, birby, util.pxToScreenX(config.birb_x_size), util.pxToScreenY(config.birb_y_size), x2, y2, util.pxToScreenX(config.pipe_x_size), util.pxToScreenY(config.pipe_y_size))	 -- pipe 2
 				then
-					gameOnGameOver(asset_manager, scene_manager)
+					gameOnGameOver(event.engine, asset_manager, scene_manager)
 					return 0
 				end
 
@@ -260,7 +262,7 @@ onUpdate = function(event)
 					game_score = game_score + 1
 					game_last_scored_pipe_idx = pipeIdx
 					local score_object = scene:FindObject("text_score")
-					engine.RendererSupplyText(score_object.renderer, tostring(game_score))
+					engine.MeshBuilderSupplyData(score_object.meshbuilder, "text", tostring(game_score))
 
 					pipe_move_speed = pipe_move_speed * 1.005 -- Increase pipe move speed
 					pipe_spacing = pipe_spacing * 0.9990 -- Decrease pipe spacing (between top and bottom pipe)
@@ -279,7 +281,7 @@ onUpdate = function(event)
 		-- Check collisions with grounds
 		if checkCollisionsGrounds(birbx, birby)
 		then
-			gameOnGameOver(asset_manager, scene_manager)
+			gameOnGameOver(event.engine, asset_manager, scene_manager)
 			return 0
 		end
 
@@ -326,52 +328,54 @@ onInit = function(event)
 	-- Get managers
 	local asset_manager = event.engine:GetAssetManager()
 	local scene_manager = event.engine:GetSceneManager()
-	local scene = scene_manager:GetSceneCurrent();
+	local scene = scene_manager:GetSceneCurrent()
+
+	local font = asset_manager:GetFont("myfont")
 
 	-- Create frametime counter and add it to scene
-	local object = engine.CreateSceneObject(asset_manager, "renderer_2d/text", "text", {
-		{"font", "myfont"}, {"text", "avg: \nmin: \nmax: "}
-	  })
+	local object = engine.CreateSceneObject(event.engine, "renderer_2d/text", "text",
+		{ {"font", font} }, { {"text", "avg: \nmin: \nmax: "} }
+	)
 	object:SetPosition(0.0, 0.0, -0.01)
 	object:SetSize(24, 24, 1.0)
 	scene:AddObject("_debug_info", object)
 
+	-- Add score
+	local object = engine.CreateSceneObject(event.engine, "renderer_2d/text", "text", {
+		{"font", font}
+	}, {{"text", "0"}})
+	object:SetPosition(0.5, 0.0, -0.01)
+	object:SetSize(64, 64, 1.0)
+	scene:AddObject("text_score", object)
+
 	-- Add background
-	local object = engine.CreateSceneObject(asset_manager, "renderer_2d/sprite", "sprite", {
-		{"texture", "background"}
-	  })
+	local object = engine.CreateSceneObject(event.engine, "renderer_2d/sprite", "sprite", {
+		{"texture", asset_manager:GetTexture("background")}
+	}, {})
 	object:SetPosition(0.0, 0.0, -0.8)
 	object:SetSize(1, 1, 1)
 	scene:AddObject("background", object)
 
 	-- Add birb
-	local object = engine.CreateSceneObject(asset_manager, "renderer_2d/sprite", "sprite", {
-		{"texture", "birb"}
-	  })
+	local object = engine.CreateSceneObject(event.engine, "renderer_2d/sprite", "sprite", {
+		{"texture", asset_manager:GetTexture("birb")}
+	}, {})
 	object:SetPosition(0.2, util.pxToScreenY(360), 0.0)
 	object:SetSize(util.pxToScreenX(72), util.pxToScreenY(44), 1.0)
 	scene:AddObject("birb", object)
 
-	-- Add score
-	local object = engine.CreateSceneObject(asset_manager, "renderer_2d/text", "text", {
-		{"font", "myfont"}, {"text", "0"}
-	  })
-	object:SetPosition(0.5, 0.0, -0.01)
-	object:SetSize(64, 64, 1.0)
-	scene:AddObject("text_score", object)
-
 	-- Add grounds
 	for i = 0, 2 do
-		local ground_top = engine.CreateSceneObject(asset_manager, "renderer_2d/sprite", "sprite", {
-			{"texture", "ground_top"}
-		})
+		local ground_top = engine.CreateSceneObject(event.engine, "renderer_2d/sprite", "sprite", {
+			{"texture", asset_manager:GetTexture("ground_top")}
+		}, {})
 		ground_top:SetPosition(util.pxToScreenX(630) * i, 0.0, -0.1)
 		ground_top:SetSize(util.pxToScreenX(630), util.pxToScreenY(60), 1)
 		scene:AddObject("ground_top"..i, ground_top)
 
-		local ground_bottom = engine.CreateSceneObject(asset_manager, "renderer_2d/sprite", "sprite", {
-			{"texture", "ground_bottom"}
-	 	})
+		local ground_bottom = engine.CreateSceneObject(event.engine, "renderer_2d/sprite", "sprite", {
+			{"texture", asset_manager:GetTexture("ground_bottom")}
+	 	}, {})
 
 		ground_bottom:SetPosition(util.pxToScreenX(630) * i, util.pxToScreenY(util.screen_size_y - 60), -0.1)
 		ground_bottom:SetSize(util.pxToScreenX(630), util.pxToScreenY(60), 1)

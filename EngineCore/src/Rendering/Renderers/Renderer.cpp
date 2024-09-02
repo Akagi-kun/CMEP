@@ -51,7 +51,7 @@ namespace Engine::Rendering
 	{
 		switch (data.type)
 		{
-			case RendererSupplyDataType::FONT:
+			case RendererSupplyData::Type::FONT:
 			{
 				const auto& payload_ref = std::get<std::weak_ptr<void>>(data.payload);
 				assert(!payload_ref.expired() && "Cannot lock expired payload!");
@@ -59,9 +59,12 @@ namespace Engine::Rendering
 				auto font_cast			= std::static_pointer_cast<Font>(payload_ref.lock());
 				texture					= font_cast->GetPageTexture(0);
 				has_updated_descriptors = false;
+
+				// TODO: Remove
+				mesh_builder->SupplyData({MeshBuilderSupplyData::Type::FONT, font_cast});
 				break;
 			}
-			case RendererSupplyDataType::TEXTURE:
+			case RendererSupplyData::Type::TEXTURE:
 			{
 				const auto& payload_ref = std::get<std::weak_ptr<void>>(data.payload);
 				assert(!payload_ref.expired() && "Cannot lock expired payload!");
@@ -75,9 +78,6 @@ namespace Engine::Rendering
 				break;
 			}
 		}
-
-		assert(mesh_builder != nullptr && "This renderer has not been assigned a mesh builder!");
-		mesh_builder->SupplyData(data);
 	}
 
 	void IRenderer::UpdateDescriptorSets()
@@ -155,7 +155,7 @@ namespace Engine::Rendering
 		}
 
 		matrix_data.mat_model = CalculateModelMatrix(transform, parent_transform);
-		matrix_data.mat_vp	  = projection; // * view;
+		matrix_data.mat_vp	  = projection;
 
 		has_updated_matrices = true;
 	}

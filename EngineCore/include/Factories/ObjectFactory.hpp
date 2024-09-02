@@ -1,12 +1,10 @@
 #pragma once
 
-#include "Assets/AssetManager.hpp"
 #include "Rendering/SupplyData.hpp"
 
 #include "EnumStringConvertor.hpp"
 #include "Object.hpp"
 
-#include <any>
 #include <stdexcept>
 #include <string>
 
@@ -39,14 +37,16 @@ namespace Engine::Factories::ObjectFactory
 		EnumStringConvertor<RendererType> with_renderer;
 		EnumStringConvertor<MeshBuilderType> with_mesh_builder;
 		std::string with_shader;
-		std::vector<Rendering::RendererSupplyData> supply_list;
+		std::vector<Rendering::RendererSupplyData> renderer_supply_list;
+		std::vector<Rendering::MeshBuilderSupplyData> meshbuilder_supply_list;
 	};
 
 	template <class TRenderer, class TMeshBuilder>
 	Object* CreateSceneObject(
 		Engine* with_engine,
 		std::string with_pipeline_program,
-		const std::vector<Rendering::RendererSupplyData>& with_supply_data
+		const std::vector<Rendering::RendererSupplyData>& renderer_supply_data,
+		const std::vector<Rendering::MeshBuilderSupplyData>& meshbuilder_supply_data
 	)
 	{
 		if (with_pipeline_program.empty())
@@ -54,38 +54,47 @@ namespace Engine::Factories::ObjectFactory
 			throw std::invalid_argument("Cannot CreateSceneObject without a pipeline! (was empty)");
 		}
 
-		auto* object = new Object(with_engine);
+		auto* with_builder = new TMeshBuilder(with_engine);
 
-		auto* with_builder	= new TMeshBuilder(with_engine);
-		auto* with_renderer = new TRenderer(with_engine, with_builder, with_pipeline_program.c_str());
+		for (const auto& supply : meshbuilder_supply_data)
+		{
+			with_builder->SupplyData(supply);
+		}
 
-		for (const auto& supply : with_supply_data)
+		auto* with_renderer =
+			new TRenderer(with_engine, with_builder, with_pipeline_program.c_str());
+
+		for (const auto& supply : renderer_supply_data)
 		{
 			with_renderer->SupplyData(supply);
 		}
 
-		object->SetRenderer(with_renderer);
+		auto* object = new Object(with_engine, with_renderer, with_builder);
 
 		return object;
 	}
 
-	using type_ObjectFactory =
-		std::function<Object*(Engine*, std::string, const std::vector<Rendering::RendererSupplyData>&)>;
+	using object_factory_t = std::function<
+		Object*(Engine*, std::string, const std::vector<Rendering::RendererSupplyData>&, const std::vector<Rendering::MeshBuilderSupplyData>&)>;
 
 	// Returns a Callable capable of creating the desired object
-	type_ObjectFactory GetSceneObjectFactory(
+	object_factory_t GetSceneObjectFactory(
 		EnumStringConvertor<RendererType> with_renderer,
 		EnumStringConvertor<MeshBuilderType> with_mesh_builder
 	);
 
 	Object* InstantiateObjectTemplate(Engine* with_engine, ObjectTemplate& from_template);
 
-	// Constructs a RendererSupplyData and pushes it into a std::vector
-	void PushSupplyData(
-		AssetManager* asset_manager,
-		std::vector<Rendering::RendererSupplyData>& into_vector,
-		EnumStringConvertor<Rendering::RendererSupplyDataType> of_type,
-		std::any with_value
+	using valid_value_t = std::variant<std::monostate, void*, std::string>;
+
+	Rendering::RendererSupplyData GenerateRendererSupplyData(
+		EnumStringConvertor<Rendering::RendererSupplyData::Type> of_type,
+		valid_value_t with_value
+	);
+
+	Rendering::MeshBuilderSupplyData GenerateMeshBuilderSupplyData(
+		EnumStringConvertor<Rendering::MeshBuilderSupplyData::Type> of_type,
+		valid_value_t with_value
 	);
 
 } // namespace Engine::Factories::ObjectFactory

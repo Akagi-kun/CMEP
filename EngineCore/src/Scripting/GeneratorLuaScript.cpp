@@ -27,7 +27,7 @@ namespace Engine::Scripting
 		auto* generator_data = static_cast<std::array<void*, 3>*>(data);
 
 		auto* mesh = static_cast<std::vector<Rendering::RenderingVertex>*>(generator_data->at(0));
-		auto* supplier	= static_cast<Rendering::GeneratorSupplierData*>(generator_data->at(1));
+		auto* supplier	= static_cast<Scripting::ScriptFunctionRef*>(generator_data->at(1));
 		auto* world_pos = static_cast<glm::vec3*>(generator_data->at(2));
 
 		lua_State* coroutine = lua_newthread(state);
@@ -37,18 +37,12 @@ namespace Engine::Scripting
 		{
 			auto* state_ptr = locked_supplier->GetState();
 
-			CreateCrossStateCallBridge(&(state_ptr), supplier->name, coroutine);
+			CreateCrossStateCallBridge(&(state_ptr), supplier->function, coroutine);
 		}
 
 		lua_pushnumber(coroutine, static_cast<lua_Number>(world_pos->x));
 		lua_pushnumber(coroutine, static_cast<lua_Number>(world_pos->y));
 		lua_pushnumber(coroutine, static_cast<lua_Number>(world_pos->z));
-
-		/*for (int i = 0; i <= lua_gettop(coroutine); i++)
-		{
-			// Print type of every element on stack
-			printf("%u %s\n", i, lua_typename(coroutine, lua_type(coroutine, i)));
-		}*/
 
 		int last_ret = LUA_OK;
 		do

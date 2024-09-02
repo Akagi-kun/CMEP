@@ -4,6 +4,8 @@ local util = require("util")
 local game_defs = require("game_defs")
 require("perlin")
 
+local cdefs = require("cdef")
+
 -- Debugging data
 local deltaTime_accum = 0.0
 local deltaTime_count = 0
@@ -299,7 +301,7 @@ onUpdate = function(event)
 		local deltaTime_avg = deltaTime_accum / deltaTime_count
 		local object = scene:FindObject("_debug_info")
 
-		engine.RendererSupplyText(object.renderer, string.format("avg: %fms\nmin: %fms\nmax: %fms", deltaTime_avg * 1000, deltaTime_min * 1000, deltaTime_max * 1000))
+		engine.MeshBuilderSupplyData(object.meshbuilder, "text", string.format("avg: %fms\nmin: %fms\nmax: %fms", deltaTime_avg * 1000, deltaTime_min * 1000, deltaTime_max * 1000))
 
 		deltaTime_min = 2000.0
 		deltaTime_max = 0.0
@@ -310,8 +312,8 @@ onUpdate = function(event)
 	local camx, camy, camz = scene_manager:GetCameraTransform()
 	local camh, camv = scene_manager:GetCameraHVRotation()
 
-	local dbg2 = scene:FindObject("_debug_info2");
-	engine.RendererSupplyText(dbg2.renderer, string.format("H: %f V: %f\nX: %f Y: %f Z: %f", camh, camv, camx, camy, camz))
+	local dbg2 = scene:FindObject("_debug_info2")
+	engine.MeshBuilderSupplyData(dbg2.meshbuilder, "text", string.format("H: %f V: %f\nX: %f Y: %f Z: %f", camh, camv, camx, camy, camz))
 
 	return 0
 end
@@ -325,23 +327,25 @@ onInit = function(event)
 	-- Get managers
 	local asset_manager = event.engine:GetAssetManager()
 	local scene_manager = event.engine:GetSceneManager()
-	local scene = scene_manager:GetSceneCurrent();
+	local scene = scene_manager:GetSceneCurrent()
+
+	local font = asset_manager:GetFont("myfont")
 
 	-- Set-up camera
 	scene_manager:SetCameraTransform(-1.0, 55.8, 2.5)
 	scene_manager:SetCameraHVRotation(114.0, 224.8)
-	
+
 	-- Create frametime counter and add it to scene
-	local object0 = engine.CreateSceneObject(asset_manager, "renderer_2d/text", "text", {
-		{"font", "myfont"}, {"text", "avg: \nmin: \nmax: "}
-	  })
+	local object0 = engine.CreateSceneObject(event.engine, "renderer_2d/text", "text",
+		{ {"font", font} }, { {"text", "avg: \nmin: \nmax: "} }
+	)
 	object0:SetPosition(0.0, 0.0, -0.01)
 	object0:SetSize(24, 24, 1.0)
 	scene:AddObject("_debug_info", object0)
 	
-	local object1 = engine.CreateSceneObject(asset_manager, "renderer_2d/text", "text", {
-		{"font", "myfont"}, {"text", "H: V: \nX: Y: Z: "}
-	  })
+	local object1 = engine.CreateSceneObject(event.engine, "renderer_2d/text", "text",
+		{ {"font", font} }, { {"text", "H: V: \nX: Y: Z: "} }
+	)
 	object1:SetPosition(0.6, 0.0, -0.01)
 	object1:SetSize(24, 24, 1.0)
 	scene:AddObject("_debug_info2", object1)
@@ -356,11 +360,17 @@ onInit = function(event)
 	--end
 	collectgarbage()
 
+	local testgen_script = asset_manager:GetScript("testgen")
+	local supplier_script = asset_manager:GetScript("script0")
+
+	local atlas_texture = asset_manager:GetTexture("atlas")
+
 	for chunk_x = -chunks_x, chunks_x, 1 do -- chunks_x, chunks_x, 1
 		for chunk_z = -chunks_z, chunks_z, 1 do
-			local chunk_obj = engine.CreateSceneObject(asset_manager, "renderer_3d/generator", "terrain", {
-				{"texture", "atlas"}, {"generator_script", "testgen"}, {"generator_supplier", "script0/terrain_generator"}
-			})
+			local chunk_obj = engine.CreateSceneObject(event.engine, "renderer_3d/generator", "terrain",
+				{ {"texture", atlas_texture} }, { {"generator", cdefs.CreateGeneratorData(testgen_script, "generate_fn", supplier_script, "terrain_generator")} }
+			)
+			--{ {"texture", "atlas"} }
 			chunk_obj:SetPosition(chunk_x * config.chunk_size_x, 0.0, chunk_z * config.chunk_size_z)
 			chunk_obj:SetSize(1, 1, 1)
 			chunk_obj:SetRotation(0, 0, 0)

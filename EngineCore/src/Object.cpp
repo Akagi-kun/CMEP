@@ -8,23 +8,21 @@
 
 namespace Engine
 {
+	Object::Object(
+		Engine* with_engine,
+		Rendering::IRenderer* with_renderer,
+		Rendering::IMeshBuilder* with_mesh_builder
+	)
+		: InternalEngineObject(with_engine), renderer(with_renderer),
+		  mesh_builder(with_mesh_builder)
+	{
+	}
+
 	Object::~Object() noexcept
 	{
 		this->logger->SimpleLog(Logging::LogLevel::Debug3, LOGPFX_CURRENT "Destructor called");
 
 		delete renderer;
-	}
-
-	void Object::SetRenderer(Rendering::IRenderer* with_renderer)
-	{
-		assert(owner_engine != nullptr);
-
-		renderer = with_renderer;
-	}
-
-	Rendering::IRenderer* Object::GetRenderer()
-	{
-		return renderer;
 	}
 
 	void Object::UpdateRenderer()

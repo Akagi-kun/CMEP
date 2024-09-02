@@ -24,7 +24,6 @@
 #include <filesystem>
 #include <fstream>
 #include <memory>
-#include <stdexcept>
 #include <string>
 #include <utility>
 
@@ -34,6 +33,58 @@
 
 namespace Engine
 {
+#pragma region Static
+
+	namespace
+	{
+		template <typename supply_data_t>
+		[[nodiscard]] supply_data_t InterpretSupplyData(
+			AssetManager* asset_manager,
+			typename supply_data_t::Type type,
+			const std::string& value
+		)
+		{
+			if constexpr (std::is_same<supply_data_t, Rendering::RendererSupplyData>())
+			{
+				switch (type)
+				{
+					case Rendering::RendererSupplyData::Type::FONT:
+					{
+						return {type, asset_manager->GetFont(value)};
+					}
+					case Rendering::RendererSupplyData::Type::TEXTURE:
+					{
+						return {type, asset_manager->GetTexture(value)};
+					}
+					default:
+					{
+						throw ENGINE_EXCEPTION("Invalid supply data type!");
+					}
+				}
+			}
+			else if constexpr (std::is_same<supply_data_t, Rendering::MeshBuilderSupplyData>())
+			{
+				switch (type)
+				{
+					case Rendering::MeshBuilderSupplyData::Type::TEXT:
+					{
+						return {type, value};
+					}
+					// TODO: Generator?
+					default:
+					{
+						throw ENGINE_EXCEPTION("Invalid supply data type!");
+					}
+				}
+			}
+		}
+
+	} // namespace
+
+#pragma endregion
+
+#pragma region Public
+
 	SceneLoader::~SceneLoader()
 	{
 		this->logger->SimpleLog(Logging::LogLevel::Debug2, LOGPFX_CURRENT "Destructor called");
@@ -53,6 +104,10 @@ namespace Engine
 
 		return new_scene;
 	}
+
+#pragma endregion
+
+#pragma region Protected
 
 	void SceneLoader::LoadSceneInternal(std::shared_ptr<Scene>& scene, std::string& scene_name)
 	{
@@ -85,7 +140,7 @@ namespace Engine
 		}
 		catch (...)
 		{
-			std::throw_with_nested(ENGINE_EXCEPTION("Failed on asset load"));
+			std::throw_with_nested(ENGINE_EXCEPTION("Caught exception "));
 		}
 
 		try
@@ -123,7 +178,7 @@ namespace Engine
 
 				if (event_handler == nullptr)
 				{
-					throw std::runtime_error(
+					throw ENGINE_EXCEPTION(
 						"Asset type 'script' script '" + script_name +
 						"' required to serve defined event handlers!"
 					);
@@ -157,16 +212,33 @@ namespace Engine
 				);
 				object_template.with_shader = template_entry["shader_name"].get<std::string>();
 
-				for (auto& supply_entry : template_entry["supply_data"])
+				for (auto& supply_entry : template_entry["renderer_supply_data"])
 				{
-					std::string key = supply_entry[0].get<std::string>();
+					EnumStringConvertor<Rendering::RendererSupplyData::Type> type =
+						supply_entry[0].get<std::string>();
 					std::string val = supply_entry[1].get<std::string>();
 
-					Factories::ObjectFactory::PushSupplyData(
-						locked_asset_manager.get(),
-						object_template.supply_list,
-						key,
-						val
+					object_template.renderer_supply_list.emplace_back(
+						InterpretSupplyData<Rendering::RendererSupplyData>(
+							locked_asset_manager.get(),
+							type,
+							val
+						)
+					);
+				}
+
+				for (auto& supply_entry : template_entry["meshbuilder_supply_data"])
+				{
+					EnumStringConvertor<Rendering::MeshBuilderSupplyData::Type> type =
+						supply_entry[0].get<std::string>();
+					std::string val = supply_entry[1].get<std::string>();
+
+					object_template.meshbuilder_supply_list.emplace_back(
+						InterpretSupplyData<Rendering::MeshBuilderSupplyData>(
+							locked_asset_manager.get(),
+							type,
+							val
+						)
 					);
 				}
 
@@ -278,11 +350,10 @@ namespace Engine
 		{
 			using namespace std::string_literals;
 
-			throw std::invalid_argument("Unknown type '"s
-											.append(asset_entry["type"].get<std::string>())
-											.append("' for asset '")
-											.append(asset_name)
-											.append("'"));
+			throw ENGINE_EXCEPTION("Unknown type '"s.append(asset_entry["type"].get<std::string>())
+									   .append("' for asset '")
+									   .append(asset_name)
+									   .append("'"));
 		}
 	}
 
@@ -300,8 +371,12 @@ namespace Engine
 				}
 				catch (...)
 				{
+					using namespace std::string_literals;
+
 					// TODO: Potentially handle safely?
-					std::throw_with_nested(ENGINE_EXCEPTION("Caught exception when loading assets")
+					std::throw_with_nested(
+						ENGINE_EXCEPTION("Exception occured loading asset! Relevant JSON:\n"s
+											 .append(asset_entry.dump()))
 					);
 				}
 			}
@@ -309,4 +384,7 @@ namespace Engine
 			this->logger->SimpleLog(Logging::LogLevel::Debug2, LOGPFX_CURRENT "Done stage: Assets");
 		}
 	}
+
+#pragma endregion
+
 } // namespace Engine

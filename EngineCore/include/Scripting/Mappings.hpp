@@ -12,6 +12,6 @@ namespace Engine::Scripting::Mappings
 		int PrintReplace(lua_State* state);
 	} // namespace Functions
 
-	extern std::unordered_map<std::string, lua_CFunction> mappings;
+	extern std::unordered_map<std::string, const lua_CFunction> mappings;
 
 } // namespace Engine::Scripting::Mappings

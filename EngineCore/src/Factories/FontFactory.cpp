@@ -110,7 +110,7 @@ namespace Engine::Factories
 			this->logger->SimpleLog(
 				Logging::LogLevel::Error,
 				LOGPFX_CURRENT "FontFile %s unexpectedly not open",
-				font_path.c_str()
+				font_path.string().c_str()
 			);
 			return nullptr;
 		}
@@ -118,7 +118,7 @@ namespace Engine::Factories
 		this->logger->SimpleLog(
 			Logging::LogLevel::Debug2,
 			LOGPFX_CURRENT "Loading file %s",
-			font_path.c_str()
+			font_path.string().c_str()
 		);
 
 		std::unique_ptr<Rendering::FontData> font_data =
@@ -127,7 +127,7 @@ namespace Engine::Factories
 		this->logger->SimpleLog(
 			Logging::LogLevel::Debug1,
 			LOGPFX_CURRENT "File %s loaded successfully",
-			font_path.c_str()
+			font_path.string().c_str()
 		);
 
 		font_file.close();
@@ -212,7 +212,6 @@ namespace Engine::Factories
 					value = value.substr(1, value.size() - 2);
 				}
 
-				// TODO: Generate a proper path and potentially load the page here
 				page_path = value;
 			}
 			else if (key == "id")
@@ -225,7 +224,7 @@ namespace Engine::Factories
 			Logging::LogLevel::Debug3,
 			LOGPFX_CURRENT "Font page index %u is '%s'",
 			page_idx,
-			page_path.c_str()
+			page_path.string().c_str()
 		);
 
 		auto asset_manager = owner_engine->GetAssetManager();
@@ -236,6 +235,7 @@ namespace Engine::Factories
 				page_path.string()
 			);
 
+			// Try to load the page if asset manager doesnt have it loaded
 			if (texture == nullptr)
 			{
 				std::filesystem::path asset_path = font_path.remove_filename();

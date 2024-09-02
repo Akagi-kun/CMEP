@@ -28,41 +28,6 @@ static void InitConsoleWin32()
 #	define DEFAULT_LOG_LEVEL Logging::LogLevel::Debug1
 #endif
 
-// prints the explanatory string of an exception. If the exception is nested,
-// recurses to print the explanatory of the exception it holds
-static void PrintException(
-	std::shared_ptr<Logging::Logger>& with_logger,
-	const std::exception& caught_exception,
-	int level = 0
-)
-{
-	if (level == 0)
-	{
-		with_logger->StartLog(Logging::LogLevel::Exception);
-		with_logger->Log("Unrolling nested exceptions...");
-	}
-
-	with_logger->Log("\n\texception (%i): %s", level, caught_exception.what());
-
-	try
-	{
-		std::rethrow_if_nested(caught_exception);
-	}
-	catch (const std::exception& nested_exception)
-	{
-		PrintException(with_logger, nested_exception, level - 1);
-	}
-	catch (...)
-	{
-		throw;
-	}
-
-	if (level == 0)
-	{
-		with_logger->StopLog();
-	}
-}
-
 static int RunEngine(bool verbose)
 {
 	std::shared_ptr<Logging::Logger> my_logger = std::make_shared<Logging::Logger>();
@@ -95,7 +60,8 @@ static int RunEngine(bool verbose)
 	my_logger->SimpleLog(Logging::LogLevel::Info, "Logger initialized");
 
 	// Initialize engine
-	std::unique_ptr<Engine::OpaqueEngine> engine = std::make_unique<Engine::OpaqueEngine>(my_logger);
+	std::unique_ptr<Engine::OpaqueEngine> engine = std::make_unique<Engine::OpaqueEngine>(my_logger
+	);
 
 	// This tests whether exceptions thrown inside EngineCore
 	// can be successfully caught in rungame
@@ -113,6 +79,7 @@ static int RunEngine(bool verbose)
 		{
 			// The exception was caught but is different from expected?
 			assert(false && "ABI exception check failed");
+			std::abort();
 		}
 	}
 
@@ -124,8 +91,12 @@ static int RunEngine(bool verbose)
 	}
 	catch (std::exception& e)
 	{
-		my_logger->SimpleLog(Logging::LogLevel::Exception, "Caught exception loading config!");
-		PrintException(my_logger, e);
+		my_logger->SimpleLog(
+			Logging::LogLevel::Exception,
+			"Caught exception loading config! %s",
+			Engine::UnrollExceptions(e).c_str()
+		);
+
 		return 1;
 	}
 
@@ -136,8 +107,11 @@ static int RunEngine(bool verbose)
 	}
 	catch (std::exception& e)
 	{
-		my_logger->SimpleLog(Logging::LogLevel::Exception, "Caught exception running engine!");
-		PrintException(my_logger, e);
+		my_logger->SimpleLog(
+			Logging::LogLevel::Exception,
+			"Caught exception running engine! %s",
+			Engine::UnrollExceptions(e).c_str()
+		);
 		return 2;
 	}
 

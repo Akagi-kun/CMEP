@@ -2,28 +2,19 @@
 
 #include "Rendering/SupplyData.hpp"
 
+#include "Scripting/ILuaScript.hpp"
+
 #include <iterator>
-#include <memory>
 
 namespace Engine::Rendering
 {
-	void GeneratorMeshBuilder::SupplyData(const RendererSupplyData& data)
+	void GeneratorMeshBuilder::SupplyData(const MeshBuilderSupplyData& data)
 	{
 		switch (data.type)
 		{
-			case Rendering::RendererSupplyDataType::GENERATOR_SCRIPT:
+			case Rendering::MeshBuilderSupplyData::Type::GENERATOR:
 			{
-				const auto& payload_ref = std::get<std::weak_ptr<void>>(data.payload);
-				assert(!payload_ref.expired() && "Cannot lock expired payload!");
-
-				generator_script = std::static_pointer_cast<Scripting::ILuaScript>(payload_ref.lock());
-				break;
-			}
-			case Rendering::RendererSupplyDataType::GENERATOR_SUPPLIER:
-			{
-				const auto& payload_ref = std::get<Rendering::GeneratorSupplierData>(data.payload);
-
-				generator_supplier = payload_ref;
+				script_data = std::get<GeneratorData>(data.payload);
 				break;
 			}
 			default:
@@ -39,9 +30,11 @@ namespace Engine::Rendering
 		{
 			std::vector<RenderingVertex> generated_mesh;
 
-			std::array<void*, 3> generator_data = {&generated_mesh, &generator_supplier, &(world_pos)};
+			Scripting::ScriptFunctionRef supplier = script_data.supplier;
 
-			generator_script->CallFunction("GENERATOR_FUNCTION", &generator_data);
+			std::array<void*, 3> generator_data = {&generated_mesh, &supplier, &(world_pos)};
+
+			script_data.generator(&generator_data);
 
 			if (!generated_mesh.empty())
 			{

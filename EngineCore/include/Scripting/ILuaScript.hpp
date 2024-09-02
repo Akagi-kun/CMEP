@@ -50,11 +50,20 @@ namespace Engine::Scripting
 
 		std::filesystem::path path;
 
+		void PerformPreloadSteps();
 		void LoadAndCompileScript();
 
 		virtual int InternalCall(const std::string& function, void* data) = 0;
 
 	private:
 		const bool enable_profiling;
+	};
+
+	struct ScriptFunctionRef
+	{
+		std::weak_ptr<ILuaScript> script;
+		std::string function;
+
+		int operator()(void* data);
 	};
 } // namespace Engine::Scripting

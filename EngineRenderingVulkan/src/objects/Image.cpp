@@ -128,9 +128,7 @@ namespace Engine::Rendering::Vulkan
 			with_buffer->pipelineBarrier(src_stage, dst_stage, {}, {}, {}, barrier);
 		});
 
-		// delete command_buffer;
-
-		this->current_layout = new_layout;
+		current_layout = new_layout;
 	}
 
 	ViewedImage::ViewedImage(

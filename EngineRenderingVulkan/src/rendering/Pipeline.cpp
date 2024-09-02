@@ -215,8 +215,8 @@ namespace Engine::Rendering::Vulkan
 			into->uniform_buffers[i] = new UniformBuffer(instance, buffer_size);
 		}
 
-		this->AllocateNewDescriptorPool(*into);
-		this->AllocateNewDescriptorSets(*into);
+		AllocateNewDescriptorPool(*into);
+		AllocateNewDescriptorSets(*into);
 
 		// Set up binding 0 to point to uniform buffers
 		per_frame_array<vk::DescriptorBufferInfo> descriptor_buffer_infos{};

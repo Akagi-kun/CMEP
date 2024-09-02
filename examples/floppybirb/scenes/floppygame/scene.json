@@ -32,18 +32,20 @@
             "renderer": "renderer_2d",
             "mesh_builder": "sprite",
             "shader_name": "sprite",
-            "supply_data": [
+            "renderer_supply_data": [
                 ["texture", "pipe_up"]
-            ]
+            ],
+            "meshbuilder_supply_data": []
         },
         {
             "name": "pipe_down",
             "renderer": "renderer_2d",
             "mesh_builder": "sprite",
             "shader_name": "sprite",
-            "supply_data": [
+            "renderer_supply_data": [
                 ["texture", "pipe_down"]
-            ]
+            ],
+            "meshbuilder_supply_data": []
         }
     ],
     "assets": [

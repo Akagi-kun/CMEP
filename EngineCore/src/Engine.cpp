@@ -82,12 +82,10 @@ namespace Engine
 		auto* window_data		= vk_instance->GetWindow();
 		const auto& screen_size = window_data->GetFramebufferSize();
 
-		static glm::vec<2, double>
-			/* static Vector2<double> */
-			last_pos = {
-				static_cast<double>(screen_size.x) / 2,
-				static_cast<double>(screen_size.y) / 2
-			};
+		static glm::vec<2, double> last_pos = {
+			static_cast<double>(screen_size.x) / 2,
+			static_cast<double>(screen_size.y) / 2
+		};
 
 		static constexpr double clamp_difference = 128;
 
@@ -220,7 +218,7 @@ namespace Engine
 		{
 			auto* object = Factories::ObjectFactory::CreateSceneObject<
 				Rendering::Renderer3D,
-				Rendering::AxisMeshBuilder>(this, "axis", {});
+				Rendering::AxisMeshBuilder>(this, "axis", {}, {});
 
 			scene->AddObject("_axis", object);
 		}
@@ -245,7 +243,8 @@ namespace Engine
 				LOGPFX_CURRENT "Building object '%s'",
 				name.c_str()
 			);
-			object->GetRenderer()->ForceBuild();
+			object->GetMeshBuilder()->Build();
+			// object->GetRenderer()->ForceBuild();
 		}
 
 		auto scene_build_time = static_cast<double>(

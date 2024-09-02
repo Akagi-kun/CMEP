@@ -1,5 +1,7 @@
 #include "EnumStringConvertor.hpp"
 
+#include "Assets/AssetManager.hpp"
+
 #include "Factories/ObjectFactory.hpp"
 
 #include "EventHandling.hpp"
@@ -58,13 +60,17 @@ namespace Engine
 	using namespace Rendering;
 
 	template <>
-	EnumStringConvertor<RendererSupplyDataType>::map_t
-		EnumStringConvertor<RendererSupplyDataType>::type_map = {
+	EnumStringConvertor<RendererSupplyData::Type>::map_t
+		EnumStringConvertor<RendererSupplyData::Type>::type_map = {
 			{"texture"sv, value_t::TEXTURE},
 			{"font"sv, value_t::FONT},
+	};
+
+	template <>
+	EnumStringConvertor<MeshBuilderSupplyData::Type>::map_t
+		EnumStringConvertor<MeshBuilderSupplyData::Type>::type_map = {
 			{"text"sv, value_t::TEXT},
-			{"generator_script"sv, value_t::GENERATOR_SCRIPT},
-			{"generator_supplier"sv, value_t::GENERATOR_SUPPLIER}
+			{"generator"sv, value_t::GENERATOR},
 	};
 
 	template <>

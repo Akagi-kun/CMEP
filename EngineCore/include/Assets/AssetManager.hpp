@@ -21,8 +21,8 @@ namespace Engine
 
 	enum class AssetType : uint8_t
 	{
-		FONT	= 2,
-		TEXTURE = 8,
+		FONT	= 4,
+		TEXTURE = 20,
 		SCRIPT	= 12
 	};
 
@@ -44,6 +44,11 @@ namespace Engine
 		[[nodiscard]] std::shared_ptr<Rendering::Texture> GetTexture(const std::string& name);
 		[[nodiscard]] std::shared_ptr<Rendering::Font> GetFont(const std::string& name);
 		[[nodiscard]] std::shared_ptr<Scripting::ILuaScript> GetLuaScript(const std::string& name);
+
+		[[deprecated, nodiscard]] std::shared_ptr<void> GetAsset(
+			AssetType with_type,
+			const std::string& name
+		);
 
 	private:
 		struct

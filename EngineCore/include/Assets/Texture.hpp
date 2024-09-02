@@ -56,16 +56,3 @@ namespace Engine::Rendering
 	};
 
 } // namespace Engine::Rendering
-
-/* namespace std
-{
-	// Specialize std::hash for Texture
-	template <> struct hash<Engine::Rendering::Texture>
-	{
-		size_t operator()(const Engine::Rendering::Texture& obj)
-		{
-			return 0;
-		}
-	};
-} // namespace std
- */

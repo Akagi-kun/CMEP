@@ -31,11 +31,11 @@ namespace Engine::Rendering::Vulkan
 
 		void MemoryCopy(const void* with_data, size_t with_size)
 		{
-			this->MapMemory();
+			MapMemory();
 
-			std::memcpy(this->mapped_data, with_data, with_size);
+			std::memcpy(mapped_data, with_data, with_size);
 
-			this->UnmapMemory();
+			UnmapMemory();
 		}
 
 	protected:
@@ -49,13 +49,20 @@ namespace Engine::Rendering::Vulkan
 	class StagingBuffer final : public Buffer
 	{
 	public:
-		StagingBuffer(InstanceOwned::value_t with_instance, const void* with_data, vk::DeviceSize with_size);
+		StagingBuffer(
+			InstanceOwned::value_t with_instance,
+			const void* with_data,
+			vk::DeviceSize with_size
+		);
 	};
 
 	class VertexBuffer final : public Buffer
 	{
 	public:
-		VertexBuffer(InstanceOwned::value_t with_instance, const std::vector<RenderingVertex>& vertices);
+		VertexBuffer(
+			InstanceOwned::value_t with_instance,
+			const std::vector<RenderingVertex>& vertices
+		);
 	};
 
 	class UniformBuffer final : public Buffer

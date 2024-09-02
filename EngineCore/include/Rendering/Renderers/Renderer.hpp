@@ -18,12 +18,11 @@ namespace Engine::Rendering
 	public:
 		IRenderer(
 			Engine* with_engine,
-			IMeshBuilder* with_builder,
+			IMeshBuilder* with_builder, // TODO: Make const
 			std::string_view with_pipeline_program
 		);
 		virtual ~IRenderer();
 
-		// Renderers shall implement this to get textures, fonts etc.
 		void SupplyData(const RendererSupplyData& data);
 
 		// Renderers shall implement this to update their matrix_data
@@ -35,18 +34,14 @@ namespace Engine::Rendering
 			const ScreenSize& with_screen
 		)
 		{
-			this->transform		   = with_transform;
-			this->parent_transform = with_parent_transform;
-			this->screen		   = with_screen;
+			transform		 = with_transform;
+			parent_transform = with_parent_transform;
+			screen			 = with_screen;
 
-			this->has_updated_matrices = false;
+			has_updated_matrices = false;
 
-			this->mesh_builder->SupplyWorldPosition(with_transform.pos + with_parent_transform.pos);
-		}
-
-		void ForceBuild()
-		{
-			this->mesh_builder->Build();
+			// TODO: Remove
+			mesh_builder->SupplyWorldPosition(with_transform.pos + with_parent_transform.pos);
 		}
 
 		void Render(Vulkan::CommandBuffer* command_buffer, uint32_t current_frame);
@@ -59,8 +54,6 @@ namespace Engine::Rendering
 		// Renderer configuration
 		std::string_view pipeline_name;
 		Vulkan::PipelineUserRef* pipeline = nullptr;
-		// Vulkan::Pipeline* pipeline = nullptr;
-		// size_t pipeline_user_index = 0;
 		std::shared_ptr<Vulkan::PipelineManager> pipeline_manager;
 
 		IMeshBuilder* mesh_builder = nullptr;

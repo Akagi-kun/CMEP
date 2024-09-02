@@ -4,27 +4,28 @@
 #include "Assets/Texture.hpp"
 
 #include "Engine.hpp"
+#include "Exception.hpp"
 #include "backend/Instance.hpp"
 
 #include <iterator>
 
 namespace Engine::Rendering
 {
-	void TextMeshBuilder::SupplyData(const RendererSupplyData& data)
+	void TextMeshBuilder::SupplyData(const MeshBuilderSupplyData& data)
 	{
 		IMeshBuilder::SupplyData(data);
 
 		switch (data.type)
 		{
-			case RendererSupplyDataType::FONT:
+			case MeshBuilderSupplyData::Type::FONT:
 			{
-				const auto& payload_ref = std::get<std::weak_ptr<void>>(data.payload);
+				const auto& payload_ref = std::get<std::weak_ptr<Font>>(data.payload);
 				assert(!payload_ref.expired() && "Cannot lock expired payload!");
 
-				font = std::static_pointer_cast<Font>(payload_ref.lock());
+				font = payload_ref.lock();
 				break;
 			}
-			case RendererSupplyDataType::TEXT:
+			case MeshBuilderSupplyData::Type::TEXT:
 			{
 				const auto& payload_ref = std::get<std::string>(data.payload);
 
@@ -51,7 +52,12 @@ namespace Engine::Rendering
 		const auto* window_data = owner_engine->GetVulkanInstance()->GetWindow();
 		screen_size				= window_data->GetFramebufferSize();
 
-		int font_size = std::stoi(*font->GetFontInfoParameter("size"));
+		auto size_param = font->GetFontInfoParameter("size");
+		if (!size_param.has_value())
+		{
+			throw ENGINE_EXCEPTION("Could not find parameter 'size' in font! Malformed font file?");
+		}
+		int font_size = std::stoi(size_param.value());
 
 		std::vector<RenderingVertex> generated_mesh;
 
@@ -83,19 +89,24 @@ namespace Engine::Rendering
 			else
 			{
 				// Get character info
-				Rendering::FontChar* chardata = font->GetChar(text_char);
+				const Rendering::FontChar* chardata = font->GetChar(text_char);
 
 				// Check if font contains this character
 				if (chardata == nullptr)
 				{
-					logger->SimpleLog(Logging::LogLevel::Error, "Char 0x%x is not found in set font", text_char);
+					logger->SimpleLog(
+						Logging::LogLevel::Error,
+						"Char 0x%x is not found in set font",
+						text_char
+					);
 					continue;
 				}
 
 				// Get texture information
-				std::shared_ptr<Texture> texture = font->GetPageTexture(chardata->page);
-				assert(texture != nullptr);
-				ImageSize texture_size = texture->GetSize();
+				// std::shared_ptr<const Texture> texture =font->GetPageTexture(chardata->page);
+				// assert(texture != nullptr);
+				// ImageSize texture_size = texture->GetSize();
+				ImageSize texture_size = font->GetPageTexture(chardata->page)->GetSize();
 				assert(texture_size.x > 0 && texture_size.y > 0);
 
 				// Character parameters as specified in .fnt file
@@ -105,7 +116,8 @@ namespace Engine::Rendering
 				const auto char_height = static_cast<float>(chardata->height);
 
 				// Offset origin by xoffset (specified in .fnt file) of this char
-				const float position_x = char_origin_x + ((static_cast<float>(chardata->xoffset) * font_size_ratio) /
+				const float position_x = char_origin_x + ((static_cast<float>(chardata->xoffset) *
+														   font_size_ratio) /
 														  static_cast<float>(screen_size.x));
 				const float position_y = char_origin_y;
 				const float position_z = 0.0f;
@@ -124,12 +136,13 @@ namespace Engine::Rendering
 				// Convert character size to screen-space coordinates
 				// in renderer, multiply with selected size
 				//
-				// Final size equation: ((character_width_px / font_size_px) / screen_width_ss) * selected_size_px
+				// Final size equation: ((character_width_px / font_size_px) / screen_width_ss) *
+				// selected_size_px
 				//
 				const float char_width_ratio  = (char_width / static_cast<float>(font_size));
 				const float char_height_ratio = (char_height / static_cast<float>(font_size));
-				const float size_x			  = (char_width_ratio / static_cast<float>(screen_size.x));
-				const float size_y			  = (char_height_ratio / static_cast<float>(screen_size.y));
+				const float size_x = (char_width_ratio / static_cast<float>(screen_size.x));
+				const float size_y = (char_height_ratio / static_cast<float>(screen_size.y));
 
 				// Color data
 				const float color_r = 1.0f;
@@ -137,53 +150,53 @@ namespace Engine::Rendering
 				const float color_b = 1.0f;
 
 				const std::vector<RenderingVertex> vertices = {
-					RenderingVertex{
+					{
 						glm::vec3(position_x, position_y + size_y, position_z),
 						glm::vec3(color_r, color_g, color_b),
 						glm::vec2(
 							(char_x) / static_cast<float>(texture_size.x),
 							(char_y + char_height) / static_cast<float>(texture_size.y)
-						)
+						),
 					},
-					RenderingVertex{
+					{
 						glm::vec3(position_x + size_x, position_y + size_y, position_z),
 						glm::vec3(color_r, color_g, color_b),
 						glm::vec2(
 							(char_x + char_width) / static_cast<float>(texture_size.x),
 							(char_y + char_height) / static_cast<float>(texture_size.y)
-						)
+						),
 					},
-					RenderingVertex{
+					{
 						glm::vec3(position_x, position_y, position_z),
 						glm::vec3(color_r, color_g, color_b),
 						glm::vec2(
 							(char_x) / static_cast<float>(texture_size.x),
 							(char_y) / static_cast<float>(texture_size.y)
-						)
+						),
 					},
-					RenderingVertex{
+					{
 						glm::vec3(position_x + size_x, position_y + size_y, position_z),
 						glm::vec3(color_r, color_g, color_b),
 						glm::vec2(
 							(char_x + char_width) / static_cast<float>(texture_size.x),
 							(char_y + char_height) / static_cast<float>(texture_size.y)
-						)
+						),
 					},
-					RenderingVertex{
+					{
 						glm::vec3(position_x + size_x, position_y, position_z),
 						glm::vec3(color_r, color_g, color_b),
 						glm::vec2(
 							(char_x + char_width) / static_cast<float>(texture_size.x),
 							(char_y) / static_cast<float>(texture_size.y)
-						)
+						),
 					},
-					RenderingVertex{
+					{
 						glm::vec3(position_x, position_y, position_z),
 						glm::vec3(color_r, color_g, color_b),
 						glm::vec2(
 							(char_x) / static_cast<float>(texture_size.x),
 							(char_y) / static_cast<float>(texture_size.y)
-						)
+						),
 					}
 				};
 

@@ -2,7 +2,6 @@ local dynagen_defs = require("dynagen_defs")
 local config = require("config")
 local game_defs = require("game_defs")
 local util = require("util")
---require("perlin")
 
 --[[ local tracemap = {}
 function trace (event)
@@ -102,7 +101,7 @@ end
 local ffi = require("ffi")
 local bit = require("bit")
 
-GENERATOR_FUNCTION = function(supplier, world_x, world_y, world_z)
+generate_fn = function(supplier, world_x, world_y, world_z)
 
 	local map_data = supplier(world_x, world_z)
 	

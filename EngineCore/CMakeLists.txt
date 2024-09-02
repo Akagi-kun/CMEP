@@ -1,6 +1,7 @@
 set(SRC_FILES
 	src/Engine.cpp
 	src/dllmain.cpp
+	src/Exception.cpp
 	src/OpaqueEngine.cpp
 	src/InternalEngineObject.cpp
 	
@@ -27,8 +28,9 @@ set(SRC_FILES
 	src/Rendering/MeshBuilders/SpriteMeshBuilder.cpp
 	src/Rendering/MeshBuilders/GeneratorMeshBuilder.cpp
 	
+	src/Scripting/FFI_Mappings.cpp
 	src/Scripting/CrossStateFunctionCall.cpp
-	
+
 	src/Scripting/ILuaScript.cpp
 	src/Scripting/EventLuaScript.cpp
 	src/Scripting/GeneratorLuaScript.cpp

@@ -15,21 +15,21 @@ namespace Engine::Rendering
 
 		virtual ~IMeshBuilder()
 		{
-			this->logger->SimpleLog(Logging::LogLevel::Debug3, "Cleaning up MeshBuilder");
+			logger->SimpleLog(Logging::LogLevel::Debug3, "Cleaning up MeshBuilder");
 
-			delete this->context.vbo;
+			delete context.vbo;
 		}
 
 		// Always call IMeshBuilder::SupplyData when overriding!
-		virtual void SupplyData(const RendererSupplyData& data)
+		virtual void SupplyData(const MeshBuilderSupplyData& data)
 		{
-			this->needs_rebuild = true;
+			needs_rebuild = true;
 			(void)(data);
 		}
 
 		void SupplyWorldPosition(const glm::vec3& with_world_position)
 		{
-			this->world_pos = with_world_position;
+			world_pos = with_world_position;
 		}
 
 		virtual void Build() = 0;
@@ -38,12 +38,12 @@ namespace Engine::Rendering
 
 		[[nodiscard]] const MeshBuildContext& GetContext() const
 		{
-			return this->context;
+			return context;
 		}
 
 		[[nodiscard]] bool NeedsRebuild() const noexcept
 		{
-			return this->needs_rebuild;
+			return needs_rebuild;
 		}
 
 	protected:

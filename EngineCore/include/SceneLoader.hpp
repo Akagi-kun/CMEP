@@ -1,5 +1,7 @@
 #pragma once
 
+#include "Assets/AssetManager.hpp"
+
 #include "InternalEngineObject.hpp"
 #include "Scene.hpp"
 

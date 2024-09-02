@@ -3,6 +3,7 @@
 #include "Asset.hpp"
 #include "InternalEngineObject.hpp"
 
+#include <optional>
 #include <unordered_map>
 
 namespace Engine::Rendering
@@ -43,9 +44,13 @@ namespace Engine::Rendering
 
 		void Init(std::unique_ptr<FontData> init_data);
 
-		FontChar* GetChar(char character_id);
-		std::shared_ptr<Texture> GetPageTexture(int page);
-		std::string* GetFontInfoParameter(const std::string& name);
+		[[nodiscard]] std::shared_ptr<Texture> GetPageTexture(int page);
+		[[nodiscard]] std::shared_ptr<const Texture> GetPageTexture(int page) const;
+
+		[[nodiscard]] const FontChar* GetChar(char character_id) const;
+
+		[[nodiscard]] std::optional<std::string> GetFontInfoParameter(const std::string& name
+		) const;
 
 	private:
 		std::unique_ptr<FontData> data;

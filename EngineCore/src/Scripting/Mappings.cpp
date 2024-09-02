@@ -1,22 +1,21 @@
 #include "Scripting/Mappings.hpp"
 
-#include "Assets/AssetManager.hpp"
-#include "Assets/Texture.hpp"
-#include "Rendering/Renderers/Renderer.hpp"
 #include "Rendering/SupplyData.hpp"
 
 #include "Scripting/API/LuaFactories.hpp"
 #include "Scripting/API/framework.hpp"
+#include "Scripting/Utility.hpp"
 
 #include "Factories/ObjectFactory.hpp"
 
 #include "Engine.hpp"
 #include "EnumStringConvertor.hpp"
+#include "Exception.hpp"
 #include "KVPairHelper.hpp"
 #include "Logging.hpp"
 #include "lua.hpp"
 
-#include <charconv>
+// #include <charconv>
 
 // Prefixes for logging messages
 #define LOGPFX_CURRENT LOGPFX_LUA_MAPPED
@@ -35,7 +34,7 @@ namespace Engine::Scripting::Mappings
 		{
 			// LuaJIT has no guarantees to the ID of CDATA type
 			// It can be checked manually against 'lj_obj_typename' symbol
-			static constexpr int cdata_type_id = 10;
+			// static constexpr int cdata_type_id = 10;
 
 			int argc = lua_gettop(state);
 
@@ -49,44 +48,8 @@ namespace Engine::Scripting::Mappings
 
 				for (int arg = 1; arg <= argc; arg++)
 				{
-					std::string string;
-
-					switch (lua_type(state, arg))
-					{
-						case LUA_TBOOLEAN:
-							string = (lua_toboolean(state, arg) == 1) ? "true" : "false";
-							break;
-						case LUA_TNIL:
-							string = "nil";
-							break;
-						case LUA_TNUMBER:
-							string = std::to_string(lua_tonumber(state, arg));
-							break;
-						case LUA_TNONE:
-							string = "none";
-							break;
-						case cdata_type_id:
-						{
-							using namespace std::string_literals;
-							auto value = *reinterpret_cast<const uintptr_t*>(
-								lua_topointer(state, arg)
-							);
-
-							static constexpr size_t buffer_len = 32;
-							char ptr_buffer[buffer_len]		   = {};
-							memset(ptr_buffer, 0, buffer_len);
-
-							std::to_chars(ptr_buffer, ptr_buffer + (buffer_len - 1), value, 16);
-
-							string = "cdata<? ? ?>: 0x"s.append(ptr_buffer).append(">");
-							break;
-						}
-						case LUA_TSTRING:
-							[[fallthrough]];
-						default:
-							string = lua_tostring(state, arg);
-							break;
-					}
+					Utility::LuaValue value(state, arg);
+					std::string string = Utility::LuaValue::ToString(value);
 
 					locked_logger->Log("%s\t", string.c_str());
 				}
@@ -103,20 +66,162 @@ namespace Engine::Scripting::Mappings
 
 #pragma endregion
 
-#pragma region Renderer functions
+#pragma region ObjectFactory
 
-		static int RendererForceBuild(lua_State* state)
+		namespace
 		{
-			CMEP_LUACHECK_FN_ARGC(state, 1)
+			template <typename supply_data_t>
+			[[nodiscard]] supply_data_t InterpretSupplyData(lua_State* state)
+			{
+				using namespace std::string_literals;
+				ENGINE_EXCEPTION_ON_ASSERT(lua_objlen(state, -1) == 2, "Incorrect data supplied")
 
-			auto* renderer = static_cast<Rendering::IRenderer*>(lua_touserdata(state, 1));
+				lua_rawgeti(state, -1, 1);
+				EnumStringConvertor<typename supply_data_t::Type> type = std::string(
+					lua_tostring(state, -1)
+				);
 
-			renderer->ForceBuild();
+				lua_rawgeti(state, -2, 2);
+				Utility::LuaValue value(state, -1);
 
-			return 0;
+				if constexpr (std::is_same<supply_data_t, Rendering::RendererSupplyData>())
+				{
+					return Factories::ObjectFactory::GenerateRendererSupplyData(type, value);
+				}
+				else if constexpr (std::is_same<supply_data_t, Rendering::MeshBuilderSupplyData>())
+				{
+					return Factories::ObjectFactory::GenerateMeshBuilderSupplyData(type, value);
+				}
+			}
+		} // namespace
+
+		static int CreateSceneObject(lua_State* state)
+		{
+			CMEP_LUACHECK_FN_ARGC(state, 5)
+
+			lua_getfield(state, 1, "_ptr");
+			auto* owner_engine = static_cast<Engine*>(lua_touserdata(state, -1));
+
+			ENGINE_EXCEPTION_ON_ASSERT(
+				owner_engine != nullptr,
+				"Tried to create scene object with invalid Engine pointer!"
+			)
+
+			std::string template_params = Utility::LuaValue(state, 2);
+
+			// separates out params for the object
+			// valid format is 'renderer/mesh_builder'
+			auto [renderer_type, mesh_builder_type] =
+				::Engine::Utility::SplitKVPair(template_params, "/");
+
+			std::string shader_name = Utility::LuaValue(state, 3);
+
+			// Check for table
+			if (lua_istable(state, 4))
+			{
+				// if (auto locked_asset_manager = asset_manager.lock())
+				//{
+				std::vector<Rendering::RendererSupplyData> renderer_supply_data;
+				int idx = 1;
+				while (true)
+				{
+					static constexpr size_t start_idx = 4;
+					lua_rawgeti(state, start_idx, idx);
+
+					if (lua_isnil(state, -1))
+					{
+						break;
+					}
+
+					try
+					{
+						renderer_supply_data.emplace_back(
+							InterpretSupplyData<Rendering::RendererSupplyData>(state)
+						);
+					}
+					catch (...)
+					{
+						std::throw_with_nested(
+							ENGINE_EXCEPTION("Exception occured during interpreting of supply data")
+						);
+					}
+
+					lua_pop(state, 3);
+
+					idx++;
+				}
+
+				std::vector<Rendering::MeshBuilderSupplyData> meshbuilder_supply_data;
+				idx = 1;
+				while (true)
+				{
+					static constexpr size_t start_idx = 5;
+					lua_rawgeti(state, start_idx, idx);
+
+					if (lua_isnil(state, -1))
+					{
+						break;
+					}
+
+					try
+					{
+						meshbuilder_supply_data.emplace_back(
+							InterpretSupplyData<Rendering::MeshBuilderSupplyData>(state)
+						);
+					}
+					catch (...)
+					{
+						std::throw_with_nested(
+							ENGINE_EXCEPTION("Exception occured during interpreting of supply data")
+						);
+					}
+
+					lua_pop(state, 3);
+
+					idx++;
+				}
+
+				// Check if mesh builder type is valid, if so, get a factory for it
+				const auto factory = Factories::ObjectFactory::GetSceneObjectFactory(
+					renderer_type,
+					mesh_builder_type
+				);
+
+				if (factory)
+				{
+					throw ENGINE_EXCEPTION("message");
+
+					Object* obj = factory(
+						owner_engine,
+						shader_name,
+						renderer_supply_data,
+						meshbuilder_supply_data
+					);
+
+					if (obj != nullptr)
+					{
+						API::LuaFactories::ObjectFactory(state, obj);
+
+						return 1;
+					}
+
+					return luaL_error(state, "Object was nullptr!");
+				}
+
+				return luaL_error(state, "No factory was found for this object!");
+				//}
+
+				// return luaL_error(state, "Could not lock asset manager!");
+			}
+
+			return luaL_error(state, "Invalid parameter type (expected 'table')");
 		}
 
-		static int RendererSupplyText(lua_State* state)
+#pragma endregion
+
+#pragma region Renderer / MeshBuilder
+
+		/* static int RendererSupplyText(lua_State* state)
 		{
 			CMEP_LUACHECK_FN_ARGC(state, 2)
 
@@ -125,7 +230,7 @@ namespace Engine::Scripting::Mappings
 			const char* text = lua_tostring(state, 2);
 
 			Rendering::RendererSupplyData text_supply = {
-				Rendering::RendererSupplyDataType::TEXT,
+				Rendering::RendererSupplyData::Type::TEXT,
 				text
 			};
 			renderer->SupplyData(text_supply);
@@ -144,120 +249,56 @@ namespace Engine::Scripting::Mappings
 				*static_cast<std::shared_ptr<Rendering::Texture>*>(lua_touserdata(state, -1));
 
 			Rendering::RendererSupplyData texture_supply = {
-				Rendering::RendererSupplyDataType::TEXTURE,
+				Rendering::RendererSupplyData::Type::TEXTURE,
 				texture
 			};
 			renderer->SupplyData(texture_supply);
+
+			return 0;
+		} */
+
+		// TODO: Implement texture
+		/* static int RendererSupplyData(lua_State* state)
+		{
+			CMEP_LUACHECK_FN_ARGC(state, 3);
+
+			auto* renderer = static_cast<Rendering::IRenderer*>(lua_touserdata(state, 1));
+
+			EnumStringConvertor<Rendering::RendererSupplyData::Type> type = std::string(
+				lua_tostring(state, 2)
+			);
+			std::string value = lua_tostring(state, 3);
+
+			assert(type == Rendering::RendererSupplyData::Type::);
+		} */
+
+		static int MeshBuilderSupplyData(lua_State* state)
+		{
+			CMEP_LUACHECK_FN_ARGC(state, 3)
+
+			auto* mesh_builder = static_cast<Rendering::IMeshBuilder*>(lua_touserdata(state, 1));
+
+			EnumStringConvertor<Rendering::MeshBuilderSupplyData::Type> type =
+				Utility::LuaValue(state, 2);
+
+			std::string value = Utility::LuaValue(state, 3);
+
+			// TODO: Support other types beside text
+			assert(type == Rendering::MeshBuilderSupplyData::Type::TEXT);
+
+			mesh_builder->SupplyData({type, value});
 
 			return 0;
 		}
 
 #pragma endregion
 
-#pragma region ObjectFactory
-
-		[[nodiscard]] static std::vector<Rendering::RendererSupplyData> InterpretSupplyData(
-			lua_State* state,
-			AssetManager* asset_manager,
-			int start_idx
-		)
-		{
-			std::vector<Rendering::RendererSupplyData> supply_data;
-
-			int idx = 1;
-			while (true)
-			{
-				lua_rawgeti(state, start_idx, idx);
-
-				if (lua_isnil(state, -1))
-				{
-					break;
-				}
-
-				lua_rawgeti(state, -1, 1);
-				EnumStringConvertor<Rendering::RendererSupplyDataType> type = std::string(
-					lua_tostring(state, -1)
-				);
-
-				lua_rawgeti(state, -2, 2);
-				std::string value = lua_tostring(state, -1);
-
-				Factories::ObjectFactory::PushSupplyData(asset_manager, supply_data, type, value);
-
-				lua_pop(state, 3);
-
-				idx++;
-			}
-
-			return supply_data;
-		}
-
-		static int CreateSceneObject(lua_State* state)
-		{
-			CMEP_LUACHECK_FN_ARGC(state, 4)
-
-			lua_getfield(state, 1, "_smart_ptr");
-			std::weak_ptr<AssetManager> asset_manager = *static_cast<std::weak_ptr<AssetManager>*>(
-				lua_touserdata(state, -1)
-			);
-
-			std::string template_params = lua_tostring(state, 2);
-
-			// separates out params for the object
-			// valid format is 'renderer/mesh_builder'
-			auto [renderer_type, mesh_builder_type] =
-				::Engine::Utility::SplitKVPair(template_params, "/");
-
-			std::string shader_name = lua_tostring(state, 3);
-
-			// Check for table
-			if (lua_istable(state, 4))
-			{
-				if (auto locked_asset_manager = asset_manager.lock())
-				{
-					auto supply_data = InterpretSupplyData(state, locked_asset_manager.get(), 4);
-
-					// Check if mesh builder type is valid, if so, get a factory for it
-					const auto factory = Factories::ObjectFactory::GetSceneObjectFactory(
-						renderer_type,
-						mesh_builder_type
-					);
-
-					if (factory)
-					{
-						Object* obj = factory(
-							locked_asset_manager->GetOwnerEngine(),
-							shader_name,
-							supply_data
-						);
-
-						if (obj != nullptr)
-						{
-							API::LuaFactories::ObjectFactory(state, obj);
-
-							return 1;
-						}
-
-						return luaL_error(state, "Object was nullptr!");
-					}
-
-					return luaL_error(state, "No factory was found for this object!");
-				}
-
-				return luaL_error(state, "Could not lock asset manager!");
-			}
-
-			return luaL_error(state, "Invalid parameter type (expected 'table')");
-		}
-
-#pragma endregion
-
 	} // namespace Functions
 
-	std::unordered_map<std::string, lua_CFunction> mappings = {
-		CMEP_LUAMAPPING_DEFINE(RendererSupplyText),
-		CMEP_LUAMAPPING_DEFINE(RendererSupplyTexture),
-		CMEP_LUAMAPPING_DEFINE(RendererForceBuild),
+	std::unordered_map<std::string, const lua_CFunction> mappings = {
+		// CMEP_LUAMAPPING_DEFINE(RendererSupplyText),
+		// CMEP_LUAMAPPING_DEFINE(RendererSupplyTexture),
+		CMEP_LUAMAPPING_DEFINE(MeshBuilderSupplyData),
 
 		CMEP_LUAMAPPING_DEFINE(CreateSceneObject)
 	};

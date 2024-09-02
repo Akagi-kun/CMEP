@@ -11,7 +11,7 @@ namespace Engine::Rendering
 	public:
 		using IMeshBuilder::IMeshBuilder;
 
-		void SupplyData(const RendererSupplyData& data) override;
+		void SupplyData(const MeshBuilderSupplyData& data) override;
 
 		void Build() override;
 
@@ -28,6 +28,6 @@ namespace Engine::Rendering
 
 		std::string text;
 
-		std::shared_ptr<Rendering::Font> font = nullptr;
+		std::shared_ptr<const Rendering::Font> font = nullptr;
 	};
 } // namespace Engine::Rendering

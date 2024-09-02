@@ -37,7 +37,7 @@ namespace Engine::Rendering::Vulkan
 		Pipeline* pipeline = nullptr;
 		std::string_view reason;
 
-		std::tie(pipeline, reason) = this->FindPipeline(with_settings);
+		std::tie(pipeline, reason) = FindPipeline(with_settings);
 
 		if (pipeline != nullptr)
 		{
@@ -50,7 +50,7 @@ namespace Engine::Rendering::Vulkan
 			Logging::LogLevel::Debug1,
 			"Creating new pipeline (none found, '%s'), current pipelines: %u",
 			reason.data(),
-			this->pipelines.size()
+			pipelines.size()
 		);
 
 		// If no such pipeline is found, allocate new one
@@ -61,7 +61,7 @@ namespace Engine::Rendering::Vulkan
 			shader_path
 		);
 
-		this->pipelines.emplace_back(with_settings, pipeline);
+		pipelines.emplace_back(with_settings, pipeline);
 
 		auto* user_ref = new PipelineUserRef(instance, pipeline);
 
@@ -102,13 +102,15 @@ namespace Engine::Rendering::Vulkan
 #pragma region Private
 
 	// string_view is guaranteed to be null-terminated
-	std::pair<Pipeline*, std::string_view> PipelineManager::FindPipeline(const PipelineSettings& with_settings)
+	std::pair<Pipeline*, std::string_view> PipelineManager::FindPipeline(
+		const PipelineSettings& with_settings
+	)
 	{
 		std::string_view reasons[] = {"no setting match"};
 		int reached_point		   = 0;
 
 		// O(N)
-		for (const auto& [settings, pipeline_ptr] : this->pipelines)
+		for (const auto& [settings, pipeline_ptr] : pipelines)
 		{
 			if (settings == with_settings)
 			{

@@ -103,10 +103,11 @@ namespace Engine::Scripting::API::LuaFactories
 		lua_setfield(state, -2, "_ptr");
 
 		// Generate renderer table
-		// lua_newtable(state);
 		lua_pushlightuserdata(state, object_ptr->GetRenderer());
-		// lua_setfield(state, -2, "_ptr");
 		lua_setfield(state, -2, "renderer");
+
+		lua_pushlightuserdata(state, object_ptr->GetMeshBuilder());
+		lua_setfield(state, -2, "meshbuilder");
 	}
 
 	void AssetManagerFactory(lua_State* state, std::weak_ptr<AssetManager> asset_manager_ptr)

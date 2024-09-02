@@ -49,6 +49,9 @@ else()
 
 endif()
 
+set(CMAKE_CONFIGURE_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR})
+configure_file(common_include/cmake_cfg.hpp.in common_include/cmake_cfg.hpp)
+
 add_subdirectory(external)
 
 add_subdirectory(EngineLogging)
