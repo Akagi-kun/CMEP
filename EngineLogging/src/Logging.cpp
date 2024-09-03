@@ -211,7 +211,7 @@ namespace Logging
 	}
 
 	ATTRIBUTE_PRINTF_COMPAT(2, 0)
-	void Logger::InternalLog(const char* const format, const va_list args)
+	void Logger::InternalLog(const char* const format, va_list args)
 	{
 		for (auto& output : state->outputs)
 		{

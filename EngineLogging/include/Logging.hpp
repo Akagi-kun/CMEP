@@ -48,16 +48,16 @@ namespace Logging
 	struct LoggerInternalMapping
 	{
 		LogLevel min_level;
-		FILE* handle;
-		bool has_started_logging;
-		bool use_colors;
+		FILE*	 handle;
+		bool	 has_started_logging;
+		bool	 use_colors;
 	};
 
 	struct LoggerInternalState
 	{
 		std::vector<LoggerInternalMapping> outputs;
-		std::map<uint64_t, std::string> threadid_name_map;
-		std::mutex thread_mutex;
+		std::map<uint64_t, std::string>	   threadid_name_map;
+		std::mutex						   thread_mutex;
 	};
 
 } // namespace Logging
