@@ -65,12 +65,12 @@ namespace Logging
 
 namespace Logging
 {
-	template <typename noptr_class_t> CMEP_EXPORT_CLASS struct prefix_internal
+	template <typename noptr_class_t> struct CMEP_EXPORT_CLASS prefix_internal
 	{
 		CMEP_EXPORT static const char* value;
 	};
 
-	template <typename class_t> CMEP_EXPORT_CLASS struct logpfx_generator
+	template <typename class_t> struct CMEP_EXPORT_CLASS logpfx_generator
 	{
 		using remptr_t = std::remove_pointer_t<class_t>;
 		using prefix_t = decltype(prefix_internal<remptr_t>::value);
@@ -117,7 +117,7 @@ namespace Logging
 		void InternalLog(const char* format, va_list args);
 	};
 
-	CMEP_EXPORT_CLASS class SupportsLogging
+	class CMEP_EXPORT_CLASS SupportsLogging
 	{
 	public:
 		using logger_t = std::shared_ptr<Logging::Logger>;
