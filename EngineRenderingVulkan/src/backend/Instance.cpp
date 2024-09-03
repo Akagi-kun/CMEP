@@ -14,10 +14,6 @@
 #include <utility>
 #include <vector>
 
-// Prefixes for logging messages
-#define LOGPFX_CURRENT LOGPFX_CLASS_VULKAN_INSTANCE
-#include "Logging/LoggingPrefix.hpp"
-
 namespace Engine::Rendering::Vulkan
 {
 #pragma region Internal static
@@ -43,9 +39,9 @@ namespace Engine::Rendering::Vulkan
 											  ? Logging::LogLevel::Error
 											  : Logging::LogLevel::Warning;
 
-			locked_logger->SimpleLog(
+			locked_logger->SimpleLog<void>(
 				log_level,
-				LOGPFX_CURRENT "Vulkan validation layer reported:\n%s",
+				"Vulkan validation layer reported:\n%s",
 				pCallbackData->pMessage
 			);
 		}
@@ -81,14 +77,14 @@ namespace Engine::Rendering::Vulkan
 		}
 		glfwSetErrorCallback(GlfwErrorCallback);
 
-		this->logger->SimpleLog(Logging::LogLevel::Info, LOGPFX_CURRENT "GLFW initialized");
+		this->logger->SimpleLog<decltype(this)>(Logging::LogLevel::Info, "GLFW initialized");
 
 		// Initialize dynamic dispatcher base before all other vulkan calls
 		VULKAN_HPP_DEFAULT_DISPATCHER.init(vkGetInstanceProcAddr);
 
 		InitInstance();
 
-		this->logger->SimpleLog(Logging::LogLevel::Info, LOGPFX_CURRENT "Instance initialized");
+		this->logger->SimpleLog<decltype(this)>(Logging::LogLevel::Info, "Instance initialized");
 
 		window = new Window(
 			this,
@@ -172,17 +168,17 @@ namespace Engine::Rendering::Vulkan
 		// Load instance functions in dispatcher
 		VULKAN_HPP_DEFAULT_DISPATCHER.init(*native_handle);
 
-		this->logger->SimpleLog(
+		this->logger->SimpleLog<decltype(this)>(
 			Logging::LogLevel::Info,
-			LOGPFX_CURRENT "Created a Vulkan instance"
+			"Created a Vulkan instance"
 		);
 
 		// If it's a debug build, add a debug callback to Vulkan
 		if (enable_vk_validation_layers)
 		{
-			this->logger->SimpleLog(
-				Logging::LogLevel::Debug2,
-				LOGPFX_CURRENT "Creating debug messenger"
+			this->logger->SimpleLog<decltype(this)>(
+				Logging::LogLevel::VerboseDebug,
+				"Creating debug messenger"
 			);
 
 			vk::DebugUtilsMessengerCreateInfoEXT messenger_create_info(
@@ -199,9 +195,9 @@ namespace Engine::Rendering::Vulkan
 
 			debug_messenger = native_handle.createDebugUtilsMessengerEXT(messenger_create_info);
 
-			this->logger->SimpleLog(
-				Logging::LogLevel::Debug2,
-				LOGPFX_CURRENT "Created debug messenger"
+			this->logger->SimpleLog<decltype(this)>(
+				Logging::LogLevel::VerboseDebug,
+				"Created debug messenger"
 			);
 		}
 	}
@@ -236,9 +232,9 @@ namespace Engine::Rendering::Vulkan
 
 	void Instance::InitDevice()
 	{
-		this->logger->SimpleLog(
-			Logging::LogLevel::Debug2,
-			LOGPFX_CURRENT "Initializing vulkan device"
+		this->logger->SimpleLog<decltype(this)>(
+			Logging::LogLevel::Debug,
+			"Initializing vulkan device"
 		);
 
 		// Get physical devices
@@ -252,9 +248,9 @@ namespace Engine::Rendering::Vulkan
 		{
 			auto score = DeviceScore(device, window->GetSurface());
 
-			this->logger->SimpleLog(
-				Logging::LogLevel::Debug2,
-				LOGPFX_CURRENT "Found device '%s' %u %s %s",
+			this->logger->SimpleLog<decltype(this)>(
+				Logging::LogLevel::VerboseDebug,
+				"Found device '%s' %u %s %s",
 				score.device_scored.GetDeviceName().c_str(),
 				score.preference_score,
 				score ? "suitable" : "unsuitable",
@@ -278,14 +274,14 @@ namespace Engine::Rendering::Vulkan
 		physical_device = new PhysicalDevice(candidates[0].device_scored);
 		// msaa_samples	= Utility::GetMaxFramebufferSampleCount(*physical_device);
 
-		this->logger->SimpleLog(
+		this->logger->SimpleLog<decltype(this)>(
 			Logging::LogLevel::Info,
-			LOGPFX_CURRENT "Found a capable physical device: '%s'",
+			"Found a capable physical device: '%s'",
 			physical_device->GetDeviceName().c_str()
 		);
-		this->logger->SimpleLog(
+		this->logger->SimpleLog<decltype(this)>(
 			Logging::LogLevel::Info,
-			LOGPFX_CURRENT "Using MSAAx%u",
+			"Using MSAAx%u",
 			physical_device->GetMSAASamples()
 		);
 	}

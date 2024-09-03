@@ -9,10 +9,6 @@
 #include "Exception.hpp"
 #include "InternalEngineObject.hpp"
 
-// Prefixes for logging messages
-#define LOGPFX_CURRENT LOGPFX_CLASS_ASSET_MANAGER
-#include "Logging/LoggingPrefix.hpp"
-
 namespace Engine
 {
 	AssetManager::AssetManager(Engine* with_engine) : InternalEngineObject(with_engine)
@@ -21,15 +17,15 @@ namespace Engine
 
 	AssetManager::~AssetManager()
 	{
-		this->logger->SimpleLog(Logging::LogLevel::Info, LOGPFX_CURRENT "Destructor called");
+		this->logger->SimpleLog<decltype(this)>(Logging::LogLevel::Info, "Destructor called");
 
 		fonts.clear();
 
 		for (auto& texture : textures)
 		{
-			this->logger->SimpleLog(
-				Logging::LogLevel::Debug3,
-				LOGPFX_CURRENT "Texture '%s' use_count: %u",
+			this->logger->SimpleLog<decltype(this)>(
+				Logging::LogLevel::VerboseDebug,
+				"Texture '%s' use_count: %u",
 				texture.first.c_str(),
 				texture.second.use_count()
 			);
@@ -78,9 +74,9 @@ namespace Engine
 			return textures.at(name);
 		}
 
-		this->logger->SimpleLog(
-			Logging::LogLevel::Debug2,
-			LOGPFX_CURRENT "Texture asset '%s' not found",
+		this->logger->SimpleLog<decltype(this)>(
+			Logging::LogLevel::VerboseDebug,
+			"Texture asset '%s' not found",
 			name.c_str()
 		);
 
@@ -94,9 +90,9 @@ namespace Engine
 			return fonts.at(name);
 		}
 
-		this->logger->SimpleLog(
-			Logging::LogLevel::Debug2,
-			LOGPFX_CURRENT "Font asset '%s' not found",
+		this->logger->SimpleLog<decltype(this)>(
+			Logging::LogLevel::VerboseDebug,
+			"Font asset '%s' not found",
 			name.c_str()
 		);
 
@@ -110,9 +106,9 @@ namespace Engine
 			return luascripts.at(name);
 		}
 
-		this->logger->SimpleLog(
-			Logging::LogLevel::Debug2,
-			LOGPFX_CURRENT "LuaScript asset '%s' not found",
+		this->logger->SimpleLog<decltype(this)>(
+			Logging::LogLevel::VerboseDebug,
+			"LuaScript asset '%s' not found",
 			name.c_str()
 		);
 

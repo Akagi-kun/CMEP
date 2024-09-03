@@ -12,23 +12,22 @@
 #include <memory>
 #include <stdexcept>
 
-// Prefixes for logging messages
-#define LOGPFX_CURRENT LOGPFX_CLASS_SCENE
-#include "Logging/LoggingPrefix.hpp"
-
 namespace Engine
 {
 	Scene::~Scene()
 	{
-		this->logger->SimpleLog(Logging::LogLevel::Debug2, LOGPFX_CURRENT "Destructor called");
+		this->logger->SimpleLog<decltype(this)>(
+			Logging::LogLevel::VerboseDebug,
+			"Destructor called"
+		);
 
 		this->templates.clear();
 
 		for (auto& [name, ptr] : this->objects)
 		{
-			this->logger->SimpleLog(
-				Logging::LogLevel::Debug3,
-				LOGPFX_CURRENT "Deleting object '%s'",
+			this->logger->SimpleLog<decltype(this)>(
+				Logging::LogLevel::VerboseDebug,
+				"Deleting object '%s'",
 				name.c_str()
 			);
 			delete ptr;
@@ -67,9 +66,9 @@ namespace Engine
 	{
 		if (ptr != nullptr)
 		{
-			this->logger->SimpleLog(
-				Logging::LogLevel::Debug3,
-				LOGPFX_CURRENT "Adding object '%s'",
+			this->logger->SimpleLog<decltype(this)>(
+				Logging::LogLevel::Debug,
+				"Adding object '%s'",
 				name.c_str()
 			);
 

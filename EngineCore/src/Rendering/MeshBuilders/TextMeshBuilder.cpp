@@ -94,7 +94,7 @@ namespace Engine::Rendering
 				// Check if font contains this character
 				if (chardata == nullptr)
 				{
-					logger->SimpleLog(
+					logger->SimpleLog<void>(
 						Logging::LogLevel::Error,
 						"Char 0x%x is not found in set font",
 						text_char
@@ -103,9 +103,6 @@ namespace Engine::Rendering
 				}
 
 				// Get texture information
-				// std::shared_ptr<const Texture> texture =font->GetPageTexture(chardata->page);
-				// assert(texture != nullptr);
-				// ImageSize texture_size = texture->GetSize();
 				ImageSize texture_size = font->GetPageTexture(chardata->page)->GetSize();
 				assert(texture_size.x > 0 && texture_size.y > 0);
 

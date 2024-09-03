@@ -8,4 +8,5 @@ namespace Logging::Console
 	extern const char* RED_FG;	  // error
 	extern const char* BLUE_FG;	  // exception
 	extern const char* GRAY_FG;	  // debug
+	extern const char* RESET_FG;  // reset
 } // namespace Logging::Console

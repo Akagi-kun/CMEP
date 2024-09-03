@@ -25,10 +25,6 @@
 #include <string>
 #include <thread>
 
-// Prefixes for logging messages
-#define LOGPFX_CURRENT LOGPFX_CLASS_ENGINE
-#include "Logging/LoggingPrefix.hpp"
-
 namespace Engine
 {
 	// Utility sleep function
@@ -226,25 +222,24 @@ namespace Engine
 		// Pre-make ON_UPDATE event so we don't have to create it over and over again in hot loop
 		auto on_update_event = EventHandling::Event(this, EventHandling::EventType::ON_UPDATE);
 
-		this->logger->SimpleLog(
-			Logging::LogLevel::Debug1,
-			LOGPFX_CURRENT "Locked to framerate %u%s",
+		this->logger->SimpleLog<decltype(this)>(
+			Logging::LogLevel::VerboseDebug,
+			"Locked to framerate %u%s",
 			config->framerate_target,
 			config->framerate_target == 0 ? " (VSYNC)" : ""
 		);
 
 		auto build_clock = std::chrono::steady_clock::now();
 
-		this->logger->SimpleLog(Logging::LogLevel::Info, "Starting scene build");
+		this->logger->SimpleLog<decltype(this)>(Logging::LogLevel::Info, "Starting scene build");
 		for (const auto& [name, object] : scene->GetAllObjects())
 		{
-			this->logger->SimpleLog(
-				Logging::LogLevel::Debug1,
-				LOGPFX_CURRENT "Building object '%s'",
+			this->logger->SimpleLog<decltype(this)>(
+				Logging::LogLevel::Debug,
+				"Building object '%s'",
 				name.c_str()
 			);
 			object->GetMeshBuilder()->Build();
-			// object->GetRenderer()->ForceBuild();
 		}
 
 		auto scene_build_time = static_cast<double>(
@@ -252,15 +247,14 @@ namespace Engine
 								) /
 								nano_to_msec;
 
-		this->logger->SimpleLog(
+		this->logger->SimpleLog<decltype(this)>(
 			Logging::LogLevel::Info,
-			LOGPFX_CURRENT "Scene build finished in %lums",
+			"Scene build finished in %lums",
 			static_cast<uint_fast32_t>(scene_build_time)
 		);
 
 		// Show window
 		auto* glfw_window = vk_instance->GetWindow();
-		// glfwShowWindow(glfw_window->native_handle);
 		glfw_window->SetVisibility(true);
 
 		double average_event_total	 = 0.00;
@@ -291,9 +285,9 @@ namespace Engine
 				const auto ret			   = FireEvent(on_update_event);
 				if (ret != 0)
 				{
-					this->logger->SimpleLog(
+					this->logger->SimpleLog<decltype(this)>(
 						Logging::LogLevel::Error,
-						LOGPFX_CURRENT "Firing event ON_UPDATE returned %u! Exiting event-loop",
+						"Firing event ON_UPDATE returned %u! Exiting event-loop",
 						ret
 					);
 					break;
@@ -329,7 +323,7 @@ namespace Engine
 
 			if (event_time > limits[0] || time_sum > limits[1] || time_sum < limits[2])
 			{
-				this->logger->SimpleLog(
+				this->logger->SimpleLog<decltype(this)>(
 					Logging::LogLevel::Warning,
 					"delta %lf sum %lf (event %lf draw %lf poll %lf)",
 					delta_time * sec_to_msec,
@@ -353,9 +347,9 @@ namespace Engine
 			prev_clock = next_clock;
 		}
 
-		this->logger->SimpleLog(
-			Logging::LogLevel::Debug2,
-			LOGPFX_CURRENT "Closing engine (eventtime avg %lf)",
+		this->logger->SimpleLog<decltype(this)>(
+			Logging::LogLevel::Debug,
+			"Closing engine (eventtime avg %lf)",
 			average_event_total / static_cast<double>(average_event_count)
 		);
 	}
@@ -374,9 +368,9 @@ namespace Engine
 			}
 			catch (std::runtime_error& e)
 			{
-				this->logger->SimpleLog(
+				this->logger->SimpleLog<decltype(this)>(
 					Logging::LogLevel::Exception,
-					LOGPFX_CURRENT "Caught exception trying to fire event '%u'! e.what(): %s",
+					"Caught exception trying to fire event '%u'! e.what(): %s",
 					event.event_type,
 					e.what()
 				);
@@ -392,7 +386,7 @@ namespace Engine
 
 	Engine::~Engine()
 	{
-		this->logger->SimpleLog(Logging::LogLevel::Info, LOGPFX_CURRENT "Destructor called");
+		this->logger->SimpleLog<decltype(this)>(Logging::LogLevel::Info, "Destructor called");
 
 		scene_manager.reset();
 
@@ -408,9 +402,9 @@ namespace Engine
 		this->logger->MapCurrentThreadToName("engine");
 
 		// Engine info printout
-		this->logger->SimpleLog(
+		this->logger->SimpleLog<decltype(this)>(
 			Logging::LogLevel::Info,
-			LOGPFX_CURRENT "build info:\n////\nRunning %s\nCompiled by %s\n////\n",
+			"build info:\n////\nRunning %s\nCompiled by %s\n////\n",
 			buildinfo_build,
 			buildinfo_compiledby
 		);
@@ -425,10 +419,7 @@ namespace Engine
 			std::throw_with_nested(ENGINE_EXCEPTION("Exception parsing config!"));
 		}
 
-		// Order matters here due to interdependency
-
 		asset_manager = std::make_shared<AssetManager>(this);
-
 		scene_manager = std::make_shared<SceneManager>(this);
 	}
 
@@ -468,9 +459,9 @@ namespace Engine
 		static constexpr double nano_to_msec = 1.e6;
 		double total = static_cast<double>((std::chrono::steady_clock::now() - start).count()) /
 					   nano_to_msec;
-		this->logger->SimpleLog(
+		this->logger->SimpleLog<decltype(this)>(
 			Logging::LogLevel::Info,
-			LOGPFX_CURRENT "Handling ON_INIT took %.3lf ms total and returned %i",
+			"Handling ON_INIT took %.3lf ms total and returned %i",
 			total,
 			on_init_event_ret
 		);

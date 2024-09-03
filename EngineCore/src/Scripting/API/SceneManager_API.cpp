@@ -6,10 +6,6 @@
 #include "SceneManager.hpp"
 #include "lua.h"
 
-// Prefixes for logging messages
-#define LOGPFX_CURRENT LOGPFX_LUA_MAPPED
-#include "Logging/LoggingPrefix.hpp"
-
 namespace Engine::Scripting::API
 {
 	namespace Functions_SceneManager

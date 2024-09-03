@@ -46,8 +46,8 @@ namespace Engine::Rendering::Vulkan
 			return user_ref;
 		}
 
-		this->logger->SimpleLog(
-			Logging::LogLevel::Debug1,
+		this->logger->SimpleLog<decltype(this)>(
+			Logging::LogLevel::VerboseDebug,
 			"Creating new pipeline (none found, '%s'), current pipelines: %u",
 			reason.data(),
 			pipelines.size()

@@ -15,8 +15,6 @@ namespace Engine::Rendering
 
 		virtual ~IMeshBuilder()
 		{
-			logger->SimpleLog(Logging::LogLevel::Debug3, "Cleaning up MeshBuilder");
-
 			delete context.vbo;
 		}
 

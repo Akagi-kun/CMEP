@@ -15,12 +15,6 @@
 #include "Logging.hpp"
 #include "lua.hpp"
 
-// #include <charconv>
-
-// Prefixes for logging messages
-#define LOGPFX_CURRENT LOGPFX_LUA_MAPPED
-#include "Logging/LoggingPrefix.hpp"
-
 #undef CMEP_LUAMAPPING_DEFINE
 #define CMEP_LUAMAPPING_DEFINE(mapping) {#mapping, Functions::mapping}
 
@@ -44,7 +38,7 @@ namespace Engine::Scripting::Mappings
 
 			if (auto locked_logger = logger.lock())
 			{
-				locked_logger->StartLog(Logging::LogLevel::Info);
+				locked_logger->StartLog<void>(Logging::LogLevel::Info);
 
 				for (int arg = 1; arg <= argc; arg++)
 				{
@@ -119,8 +113,6 @@ namespace Engine::Scripting::Mappings
 			// Check for table
 			if (lua_istable(state, 4))
 			{
-				// if (auto locked_asset_manager = asset_manager.lock())
-				//{
 				std::vector<Rendering::RendererSupplyData> renderer_supply_data;
 				int idx = 1;
 				while (true)
@@ -207,9 +199,6 @@ namespace Engine::Scripting::Mappings
 				}
 
 				return luaL_error(state, "No factory was found for this object!");
-				//}
-
-				// return luaL_error(state, "Could not lock asset manager!");
 			}
 
 			return luaL_error(state, "Invalid parameter type (expected 'table')");

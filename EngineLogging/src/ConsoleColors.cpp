@@ -8,4 +8,5 @@ namespace Logging::Console
 	const char* RED_FG	  = "\033[38;2;255;10;10m";	 // error
 	const char* BLUE_FG	  = "\033[38;2;66;205;255m"; // exception
 	const char* GRAY_FG	  = "\033[0;90m";			 // debug
+	const char* RESET_FG  = "\033[0m";				 // reset
 } // namespace Logging::Console

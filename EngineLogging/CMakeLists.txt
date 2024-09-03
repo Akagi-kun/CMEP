@@ -1,5 +1,6 @@
 set(SRC_FILES
 	src/Logging.cpp
+	src/LoggingPrefix.cpp
 	src/ConsoleColors.cpp
 	)
 

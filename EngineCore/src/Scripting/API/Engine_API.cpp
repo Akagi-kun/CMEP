@@ -6,10 +6,6 @@
 #include "Engine.hpp"
 #include "lua.hpp"
 
-// Prefixes for logging messages
-#define LOGPFX_CURRENT LOGPFX_LUA_MAPPED
-#include "Logging/LoggingPrefix.hpp"
-
 namespace Engine::Scripting::API
 {
 	namespace Functions_Engine

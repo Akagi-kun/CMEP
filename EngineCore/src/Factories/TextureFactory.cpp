@@ -13,10 +13,6 @@
 
 #include "Engine.hpp"
 
-// Prefixes for logging messages
-#define LOGPFX_CURRENT LOGPFX_CLASS_TEXTURE_FACTORY
-#include "Logging/LoggingPrefix.hpp"
-
 #include <cstddef>
 #include <cstdint>
 #include <stdexcept>
@@ -41,9 +37,9 @@ namespace Engine::Factories
 			);
 		}
 
-		this->logger->SimpleLog(
-			Logging::LogLevel::Debug2,
-			LOGPFX_CURRENT "Initializing texture from file %s",
+		this->logger->SimpleLog<decltype(this)>(
+			Logging::LogLevel::VerboseDebug,
+			"Initializing texture from file %s",
 			path.string().c_str()
 		);
 
@@ -75,9 +71,9 @@ namespace Engine::Factories
 					throw std::runtime_error("Failed decoding PNG file!");
 				}
 
-				this->logger->SimpleLog(
-					Logging::LogLevel::Debug1,
-					LOGPFX_CURRENT "Decoded png file %s; width %u; height %u; filter %u",
+				this->logger->SimpleLog<decltype(this)>(
+					Logging::LogLevel::VerboseDebug,
+					"Decoded png file %s; width %u; height %u; filter %u",
 					path.c_str(),
 					size.x,
 					size.y,

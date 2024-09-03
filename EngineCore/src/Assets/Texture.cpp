@@ -6,10 +6,6 @@
 
 #include <cassert>
 
-// Prefixes for logging messages
-#define LOGPFX_CURRENT LOGPFX_CLASS_TEXTURE
-#include "Logging/LoggingPrefix.hpp"
-
 namespace Engine::Rendering
 {
 	Texture::Texture(Engine* with_engine, std::unique_ptr<TextureData> init_data)
@@ -19,7 +15,10 @@ namespace Engine::Rendering
 
 	Texture::~Texture()
 	{
-		this->logger->SimpleLog(Logging::LogLevel::Debug3, LOGPFX_CURRENT "Destructor called");
+		this->logger->SimpleLog<decltype(this)>(
+			Logging::LogLevel::VerboseDebug,
+			"Destructor called"
+		);
 
 		delete this->data->texture_image;
 

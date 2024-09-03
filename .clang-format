@@ -16,6 +16,7 @@ AllowAllParametersOfDeclarationOnNextLine: false
 AlignAfterOpenBracket: BlockIndent
 AlignConsecutiveMacros: true
 PointerAlignment: Left
+AlignConsecutiveDeclarations: true
 AlignConsecutiveAssignments:
   Enabled: true
   AcrossComments: true

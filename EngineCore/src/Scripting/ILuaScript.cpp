@@ -11,10 +11,6 @@
 #include <string>
 #include <utility>
 
-// Prefixes for logging messages
-#define LOGPFX_CURRENT LOGPFX_LUA_SCRIPT
-#include "Logging/LoggingPrefix.hpp"
-
 namespace Engine::Scripting
 {
 #pragma region Static functions
@@ -233,9 +229,9 @@ namespace Engine::Scripting
 		// Register exception-handling wrapper
 		RegisterWrapper(state);
 
-		this->logger->SimpleLog(
-			Logging::LogLevel::Debug1,
-			LOGPFX_CURRENT "Loaded and compiled Lua script: '%s'",
+		this->logger->SimpleLog<decltype(this)>(
+			Logging::LogLevel::Debug,
+			"Loaded and compiled Lua script: '%s'",
 			script_path.string().c_str()
 		);
 	}
@@ -268,8 +264,8 @@ namespace Engine::Scripting
 		{
 			luaJIT_profile_stop(state);
 
-			this->logger->SimpleLog(
-				Logging::LogLevel::Debug2,
+			this->logger->SimpleLog<decltype(this)>(
+				Logging::LogLevel::Info,
 				"Profiling result:\n E:%i N:%i I:%i\n",
 				profiler_state.engine_count,
 				profiler_state.native_count,
@@ -290,10 +286,10 @@ namespace Engine::Scripting
 			const char* errormsg = lua_tostring(state, -1);
 
 			// TODO: Throw
-			this->logger->SimpleLog(
+			this->logger->SimpleLog<decltype(this)>(
 				Logging::LogLevel::Error,
-				LOGPFX_CURRENT "Error when calling Lua\n\tscript '%s'\n\tfunction: "
-							   "'%s'\n\terrorcode: %i\n%s",
+				"Error when calling Lua\n\tscript '%s'\n\tfunction: "
+				"'%s'\n\terrorcode: %i\n%s",
 				path.string().c_str(),
 				function.c_str(),
 				errcall,

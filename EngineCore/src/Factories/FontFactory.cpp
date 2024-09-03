@@ -25,10 +25,6 @@
 #include <unordered_map>
 #include <utility>
 
-// Prefixes for logging messages
-#define LOGPFX_CURRENT LOGPFX_CLASS_FONT_FACTORY
-#include "Logging/LoggingPrefix.hpp"
-
 namespace Engine::Factories
 {
 #pragma region Static
@@ -107,26 +103,26 @@ namespace Engine::Factories
 
 		if (!font_file.is_open())
 		{
-			this->logger->SimpleLog(
+			this->logger->SimpleLog<decltype(this)>(
 				Logging::LogLevel::Error,
-				LOGPFX_CURRENT "FontFile %s unexpectedly not open",
+				"FontFile %s unexpectedly not open",
 				font_path.string().c_str()
 			);
 			return nullptr;
 		}
 
-		this->logger->SimpleLog(
-			Logging::LogLevel::Debug2,
-			LOGPFX_CURRENT "Loading file %s",
+		this->logger->SimpleLog<decltype(this)>(
+			Logging::LogLevel::VerboseDebug,
+			"Loading file %s",
 			font_path.string().c_str()
 		);
 
 		std::unique_ptr<Rendering::FontData> font_data =
 			ParseBmfont(font_path, font_file, opt_callback);
 
-		this->logger->SimpleLog(
-			Logging::LogLevel::Debug1,
-			LOGPFX_CURRENT "File %s loaded successfully",
+		this->logger->SimpleLog<decltype(this)>(
+			Logging::LogLevel::Debug,
+			"File %s loaded successfully",
 			font_path.string().c_str()
 		);
 
@@ -220,9 +216,9 @@ namespace Engine::Factories
 			}
 		} while ((page_idx == -1) || page_path.empty());
 
-		this->logger->SimpleLog(
-			Logging::LogLevel::Debug3,
-			LOGPFX_CURRENT "Font page index %u is '%s'",
+		this->logger->SimpleLog<decltype(this)>(
+			Logging::LogLevel::VerboseDebug,
+			"Font page index %u is '%s'",
 			page_idx,
 			page_path.string().c_str()
 		);

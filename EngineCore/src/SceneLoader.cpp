@@ -27,10 +27,6 @@
 #include <string>
 #include <utility>
 
-// Prefixes for logging messages
-#define LOGPFX_CURRENT LOGPFX_CLASS_SCENE_LOADER
-#include "Logging/LoggingPrefix.hpp"
-
 namespace Engine
 {
 #pragma region Static
@@ -87,16 +83,19 @@ namespace Engine
 
 	SceneLoader::~SceneLoader()
 	{
-		this->logger->SimpleLog(Logging::LogLevel::Debug2, LOGPFX_CURRENT "Destructor called");
+		this->logger->SimpleLog<decltype(this)>(
+			Logging::LogLevel::VerboseDebug,
+			"Destructor called"
+		);
 	}
 
 	std::shared_ptr<Scene> SceneLoader::LoadScene(std::string scene_name)
 	{
 		std::shared_ptr<Scene> new_scene = std::make_shared<Scene>(owner_engine);
 
-		this->logger->SimpleLog(
+		this->logger->SimpleLog<decltype(this)>(
 			Logging::LogLevel::Info,
-			LOGPFX_CURRENT "Loading scene: '%s'",
+			"Loading scene: '%s'",
 			scene_name.c_str()
 		);
 
@@ -127,9 +126,9 @@ namespace Engine
 			std::throw_with_nested(ENGINE_EXCEPTION("Failed on json parse"));
 		}
 
-		this->logger->SimpleLog(
-			Logging::LogLevel::Debug1,
-			LOGPFX_CURRENT "Loading scene prefix is: %s",
+		this->logger->SimpleLog<decltype(this)>(
+			Logging::LogLevel::VerboseDebug,
+			"Loading scene prefix is: %s",
 			scene_path.c_str()
 		);
 
@@ -190,9 +189,9 @@ namespace Engine
 				);
 			}
 
-			this->logger->SimpleLog(
-				Logging::LogLevel::Debug2,
-				LOGPFX_CURRENT "Done stage: Event Handlers"
+			this->logger->SimpleLog<decltype(this)>(
+				Logging::LogLevel::Debug,
+				"Done stage: Event Handlers"
 			);
 		}
 	}
@@ -246,16 +245,16 @@ namespace Engine
 
 				scene->LoadTemplatedObject(name, object_template);
 
-				this->logger->SimpleLog(
-					Logging::LogLevel::Debug1,
-					LOGPFX_CURRENT "Loaded template '%s'",
+				this->logger->SimpleLog<decltype(this)>(
+					Logging::LogLevel::VerboseDebug,
+					"Loaded template '%s'",
 					name.c_str()
 				);
 			}
 
-			this->logger->SimpleLog(
-				Logging::LogLevel::Debug2,
-				LOGPFX_CURRENT "Done stage: Templates"
+			this->logger->SimpleLog<decltype(this)>(
+				Logging::LogLevel::Debug,
+				"Done stage: Templates"
 			);
 		}
 	}
@@ -381,7 +380,7 @@ namespace Engine
 				}
 			}
 
-			this->logger->SimpleLog(Logging::LogLevel::Debug2, LOGPFX_CURRENT "Done stage: Assets");
+			this->logger->SimpleLog<decltype(this)>(Logging::LogLevel::Debug, "Done stage: Assets");
 		}
 	}
 

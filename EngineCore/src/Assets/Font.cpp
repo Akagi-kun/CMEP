@@ -8,17 +8,13 @@
 #include <cassert>
 #include <string>
 
-// Prefixes for logging messages
-#define LOGPFX_CURRENT LOGPFX_CLASS_FONT
-#include "Logging/LoggingPrefix.hpp"
-
 namespace Engine::Rendering
 {
 #pragma region Public
 
 	Font::~Font()
 	{
-		logger->SimpleLog(Logging::LogLevel::Debug3, LOGPFX_CURRENT "Destructor called");
+		logger->SimpleLog<decltype(this)>(Logging::LogLevel::VerboseDebug, "Destructor called");
 
 		data.reset();
 	}

@@ -13,10 +13,6 @@
 #include "glm/ext/matrix_transform.hpp"
 #include "glm/trigonometric.hpp"
 
-// Prefixes for logging messages
-#define LOGPFX_CURRENT LOGPFX_CLASS_SCENE_MANAGER
-#include "Logging/LoggingPrefix.hpp"
-
 namespace Engine
 {
 	SceneManager::SceneManager(Engine* with_engine) : InternalEngineObject(with_engine)
@@ -37,7 +33,7 @@ namespace Engine
 
 	SceneManager::~SceneManager()
 	{
-		this->logger->SimpleLog(Logging::LogLevel::Info, LOGPFX_CURRENT "Destructor called");
+		this->logger->SimpleLog<decltype(this)>(Logging::LogLevel::Info, "Destructor called");
 
 		scenes.clear();
 

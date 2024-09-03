@@ -3,6 +3,13 @@
 
 #include "ConsoleColors.hpp"
 
+#if defined(__GNUC__) || defined(__llvm__)
+#	define ATTRIBUTE_PRINTF_COMPAT(string_idx, arg_check)                                         \
+		__attribute__((__format__(__printf__, string_idx, arg_check)))
+#else
+#	define ATTRIBUTE_PRINTF_COMPAT(string_idx, arg_check)
+#endif
+
 #include <cassert>
 #include <chrono>
 #include <cstdarg>
@@ -10,30 +17,57 @@
 #include <cstring>
 #include <thread>
 
-// Prefixes for logging messages
-#define LOGPFX_CURRENT LOGPFX_CLASS_LOGGER
-#include "LoggingPrefix.hpp"
+namespace
+{
+	using color_t = const char*;
+	using level_t = std::string_view;
 
-static const char* level_to_color_table[] = {
-	Logging::Console::GRAY_FG,
-	Logging::Console::GRAY_FG,
-	Logging::Console::GRAY_FG,
-	Logging::Console::WHITE_FG,
-	Logging::Console::YELLOW_FG,
-	Logging::Console::RED_FG,
-	Logging::Console::BLUE_FG
-};
+	const char* level_to_color_table[] = {
+		Logging::Console::GRAY_FG,
+		Logging::Console::GRAY_FG,
+		Logging::Console::GRAY_FG,
+		Logging::Console::WHITE_FG,
+		Logging::Console::YELLOW_FG,
+		Logging::Console::RED_FG,
+		Logging::Console::BLUE_FG
+	};
 
-static const char* const level_to_string_table[] =
-	{"DBG3", "DBG2", "DBG1", "INFO", "WARN", "ERROR", "EXCEPTION"};
+	constexpr std::string_view level_to_string_table[] =
+		{"???", "VDEBUG", "DEBUG", "INFO", "WARN", "ERROR", "EXCEPT"};
 
-static_assert(
-	(sizeof(level_to_color_table) / sizeof(char*)) ==
-	(sizeof(level_to_string_table) / sizeof(char*))
-);
+	static_assert(
+		(sizeof(level_to_color_table) / sizeof(color_t)) ==
+		(sizeof(level_to_string_table) / sizeof(level_t))
+	);
+} // namespace
 
 namespace Logging
 {
+	namespace
+	{
+		constexpr size_t GetMaxLevelLength()
+		{
+			size_t accum = 0;
+
+			for (auto level : level_to_string_table)
+			{
+				accum = std::max(accum, level.size());
+			}
+
+			return accum;
+		}
+
+		uint64_t GetCurrentThreadID()
+		{
+			return std::hash<std::thread::id>{}(std::this_thread::get_id());
+		}
+
+		constexpr bool IsValid(Logging::LogLevel level)
+		{
+			return level >= LogLevel::VerboseDebug && level <= LogLevel::Exception;
+		}
+	} // namespace
+
 	Logger::Logger()
 	{
 		state = new LoggerInternalState();
@@ -55,8 +89,7 @@ namespace Logging
 
 	void Logger::AddOutputHandle(Logging::LogLevel min_level, FILE* handle, bool use_colors)
 	{
-		// Check if enum valid
-		if (min_level < LogLevel::Debug3 || min_level > LogLevel::Exception)
+		if (!IsValid(min_level))
 		{
 			return;
 		}
@@ -72,33 +105,23 @@ namespace Logging
 		state->outputs.push_back(new_map);
 	}
 
-	namespace
-	{
-		uint16_t GetCurrentThreadID()
-		{
-			static const uint16_t thread_id_mask = 0xFFFF;
-			return static_cast<uint16_t>(
-				std::hash<std::thread::id>{}(std::this_thread::get_id()) & thread_id_mask
-			);
-		}
-	} // namespace
-
 	void Logger::MapCurrentThreadToName(std::string name)
 	{
+		assert(name.length() <= 8);
+
 		// Protect member access
 		state->thread_mutex.lock();
 
-		uint16_t thread_id = GetCurrentThreadID();
+		uint64_t thread_id = GetCurrentThreadID();
 
 		state->threadid_name_map.emplace(thread_id, name);
 
 		state->thread_mutex.unlock();
 	}
 
-	void Logger::StartLog(Logging::LogLevel level)
+	void Logger::InternalStartLog(Logging::LogLevel level, const char* log_prefix)
 	{
-		// Check if enum valid
-		if (level < LogLevel::Debug3 || level > LogLevel::Exception)
+		if (!IsValid(level))
 		{
 			return;
 		}
@@ -107,17 +130,17 @@ namespace Logging
 		state->thread_mutex.lock();
 
 		// Get color and string representation of LogLevel
-		const char* const color_str = level_to_color_table[static_cast<int>(level)];
-		const char* const level_str = level_to_string_table[static_cast<int>(level)];
+		const auto* color_str = level_to_color_table[static_cast<int>(level)];
+		auto		level_str = level_to_string_table[static_cast<int>(level)];
 
-		static constexpr size_t threadid_buf_len   = 12;
-		static char threadid_buf[threadid_buf_len] = {};
+		static constexpr size_t threadid_buf_len			   = 8 + 1;
+		static char				threadid_buf[threadid_buf_len] = {};
 		memset(threadid_buf, 0, threadid_buf_len);
 
 		// Get current time
 		const std::time_t tmp = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now(
 		));
-		std::tm cur_time	  = {};
+		std::tm			  cur_time = {};
 #if defined(_MSC_VER)
 		localtime_s(&cur_time, &tmp);
 #else
@@ -132,24 +155,27 @@ namespace Logging
 			{
 				output.has_started_logging = true;
 
-				uint16_t thread_id	 = GetCurrentThreadID();
-				auto find_result	 = state->threadid_name_map.find(thread_id);
-				bool use_thread_name = (find_result != state->threadid_name_map.end());
+				uint64_t thread_id		 = GetCurrentThreadID();
+				auto	 find_result	 = state->threadid_name_map.find(thread_id);
+				bool	 use_thread_name = (find_result != state->threadid_name_map.end());
 
 				if (!use_thread_name)
 				{
-					snprintf(threadid_buf, threadid_buf_len, "%04hx", thread_id);
+					snprintf(threadid_buf, threadid_buf_len, "%08llX", thread_id);
 				}
 
 				fprintf(
 					output.handle,
-					"%s[%02i:%02i:%02i %s %s] ",
-					output.use_colors ? color_str : "",
+					"%s%02i:%02i:%02i %8s %s%*s | %s: ",
+					output.use_colors ? Console::GRAY_FG : "",
 					cur_time.tm_hour,
 					cur_time.tm_min,
 					cur_time.tm_sec,
 					use_thread_name ? find_result->second.c_str() : threadid_buf,
-					level_str
+					output.use_colors ? color_str : "",
+					static_cast<int>(GetMaxLevelLength()),
+					level_str.data(),
+					log_prefix != nullptr ? log_prefix : "no prefix"
 				);
 			}
 		}
@@ -159,22 +185,14 @@ namespace Logging
 	{
 		assert(format != nullptr);
 
-		// Log for all outputs
-		for (auto& output : state->outputs)
-		{
-			if (output.has_started_logging)
-			{
-				va_list args;
-				va_start(args, format);
-				vfprintf(output.handle, format, args);
-				va_end(args);
-			}
-		}
+		va_list args;
+		va_start(args, format);
+		InternalLog(format, args);
+		va_end(args);
 	}
 
 	void Logger::StopLog()
 	{
-		// StopLog for all outputs
 		for (auto& output : state->outputs)
 		{
 			if (output.has_started_logging)
@@ -182,7 +200,7 @@ namespace Logging
 				output.has_started_logging = false;
 				if (output.use_colors)
 				{
-					fprintf(output.handle, "%s", Logging::Console::WHITE_FG);
+					fprintf(output.handle, "%s", Logging::Console::RESET_FG);
 				}
 				fputc('\n', output.handle);
 			}
@@ -192,22 +210,15 @@ namespace Logging
 		state->thread_mutex.unlock();
 	}
 
-	void Logger::SimpleLog(LogLevel level, const char* format, ...)
+	ATTRIBUTE_PRINTF_COMPAT(2, 0)
+	void Logger::InternalLog(const char* const format, const va_list args)
 	{
-		StartLog(level);
-
-		// Log for all outputs
 		for (auto& output : state->outputs)
 		{
-			if (level >= output.min_level)
+			if (output.has_started_logging)
 			{
-				va_list args;
-				va_start(args, format);
 				vfprintf(output.handle, format, args);
-				va_end(args);
 			}
 		}
-
-		StopLog();
 	}
 } // namespace Logging

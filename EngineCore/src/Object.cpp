@@ -2,10 +2,6 @@
 
 #include "Rendering/Renderers/Renderer.hpp"
 
-// Prefixes for logging messages
-#define LOGPFX_CURRENT LOGPFX_CLASS_OBJECT
-#include "Logging/LoggingPrefix.hpp"
-
 namespace Engine
 {
 	Object::Object(
@@ -20,7 +16,10 @@ namespace Engine
 
 	Object::~Object() noexcept
 	{
-		this->logger->SimpleLog(Logging::LogLevel::Debug3, LOGPFX_CURRENT "Destructor called");
+		this->logger->SimpleLog<decltype(this)>(
+			Logging::LogLevel::VerboseDebug,
+			"Destructor called"
+		);
 
 		delete renderer;
 	}
