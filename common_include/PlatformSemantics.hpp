@@ -17,29 +17,26 @@
 #endif
 
 #if defined(_MSC_VER)
-// MSVC
+// Windows
 //  for msvc-like semantics use function-only exports
 #	define SEMANTICS_MSVC
 
+#	define CMEP_EXPORT_CLASS
 #	if !defined(CMEP_ABI_IMPORT)
 #		define CMEP_EXPORT __declspec(dllexport)
-#		define CMEP_EXPORT_CLASS
 #	else
 #		define CMEP_EXPORT __declspec(dllimport)
-#		define CMEP_EXPORT_CLASS
 #	endif
 
 #elif defined(__GNUC__)
-// GCC
+// Unix-like
 //  for unix-like semantics we want the class whole to be external
 #	define SEMANTICS_UNIXLIKE
 
+#	define CMEP_EXPORT
 #	if !defined(CMEP_ABI_IMPORT)
-#		define CMEP_EXPORT
 #		define CMEP_EXPORT_CLASS __attribute__((visibility("default")))
-
 #	else
-#		define CMEP_EXPORT
 #		define CMEP_EXPORT_CLASS __attribute__((visibility("default")))
 #	endif
 
