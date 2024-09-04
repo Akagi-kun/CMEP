@@ -7,10 +7,11 @@
 
 #	if !defined(CMEP_ABI_IMPORT)
 #		define CMEP_EXPORT __declspec(dllexport)
+#		define CMEP_EXPORT_CLASS
 #	else
 #		define CMEP_EXPORT __declspec(dllimport)
+#		define CMEP_EXPORT_CLASS
 #	endif
-#	define CMEP_EXPORT_CLASS
 
 #elif defined(__GNUC__)
 // GCC

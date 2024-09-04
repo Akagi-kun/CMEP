@@ -77,7 +77,7 @@ namespace Logging
 
 		CMEP_EXPORT operator prefix_t() const
 		{
-			return prefix_internal<remptr_t>{}.value;
+			return prefix_internal<remptr_t>::value;
 		}
 	};
 
