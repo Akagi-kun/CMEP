@@ -66,7 +66,7 @@ endif()
 
 add_library(EngineCore SHARED ${SRC_FILES})
 
-target_compile_features(EngineCore PUBLIC cxx_std_17)
+target_compile_features(EngineCore PUBLIC cxx_std_20)
 set_target_properties(EngineCore PROPERTIES CXX_STANDARD_REQUIRED ON CXX_EXTENSIONS OFF)
 target_compile_options(EngineCore PRIVATE ${ENGINE_COMPILE_OPTIONS})
 

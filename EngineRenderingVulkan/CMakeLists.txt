@@ -38,7 +38,7 @@ endif()
 
 add_library(EngineRenderingVulkan STATIC ${SRC_FILES})
 
-target_compile_features(EngineRenderingVulkan PUBLIC cxx_std_17)
+target_compile_features(EngineRenderingVulkan PUBLIC cxx_std_20)
 set_target_properties(EngineRenderingVulkan PROPERTIES CXX_STANDARD_REQUIRED ON CXX_EXTENSIONS OFF POSITION_INDEPENDENT_CODE ON)
 target_compile_definitions(EngineRenderingVulkan PRIVATE VULKAN_HPP_DISPATCH_LOADER_DYNAMIC=1)
 target_compile_options(EngineRenderingVulkan PRIVATE ${ENGINE_COMPILE_OPTIONS})

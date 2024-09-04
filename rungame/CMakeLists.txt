@@ -18,9 +18,8 @@ endif()
 
 add_executable(rungame ${SRC_FILES})
 
-target_compile_features(rungame PUBLIC cxx_std_17)
-set_target_properties(rungame PROPERTIES CXX_STANDARD_REQUIRED ON)
-set_target_properties(rungame PROPERTIES CXX_EXTENSIONS OFF)
+target_compile_features(rungame PUBLIC cxx_std_20)
+set_target_properties(rungame PROPERTIES CXX_STANDARD_REQUIRED ON CXX_EXTENSIONS OFF)
 
 target_compile_options(rungame PRIVATE ${ENGINE_COMPILE_OPTIONS})
 

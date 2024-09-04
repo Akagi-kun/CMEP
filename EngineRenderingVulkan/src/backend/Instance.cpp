@@ -23,10 +23,10 @@ namespace Engine::Rendering::Vulkan
 	// names are as specified by Vulkan
 	//
 	VKAPI_ATTR static VkBool32 VKAPI_CALL VulkanDebugCallback(
-		VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
-		VkDebugUtilsMessageTypeFlagsEXT messageType,
+		VkDebugUtilsMessageSeverityFlagBitsEXT		messageSeverity,
+		VkDebugUtilsMessageTypeFlagsEXT				messageType,
 		const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData,
-		void* pUserData
+		void*										pUserData
 	)
 	{
 		(void)(messageType);
@@ -52,13 +52,11 @@ namespace Engine::Rendering::Vulkan
 
 	[[noreturn]] static void GlfwErrorCallback(int error, const char* description)
 	{
-		using namespace std::string_literals;
-
-		throw std::runtime_error("GLFW error handler callback called! Code: '"s
-									 .append(std::to_string(error))
-									 .append("'; description: '")
-									 .append(description)
-									 .append("'"));
+		throw std::runtime_error(std::format(
+			"GLFW error handler callback called! Code: '{}'; description: '{}'",
+			error,
+			description
+		));
 	}
 
 #pragma endregion
@@ -67,7 +65,7 @@ namespace Engine::Rendering::Vulkan
 
 	Instance::Instance(
 		SupportsLogging::logger_t with_logger,
-		const WindowParams&& with_window_parameters
+		const WindowParams&&	  with_window_parameters
 	)
 		: SupportsLogging(std::move(with_logger))
 	{
@@ -140,8 +138,8 @@ namespace Engine::Rendering::Vulkan
 		}
 
 		// Get extensions required by GLFW
-		uint32_t glfw_extension_count = 0;
-		const char** glfw_extensions  = glfwGetRequiredInstanceExtensions(&glfw_extension_count);
+		uint32_t	 glfw_extension_count = 0;
+		const char** glfw_extensions = glfwGetRequiredInstanceExtensions(&glfw_extension_count);
 
 		// Get our required extensions
 		std::vector<const char*> instance_extensions(

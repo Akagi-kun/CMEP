@@ -67,7 +67,6 @@ namespace Engine::Scripting::Mappings
 			template <typename supply_data_t>
 			[[nodiscard]] supply_data_t InterpretSupplyData(lua_State* state)
 			{
-				using namespace std::string_literals;
 				ENGINE_EXCEPTION_ON_ASSERT(lua_objlen(state, -1) == 2, "Incorrect data supplied")
 
 				lua_rawgeti(state, -1, 1);

@@ -99,7 +99,10 @@ namespace Engine::Factories
 	{
 		std::ifstream font_file(font_path);
 
-		ENGINE_EXCEPTION_ON_ASSERT(font_file.is_open(), "font file could not be opened")
+		ENGINE_EXCEPTION_ON_ASSERT(
+			font_file.is_open(),
+			std::format("font file {} could not be opened", font_path.string())
+		)
 
 		this->logger->SimpleLog<decltype(this)>(
 			Logging::LogLevel::VerboseDebug,

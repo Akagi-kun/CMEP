@@ -2,8 +2,6 @@
 
 #include "Scripting/Utility.hpp"
 
-#include <stdexcept>
-
 namespace Engine::Scripting
 {
 	static int CrossStateArgMove(lua_State* origin, lua_State* target)
@@ -51,11 +49,11 @@ namespace Engine::Scripting
 					break;
 				default:
 				{
-					using namespace std::string_literals;
-					throw std::runtime_error("Cannot handle type '"s
-												 .append(lua_typename(origin, idx_type))
-												 .append("' ")
-												 .append(std::to_string(idx_type)));
+					throw ENGINE_EXCEPTION(std::format(
+						"Cannot handle type '{}' ({})",
+						lua_typename(origin, idx_type),
+						idx_type
+					));
 				}
 			}
 		}
@@ -80,13 +78,11 @@ namespace Engine::Scripting
 		int ret = lua_pcall(callee_state, arg_vals - 1, LUA_MULTRET, 0);
 		if (ret != LUA_OK)
 		{
-			using namespace std::string_literals;
-
-			throw std::runtime_error(
-				"Exception executing a cross-state function call! lua_pcall error: "s
-					.append(std::to_string(ret))
-					.append(Utility::UnwindStack(callee_state))
-			);
+			throw ENGINE_EXCEPTION(std::format(
+				"Exception executing a cross-state function call! lua_pcall error: {}\n{}",
+				ret,
+				Utility::UnwindStack(callee_state)
+			));
 		}
 
 		// Passing arguments callee -> caller

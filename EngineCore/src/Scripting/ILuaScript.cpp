@@ -99,7 +99,7 @@ namespace Engine::Scripting
 			{
 				return luaL_error(
 					state,
-					"Exception wrapper caught exception!\nFunction: %s\nStacktrace: %s",
+					"Exception wrapper caught exception!\n\tFunction: %s\n\tStacktrace: %s",
 					Utility::MappingReverseLookup(function).data(),
 					UnrollExceptions(e).c_str()
 				);
@@ -122,8 +122,7 @@ namespace Engine::Scripting
 			std::string require_origin_str = require_origin.remove_filename().parent_path().string(
 			);
 
-			using namespace std::string_literals;
-			std::string require_path_str = (require_origin_str + "/modules/?.lua"s);
+			std::string require_path_str = (require_origin_str + "/modules/?.lua");
 
 			lua_pushstring(state, require_path_str.c_str());
 			lua_setfield(state, -2, "path");
@@ -152,23 +151,21 @@ namespace Engine::Scripting
 			int load_return = luaL_loadstring(state, preload_code);
 			if (load_return != LUA_OK)
 			{
-				using namespace std::string_literals;
-
-				throw ENGINE_EXCEPTION("Exception loading Lua preload code! loadfile: "s
-										   .append(std::to_string(load_return))
-										   .append("\n\t"s)
-										   .append(lua_tostring(state, -1)));
+				throw ENGINE_EXCEPTION(std::format(
+					"Exception loading Lua preload code! loadfile: {}\n\t{}",
+					load_return,
+					lua_tostring(state, -1)
+				));
 			}
 
 			int pcall_return = lua_pcall(state, 0, LUA_MULTRET, 0);
 			if (pcall_return != LUA_OK)
 			{
-				using namespace std::string_literals;
-
-				throw ENGINE_EXCEPTION("Exception compiling Lua preload code! pcall: "s
-										   .append(std::to_string(pcall_return))
-										   .append("\n\t")
-										   .append(lua_tostring(state, -1)));
+				throw ENGINE_EXCEPTION(std::format(
+					"Exception compiling Lua preload code! loadfile: {}\n\t{}",
+					pcall_return,
+					lua_tostring(state, -1)
+				));
 			}
 
 			return 0;
@@ -195,29 +192,30 @@ namespace Engine::Scripting
 
 		std::filesystem::path script_path = path;
 
+		// Register exception-handling wrapper
+		RegisterWrapper(state);
+
 		// Load file and compile it
 		// this can raise syntax errors
 		int load_return = luaL_loadfile(state, script_path.string().c_str());
 		if (load_return != LUA_OK)
 		{
-			using namespace std::string_literals;
-
-			throw ENGINE_EXCEPTION("Exception loading Lua script! loadfile: "s
-									   .append(std::to_string(load_return))
-									   .append("\n\t"s)
-									   .append(lua_tostring(state, -1)));
+			throw ENGINE_EXCEPTION(std::format(
+				"Exception loading Lua script! loadfile: {}\n\t{}",
+				load_return,
+				lua_tostring(state, -1)
+			));
 		}
 
 		// "Interpret" the script
 		int pcall_return = lua_pcall(state, 0, LUA_MULTRET, 0);
 		if (pcall_return != LUA_OK)
 		{
-			using namespace std::string_literals;
-
-			throw ENGINE_EXCEPTION("Exception compiling Lua script! pcall: "s
-									   .append(std::to_string(pcall_return))
-									   .append("\n\t")
-									   .append(lua_tostring(state, -1)));
+			throw ENGINE_EXCEPTION(std::format(
+				"Exception compiling Lua script! pcall: {}\n\t{}",
+				pcall_return,
+				lua_tostring(state, -1)
+			));
 		}
 
 		// Uncomment this to disable JIT compiler
@@ -225,9 +223,6 @@ namespace Engine::Scripting
 
 		// Register c callback functions
 		RegisterCallbacks(state, this->logger);
-
-		// Register exception-handling wrapper
-		RegisterWrapper(state);
 
 		this->logger->SimpleLog<decltype(this)>(
 			Logging::LogLevel::Debug,

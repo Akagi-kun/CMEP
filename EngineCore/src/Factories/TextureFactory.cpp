@@ -15,7 +15,6 @@
 
 #include <cstddef>
 #include <cstdint>
-#include <stdexcept>
 
 namespace Engine::Factories
 {
@@ -30,11 +29,10 @@ namespace Engine::Factories
 	{
 		if (!std::filesystem::exists(path))
 		{
-			using namespace std::string_literals;
-
-			throw ENGINE_EXCEPTION(
-				"Cannot initialize a texture from a nonexistent path! Path: "s + path.string()
-			);
+			throw ENGINE_EXCEPTION(std::format(
+				"Cannot initialize a texture from a nonexistent path! Path: {}",
+				path.string()
+			));
 		}
 
 		this->logger->SimpleLog<decltype(this)>(
@@ -68,7 +66,7 @@ namespace Engine::Factories
 				if (error != 0 || 0 >= size.x || size.x >= max_texture_size || 0 >= size.y ||
 					size.y >= max_texture_size)
 				{
-					throw std::runtime_error("Failed decoding PNG file!");
+					throw ENGINE_EXCEPTION("Failed decoding PNG file!");
 				}
 
 				this->logger->SimpleLog<decltype(this)>(
@@ -85,7 +83,7 @@ namespace Engine::Factories
 			}
 			default:
 			{
-				throw std::runtime_error("Unknown texture filetype passed to TextureFactory!");
+				throw ENGINE_EXCEPTION("Unknown texture filetype passed to TextureFactory!");
 			}
 		}
 

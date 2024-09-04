@@ -9,7 +9,6 @@
 
 #include "Exception.hpp"
 
-#include <charconv>
 #include <sstream>
 
 namespace Engine::Scripting::Utility
@@ -26,7 +25,7 @@ namespace Engine::Scripting::Utility
 		std::string line;
 		while (std::getline(caused_by, line))
 		{
-			error_msg.append("\t").append(line).append("\n");
+			error_msg.append(std::format("\t{}\n", line));
 		}
 		error_msg.append("\n");
 		// Cause
@@ -53,10 +52,9 @@ namespace Engine::Scripting::Utility
 				error_msg.append("thrown by ");
 			}
 
-			error_msg.append(activation_record.source)
-				.append(":")
-				.append(std::to_string(activation_record.linedefined))
-				.append("\n");
+			error_msg.append(
+				std::format("{}:{}\n", activation_record.source, activation_record.linedefined)
+			);
 
 			caller_level++;
 		}
@@ -156,27 +154,27 @@ namespace Engine::Scripting::Utility
 
 	LuaValue::operator std::string() const
 	{
-		ENGINE_EXCEPTION_ON_ASSERT(type == Type::STRING, )
+		ENGINE_EXCEPTION_ON_ASSERT_NOMSG(type == Type::STRING)
 		return std::get<std::string>(value);
 	}
 
 	LuaValue::operator double() const
 	{
-		ENGINE_EXCEPTION_ON_ASSERT(type == Type::NUMBER, )
+		ENGINE_EXCEPTION_ON_ASSERT_NOMSG(type == Type::NUMBER)
 		return std::get<double>(value);
 	}
 
 	LuaValue::operator void*() const
 	{
-		ENGINE_EXCEPTION_ON_ASSERT(
-			type == Type::USERDATA || type == Type::LUSERDATA || type == Type::CDATA,
+		ENGINE_EXCEPTION_ON_ASSERT_NOMSG(
+			type == Type::USERDATA || type == Type::LUSERDATA || type == Type::CDATA
 		)
 		return std::get<void*>(value);
 	}
 
 	LuaValue::operator bool() const
 	{
-		ENGINE_EXCEPTION_ON_ASSERT(type == Type::BOOL, )
+		ENGINE_EXCEPTION_ON_ASSERT_NOMSG(type == Type::BOOL)
 		return std::get<bool>(value);
 	}
 
@@ -204,17 +202,14 @@ namespace Engine::Scripting::Utility
 
 	LuaValue::operator uintptr_t() const
 	{
-		ENGINE_EXCEPTION_ON_ASSERT(
-			type == Type::USERDATA || type == Type::LUSERDATA || type == Type::CDATA,
+		ENGINE_EXCEPTION_ON_ASSERT_NOMSG(
+			type == Type::USERDATA || type == Type::LUSERDATA || type == Type::CDATA
 		)
 		return reinterpret_cast<uintptr_t>(std::get<void*>(value));
 	}
 
 	std::string LuaValue::ToString(const LuaValue& value)
 	{
-		static constexpr size_t buffer_len			   = 32;
-		char					ptr_buffer[buffer_len] = {};
-
 		switch (value.type)
 		{
 			case Type::NUMBER:
@@ -231,34 +226,12 @@ namespace Engine::Scripting::Utility
 			}
 			case Type::CDATA:
 			{
-				using namespace std::string_literals;
-
-				memset(ptr_buffer, 0, buffer_len);
-
-				std::to_chars(
-					ptr_buffer,
-					ptr_buffer + (buffer_len - 1),
-					static_cast<uintptr_t>(value),
-					16
-				);
-
-				return "cdata<? ? ?>: 0x"s.append(ptr_buffer);
+				return std::format("cdata<? ? ?>: {:#x}", static_cast<uintptr_t>(value));
 			}
 			case Type::LUSERDATA:
 			case Type::USERDATA:
 			{
-				using namespace std::string_literals;
-
-				memset(ptr_buffer, 0, buffer_len);
-
-				std::to_chars(
-					ptr_buffer,
-					ptr_buffer + (buffer_len - 1),
-					static_cast<uintptr_t>(value),
-					16
-				);
-
-				return "userdata: 0x"s.append(ptr_buffer);
+				return std::format("userdata: {:#x}", static_cast<uintptr_t>(value));
 			}
 			case Type::STRING:
 			{

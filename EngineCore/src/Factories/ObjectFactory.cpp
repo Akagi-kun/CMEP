@@ -139,10 +139,10 @@ namespace Engine::Factories::ObjectFactory
 			}
 			default:
 			{
-				using namespace std::string_literals;
-				throw ENGINE_EXCEPTION(
-					"RendererSupplyDataType is unknown, invalid or missing! Type: "s.append(of_type)
-				);
+				throw ENGINE_EXCEPTION(std::format(
+					"RendererSupplyDataType is unknown, invalid or missing! Type: {}",
+					static_cast<std::string>(of_type)
+				));
 			}
 		}
 	}
@@ -169,10 +169,10 @@ namespace Engine::Factories::ObjectFactory
 			}
 			default:
 			{
-				using namespace std::string_literals;
-				throw ENGINE_EXCEPTION(
-					"MeshBuilderSupplyData is unknown, invalid or missing! Type: "s.append(of_type)
-				);
+				throw ENGINE_EXCEPTION(std::format(
+					"MeshBuilderSupplyData is unknown, invalid or missing! Type: {}",
+					static_cast<std::string>(of_type)
+				));
 			}
 		}
 	}

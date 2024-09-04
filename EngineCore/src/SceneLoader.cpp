@@ -35,9 +35,9 @@ namespace Engine
 	{
 		template <typename supply_data_t>
 		[[nodiscard]] supply_data_t InterpretSupplyData(
-			AssetManager* asset_manager,
+			AssetManager*				 asset_manager,
 			typename supply_data_t::Type type,
-			const std::string& value
+			const std::string&			 value
 		)
 		{
 			if constexpr (std::is_same<supply_data_t, Rendering::RendererSupplyData>())
@@ -139,7 +139,7 @@ namespace Engine
 		}
 		catch (...)
 		{
-			std::throw_with_nested(ENGINE_EXCEPTION("Caught exception "));
+			std::throw_with_nested(ENGINE_EXCEPTION("Caught exception loading assets"));
 		}
 
 		try
@@ -261,17 +261,17 @@ namespace Engine
 
 	void SceneLoader::LoadSceneAsset(
 		std::shared_ptr<AssetManager>& asset_manager,
-		nlohmann::json& asset_entry,
-		const std::string& scene_path
+		nlohmann::json&				   asset_entry,
+		const std::string&			   scene_path
 	)
 	{
 		// Gets constructed on first call to this function
 		static auto font_factory	= Factories::FontFactory(owner_engine);
 		static auto texture_factory = Factories::TextureFactory(owner_engine);
 
-		EnumStringConvertor<AssetType> asset_type = asset_entry["type"].get<std::string>();
-		std::string asset_name					  = asset_entry["name"].get<std::string>();
-		std::string asset_location				  = asset_entry["location"].get<std::string>();
+		EnumStringConvertor<AssetType> asset_type	  = asset_entry["type"].get<std::string>();
+		std::string					   asset_name	  = asset_entry["name"].get<std::string>();
+		std::string					   asset_location = asset_entry["location"].get<std::string>();
 
 		if (asset_type == AssetType::TEXTURE)
 		{
@@ -347,12 +347,11 @@ namespace Engine
 		}
 		else
 		{
-			using namespace std::string_literals;
-
-			throw ENGINE_EXCEPTION("Unknown type '"s.append(asset_entry["type"].get<std::string>())
-									   .append("' for asset '")
-									   .append(asset_name)
-									   .append("'"));
+			throw ENGINE_EXCEPTION(std::format(
+				"Unknown type '{}' for asset '{}'",
+				asset_entry["type"].get<std::string>(),
+				asset_name
+			));
 		}
 	}
 
@@ -370,13 +369,11 @@ namespace Engine
 				}
 				catch (...)
 				{
-					using namespace std::string_literals;
-
 					// TODO: Potentially handle safely?
-					std::throw_with_nested(
-						ENGINE_EXCEPTION("Exception occured loading asset! Relevant JSON:\n"s
-											 .append(asset_entry.dump()))
-					);
+					std::throw_with_nested(ENGINE_EXCEPTION(std::format(
+						"Exception occured loading asset! Relevant JSON:\n{}",
+						asset_entry.dump()
+					)));
 				}
 			}
 

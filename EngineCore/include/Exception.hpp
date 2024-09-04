@@ -17,11 +17,13 @@ namespace Engine
 			uint_least32_t				 with_line,
 			const std::string&			 with_message
 		)
-			: message(
+			: message(std::format(
+				  "{}@{}: {}",
 				  // Make relative to source directory, may not be foolproof!
-				  with_file.lexically_relative(CMAKE_CONFIGURE_SOURCE_DIR).string() + "@" +
-				  std::to_string(with_line) + ": " + with_message
-			  )
+				  with_file.lexically_relative(CMAKE_CONFIGURE_SOURCE_DIR).string(),
+				  std::to_string(with_line),
+				  with_message
+			  ))
 		{
 		}
 
@@ -42,6 +44,7 @@ namespace Engine
 #define ENGINE_EXCEPTION_ON_ASSERT(true_expr, message)                                             \
 	if ((true_expr) == false)                                                                      \
 	{                                                                                              \
-		throw ENGINE_EXCEPTION(std::string("Failed assertion '" #true_expr "' ") + ("" message));  \
+		throw ENGINE_EXCEPTION(std::string("Failed assertion '" #true_expr "' ") + (message));     \
 	}
+#define ENGINE_EXCEPTION_ON_ASSERT_NOMSG(true_expr) ENGINE_EXCEPTION_ON_ASSERT((true_expr), "")
 // NOLINTEND(*unused-macros)

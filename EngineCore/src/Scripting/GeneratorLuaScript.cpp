@@ -9,7 +9,6 @@
 
 #include "lua.hpp"
 
-#include <stdexcept>
 #include <string>
 
 namespace Engine::Scripting
@@ -53,13 +52,11 @@ namespace Engine::Scripting
 			{
 				if (last_ret != LUA_OK)
 				{
-					using namespace std::string_literals;
-
-					throw std::runtime_error(
-						"Exception executing generator script! lua_resume error: "s
-							.append(std::to_string(last_ret))
-							.append(Utility::UnwindStack(coroutine))
-					);
+					throw ENGINE_EXCEPTION(std::format(
+						"Failed executing generator script! lua_resume: {}\n{}",
+						last_ret,
+						Utility::UnwindStack(coroutine)
+					));
 				}
 
 				return 0;
