@@ -5,6 +5,7 @@
 
 #include <exception>
 #include <filesystem>
+#include <format>
 #include <string>
 
 namespace Engine
