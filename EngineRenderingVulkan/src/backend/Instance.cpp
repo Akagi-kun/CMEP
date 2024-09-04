@@ -9,6 +9,7 @@
 #include "vulkan/vulkan.hpp"
 
 #include <cstring>
+#include <format>
 #include <stdexcept>
 #include <string>
 #include <utility>

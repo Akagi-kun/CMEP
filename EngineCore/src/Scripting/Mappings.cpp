@@ -70,9 +70,8 @@ namespace Engine::Scripting::Mappings
 				ENGINE_EXCEPTION_ON_ASSERT(lua_objlen(state, -1) == 2, "Incorrect data supplied")
 
 				lua_rawgeti(state, -1, 1);
-				EnumStringConvertor<typename supply_data_t::Type> type = std::string(
-					lua_tostring(state, -1)
-				);
+				EnumStringConvertor<typename supply_data_t::Type> type =
+					Utility::LuaValue(state, -1);
 
 				lua_rawgeti(state, -2, 2);
 				Utility::LuaValue value(state, -1);
@@ -85,6 +84,41 @@ namespace Engine::Scripting::Mappings
 				{
 					return Factories::ObjectFactory::GenerateMeshBuilderSupplyData(type, value);
 				}
+			}
+
+			template <typename supply_data_t>
+			std::vector<supply_data_t> InterpretSupplyDataTable(lua_State* state, int start_idx)
+			{
+				std::vector<supply_data_t> supply_data;
+
+				int idx = 1;
+				while (true)
+				{
+					// static constexpr size_t start_idx = 4;
+					lua_rawgeti(state, start_idx, idx);
+
+					if (lua_isnil(state, -1))
+					{
+						break;
+					}
+
+					try
+					{
+						supply_data.emplace_back(InterpretSupplyData<supply_data_t>(state));
+					}
+					catch (...)
+					{
+						std::throw_with_nested(
+							ENGINE_EXCEPTION("Exception occured during interpreting of supply data")
+						);
+					}
+
+					lua_pop(state, 3);
+
+					idx++;
+				}
+
+				return supply_data;
 			}
 		} // namespace
 
@@ -109,68 +143,17 @@ namespace Engine::Scripting::Mappings
 
 			std::string shader_name = Utility::LuaValue(state, 3);
 
+			constexpr int r_table_idx  = 4;
+			constexpr int mb_table_idx = 5;
+
 			// Check for table
-			if (lua_istable(state, 4))
+			if (lua_istable(state, r_table_idx) && lua_istable(state, mb_table_idx))
 			{
-				std::vector<Rendering::RendererSupplyData> renderer_supply_data;
-				int										   idx = 1;
-				while (true)
-				{
-					static constexpr size_t start_idx = 4;
-					lua_rawgeti(state, start_idx, idx);
+				std::vector<Rendering::RendererSupplyData> renderer_supply_data =
+					InterpretSupplyDataTable<Rendering::RendererSupplyData>(state, r_table_idx);
 
-					if (lua_isnil(state, -1))
-					{
-						break;
-					}
-
-					try
-					{
-						renderer_supply_data.emplace_back(
-							InterpretSupplyData<Rendering::RendererSupplyData>(state)
-						);
-					}
-					catch (...)
-					{
-						std::throw_with_nested(
-							ENGINE_EXCEPTION("Exception occured during interpreting of supply data")
-						);
-					}
-
-					lua_pop(state, 3);
-
-					idx++;
-				}
-
-				std::vector<Rendering::MeshBuilderSupplyData> meshbuilder_supply_data;
-				idx = 1;
-				while (true)
-				{
-					static constexpr size_t start_idx = 5;
-					lua_rawgeti(state, start_idx, idx);
-
-					if (lua_isnil(state, -1))
-					{
-						break;
-					}
-
-					try
-					{
-						meshbuilder_supply_data.emplace_back(
-							InterpretSupplyData<Rendering::MeshBuilderSupplyData>(state)
-						);
-					}
-					catch (...)
-					{
-						std::throw_with_nested(
-							ENGINE_EXCEPTION("Exception occured during interpreting of supply data")
-						);
-					}
-
-					lua_pop(state, 3);
-
-					idx++;
-				}
+				std::vector<Rendering::MeshBuilderSupplyData> meshbuilder_supply_data =
+					InterpretSupplyDataTable<Rendering::MeshBuilderSupplyData>(state, mb_table_idx);
 
 				// Check if mesh builder type is valid, if so, get a factory for it
 				const auto factory = Factories::ObjectFactory::GetSceneObjectFactory(

@@ -16,7 +16,7 @@ namespace Engine::Scripting::Utility
 	std::string UnwindStack(lua_State* of_state)
 	{
 		std::string error_msg =
-			"\n--- BEGIN LUA STACK UNWIND ---\n\nError that caused this stack unwind:\n";
+			"--- BEGIN LUA STACK UNWIND ---\n\nError that caused this stack unwind:\n";
 
 		// Cause
 		std::istringstream caused_by(lua_tostring(of_state, -1));
@@ -43,18 +43,27 @@ namespace Engine::Scripting::Utility
 
 			lua_getinfo(of_state, "nS", &activation_record);
 
-			if (caller_level > 0)
-			{
-				error_msg.append("called by ");
-			}
-			else
-			{
-				error_msg.append("thrown by ");
-			}
+			bool is_internal = activation_record.source[0] == '=';
 
-			error_msg.append(
-				std::format("{}:{}\n", activation_record.source, activation_record.linedefined)
-			);
+			// The error was thrown (level = 0) inside the engine (is_internal = true)
+			if (is_internal && caller_level == 0)
+			{
+				error_msg.append("thrown (internally)\n");
+			}
+			// Skip internal calls (shorter stack trace)
+			else if (!is_internal)
+			{
+				std::string_view action = caller_level > 0 ? "called" : "thrown";
+
+				assert(strlen(activation_record.source) > 1);
+
+				error_msg.append(std::format(
+					"{} by '{}':{}\n",
+					action,
+					&activation_record.source[1],
+					activation_record.linedefined
+				));
+			}
 
 			caller_level++;
 		}
@@ -67,7 +76,7 @@ namespace Engine::Scripting::Utility
 			error_msg.append("could not unwind stack for this error");
 		}
 
-		error_msg.append("\n--- END LUA STACK UNWIND ---\n");
+		error_msg.append("\n--- END LUA STACK UNWIND ---");
 
 		return error_msg;
 	}

@@ -280,18 +280,13 @@ namespace Engine::Scripting
 		{
 			const char* errormsg = lua_tostring(state, -1);
 
-			// TODO: Throw
-			this->logger->SimpleLog<decltype(this)>(
-				Logging::LogLevel::Error,
-				"Error when calling Lua\n\tscript '%s'\n\tfunction: "
-				"'%s'\n\terrorcode: %i\n%s",
-				path.string().c_str(),
-				function.c_str(),
+			throw ENGINE_EXCEPTION(std::format(
+				"Error {} occured calling script '{}' (fn: '{}')\n{}",
 				errcall,
+				path.string(),
+				function,
 				errormsg
-			);
-
-			return errcall;
+			));
 		}
 
 		lua_Integer ret = lua_tointeger(state, -1);
