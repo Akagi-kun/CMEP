@@ -1,5 +1,11 @@
 #pragma once
 
+#include <version>
+
+#if !defined(__cpp_lib_format)
+#	error "No format!"
+#endif
+
 #if defined(_MSC_VER)
 // MSVC
 //  for msvc-like semantics use function-only exports

@@ -53,8 +53,6 @@ jobs:
         -DCMAKE_C_COMPILER=${{ matrix.c_compiler }}
         -S ${{ github.workspace }}
       
-      #-DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
-
     - name: Build.sh
       shell: bash
       run: ./build.sh ${{ matrix.build_type }}
