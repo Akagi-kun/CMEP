@@ -3,7 +3,7 @@
 #include <version>
 
 #if !defined(__cpp_lib_format)
-#	error "No format!"
+#	error "__cpp__lib_format is unsupported!"
 #endif
 
 #if defined(_MSC_VER)

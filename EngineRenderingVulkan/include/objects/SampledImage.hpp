@@ -21,7 +21,7 @@ namespace Engine::Rendering::Vulkan
 		template <
 			typename conditional_t											= int,
 			std::enable_if_t<std::is_same_v<base_t, Image>, conditional_t>* = nullptr>
-		SampledImage<base_t>(
+		SampledImage(
 			InstanceOwned::value_t with_instance,
 			ImageSize with_size,
 			vk::SampleCountFlagBits num_samples,
@@ -51,7 +51,7 @@ namespace Engine::Rendering::Vulkan
 		template <
 			typename conditional_t												  = int,
 			std::enable_if_t<std::is_same_v<base_t, ViewedImage>, conditional_t>* = nullptr>
-		SampledImage<base_t>(
+		SampledImage(
 			InstanceOwned::value_t with_instance,
 			ImageSize with_size,
 			vk::SampleCountFlagBits num_samples,

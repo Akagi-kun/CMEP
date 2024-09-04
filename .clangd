@@ -8,7 +8,7 @@ Diagnostics:
   ClangTidy:
     FastCheckFilter: None
   Includes:
-    IgnoreHeader: [glm.hpp, Logging/LoggingPrefix.hpp]
+    IgnoreHeader: [glm.hpp]
 ---
 Completion:
   AllScopes: No

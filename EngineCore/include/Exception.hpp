@@ -10,7 +10,7 @@
 
 namespace Engine
 {
-	CMEP_EXPORT_CLASS class Exception : public std::exception
+	class CMEP_EXPORT_CLASS Exception : public std::exception
 	{
 	public:
 		CMEP_EXPORT Exception(
