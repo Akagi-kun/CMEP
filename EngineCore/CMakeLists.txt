@@ -1,4 +1,6 @@
 set(SRC_FILES
+	src/feature_test.cpp
+
 	src/Engine.cpp
 	src/dllmain.cpp
 	src/Exception.cpp

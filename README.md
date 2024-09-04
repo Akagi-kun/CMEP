@@ -1,8 +1,8 @@
 # CMEP
 [![Windows](https://github.com/Snezhnaya-chan/CMEP/actions/workflows/build-windows.yml/badge.svg)](https://github.com/Snezhnaya-chan/CMEP/actions/workflows/build-windows.yml) [![Linux](https://github.com/Snezhnaya-chan/CMEP/actions/workflows/build-linux.yml/badge.svg)](https://github.com/Snezhnaya-chan/CMEP/actions/workflows/build-linux.yml) [![MacOS](https://github.com/Snezhnaya-chan/CMEP/actions/workflows/build-macosx.yml/badge.svg)](https://github.com/Snezhnaya-chan/CMEP/actions/workflows/build-macosx.yml) <a href="https://scan.coverity.com/projects/snezhnaya-chan-cmep"><img alt="Coverity Scan Build Status" src="https://scan.coverity.com/projects/29326/badge.svg"/></a>
 
-This is the repository of the CMEP project. A simple scriptable game engine written in C++, using the Vulkan API for rendering.
-This project is currently in alpha and although simple games (as shown in the `./examples/` subdirectory) can be made with it, is very simple and lacks in functionality.
+This is the repository of the CMEP project. A scriptable game engine written in C++, using the Vulkan API for rendering.
+This project is currently in early stages of development and although basic demos (as shown in the `./examples/` subdirectory) can be made with it, the API often goes through changes and lacks in functionality.
 
 ---
 ### Usage
