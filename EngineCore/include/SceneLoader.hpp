@@ -27,8 +27,8 @@ namespace Engine
 	protected:
 		void LoadSceneAsset(
 			std::shared_ptr<AssetManager>& asset_manager,
-			nlohmann::json& asset_entry,
-			const std::string& scene_path
+			nlohmann::json&				   asset_entry,
+			const std::string&			   scene_path
 		);
 		void LoadSceneAssets(nlohmann::json& data, const std::string& scene_path);
 

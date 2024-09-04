@@ -23,8 +23,8 @@ namespace Engine::Scripting
 
 			auto* cast_data = static_cast<ScriptPerfState*>(data);
 
-			size_t dump_len						 = 0;
-			static constexpr uint_fast16_t depth = 5;
+			size_t						   dump_len = 0;
+			static constexpr uint_fast16_t depth	= 5;
 			const char* stack_dump = luaJIT_profile_dumpstack(state, "fZ;", depth, &dump_len);
 
 			printf("Stack:\n'");
@@ -239,9 +239,9 @@ namespace Engine::Scripting
 #pragma region Public functions
 
 	ILuaScript::ILuaScript(
-		Engine* with_engine,
+		Engine*				  with_engine,
 		std::filesystem::path with_path,
-		bool with_enable_profiling
+		bool				  with_enable_profiling
 	)
 		: InternalEngineObject(with_engine), path(std::move(with_path)),
 		  enable_profiling(with_enable_profiling)

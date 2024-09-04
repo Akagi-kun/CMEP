@@ -18,19 +18,19 @@ namespace Engine
 		SceneManager(Engine* with_engine);
 		~SceneManager();
 
-		void SetSceneLoadPrefix(const std::string& scene_prefix);
-		void LoadScene(const std::string& scene_name);
-		void SetScene(const std::string& scene_name);
+		void					SetSceneLoadPrefix(const std::string& scene_prefix);
+		void					LoadScene(const std::string& scene_name);
+		void					SetScene(const std::string& scene_name);
 		std::shared_ptr<Scene>& GetSceneCurrent();
 
 		glm::vec3 GetLightTransform();
-		void SetLightTransform(glm::vec3 newpos);
+		void	  SetLightTransform(glm::vec3 newpos);
 
 		glm::vec3 GetCameraTransform();
 		glm::vec2 GetCameraHVRotation();
 		glm::mat4 GetCameraViewMatrix();
 
-		[[nodiscard]] glm::mat4 GetProjectionMatrix(Rendering::ScreenSize screen) const;
+		[[nodiscard]] glm::mat4		   GetProjectionMatrix(Rendering::ScreenSize screen) const;
 		[[nodiscard]] static glm::mat4 GetProjectionMatrixOrtho();
 
 		void SetCameraTransform(glm::vec3 transform);
@@ -38,7 +38,7 @@ namespace Engine
 
 	private:
 		std::unordered_map<std::string, std::shared_ptr<Scene>> scenes;
-		std::string current_scene_name = "_default";
+		std::string												current_scene_name = "_default";
 
 		glm::vec3 camera_transform{};	// XYZ position
 		glm::vec2 camera_hv_rotation{}; // Horizontal and Vertical rotation

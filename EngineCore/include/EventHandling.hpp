@@ -33,13 +33,13 @@ namespace Engine::EventHandling
 	struct Event final
 	{
 		const EventType event_type;
-		Engine* const raised_from = nullptr;
+		Engine* const	raised_from = nullptr;
 
-		// delta time shall be specified for every event 
+		// delta time shall be specified for every event
 		double delta_time = 0.0;
-		union { // event specific data
-			uint16_t keycode = 0;	   // ON_KEYDOWN/ON_KEYUP events
-			glm::vec<2, double> mouse; // ON_MOUSEMOVED event
+		union {								 // event specific data
+			uint16_t			keycode = 0; // ON_KEYDOWN/ON_KEYUP events
+			glm::vec<2, double> mouse;		 // ON_MOUSEMOVED event
 		};
 
 		Event(Engine* const with_engine, const EnumStringConvertor<EventType> eventtype)

@@ -212,8 +212,8 @@ namespace Engine::Scripting::Utility
 
 	std::string LuaValue::ToString(const LuaValue& value)
 	{
-		static constexpr size_t buffer_len = 32;
-		char ptr_buffer[buffer_len]		   = {};
+		static constexpr size_t buffer_len			   = 32;
+		char					ptr_buffer[buffer_len] = {};
 
 		switch (value.type)
 		{

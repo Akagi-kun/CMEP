@@ -111,7 +111,7 @@ namespace Engine
 	}
 
 	void Scene::LoadTemplatedObject(
-		const std::string& name,
+		const std::string&								name,
 		const Factories::ObjectFactory::ObjectTemplate& object
 	)
 	{

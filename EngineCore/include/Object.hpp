@@ -11,8 +11,8 @@ namespace Engine
 	{
 	public:
 		Object(
-			Engine* with_engine,
-			Rendering::IRenderer* with_renderer,
+			Engine*					 with_engine,
+			Rendering::IRenderer*	 with_renderer,
 			Rendering::IMeshBuilder* with_mesh_builder
 		);
 		~Object() noexcept;
@@ -46,14 +46,14 @@ namespace Engine
 	private:
 		Rendering::Transform transform;
 		// Initialize parent transform so that the object renders without parent properly
-		Rendering::Transform parent_transform = {glm::vec3(0), glm::vec3(1, 1, 1), glm::vec3(0)};
+		Rendering::Transform  parent_transform = {glm::vec3(0), glm::vec3(1, 1, 1), glm::vec3(0)};
 		Rendering::ScreenSize screen;
 
 		Object* parent;
 
 		std::vector<Object*> children;
 
-		Rendering::IRenderer* renderer		  = nullptr;
+		Rendering::IRenderer*	 renderer	  = nullptr;
 		Rendering::IMeshBuilder* mesh_builder = nullptr;
 
 		void UpdateRenderer();

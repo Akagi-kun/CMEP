@@ -34,10 +34,10 @@ namespace Engine
 		static constexpr double nano_to_sec = 1e9;
 		static constexpr double spin_init	= 5e-3;
 
-		double estimate	  = spin_init;
-		double mean		  = spin_init;
-		double sumsquares = 0; // also known as m2
-		int64_t count	  = 1;
+		double	estimate   = spin_init;
+		double	mean	   = spin_init;
+		double	sumsquares = 0; // also known as m2
+		int64_t count	   = 1;
 
 		while (seconds > estimate)
 		{
@@ -75,7 +75,7 @@ namespace Engine
 
 	void Engine::HandleInput(const double delta_time)
 	{
-		auto* window_data		= vk_instance->GetWindow();
+		auto*		window_data = vk_instance->GetWindow();
 		const auto& screen_size = window_data->GetFramebufferSize();
 
 		static glm::vec<2, double> last_pos = {
@@ -176,8 +176,8 @@ namespace Engine
 
 	void Engine::RenderCallback(
 		Rendering::Vulkan::CommandBuffer* command_buffer,
-		uint32_t current_frame,
-		void* engine
+		uint32_t						  current_frame,
+		void*							  engine
 	)
 	{
 		auto* engine_cast = static_cast<Engine*>(engine);
@@ -257,7 +257,7 @@ namespace Engine
 		auto* glfw_window = vk_instance->GetWindow();
 		glfw_window->SetVisibility(true);
 
-		double average_event_total	 = 0.00;
+		double	 average_event_total = 0.00;
 		uint64_t average_event_count = 1;
 
 		auto prev_clock = std::chrono::steady_clock::now();
@@ -266,14 +266,14 @@ namespace Engine
 		// hot loop
 		while (!glfw_window->GetShouldClose())
 		{
-			const auto next_clock			  = std::chrono::steady_clock::now();
-			static constexpr double min_delta = 0.1 / sec_to_msec;
-			static constexpr double max_delta = 100000.0;
-			const double delta_time			  = std::clamp(
-				  static_cast<double>((next_clock - prev_clock).count()) / nano_to_sec,
-				  min_delta,
-				  max_delta
-			  );
+			const auto				next_clock = std::chrono::steady_clock::now();
+			static constexpr double min_delta  = 0.1 / sec_to_msec;
+			static constexpr double max_delta  = 100000.0;
+			const double			delta_time = std::clamp(
+				   static_cast<double>((next_clock - prev_clock).count()) / nano_to_sec,
+				   min_delta,
+				   max_delta
+			   );
 			last_delta_time = delta_time;
 
 			// Check return code of FireEvent (events should return non-zero codes as failure)
@@ -452,8 +452,8 @@ namespace Engine
 		scene_manager->SetScene(config->default_scene);
 
 		// Fire ON_INIT event
-		auto on_init_event	  = EventHandling::Event(this, EventHandling::EventType::ON_INIT);
-		int on_init_event_ret = FireEvent(on_init_event);
+		auto on_init_event	   = EventHandling::Event(this, EventHandling::EventType::ON_INIT);
+		int	 on_init_event_ret = FireEvent(on_init_event);
 
 		// Measure and log ON_INIT time
 		static constexpr double nano_to_msec = 1.e6;

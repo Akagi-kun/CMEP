@@ -22,10 +22,10 @@ namespace Engine::Factories
 	static constexpr size_t max_texture_size = 0x2fff;
 
 	std::shared_ptr<Rendering::Texture> TextureFactory::InitFile(
-		const std::filesystem::path& path,
+		const std::filesystem::path&	path,
 		Rendering::Texture_InitFiletype filetype,
-		vk::Filter filtering,
-		vk::SamplerAddressMode sampler_address_mode
+		vk::Filter						filtering,
+		vk::SamplerAddressMode			sampler_address_mode
 	)
 	{
 		if (!std::filesystem::exists(path))
@@ -43,7 +43,7 @@ namespace Engine::Factories
 			path.string().c_str()
 		);
 
-		std::vector<unsigned char> data;
+		std::vector<unsigned char>				data;
 		std::unique_ptr<Rendering::TextureData> texture_data =
 			std::make_unique<Rendering::TextureData>();
 
@@ -52,7 +52,7 @@ namespace Engine::Factories
 			case Rendering::Texture_InitFiletype::FILE_PNG:
 			{
 				Rendering::ImageSize size;
-				unsigned int error;
+				unsigned int		 error;
 
 				// lodepng uses references for output
 				// this makes it incompatible with ImageSize when defined with different sized
@@ -97,11 +97,11 @@ namespace Engine::Factories
 
 	int TextureFactory::InitRaw(
 		std::unique_ptr<Rendering::TextureData>& texture_data,
-		std::vector<unsigned char> raw_data,
-		int color_format,
-		vk::Filter filtering,
-		vk::SamplerAddressMode sampler_address_mode,
-		Rendering::ImageSize size
+		std::vector<unsigned char>				 raw_data,
+		int										 color_format,
+		vk::Filter								 filtering,
+		vk::SamplerAddressMode					 sampler_address_mode,
+		Rendering::ImageSize					 size
 	)
 	{
 		uint_fast8_t channel_count = 4;

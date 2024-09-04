@@ -15,7 +15,7 @@
 namespace Engine::Scripting
 {
 	GeneratorLuaScript::GeneratorLuaScript(
-		Engine* with_engine,
+		Engine*						 with_engine,
 		const std::filesystem::path& with_path
 	)
 		: ILuaScript(with_engine, with_path, false)

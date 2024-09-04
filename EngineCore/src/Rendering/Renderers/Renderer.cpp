@@ -13,8 +13,8 @@
 namespace Engine::Rendering
 {
 	IRenderer::IRenderer(
-		Engine* with_engine,
-		IMeshBuilder* with_builder,
+		Engine*			 with_engine,
+		IMeshBuilder*	 with_builder,
 		std::string_view with_pipeline_program
 	)
 		: InternalEngineObject(with_engine), pipeline_name(with_pipeline_program),

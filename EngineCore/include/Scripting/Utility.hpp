@@ -12,7 +12,7 @@ namespace Engine::Scripting::Utility
 	static constexpr int lua_cdata_typeid = 10;
 
 	std::string UnwindStack(lua_State* of_state);
-	int LuaErrorHandler(lua_State* state);
+	int			LuaErrorHandler(lua_State* state);
 
 	void PrintStackContent(lua_State* state);
 
@@ -37,7 +37,7 @@ namespace Engine::Scripting::Utility
 
 		using value_t = std::variant<std::string, double, std::nullptr_t, void*, bool>;
 
-		const Type type;
+		const Type	  type;
 		const value_t value;
 
 		LuaValue(lua_State* state, int stack_index);

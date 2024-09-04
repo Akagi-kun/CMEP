@@ -14,8 +14,8 @@ namespace Engine
 	public:
 		CMEP_EXPORT Exception(
 			const std::filesystem::path& with_file,
-			uint_least32_t with_line,
-			const std::string& with_message
+			uint_least32_t				 with_line,
+			const std::string&			 with_message
 		)
 			: message(
 				  // Make relative to source directory, may not be foolproof!

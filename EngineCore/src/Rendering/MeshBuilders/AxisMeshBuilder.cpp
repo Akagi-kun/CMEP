@@ -4,12 +4,6 @@
 
 namespace Engine::Rendering
 {
-	/* void AxisMeshBuilder::SupplyData(const RendererSupplyData& data)
-	{
-		IMeshBuilder::SupplyData(data);
-		(void)(data);
-	} */
-
 	void AxisMeshBuilder::Build()
 	{
 		if (context.vbo == nullptr)

@@ -37,7 +37,7 @@ namespace Engine
 
 #pragma region Adding Assets
 	void AssetManager::AddTexture(
-		const std::string& name,
+		const std::string&						   name,
 		const std::shared_ptr<Rendering::Texture>& asset
 	)
 	{
@@ -46,7 +46,7 @@ namespace Engine
 	}
 
 	void AssetManager::AddFont(
-		const std::string& name,
+		const std::string&						name,
 		const std::shared_ptr<Rendering::Font>& asset
 	)
 	{
@@ -56,7 +56,7 @@ namespace Engine
 	}
 
 	void AssetManager::AddLuaScript(
-		const std::string& name,
+		const std::string&							  name,
 		const std::shared_ptr<Scripting::ILuaScript>& asset
 	)
 	{
@@ -116,7 +116,7 @@ namespace Engine
 	}
 
 	[[nodiscard]] std::shared_ptr<void> AssetManager::GetAsset(
-		AssetType with_type,
+		AssetType		   with_type,
 		const std::string& name
 	)
 	{

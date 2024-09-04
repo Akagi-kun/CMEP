@@ -7,9 +7,9 @@ namespace Engine
 		// prints the explanatory string of an exception. If the exception is nested,
 		// recurses to print the explanatory of the exception it holds
 		void PrintException(
-			std::string& output_str,
+			std::string&		  output_str,
 			const std::exception& caught_exception,
-			int level = 0
+			int					  level = 0
 		)
 		{
 			output_str += "\n\texception (" + std::to_string(level) +

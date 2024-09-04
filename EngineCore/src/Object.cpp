@@ -5,8 +5,8 @@
 namespace Engine
 {
 	Object::Object(
-		Engine* with_engine,
-		Rendering::IRenderer* with_renderer,
+		Engine*					 with_engine,
+		Rendering::IRenderer*	 with_renderer,
 		Rendering::IMeshBuilder* with_mesh_builder
 	)
 		: InternalEngineObject(with_engine), renderer(with_renderer),

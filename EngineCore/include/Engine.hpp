@@ -31,7 +31,7 @@ namespace Engine
 		struct
 		{
 			Rendering::ScreenSize size;
-			std::string title = "unknown";
+			std::string			  title = "unknown";
 		} window;
 
 		unsigned int framerate_target = 0;
@@ -105,7 +105,7 @@ namespace Engine
 
 		// Engine parts
 		std::shared_ptr<Logging::Logger> logger;
-		std::shared_ptr<AssetManager> asset_manager;
+		std::shared_ptr<AssetManager>	 asset_manager;
 
 		Rendering::Vulkan::Instance* vk_instance = nullptr;
 
@@ -115,8 +115,8 @@ namespace Engine
 
 		static void RenderCallback(
 			Rendering::Vulkan::CommandBuffer* command_buffer,
-			uint32_t current_frame,
-			void* engine
+			uint32_t						  current_frame,
+			void*							  engine
 		);
 
 		static void ErrorCallback(int code, const char* message);

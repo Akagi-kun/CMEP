@@ -16,7 +16,7 @@
 namespace Engine::Factories::ObjectFactory
 {
 	object_factory_t GetSceneObjectFactory(
-		EnumStringConvertor<RendererType> with_renderer,
+		EnumStringConvertor<RendererType>	 with_renderer,
 		EnumStringConvertor<MeshBuilderType> with_mesh_builder
 	)
 	{
@@ -116,7 +116,7 @@ namespace Engine::Factories::ObjectFactory
 
 	Rendering::RendererSupplyData GenerateRendererSupplyData(
 		EnumStringConvertor<Rendering::RendererSupplyData::Type> of_type,
-		valid_value_t with_value
+		valid_value_t											 with_value
 	)
 	{
 		ENGINE_EXCEPTION_ON_ASSERT(with_value.index() != 0, "Invalid supply data value passed!")
@@ -149,7 +149,7 @@ namespace Engine::Factories::ObjectFactory
 
 	Rendering::MeshBuilderSupplyData GenerateMeshBuilderSupplyData(
 		EnumStringConvertor<Rendering::MeshBuilderSupplyData::Type> of_type,
-		valid_value_t with_value
+		valid_value_t												with_value
 	)
 	{
 		ENGINE_EXCEPTION_ON_ASSERT(with_value.index() != 0, "Invalid supply data value passed!")

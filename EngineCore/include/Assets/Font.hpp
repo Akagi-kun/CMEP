@@ -8,7 +8,6 @@
 
 namespace Engine::Rendering
 {
-	// TODO: Remove
 	class Texture;
 
 	struct FontChar
@@ -31,20 +30,18 @@ namespace Engine::Rendering
 		using page_t = std::shared_ptr<Texture>;
 
 		std::unordered_map<std::string, std::string> info;
-		std::unordered_map<int, page_t> pages;
-		std::unordered_map<int, FontChar> chars;
-		unsigned int char_count = 0;
+		std::unordered_map<int, page_t>				 pages;
+		std::unordered_map<int, FontChar>			 chars;
+		unsigned int								 char_count = 0;
 	};
 
 	class Font final : public InternalEngineObject, public Asset
 	{
 	public:
-		using InternalEngineObject::InternalEngineObject;
+		Font(Engine* with_engine, std::unique_ptr<FontData> init_data);
 		~Font();
 
-		void Init(std::unique_ptr<FontData> init_data);
-
-		[[nodiscard]] std::shared_ptr<Texture> GetPageTexture(int page);
+		[[nodiscard]] std::shared_ptr<Texture>		 GetPageTexture(int page);
 		[[nodiscard]] std::shared_ptr<const Texture> GetPageTexture(int page) const;
 
 		[[nodiscard]] const FontChar* GetChar(char character_id) const;

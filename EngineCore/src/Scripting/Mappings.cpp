@@ -43,7 +43,7 @@ namespace Engine::Scripting::Mappings
 				for (int arg = 1; arg <= argc; arg++)
 				{
 					Utility::LuaValue value(state, arg);
-					std::string string = Utility::LuaValue::ToString(value);
+					std::string		  string = Utility::LuaValue::ToString(value);
 
 					locked_logger->Log("%s\t", string.c_str());
 				}
@@ -114,7 +114,7 @@ namespace Engine::Scripting::Mappings
 			if (lua_istable(state, 4))
 			{
 				std::vector<Rendering::RendererSupplyData> renderer_supply_data;
-				int idx = 1;
+				int										   idx = 1;
 				while (true)
 				{
 					static constexpr size_t start_idx = 4;

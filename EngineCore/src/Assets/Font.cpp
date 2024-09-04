@@ -12,16 +12,16 @@ namespace Engine::Rendering
 {
 #pragma region Public
 
+	Font::Font(Engine* with_engine, std::unique_ptr<FontData> init_data)
+		: InternalEngineObject(with_engine), data(std::move(init_data))
+	{
+	}
+
 	Font::~Font()
 	{
 		logger->SimpleLog<decltype(this)>(Logging::LogLevel::VerboseDebug, "Destructor called");
 
 		data.reset();
-	}
-
-	void Font::Init(std::unique_ptr<FontData> init_data)
-	{
-		data = std::move(init_data);
 	}
 
 	const FontChar* Font::GetChar(char character_id) const

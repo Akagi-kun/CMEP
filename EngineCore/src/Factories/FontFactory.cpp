@@ -36,7 +36,7 @@ namespace Engine::Factories
 
 	static void ParseBmfontEntryChar(
 		std::unique_ptr<Rendering::FontData>& font,
-		std::stringstream& line_stream
+		std::stringstream&					  line_stream
 	)
 	{
 		// When reading the code in this function,
@@ -55,7 +55,7 @@ namespace Engine::Factories
 			{"channel", offsetof(Rendering::FontChar, channel)},
 		};
 
-		int fchar_id = -1;
+		int					fchar_id = -1;
 		Rendering::FontChar fchar{};
 
 		// Using bytes instead of int is safer here
@@ -94,22 +94,12 @@ namespace Engine::Factories
 #pragma region Public
 	std::shared_ptr<Rendering::Font> FontFactory::CreateFont(
 		const std::filesystem::path& font_path,
-		const pageload_callback_t& opt_callback
+		const pageload_callback_t&	 opt_callback
 	)
 	{
-		std::shared_ptr<Rendering::Font> font = std::make_shared<Rendering::Font>(owner_engine);
-
 		std::ifstream font_file(font_path);
 
-		if (!font_file.is_open())
-		{
-			this->logger->SimpleLog<decltype(this)>(
-				Logging::LogLevel::Error,
-				"FontFile %s unexpectedly not open",
-				font_path.string().c_str()
-			);
-			return nullptr;
-		}
+		ENGINE_EXCEPTION_ON_ASSERT(font_file.is_open(), "font file could not be opened")
 
 		this->logger->SimpleLog<decltype(this)>(
 			Logging::LogLevel::VerboseDebug,
@@ -128,22 +118,20 @@ namespace Engine::Factories
 
 		font_file.close();
 
-		font->Init(std::move(font_data));
-
-		return font;
+		return std::make_shared<Rendering::Font>(owner_engine, std::move(font_data));
 	}
 
 #pragma region Private
 
 	std::unique_ptr<Rendering::FontData> FontFactory::ParseBmfont(
 		const std::filesystem::path& font_path,
-		std::ifstream& font_file,
-		const pageload_callback_t& pageload_cb
+		std::ifstream&				 font_file,
+		const pageload_callback_t&	 pageload_cb
 	)
 	{
 		std::unique_ptr<Rendering::FontData> font = std::make_unique<Rendering::FontData>();
 
-		static constexpr size_t buffer_size = 255;
+		static constexpr size_t		  buffer_size = 255;
 		std::array<char, buffer_size> data{};
 
 		while (!font_file.eof())
@@ -186,13 +174,13 @@ namespace Engine::Factories
 	}
 
 	void FontFactory::ParseBmfontEntryPage(
-		std::filesystem::path font_path,
+		std::filesystem::path				  font_path,
 		std::unique_ptr<Rendering::FontData>& font,
-		std::stringstream& line_stream,
-		const pageload_callback_t& pageload_cb
+		std::stringstream&					  line_stream,
+		const pageload_callback_t&			  pageload_cb
 	)
 	{
-		int page_idx = -1;
+		int					  page_idx = -1;
 		std::filesystem::path page_path;
 
 		do
@@ -251,11 +239,11 @@ namespace Engine::Factories
 	}
 
 	void FontFactory::ParseBmfontLine(
-		const std::filesystem::path& font_path,
+		const std::filesystem::path&		  font_path,
 		std::unique_ptr<Rendering::FontData>& font,
-		const BmFontLineType line_type,
-		std::stringstream& line_stream,
-		const pageload_callback_t& pageload_cb
+		const BmFontLineType				  line_type,
+		std::stringstream&					  line_stream,
+		const pageload_callback_t&			  pageload_cb
 	)
 	{
 		std::string key;
