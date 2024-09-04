@@ -15,14 +15,14 @@ jobs:
       fail-fast: false
 
       matrix:
-        os: [ubuntu-latest]
+        os: [ubuntu-24.04]
         build_type: [Debug]
         c_compiler: [gcc, clang]
         include:
-          - os: ubuntu-latest
+          - os: ubuntu-24.04
             c_compiler: gcc
             cpp_compiler: g++
-          - os: ubuntu-latest
+          - os: ubuntu-24.04
             c_compiler: clang
             cpp_compiler: clang++
 
@@ -48,17 +48,18 @@ jobs:
 
     - name: Install build tools for glfw
       shell: bash
-      if: ${{matrix.os == 'ubuntu-latest'}}
       run: sudo apt install libxrandr-dev libxinerama-dev libxcursor-dev libxi-dev libxext-dev wayland-protocols libwayland-dev libxkbcommon-dev
 
-    - name: Configure CMake
-      run: >
-        cmake -B ${{ steps.strings.outputs.build-output-dir }}
-        -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }}
-        -DCMAKE_C_COMPILER=${{ matrix.c_compiler }}
-        -S ${{ github.workspace }}
+    #- name: Configure CMake
+    #  run: >
+    #    cmake -B ${{ steps.strings.outputs.build-output-dir }}
+    #    -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }}
+    #    -DCMAKE_C_COMPILER=${{ matrix.c_compiler }}
+    #    -S ${{ github.workspace }}
       
     - name: Build.sh
       shell: bash
+      env:
+        CC: ${{ matrix.c_compiler }}
+        CXX: ${{ matrix.cpp_compiler }}
       run: ./build.sh ${{ matrix.build_type }}
-
