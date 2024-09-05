@@ -2,6 +2,12 @@
 
 #include "Scripting/Utility.hpp"
 
+#include "Exception.hpp"
+
+#include <cstdint>
+#include <format>
+#include <string>
+
 namespace Engine::Scripting
 {
 	static int CrossStateArgMove(lua_State* origin, lua_State* target)
@@ -9,12 +15,6 @@ namespace Engine::Scripting
 		// LuaJIT has no guarantees to the ID of CDATA type
 		// It can be checked manually against 'lj_obj_typename' symbol
 		static constexpr int cdata_type_id = 10;
-
-		/* for (int i = 1; i <= lua_gettop(callee_state); i++)
-		{
-			// Print type of every element on stack
-			printf("Callee %u %s\n", i, lua_typename(callee_state, lua_type(callee_state, i)));
-		} */
 
 		int arg_vals = 1;
 		for (; arg_vals <= lua_gettop(origin); arg_vals++)

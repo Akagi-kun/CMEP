@@ -11,7 +11,6 @@
 #include <string_view>
 #include <utility>
 #include <variant>
-#include <vector>
 
 namespace Engine::Scripting::Utility
 {
