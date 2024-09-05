@@ -7,9 +7,20 @@
 #include "Scripting/API/Scene_API.hpp"
 #include "Scripting/Mappings.hpp"
 
+#include "Factories/ObjectFactory.hpp"
+
 #include "Exception.hpp"
 
+#include <cassert>
+#include <cstdint>
+#include <format>
 #include <sstream>
+#include <string>
+#include <string_view>
+#include <type_traits>
+#include <unordered_map>
+#include <variant>
+#include <vector>
 
 namespace Engine::Scripting::Utility
 {
@@ -91,7 +102,24 @@ namespace Engine::Scripting::Utility
 		return 1;
 	}
 
-	void PrintStackContent(lua_State* state)
+	std::string StackContentToString(lua_State* state)
+	{
+		std::string output;
+
+		for (int i = 0; i <= lua_gettop(state); i++)
+		{
+			output.append(std::format(
+				"{} {} ({})\n",
+				i,
+				lua_typename(state, lua_type(state, i)),
+				lua_tostring(state, i)
+			));
+		}
+
+		return output;
+	}
+
+	/* void PrintStackContent(lua_State* state)
 	{
 		for (int i = 0; i <= lua_gettop(state); i++)
 		{
@@ -103,6 +131,32 @@ namespace Engine::Scripting::Utility
 				lua_tostring(state, i)
 			);
 		}
+	} */
+
+	std::string_view MappingReverseLookup(lua_CFunction lookup_function)
+	{
+		static const std::vector<std::unordered_map<std::string, const lua_CFunction>>
+			all_mappings = {
+				Mappings::mappings,
+				API::object_mappings,
+				API::scene_manager_mappings,
+				API::asset_manager_mappings,
+				API::scene_mappings,
+				API::engine_mappings
+			};
+
+		for (const auto& mapping : all_mappings)
+		{
+			for (const auto& [name, function] : mapping)
+			{
+				if (function == lookup_function)
+				{
+					return name;
+				}
+			}
+		}
+
+		return "[no match found]";
 	}
 
 	namespace
@@ -253,29 +307,4 @@ namespace Engine::Scripting::Utility
 		}
 	}
 
-	std::string_view MappingReverseLookup(lua_CFunction lookup_function)
-	{
-		static const std::vector<std::unordered_map<std::string, const lua_CFunction>>
-			all_mappings = {
-				Mappings::mappings,
-				API::object_mappings,
-				API::scene_manager_mappings,
-				API::asset_manager_mappings,
-				API::scene_mappings,
-				API::engine_mappings
-			};
-
-		for (const auto& mapping : all_mappings)
-		{
-			for (const auto& [name, function] : mapping)
-			{
-				if (function == lookup_function)
-				{
-					return name;
-				}
-			}
-		}
-
-		return "[no match found]";
-	}
 } // namespace Engine::Scripting::Utility

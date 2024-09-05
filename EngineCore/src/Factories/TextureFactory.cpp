@@ -64,6 +64,8 @@ namespace Engine::Factories
 					size  = {size_x, size_y};
 				}
 
+				ENGINE_EXCEPTION_ON_ASSERT_NOMSG(error == 0)
+
 				if (error != 0 || 0 >= size.x || size.x >= max_texture_size || 0 >= size.y ||
 					size.y >= max_texture_size)
 				{
