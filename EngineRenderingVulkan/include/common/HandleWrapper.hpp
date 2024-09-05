@@ -5,7 +5,7 @@
 namespace Engine::Rendering::Vulkan
 {
 	template <typename T, bool handle_constructible = false>
-		requires(!std::is_same_v<T, nullptr_t>)
+		requires(!std::is_same_v<T, std::nullptr_t>)
 	class HandleWrapper
 	{
 	public:
@@ -44,7 +44,7 @@ namespace Engine::Rendering::Vulkan
 		static constexpr bool is_pointer		  = std::is_pointer_v<value_t>;
 		static constexpr bool is_bool_convertible = std::is_convertible_v<value_t, bool>;
 		static constexpr bool default_ctor		  = std::is_default_constructible_v<value_t>;
-		static constexpr bool nullptr_ctor		  = std::is_constructible_v<value_t, nullptr_t>;
+		static constexpr bool nullptr_ctor = std::is_constructible_v<value_t, std::nullptr_t>;
 
 		constexpr value_t DefaultVal()
 		{

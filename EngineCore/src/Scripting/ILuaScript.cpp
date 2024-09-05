@@ -8,6 +8,7 @@
 #include "lua.hpp"
 
 #include <filesystem>
+#include <format>
 #include <string>
 #include <utility>
 

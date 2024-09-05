@@ -14,8 +14,9 @@ namespace Engine::Rendering::Vulkan
 	struct MemoryAllocator;
 
 	template <typename T, bool handle_constructible>
-		requires(!std::is_same_v<T, nullptr_t>)
+		requires(!std::is_same_v<T, std::nullptr_t>)
 	class HandleWrapper;
+
 	class HoldsVMA;
 	class InstanceOwned;
 

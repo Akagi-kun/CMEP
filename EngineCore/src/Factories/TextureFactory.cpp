@@ -15,6 +15,7 @@
 
 #include <cstddef>
 #include <cstdint>
+#include <format>
 
 namespace Engine::Factories
 {
@@ -123,8 +124,8 @@ namespace Engine::Factories
 				vk::SampleCountFlagBits::e1,
 				vk::Format::eR8G8B8A8Srgb,
 				vk::ImageUsageFlagBits::eTransferDst | vk::ImageUsageFlagBits::eSampled,
-				filtering,			  // Filter for both mag and min
-				sampler_address_mode, // sampler address mode
+				filtering, // Filter for both mag and min
+				sampler_address_mode,
 				vk::ImageAspectFlagBits::eColor
 			);
 

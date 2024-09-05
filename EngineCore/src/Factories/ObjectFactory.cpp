@@ -11,6 +11,7 @@
 #include "Exception.hpp"
 
 #include <cassert>
+#include <format>
 
 namespace Engine::Factories::ObjectFactory
 {
