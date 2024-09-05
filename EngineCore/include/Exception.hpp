@@ -1,11 +1,9 @@
 #pragma once
 
 #include "PlatformSemantics.hpp"
-#include "cmake_cfg.hpp"
 
 #include <exception>
-#include <filesystem>
-#include <format>
+#include <source_location>
 #include <string>
 
 namespace Engine
@@ -14,17 +12,10 @@ namespace Engine
 	{
 	public:
 		CMEP_EXPORT Exception(
-			const std::filesystem::path& with_file,
-			uint_least32_t				 with_line,
-			const std::string&			 with_message
+			const std::string&	 with_message,
+			std::source_location location = std::source_location::current()
 		)
-			: message(std::format(
-				  "{}@{}: {}",
-				  // Make relative to source directory, may not be foolproof!
-				  with_file.lexically_relative(CMAKE_CONFIGURE_SOURCE_DIR).string(),
-				  std::to_string(with_line),
-				  with_message
-			  ))
+			: message(GenerateWhat(with_message, location))
 		{
 		}
 
@@ -35,13 +26,18 @@ namespace Engine
 
 	private:
 		std::string message;
+
+		static CMEP_EXPORT std::string GenerateWhat(
+			const std::string&	 with_message,
+			std::source_location location
+		);
 	};
 
 	CMEP_EXPORT std::string UnrollExceptions(const std::exception& caught_exception);
 } // namespace Engine
 
 // NOLINTBEGIN(*unused-macros)
-#define ENGINE_EXCEPTION(message) ::Engine::Exception(__FILE__, __LINE__, message)
+#define ENGINE_EXCEPTION(message) ::Engine::Exception(message)
 #define ENGINE_EXCEPTION_ON_ASSERT(true_expr, message)                                             \
 	if ((true_expr) == false)                                                                      \
 	{                                                                                              \

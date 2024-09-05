@@ -369,9 +369,8 @@ namespace Engine
 				}
 				catch (...)
 				{
-					// TODO: Potentially handle safely?
 					std::throw_with_nested(ENGINE_EXCEPTION(std::format(
-						"Exception occured loading asset! Relevant JSON:\n{}",
+						"Exception occured loading asset! Relevant JSON:\n\t{}",
 						asset_entry.dump()
 					)));
 				}

@@ -1,7 +1,30 @@
 #include "Exception.hpp"
 
+#include "cmake_cfg.hpp"
+
+#include <filesystem>
+#include <format>
+#include <vector>
+
 namespace Engine
 {
+	std::string Exception::GenerateWhat(
+		const std::string&	 with_message,
+		std::source_location location
+	)
+	{
+		std::filesystem::path file = location.file_name();
+		file					   = file.lexically_relative(CMAKE_CONFIGURE_SOURCE_DIR);
+
+		return std::format(
+			"({}:{}:{}):\ne.what(): '{}'",
+			file.string(),
+			location.line(),
+			location.column(),
+			with_message
+		);
+	}
+
 	namespace
 	{
 		// prints the explanatory string of an exception. If the exception is nested,
@@ -12,7 +35,7 @@ namespace Engine
 			int						  level = 0
 		)
 		{
-			output.push_back(std::format("exception ({}): {}", level, caught_exception.what()));
+			output.push_back(std::format("exception {}: {}", level, caught_exception.what()));
 
 			try
 			{
@@ -20,7 +43,7 @@ namespace Engine
 			}
 			catch (const std::exception& nested_exception)
 			{
-				PrintException(output, nested_exception, level - 1);
+				PrintException(output, nested_exception, ++level);
 			}
 			catch (...)
 			{
@@ -37,15 +60,31 @@ namespace Engine
 
 		PrintException(whats, caught_exception);
 
+		ENGINE_EXCEPTION_ON_ASSERT_NOMSG(!whats.empty())
+
+		// Concatenate the description string for every exception
+		// into a final string
 		for (const auto& what : whats)
 		{
 			std::istringstream what_stream(what);
 
 			// Tab out every line of output
+			// except the first line
 			std::string line;
+
+			bool first_line = true;
 			while (std::getline(what_stream, line))
 			{
-				output.append(std::format("{}\n\t", line));
+				if (first_line)
+				{
+					output.append("   ");
+					first_line = false;
+				}
+				else
+				{
+					output.append("      ");
+				}
+				output.append(std::format("{}\n", line));
 			}
 		}
 

@@ -17,7 +17,7 @@ namespace
 	void InitConsoleWin32()
 	{
 		HANDLE my_console = GetStdHandle(STD_OUTPUT_HANDLE);
-		DWORD dw_mode	  = 0;
+		DWORD  dw_mode	  = 0;
 		GetConsoleMode(my_console, &dw_mode);
 		dw_mode |= ENABLE_VIRTUAL_TERMINAL_PROCESSING;
 		SetConsoleMode(my_console, dw_mode);
@@ -103,7 +103,7 @@ namespace
 		{
 			my_logger->SimpleLog<void>(
 				Logging::LogLevel::Exception,
-				"Caught exception loading config! %s",
+				"Caught exception loading config!\n%s",
 				Engine::UnrollExceptions(e).c_str()
 			);
 
@@ -119,7 +119,7 @@ namespace
 		{
 			my_logger->SimpleLog<void>(
 				Logging::LogLevel::Exception,
-				"Caught exception running engine! %s",
+				"Caught exception running engine!\n%s",
 				Engine::UnrollExceptions(e).c_str()
 			);
 			return 2;
