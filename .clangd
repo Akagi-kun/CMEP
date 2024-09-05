@@ -5,10 +5,11 @@ If:
   PathExclude: external/.*
 Diagnostics:
   UnusedIncludes: Strict
+  MissingIncludes: Strict
   ClangTidy:
     FastCheckFilter: None
   Includes:
-    IgnoreHeader: [glm.hpp]
+    IgnoreHeader: [glm.hpp, lua.h]
 ---
 Completion:
   AllScopes: No

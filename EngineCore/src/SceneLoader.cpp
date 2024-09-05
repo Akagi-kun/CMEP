@@ -2,6 +2,7 @@
 
 #include "Assets/AssetManager.hpp"
 #include "Assets/Texture.hpp"
+#include "Rendering/SupplyData.hpp"
 
 #include "Scripting/EventLuaScript.hpp"
 #include "Scripting/GeneratorLuaScript.hpp"

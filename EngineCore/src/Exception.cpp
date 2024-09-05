@@ -2,8 +2,12 @@
 
 #include "cmake_cfg.hpp"
 
+#include <exception>
 #include <filesystem>
 #include <format>
+#include <source_location>
+#include <sstream>
+#include <string>
 #include <vector>
 
 namespace Engine

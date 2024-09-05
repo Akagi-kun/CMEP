@@ -3,10 +3,13 @@
 #include "Scripting/Mappings.hpp"
 #include "Scripting/Utility.hpp"
 
+#include "Logging/Logging.hpp"
+
 #include "EventHandling.hpp"
 #include "Exception.hpp"
 #include "lua.hpp"
 
+#include <cstddef>
 #include <filesystem>
 #include <format>
 #include <string>

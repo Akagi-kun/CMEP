@@ -1,7 +1,15 @@
+#include "Assets/Texture.hpp"
+#include "Rendering/Transform.hpp"
 #include "Rendering/Vulkan/backend.hpp"
+
+#include "Logging/Logging.hpp"
 
 #include "Exception.hpp"
 #include "InternalEngineObject.hpp"
+
+#include <filesystem>
+#include <memory>
+#include <vector>
 
 #pragma warning(push, 2)
 #include "lodepng.h"

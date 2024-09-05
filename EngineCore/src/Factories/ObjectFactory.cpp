@@ -5,13 +5,18 @@
 #include "Rendering/MeshBuilders/GeneratorMeshBuilder.hpp"
 #include "Rendering/MeshBuilders/SpriteMeshBuilder.hpp"
 #include "Rendering/MeshBuilders/TextMeshBuilder.hpp"
+#include "Rendering/Renderers/Renderer.hpp"
 #include "Rendering/SupplyData.hpp"
 
 #include "EnumStringConvertor.hpp"
 #include "Exception.hpp"
+#include "InternalEngineObject.hpp"
+#include "Object.hpp"
 
 #include <cassert>
 #include <format>
+#include <memory>
+#include <string>
 
 namespace Engine::Factories::ObjectFactory
 {

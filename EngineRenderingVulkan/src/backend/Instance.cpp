@@ -3,11 +3,15 @@
 #include "Logging/Logging.hpp"
 
 #include "backend/DeviceScore.hpp"
+#include "backend/LogicalDevice.hpp"
 #include "backend/MemoryAllocator.hpp"
+#include "backend/PhysicalDevice.hpp"
 #include "objects/CommandPool.hpp"
 #include "rendering/Surface.hpp"
+#include "rendering/Window.hpp"
 #include "vulkan/vulkan.hpp"
 
+#include <algorithm>
 #include <cstring>
 #include <format>
 #include <stdexcept>

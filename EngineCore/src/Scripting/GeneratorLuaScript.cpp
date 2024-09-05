@@ -7,9 +7,14 @@
 #include "Scripting/ILuaScript.hpp"
 #include "Scripting/Utility.hpp"
 
+#include "Exception.hpp"
+#include "glm/glm.hpp"
 #include "lua.hpp"
 
+#include <array>
+#include <filesystem>
 #include <string>
+#include <vector>
 
 namespace Engine::Scripting
 {

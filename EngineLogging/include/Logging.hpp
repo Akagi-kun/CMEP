@@ -1,5 +1,7 @@
 #pragma once
 
+// IWYU pragma: private; include Logging/Logging.hpp
+
 #include "PlatformSemantics.hpp"
 
 #include <cstdarg>
