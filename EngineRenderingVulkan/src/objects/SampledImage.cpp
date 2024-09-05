@@ -1,12 +1,82 @@
 #include "objects/SampledImage.hpp"
 
+#include "backend/Instance.hpp"
+#include "backend/LogicalDevice.hpp"
+
 namespace Engine::Rendering::Vulkan
 {
 	template <typename base_t>
+	SampledImage<base_t>::SampledImage(
+		InstanceOwned::value_t	with_instance,
+		ImageSize				with_size,
+		vk::SampleCountFlagBits num_samples,
+		vk::Format				format,
+		vk::ImageUsageFlags		usage,
+		vk::Filter				with_filter,
+		vk::SamplerAddressMode	with_address_mode,
+		vk::MemoryPropertyFlags properties,
+		vk::ImageTiling			with_tiling
+	)
+		requires(std::is_same_v<base_t, Image>)
+		: Image(with_instance, with_size, num_samples, format, usage, properties, with_tiling),
+		  use_filter(with_filter), use_address_mode(with_address_mode)
+	{
+
+		LogicalDevice* logical_device = this->instance->GetLogicalDevice();
+
+		vk::PhysicalDeviceProperties device_properties =
+			this->instance->GetPhysicalDevice()->getProperties();
+
+		texture_sampler = logical_device->createSampler(GetSamplerCreateInfo(
+			use_filter,
+			use_address_mode,
+			device_properties.limits.maxSamplerAnisotropy
+		));
+	}
+
+	template <typename base_t>
+	SampledImage<base_t>::SampledImage(
+		InstanceOwned::value_t	with_instance,
+		ImageSize				with_size,
+		vk::SampleCountFlagBits num_samples,
+		vk::Format				format,
+		vk::ImageUsageFlags		usage,
+		vk::Filter				with_filter,
+		vk::SamplerAddressMode	with_address_mode,
+		vk::ImageAspectFlags	with_aspect,
+		vk::MemoryPropertyFlags properties,
+		vk::ImageTiling			with_tiling
+	)
+		requires(std::is_same_v<base_t, ViewedImage>)
+		: ViewedImage(
+			  with_instance,
+			  with_size,
+			  num_samples,
+			  format,
+			  usage,
+			  with_aspect,
+			  properties,
+			  with_tiling
+		  ),
+		  use_filter(with_filter), use_address_mode(with_address_mode)
+	{
+		LogicalDevice* logical_device = this->instance->GetLogicalDevice();
+
+		vk::PhysicalDeviceProperties device_properties =
+			this->instance->GetPhysicalDevice()->getProperties();
+
+		texture_sampler = logical_device->createSampler(GetSamplerCreateInfo(
+			use_filter,
+			use_address_mode,
+			device_properties.limits.maxSamplerAnisotropy
+		));
+	}
+
+	template <typename base_t>
 	[[nodiscard]] vk::SamplerCreateInfo SampledImage<base_t>::GetSamplerCreateInfo(
-		vk::Filter use_filter,
+		vk::Filter			   use_filter,
 		vk::SamplerAddressMode use_address_mode,
-		float max_anisotropy
+		float				   max_anisotropy
 	)
 	{
 		const vk::SamplerCreateInfo create_info = {

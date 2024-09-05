@@ -3,24 +3,20 @@
 #include "Exception.hpp"
 
 #include <optional>
-#include <stdexcept>
 #include <string>
 #include <type_traits>
 #include <unordered_map>
 
 namespace Engine
 {
-	template <typename T> struct EnumStringConvertor final
+	template <typename T>
+		requires(std::is_enum_v<T>)
+	struct EnumStringConvertor final
 	{
 	public:
 		using self_t  = EnumStringConvertor<T>;
 		using value_t = T;
 		using map_t	  = const std::unordered_map<std::string_view, value_t>;
-
-		static_assert(
-			std::is_enum<value_t>{},
-			"EnumStringConvertor can only convert to enum types!"
-		);
 
 		EnumStringConvertor() = default;
 		EnumStringConvertor(value_t from) : value(from)
@@ -69,9 +65,7 @@ namespace Engine
 		{
 			if (from.empty())
 			{
-				throw std::invalid_argument(
-					"[EnumStringConvertor] Cannot convert an empty string to enum"
-				);
+				throw ENGINE_EXCEPTION("Cannot convert an empty string to enum");
 			}
 
 			const auto& found_type = self_t::type_map.find(from);
@@ -81,9 +75,7 @@ namespace Engine
 				return found_type->second;
 			}
 
-			throw std::invalid_argument(
-				"[EnumStringConvertor] Could not convert '" + from + "' (no match found)"
-			);
+			throw ENGINE_EXCEPTION("Could not convert '" + from + "' (no match found)");
 		}
 
 		// Slow linear lookup, use only on cold paths

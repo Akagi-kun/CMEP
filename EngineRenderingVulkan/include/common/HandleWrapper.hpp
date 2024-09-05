@@ -1,25 +1,25 @@
 #pragma once
 
-#include "vulkan/vulkan_raii.hpp"
-
 #include <type_traits>
 
 namespace Engine::Rendering::Vulkan
 {
-	template <typename T, bool handle_constructible = false> class HandleWrapper
+	template <typename T, bool handle_constructible = false>
+		requires(!std::is_same_v<T, nullptr_t>)
+	class HandleWrapper
 	{
 	public:
-		using self_t							  = HandleWrapper<T, handle_constructible>;
-		using const_self_t						  = const self_t;
-		using value_t							  = T;
-		static constexpr bool is_pointer		  = std::is_pointer_v<value_t>;
-		static constexpr bool is_bool_convertible = std::is_convertible_v<value_t, bool>;
+		using self_t	   = HandleWrapper<T, handle_constructible>;
+		using const_self_t = const self_t;
+		using value_t	   = T;
 
 		HandleWrapper() = default;
 
 		// If handle constructor is allowed
-		template <typename conditional_t = int, std::enable_if_t<handle_constructible, conditional_t>* = nullptr>
-		HandleWrapper(value_t from_handle) : native_handle(from_handle)
+		template <typename conditional_t = int>
+		HandleWrapper(value_t from_handle)
+			requires(handle_constructible)
+			: native_handle(from_handle)
 		{
 		}
 
@@ -27,7 +27,7 @@ namespace Engine::Rendering::Vulkan
 		{
 			if constexpr (is_pointer)
 			{
-				return native_handle != VK_NULL_HANDLE;
+				return native_handle != nullptr;
 			}
 			else if constexpr (!is_pointer && is_bool_convertible)
 			{
@@ -41,11 +41,13 @@ namespace Engine::Rendering::Vulkan
 		}
 
 	protected:
+		static constexpr bool is_pointer		  = std::is_pointer_v<value_t>;
+		static constexpr bool is_bool_convertible = std::is_convertible_v<value_t, bool>;
+		static constexpr bool default_ctor		  = std::is_default_constructible_v<value_t>;
+		static constexpr bool nullptr_ctor		  = std::is_constructible_v<value_t, nullptr_t>;
+
 		constexpr value_t DefaultVal()
 		{
-			constexpr bool default_ctor = std::is_default_constructible<value_t>();
-			constexpr bool nullptr_ctor = std::is_constructible<value_t, decltype(nullptr)>();
-
 			if constexpr (default_ctor)
 			{
 				return value_t();
@@ -55,8 +57,6 @@ namespace Engine::Rendering::Vulkan
 				return nullptr;
 			}
 		}
-
-		static_assert(!std::is_same<value_t, std::nullptr_t>(), "nullptr_t is not a valid handle type");
 
 		value_t native_handle = DefaultVal();
 	};

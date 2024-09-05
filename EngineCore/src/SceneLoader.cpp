@@ -40,7 +40,7 @@ namespace Engine
 			const std::string&			 value
 		)
 		{
-			if constexpr (std::is_same<supply_data_t, Rendering::RendererSupplyData>())
+			if constexpr (std::is_same_v<supply_data_t, Rendering::RendererSupplyData>)
 			{
 				switch (type)
 				{
@@ -58,7 +58,7 @@ namespace Engine
 					}
 				}
 			}
-			else if constexpr (std::is_same<supply_data_t, Rendering::MeshBuilderSupplyData>())
+			else if constexpr (std::is_same_v<supply_data_t, Rendering::MeshBuilderSupplyData>)
 			{
 				switch (type)
 				{

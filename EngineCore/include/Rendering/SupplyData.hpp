@@ -37,7 +37,7 @@ namespace Engine::Rendering
 
 		using payload_t = std::variant<std::weak_ptr<void>>;
 
-		Type type;
+		Type	  type;
 		payload_t payload;
 
 		RendererSupplyData(Type with_type, payload_t data)
@@ -73,17 +73,15 @@ namespace Engine::Rendering
 			return false;
 		}
 
-		template <
-			typename value_t,
-			typename cast_t,
-			std::enable_if_t<std::is_same_v<value_t, std::weak_ptr<void>>, int>* = nullptr>
+		template <typename value_t, typename cast_t>
 		[[nodiscard]] bool PayloadCompareOp(payload_t left, payload_t right) const
+			requires(std::is_same_v<value_t, std::weak_ptr<void>>)
 		{
 			const auto& left_payload_ref = std::get<value_t>(left);
-			const auto left_cast = std::static_pointer_cast<cast_t>(left_payload_ref.lock());
+			const auto	left_cast = std::static_pointer_cast<cast_t>(left_payload_ref.lock());
 
 			const auto& right_payload_ref = std::get<value_t>(right);
-			const auto right_cast = std::static_pointer_cast<cast_t>(right_payload_ref.lock());
+			const auto	right_cast = std::static_pointer_cast<cast_t>(right_payload_ref.lock());
 
 			return left_cast == right_cast;
 		}
@@ -106,7 +104,7 @@ namespace Engine::Rendering
 
 		using payload_t = std::variant<std::string, std::weak_ptr<Font>, GeneratorData>;
 
-		Type type;
+		Type	  type;
 		payload_t payload;
 
 		MeshBuilderSupplyData(Type with_type, payload_t data)

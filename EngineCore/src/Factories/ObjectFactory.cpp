@@ -11,7 +11,6 @@
 #include "Exception.hpp"
 
 #include <cassert>
-#include <stdexcept>
 
 namespace Engine::Factories::ObjectFactory
 {
@@ -30,14 +29,12 @@ namespace Engine::Factories::ObjectFactory
 					case MeshBuilderType::SPRITE:
 					{
 						using mb_type = Rendering::SpriteMeshBuilder;
-						static_assert(mb_type::supports_2d);
 
 						return CreateSceneObject<r_type, mb_type>;
 					}
 					case MeshBuilderType::TEXT:
 					{
 						using mb_type = Rendering::TextMeshBuilder;
-						static_assert(mb_type::supports_2d);
 
 						return CreateSceneObject<r_type, mb_type>;
 					}
@@ -45,13 +42,12 @@ namespace Engine::Factories::ObjectFactory
 					/* case MeshBuilderType::AXIS:
 					{
 						using mb_type = Rendering::AxisMeshBuilder;
-						static_assert(mb_type::supports_2d); // Fails
 
 						return CreateSceneObject<r_type, mb_type>;
 					} */
 					default:
 					{
-						throw std::invalid_argument("Invalid mesh builder type!");
+						throw ENGINE_EXCEPTION("Invalid mesh builder type!");
 					}
 				}
 			}
@@ -63,40 +59,36 @@ namespace Engine::Factories::ObjectFactory
 					case MeshBuilderType::SPRITE:
 					{
 						using mb_type = Rendering::SpriteMeshBuilder;
-						static_assert(mb_type::supports_3d);
 
 						return CreateSceneObject<r_type, mb_type>;
 					}
 					case MeshBuilderType::TEXT:
 					{
 						using mb_type = Rendering::TextMeshBuilder;
-						static_assert(mb_type::supports_3d);
 
 						return CreateSceneObject<r_type, mb_type>;
 					}
 					case MeshBuilderType::AXIS:
 					{
 						using mb_type = Rendering::AxisMeshBuilder;
-						static_assert(mb_type::supports_3d);
 
 						return CreateSceneObject<r_type, mb_type>;
 					}
 					case MeshBuilderType::GENERATOR:
 					{
 						using mb_type = Rendering::GeneratorMeshBuilder;
-						static_assert(mb_type::supports_3d);
 
 						return CreateSceneObject<r_type, mb_type>;
 					}
 					default:
 					{
-						throw std::invalid_argument("Invalid mesh builder type!");
+						throw ENGINE_EXCEPTION("Invalid mesh builder type!");
 					}
 				}
 			}
 			default:
 			{
-				throw std::invalid_argument("Invalid renderer type!");
+				throw ENGINE_EXCEPTION("Invalid renderer type!");
 			}
 		}
 	}
@@ -116,7 +108,7 @@ namespace Engine::Factories::ObjectFactory
 
 	Rendering::RendererSupplyData GenerateRendererSupplyData(
 		EnumStringConvertor<Rendering::RendererSupplyData::Type> of_type,
-		valid_value_t											 with_value
+		supply_data_value_t										 with_value
 	)
 	{
 		ENGINE_EXCEPTION_ON_ASSERT(with_value.index() != 0, "Invalid supply data value passed!")
@@ -149,7 +141,7 @@ namespace Engine::Factories::ObjectFactory
 
 	Rendering::MeshBuilderSupplyData GenerateMeshBuilderSupplyData(
 		EnumStringConvertor<Rendering::MeshBuilderSupplyData::Type> of_type,
-		valid_value_t												with_value
+		supply_data_value_t											with_value
 	)
 	{
 		ENGINE_EXCEPTION_ON_ASSERT(with_value.index() != 0, "Invalid supply data value passed!")

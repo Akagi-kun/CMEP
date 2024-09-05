@@ -34,20 +34,24 @@ namespace Engine::Factories::ObjectFactory
 
 	struct ObjectTemplate
 	{
-		EnumStringConvertor<RendererType> with_renderer;
-		EnumStringConvertor<MeshBuilderType> with_mesh_builder;
-		std::string with_shader;
-		std::vector<Rendering::RendererSupplyData> renderer_supply_list;
+		EnumStringConvertor<RendererType>			  with_renderer;
+		EnumStringConvertor<MeshBuilderType>		  with_mesh_builder;
+		std::string									  with_shader;
+		std::vector<Rendering::RendererSupplyData>	  renderer_supply_list;
 		std::vector<Rendering::MeshBuilderSupplyData> meshbuilder_supply_list;
 	};
 
 	template <class TRenderer, class TMeshBuilder>
 	Object* CreateSceneObject(
-		Engine* with_engine,
-		std::string with_pipeline_program,
-		const std::vector<Rendering::RendererSupplyData>& renderer_supply_data,
+		Engine*												 with_engine,
+		std::string											 with_pipeline_program,
+		const std::vector<Rendering::RendererSupplyData>&	 renderer_supply_data,
 		const std::vector<Rendering::MeshBuilderSupplyData>& meshbuilder_supply_data
 	)
+		requires(
+			(std::is_same_v<TRenderer, Rendering::Renderer2D> && TMeshBuilder::supports_2d) ||
+			(std::is_same_v<TRenderer, Rendering::Renderer3D> && TMeshBuilder::supports_3d)
+		)
 	{
 		if (with_pipeline_program.empty())
 		{
@@ -79,22 +83,22 @@ namespace Engine::Factories::ObjectFactory
 
 	// Returns a Callable capable of creating the desired object
 	object_factory_t GetSceneObjectFactory(
-		EnumStringConvertor<RendererType> with_renderer,
+		EnumStringConvertor<RendererType>	 with_renderer,
 		EnumStringConvertor<MeshBuilderType> with_mesh_builder
 	);
 
 	Object* InstantiateObjectTemplate(Engine* with_engine, ObjectTemplate& from_template);
 
-	using valid_value_t = std::variant<std::monostate, void*, std::string>;
+	using supply_data_value_t = std::variant<std::monostate, void*, std::string>;
 
 	Rendering::RendererSupplyData GenerateRendererSupplyData(
 		EnumStringConvertor<Rendering::RendererSupplyData::Type> of_type,
-		valid_value_t with_value
+		supply_data_value_t										 with_value
 	);
 
 	Rendering::MeshBuilderSupplyData GenerateMeshBuilderSupplyData(
 		EnumStringConvertor<Rendering::MeshBuilderSupplyData::Type> of_type,
-		valid_value_t with_value
+		supply_data_value_t											with_value
 	);
 
 } // namespace Engine::Factories::ObjectFactory

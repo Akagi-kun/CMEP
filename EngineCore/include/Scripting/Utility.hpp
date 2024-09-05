@@ -16,9 +16,10 @@ namespace Engine::Scripting::Utility
 
 	void PrintStackContent(lua_State* state);
 
-	template <typename value_t = void*> value_t GetCData(lua_State* from_state, int idx)
+	template <typename value_t = void*>
+	value_t GetCData(lua_State* from_state, int idx)
+		requires(std::is_pointer_v<value_t>)
 	{
-		static_assert(std::is_pointer<value_t>());
 		return const_cast<value_t>(*reinterpret_cast<void* const*>(lua_topointer(from_state, idx)));
 	}
 
@@ -50,7 +51,7 @@ namespace Engine::Scripting::Utility
 		operator bool() const;
 
 		// Specialized conversion ops
-		operator Factories::ObjectFactory::valid_value_t() const;
+		operator Factories::ObjectFactory::supply_data_value_t() const;
 		template <typename enum_t> operator EnumStringConvertor<enum_t>() const
 		{
 			return static_cast<std::string>(*this);

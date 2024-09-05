@@ -187,16 +187,16 @@ namespace Engine::Scripting::Utility
 		return std::get<bool>(value);
 	}
 
-	LuaValue::operator Factories::ObjectFactory::valid_value_t() const
+	LuaValue::operator Factories::ObjectFactory::supply_data_value_t() const
 	{
-		constexpr static auto supply_data_visitor = [](auto&& val
-													) -> Factories::ObjectFactory::valid_value_t {
+		constexpr static auto supply_data_visitor =
+			[](auto&& val) -> Factories::ObjectFactory::supply_data_value_t {
 			using val_t = std::decay_t<decltype(val)>;
-			if constexpr (std::is_same<val_t, std::string>())
+			if constexpr (std::is_same_v<val_t, std::string>)
 			{
 				return static_cast<std::string>(val);
 			}
-			else if constexpr (std::is_same<val_t, void*>())
+			else if constexpr (std::is_same_v<val_t, void*>)
 			{
 				return static_cast<void*>(val);
 			}

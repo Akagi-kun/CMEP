@@ -76,11 +76,11 @@ namespace Engine::Scripting::Mappings
 				lua_rawgeti(state, -2, 2);
 				Utility::LuaValue value(state, -1);
 
-				if constexpr (std::is_same<supply_data_t, Rendering::RendererSupplyData>())
+				if constexpr (std::is_same_v<supply_data_t, Rendering::RendererSupplyData>)
 				{
 					return Factories::ObjectFactory::GenerateRendererSupplyData(type, value);
 				}
-				else if constexpr (std::is_same<supply_data_t, Rendering::MeshBuilderSupplyData>())
+				else if constexpr (std::is_same_v<supply_data_t, Rendering::MeshBuilderSupplyData>)
 				{
 					return Factories::ObjectFactory::GenerateMeshBuilderSupplyData(type, value);
 				}

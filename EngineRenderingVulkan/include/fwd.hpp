@@ -1,5 +1,7 @@
 #pragma once
 
+#include <type_traits>
+
 // file containing forward decls
 
 namespace Engine::Rendering::Vulkan
@@ -11,7 +13,9 @@ namespace Engine::Rendering::Vulkan
 	struct DeviceScore;
 	struct MemoryAllocator;
 
-	template <typename T, bool handle_constructible> class HandleWrapper;
+	template <typename T, bool handle_constructible>
+		requires(!std::is_same_v<T, nullptr_t>)
+	class HandleWrapper;
 	class HoldsVMA;
 	class InstanceOwned;
 
