@@ -1,4 +1,5 @@
 #pragma once
+// IWYU pragma: private; include Rendering/Vulkan/backend.hpp
 
 #include "fwd.hpp"
 
@@ -22,14 +23,14 @@ namespace Engine::Rendering::Vulkan
 	public:
 		struct WindowParams
 		{
-			const ScreenSize size;
-			const std::string& title;
+			const ScreenSize						size;
+			const std::string&						title;
 			const std::vector<std::pair<int, int>>& hints;
 		};
 
 		Instance(
 			SupportsLogging::logger_t with_logger,
-			const WindowParams&& with_window_parameters
+			const WindowParams&&	  with_window_parameters
 		);
 		~Instance();
 
@@ -64,8 +65,8 @@ namespace Engine::Rendering::Vulkan
 		vk::raii::Context context;
 
 		PhysicalDevice* physical_device = nullptr;
-		LogicalDevice* logical_device	= nullptr;
-		Window* window					= nullptr;
+		LogicalDevice*	logical_device	= nullptr;
+		Window*			window			= nullptr;
 
 		MemoryAllocator* memory_allocator = nullptr;
 

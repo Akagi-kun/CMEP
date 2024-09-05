@@ -1,9 +1,11 @@
 #pragma once
+// IWYU pragma: private; include Rendering/Vulkan/backend.hpp
+
+#include "fwd.hpp"
 
 #include "common/InstanceOwned.hpp"
 #include "common/StructDefs.hpp"
 #include "vulkan/vulkan_raii.hpp"
-
 
 namespace Engine::Rendering::Vulkan
 {
@@ -31,10 +33,9 @@ namespace Engine::Rendering::Vulkan
 
 	private:
 		QueueFamilyIndices queue_family_indices{};
-		vk::raii::Queue graphics_queue = nullptr;
-		vk::raii::Queue present_queue  = nullptr;
+		vk::raii::Queue	   graphics_queue = nullptr;
+		vk::raii::Queue	   present_queue  = nullptr;
 
 		vk::raii::Device CreateDevice(Instance* with_instance, const Surface* with_surface);
-		// static const std::vector<const char*> device_validation_layers;
 	};
 } // namespace Engine::Rendering::Vulkan

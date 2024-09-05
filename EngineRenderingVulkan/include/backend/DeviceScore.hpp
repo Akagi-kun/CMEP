@@ -1,9 +1,13 @@
 #pragma once
+// IWYU pragma: private; include Rendering/Vulkan/backend.hpp
 
 #include "fwd.hpp"
 
 #include "PhysicalDevice.hpp"
+#include "vulkan/vulkan_raii.hpp"
 
+#include <cassert>
+#include <functional>
 #include <string_view>
 #include <vector>
 
@@ -21,11 +25,12 @@ namespace Engine::Rendering::Vulkan
 		PhysicalDevice device_scored;
 
 		// Reason why the device is not supported, if any
-		// Guaranteed to be null when supported and zero-terminated if unsupported and a reason is specified
+		// Guaranteed to be null when supported and zero-terminated if unsupported and a reason is
+		// specified
 		std::string_view unsupported_reason;
 
-		int preference_score = 0;	  // Higher better
-		bool supported		 = false; // Must be true
+		int	 preference_score = 0;	   // Higher better
+		bool supported		  = false; // Must be true
 
 		DeviceScore(const PhysicalDevice& with_device, const Surface* with_surface);
 
@@ -34,12 +39,14 @@ namespace Engine::Rendering::Vulkan
 
 		operator bool() const
 		{
-			return /* device_scored && */ supported && (preference_score > 0);
+			return supported && (preference_score > 0);
 		}
 
 		bool operator<(const DeviceScore& other) const
 		{
-			assert(supported && "Tried to call operator< on an unsupported device, possibly a bug?");
+			assert(
+				supported && "Tried to call operator< on an unsupported device, possibly a bug?"
+			);
 
 			return std::less<int>{}(preference_score, other.preference_score);
 		}

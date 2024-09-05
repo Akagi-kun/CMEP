@@ -119,20 +119,6 @@ namespace Engine::Scripting::Utility
 		return output;
 	}
 
-	/* void PrintStackContent(lua_State* state)
-	{
-		for (int i = 0; i <= lua_gettop(state); i++)
-		{
-			// Print type of every element on stack
-			printf(
-				"%u %s (%s)\n",
-				i,
-				lua_typename(state, lua_type(state, i)),
-				lua_tostring(state, i)
-			);
-		}
-	} */
-
 	std::string_view MappingReverseLookup(lua_CFunction lookup_function)
 	{
 		static const std::vector<std::unordered_map<std::string, const lua_CFunction>>

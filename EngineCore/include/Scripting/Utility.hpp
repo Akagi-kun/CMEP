@@ -20,7 +20,6 @@ namespace Engine::Scripting::Utility
 	int			LuaErrorHandler(lua_State* state);
 
 	std::string StackContentToString(lua_State* state);
-	// void		PrintStackContent(lua_State* state);
 
 	template <typename value_t = void*>
 	value_t GetCData(lua_State* from_state, int idx)

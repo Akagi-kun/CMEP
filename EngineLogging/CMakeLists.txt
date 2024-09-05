@@ -11,9 +11,8 @@ set_target_properties(EngineLogging PROPERTIES CXX_STANDARD_REQUIRED ON CXX_EXTE
 
 target_compile_options(EngineLogging PRIVATE ${ENGINE_COMPILE_OPTIONS})
 
-target_link_directories(EngineLogging PUBLIC ../build)
-
-target_include_directories(EngineLogging PUBLIC include
+target_link_directories(EngineLogging PRIVATE ../build)
+target_include_directories(EngineLogging PRIVATE include
 											 ../external/glm
 											 ../common_include
 											 )

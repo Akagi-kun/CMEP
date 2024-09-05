@@ -18,13 +18,13 @@ namespace Engine::Rendering::Vulkan
 	{
 	public:
 		Image(
-			InstanceOwned::value_t with_instance,
-			ImageSize with_size,
+			InstanceOwned::value_t	with_instance,
+			ImageSize				with_size,
 			vk::SampleCountFlagBits num_samples,
-			vk::Format format,
-			vk::ImageUsageFlags usage,
-			vk::MemoryPropertyFlags properties = vk::MemoryPropertyFlagBits::eDeviceLocal,
-			vk::ImageTiling with_tiling		   = vk::ImageTiling::eOptimal
+			vk::Format				format,
+			vk::ImageUsageFlags		usage,
+			vk::MemoryPropertyFlags properties	= vk::MemoryPropertyFlagBits::eDeviceLocal,
+			vk::ImageTiling			with_tiling = vk::ImageTiling::eOptimal
 		);
 		~Image();
 
@@ -37,27 +37,27 @@ namespace Engine::Rendering::Vulkan
 
 	protected:
 		vk::ImageLayout current_layout = vk::ImageLayout::eUndefined;
-		vk::Format image_format		   = vk::Format::eUndefined;
+		vk::Format		image_format   = vk::Format::eUndefined;
 
 		ImageSize size{};
 
 	private:
 		VmaAllocationInfo allocation_info;
-		VmaAllocation allocation;
+		VmaAllocation	  allocation;
 	};
 
 	class ViewedImage : public Image
 	{
 	public:
 		ViewedImage(
-			InstanceOwned::value_t with_instance,
-			ImageSize with_size,
+			InstanceOwned::value_t	with_instance,
+			ImageSize				with_size,
 			vk::SampleCountFlagBits num_samples,
-			vk::Format format,
-			vk::ImageUsageFlags usage,
-			vk::ImageAspectFlags with_aspect_flags,
-			vk::MemoryPropertyFlags properties = vk::MemoryPropertyFlagBits::eDeviceLocal,
-			vk::ImageTiling with_tiling		   = vk::ImageTiling::eOptimal
+			vk::Format				format,
+			vk::ImageUsageFlags		usage,
+			vk::ImageAspectFlags	with_aspect_flags,
+			vk::MemoryPropertyFlags properties	= vk::MemoryPropertyFlagBits::eDeviceLocal,
+			vk::ImageTiling			with_tiling = vk::ImageTiling::eOptimal
 		);
 
 		[[nodiscard]] vk::raii::ImageView& GetNativeViewHandle()

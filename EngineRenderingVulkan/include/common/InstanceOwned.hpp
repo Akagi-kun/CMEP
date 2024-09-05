@@ -1,4 +1,5 @@
 #pragma once
+// IWYU pragma: private; include Rendering/Vulkan/common.hpp
 
 #include "fwd.hpp"
 

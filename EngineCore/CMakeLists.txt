@@ -74,8 +74,8 @@ target_compile_options(EngineCore PRIVATE ${ENGINE_COMPILE_OPTIONS})
 
 target_precompile_headers(EngineCore PRIVATE [["vulkan/vulkan.hpp"]] [["glm/glm.hpp"]] [["EnumStringConvertor.hpp"]] [["lua.hpp"]])
 
-target_link_directories(EngineCore PUBLIC ../build ${ENGINE_VULKAN_LINK_PATH})
-target_include_directories(EngineCore PUBLIC include
+target_link_directories(EngineCore PRIVATE ../build ${ENGINE_VULKAN_LINK_PATH})
+target_include_directories(EngineCore PRIVATE include
 											 ../EngineLogging/export_include
 											 ../EngineRenderingVulkan/export_include
 											 ../external/luajit/src

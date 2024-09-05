@@ -45,8 +45,8 @@ target_compile_options(EngineRenderingVulkan PRIVATE ${ENGINE_COMPILE_OPTIONS})
 
 target_precompile_headers(EngineRenderingVulkan PRIVATE [["vulkan/vulkan.hpp"]] [["vulkan/vulkan_raii.hpp"]])
 
-target_link_directories(EngineRenderingVulkan PUBLIC ../build ${ENGINE_VULKAN_LINK_PATH})
-target_include_directories(EngineRenderingVulkan PUBLIC include
+target_link_directories(EngineRenderingVulkan PRIVATE ../build ${ENGINE_VULKAN_LINK_PATH})
+target_include_directories(EngineRenderingVulkan PRIVATE include
 											 ../EngineLogging/export_include
 											 ../external/glfw/include
 											 ../external/VulkanMemoryAllocator/include
@@ -55,5 +55,6 @@ target_include_directories(EngineRenderingVulkan PUBLIC include
 											 ../common_include
 											 ${Vulkan_INCLUDE_DIRS}
 											 )
+target_include_directories(EngineRenderingVulkan PUBLIC include)
 
 target_link_libraries(EngineRenderingVulkan EngineLogging ${STATIC_LIBRARIES} Vulkan::Vulkan)

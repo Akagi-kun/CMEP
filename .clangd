@@ -9,7 +9,7 @@ Diagnostics:
   ClangTidy:
     FastCheckFilter: None
   Includes:
-    IgnoreHeader: [glm.hpp, lua.h]
+    IgnoreHeader: [glm\.hpp, lua\.h, glm/.+\.hpp, vulkan/vulkan_.+\.hpp]
 ---
 Completion:
   AllScopes: No

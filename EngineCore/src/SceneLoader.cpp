@@ -11,11 +11,12 @@
 #include "Factories/ObjectFactory.hpp"
 #include "Factories/TextureFactory.hpp"
 
+#include "Logging/Logging.hpp"
+
 #include "Engine.hpp"
 #include "EnumStringConvertor.hpp"
 #include "EventHandling.hpp"
 #include "Exception.hpp"
-#include "Logging.hpp"
 #include "Scene.hpp"
 #include "nlohmann/json.hpp"
 #include "vulkan/vulkan_enums.hpp"

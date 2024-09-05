@@ -1,4 +1,5 @@
 #pragma once
+// IWYU pragma: private; include Rendering/Vulkan/backend.hpp
 
 #include "common/StructDefs.hpp"
 #include "rendering/Surface.hpp"
@@ -25,8 +26,8 @@ namespace Engine::Rendering::Vulkan
 
 		[[nodiscard]] vk::Format FindSupportedFormat(
 			const std::vector<vk::Format>& candidates,
-			vk::ImageTiling tiling,
-			vk::FormatFeatureFlags features
+			vk::ImageTiling				   tiling,
+			vk::FormatFeatureFlags		   features
 		) const;
 
 		[[nodiscard]] vk::Format FindSupportedDepthFormat() const;

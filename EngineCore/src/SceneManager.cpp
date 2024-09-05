@@ -8,13 +8,23 @@
 #include "Engine.hpp"
 #include "Exception.hpp"
 #include "InternalEngineObject.hpp"
+#include "Scene.hpp"
 #include "SceneLoader.hpp"
 #include "glm/ext/matrix_clip_space.hpp"
 #include "glm/ext/matrix_transform.hpp"
-#include "glm/trigonometric.hpp"
+#include "glm/glm.hpp"
+
+#include <algorithm>
+#include <cassert>
+#include <cmath>
+#include <exception>
+#include <memory>
+#include <string>
 
 namespace Engine
 {
+	using std::clamp;
+
 	SceneManager::SceneManager(Engine* with_engine) : InternalEngineObject(with_engine)
 	{
 		// Reset transform and rotation

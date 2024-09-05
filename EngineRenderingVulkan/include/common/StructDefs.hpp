@@ -1,16 +1,18 @@
 #pragma once
+// IWYU pragma: private; include Rendering/Vulkan/common.hpp
 
 #include "glm/glm.hpp"
 #include "vulkan/vulkan_raii.hpp"
 
 #include <array>
+#include <cstdint>
 #include <vector>
-
 
 namespace Engine::Rendering
 {
-	static constexpr uint16_t max_frames_in_flight		 = 3;
-	template <typename value_type> using per_frame_array = std::array<value_type, max_frames_in_flight>;
+	static constexpr uint16_t max_frames_in_flight = 3;
+	template <typename value_type>
+	using per_frame_array = std::array<value_type, max_frames_in_flight>;
 
 	struct RendererMatrixData
 	{
@@ -26,9 +28,9 @@ namespace Engine::Rendering
 
 	struct SwapChainSupportDetails
 	{
-		vk::SurfaceCapabilitiesKHR capabilities;
+		vk::SurfaceCapabilitiesKHR		  capabilities;
 		std::vector<vk::SurfaceFormatKHR> formats;
-		std::vector<vk::PresentModeKHR> present_modes;
+		std::vector<vk::PresentModeKHR>	  present_modes;
 	};
 
 	struct RenderingVertex
@@ -59,7 +61,8 @@ namespace Engine::Rendering
 			};
 		}
 
-		static constexpr std::array<vk::VertexInputAttributeDescription, 4> GetAttributeDescriptions()
+		static constexpr std::array<vk::VertexInputAttributeDescription, 4>
+		GetAttributeDescriptions()
 		{
 			return {
 				vk::VertexInputAttributeDescription{

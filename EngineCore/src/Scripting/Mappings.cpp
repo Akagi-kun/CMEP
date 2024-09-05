@@ -8,12 +8,19 @@
 
 #include "Factories/ObjectFactory.hpp"
 
+#include "Logging/Logging.hpp"
+
 #include "Engine.hpp"
 #include "EnumStringConvertor.hpp"
 #include "Exception.hpp"
 #include "KVPairHelper.hpp"
-#include "Logging.hpp"
 #include "lua.hpp"
+
+#include <exception>
+#include <memory>
+#include <string>
+#include <unordered_map>
+#include <vector>
 
 #undef CMEP_LUAMAPPING_DEFINE
 #define CMEP_LUAMAPPING_DEFINE(mapping) {#mapping, Functions::mapping}

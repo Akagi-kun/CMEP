@@ -1,6 +1,13 @@
 #include "Rendering/MeshBuilders/AxisMeshBuilder.hpp"
 
+#include "Rendering/MeshBuilders/MeshBuildContext.hpp"
+#include "Rendering/Vulkan/common.hpp"
+
+#include "glm/glm.hpp"
+
+#include <algorithm>
 #include <iterator>
+#include <vector>
 
 namespace Engine::Rendering
 {
