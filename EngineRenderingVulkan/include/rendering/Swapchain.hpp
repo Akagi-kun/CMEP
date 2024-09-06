@@ -1,4 +1,5 @@
 #pragma once
+// IWYU pragma: private; include Rendering/Vulkan/rendering.hpp
 
 #include "fwd.hpp"
 
@@ -6,6 +7,10 @@
 #include "common/StructDefs.hpp"
 #include "objects/CommandBuffer.hpp"
 
+#include <cstddef>
+#include <cstdint>
+#include <functional>
+#include <type_traits>
 #include <vector>
 
 namespace Engine::Rendering::Vulkan

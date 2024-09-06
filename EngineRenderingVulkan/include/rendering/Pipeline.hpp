@@ -1,4 +1,7 @@
 #pragma once
+// IWYU pragma: private; include Rendering/Vulkan/rendering.hpp
+
+#include "fwd.hpp"
 
 #include "common/HoldsVMA.hpp"
 #include "common/InstanceOwned.hpp"
@@ -6,7 +9,9 @@
 #include "rendering/PipelineSettings.hpp"
 #include "vulkan/vulkan_raii.hpp"
 
+#include <cstdint>
 #include <filesystem>
+#include <vector>
 
 namespace Engine::Rendering::Vulkan
 {
@@ -32,31 +37,34 @@ namespace Engine::Rendering::Vulkan
 		};
 
 		Pipeline(
-			InstanceOwned::value_t with_instance,
-			RenderPass* with_render_pass,
-			PipelineSettings settings,
+			InstanceOwned::value_t		 with_instance,
+			RenderPass*					 with_render_pass,
+			PipelineSettings			 settings,
 			const std::filesystem::path& shader_path
 		);
 		~Pipeline() = default;
 
 		UserData* AllocateNewUserData();
 
-		void BindPipeline(UserData& from, vk::CommandBuffer with_command_buffer, uint32_t current_frame);
+		void BindPipeline(
+			UserData&		  from,
+			vk::CommandBuffer with_command_buffer,
+			uint32_t		  current_frame
+		);
 
 		static void UpdateDescriptorSets(
-			const vk::raii::Device& logical_device,
-			UserData& from,
+			const vk::raii::Device&					logical_device,
+			UserData&								from,
 			per_frame_array<vk::WriteDescriptorSet> writes
 		);
 
 	private:
 		vk::raii::DescriptorSetLayout descriptor_set_layout = nullptr;
-		vk::raii::PipelineLayout pipeline_layout			= nullptr;
-		vk::raii::Pipeline native_handle					= nullptr;
+		vk::raii::PipelineLayout	  pipeline_layout		= nullptr;
+		vk::raii::Pipeline			  native_handle			= nullptr;
 
 		std::vector<vk::DescriptorPoolSize> pool_sizes;
 
-		// void AllocateNewUniformBuffers(per_frame_array<Buffer*>& buffer_ref);
 		void AllocateNewDescriptorPool(UserData& data_ref);
 		void AllocateNewDescriptorSets(UserData& data_ref);
 	};

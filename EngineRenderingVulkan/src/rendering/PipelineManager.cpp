@@ -1,12 +1,21 @@
 #include "PipelineManager.hpp"
 
+#include "Logging/Logging.hpp"
+
 #include "backend/Instance.hpp"
-#include "objects/Buffer.hpp" // IWYU pragma: keep
+#include "objects/Buffer.hpp"
 #include "rendering/Pipeline.hpp"
 #include "rendering/Swapchain.hpp"
 
+#include <algorithm>
+#include <cassert>
+#include <filesystem>
+#include <memory>
+#include <stdexcept>
 #include <string_view>
+#include <tuple>
 #include <utility>
+#include <vector>
 
 namespace Engine::Rendering::Vulkan
 {
@@ -14,8 +23,8 @@ namespace Engine::Rendering::Vulkan
 
 	PipelineManager::PipelineManager(
 		SupportsLogging::logger_t with_logger,
-		InstanceOwned::value_t with_instance,
-		std::filesystem::path with_shader_path
+		InstanceOwned::value_t	  with_instance,
+		std::filesystem::path	  with_shader_path
 	)
 		: SupportsLogging(std::move(with_logger)), InstanceOwned(with_instance),
 		  shader_path(std::move(with_shader_path))
@@ -24,18 +33,19 @@ namespace Engine::Rendering::Vulkan
 
 	PipelineManager::~PipelineManager()
 	{
-		for (auto& [settings, pipeline_ptr] : pipelines)
-		{
-			delete pipeline_ptr;
-		}
+		this->logger->SimpleLog<decltype(this)>(
+			Logging::LogLevel::Debug,
+			"Destructor called with %u pipelines left",
+			pipelines.size()
+		);
 
 		pipelines.clear();
 	}
 
 	PipelineUserRef* PipelineManager::GetPipeline(const PipelineSettings& with_settings)
 	{
-		Pipeline* pipeline = nullptr;
-		std::string_view reason;
+		std::shared_ptr<Pipeline> pipeline = nullptr;
+		std::string_view		  reason;
 
 		std::tie(pipeline, reason) = FindPipeline(with_settings);
 
@@ -54,11 +64,18 @@ namespace Engine::Rendering::Vulkan
 		);
 
 		// If no such pipeline is found, allocate new one
-		pipeline = new Vulkan::Pipeline(
-			instance,
-			instance->GetWindow()->GetSwapchain()->GetRenderPass(),
-			with_settings,
-			shader_path
+		pipeline = std::shared_ptr<Pipeline>(
+			new Pipeline(
+				instance,
+				instance->GetWindow()->GetSwapchain()->GetRenderPass(),
+				with_settings,
+				shader_path
+			),
+			// Pass a lambda deleter to remove it from the vector too
+			[&](Pipeline* ptr) {
+				this->PipelineDeallocCallback();
+				delete ptr;
+			}
 		);
 
 		pipelines.emplace_back(with_settings, pipeline);
@@ -68,8 +85,11 @@ namespace Engine::Rendering::Vulkan
 		return user_ref;
 	}
 
-	PipelineUserRef::PipelineUserRef(InstanceOwned::value_t with_instance, Pipeline* with_origin)
-		: InstanceOwned(with_instance), origin(with_origin)
+	PipelineUserRef::PipelineUserRef(
+		InstanceOwned::value_t	  with_instance,
+		std::shared_ptr<Pipeline> with_origin
+	)
+		: InstanceOwned(with_instance), origin(std::move(with_origin))
 	{
 		user_data = origin->AllocateNewUserData();
 	}
@@ -102,23 +122,35 @@ namespace Engine::Rendering::Vulkan
 #pragma region Private
 
 	// string_view is guaranteed to be null-terminated
-	std::pair<Pipeline*, std::string_view> PipelineManager::FindPipeline(
+	std::pair<std::shared_ptr<Pipeline>, std::string_view> PipelineManager::FindPipeline(
 		const PipelineSettings& with_settings
 	)
 	{
-		std::string_view reasons[] = {"no setting match"};
-		int reached_point		   = 0;
+		std::string_view reasons[]	   = {"no setting match"};
+		int				 reached_point = 0;
 
 		// O(N)
 		for (const auto& [settings, pipeline_ptr] : pipelines)
 		{
 			if (settings == with_settings)
 			{
-				return {pipeline_ptr, {}};
+				if (auto locked_ptr = pipeline_ptr.lock())
+				{
+					return {locked_ptr, {}};
+				}
+
+				throw std::runtime_error("Failed locking pipeline");
 			}
 		}
 
 		return {nullptr, reasons[reached_point]};
+	}
+
+	// Called when a pipeline's ref counter reaches 0
+	void PipelineManager::PipelineDeallocCallback()
+	{
+		// Delete all entries that are expired
+		std::erase_if(pipelines, [](auto pred_val) { return std::get<1>(pred_val).expired(); });
 	}
 
 #pragma endregion

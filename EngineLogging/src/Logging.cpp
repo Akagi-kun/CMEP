@@ -1,7 +1,7 @@
+#include <format>
 #define ENGINELOGGING_LIBRARY_IMPLEMENTATION
-#include "Logging.hpp"
-
 #include "ConsoleColors.hpp"
+#include "Logging.hpp"
 
 #if defined(__GNUC__) || defined(__llvm__)
 #	define ATTRIBUTE_PRINTF_COMPAT(string_idx, arg_check)                                         \
@@ -10,11 +10,16 @@
 #	define ATTRIBUTE_PRINTF_COMPAT(string_idx, arg_check)
 #endif
 
+#include <algorithm>
 #include <cassert>
 #include <chrono>
 #include <cstdarg>
+#include <cstdint>
 #include <cstdio>
 #include <cstring>
+#include <functional>
+#include <string>
+#include <string_view>
 #include <thread>
 
 namespace
@@ -22,7 +27,7 @@ namespace
 	using color_t = const char*;
 	using level_t = std::string_view;
 
-	const char* level_to_color_table[] = {
+	color_t level_to_color_table[] = {
 		Logging::Console::GRAY_FG,
 		Logging::Console::GRAY_FG,
 		Logging::Console::GRAY_FG,
@@ -32,7 +37,7 @@ namespace
 		Logging::Console::BLUE_FG
 	};
 
-	constexpr std::string_view level_to_string_table[] =
+	constexpr level_t level_to_string_table[] =
 		{"???", "VDEBUG", "DEBUG", "INFO", "WARN", "ERROR", "EXCEPT"};
 
 	static_assert(
@@ -138,14 +143,11 @@ namespace Logging
 		memset(threadid_buf, 0, threadid_buf_len);
 
 		// Get current time
-		const std::time_t tmp = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now(
-		));
-		std::tm			  cur_time = {};
-#if defined(_MSC_VER)
-		localtime_s(&cur_time, &tmp);
-#else
-		localtime_r(&tmp, &cur_time);
-#endif
+		const auto system_time = std::chrono::time_point_cast<std::chrono::milliseconds>(
+			std::chrono::system_clock::now()
+		);
+
+		std::string time_formatted = std::format("{:%T}", system_time);
 
 		// For all outputs
 		for (auto& output : state->outputs)
@@ -166,11 +168,9 @@ namespace Logging
 
 				fprintf(
 					output.handle,
-					"%s%02i:%02i:%02i %8s %s%*s | %s: ",
+					"%s%s %8s %s%*s | %s: ",
 					output.use_colors ? Console::GRAY_FG : "",
-					cur_time.tm_hour,
-					cur_time.tm_min,
-					cur_time.tm_sec,
+					time_formatted.c_str(),
 					use_thread_name ? find_result->second.c_str() : threadid_buf,
 					output.use_colors ? color_str : "",
 					static_cast<int>(GetMaxLevelLength()),

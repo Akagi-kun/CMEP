@@ -9,8 +9,13 @@
 #include "rendering/Pipeline.hpp"
 #include "rendering/PipelineSettings.hpp"
 
+#include <cstdint>
 #include <filesystem>
+#include <memory>
+#include <string_view>
+#include <tuple>
 #include <utility>
+#include <vector>
 
 namespace Engine::Rendering::Vulkan
 {
@@ -21,18 +26,22 @@ namespace Engine::Rendering::Vulkan
 	public:
 		PipelineManager(
 			SupportsLogging::logger_t with_logger,
-			InstanceOwned::value_t with_instance,
-			std::filesystem::path with_shader_path
+			InstanceOwned::value_t	  with_instance,
+			std::filesystem::path	  with_shader_path
 		);
 		~PipelineManager();
 
 		PipelineUserRef* GetPipeline(const PipelineSettings& with_settings);
 
 	private:
-		std::filesystem::path shader_path;
-		std::vector<std::pair<PipelineSettings, Pipeline*>> pipelines;
+		std::filesystem::path											   shader_path;
+		std::vector<std::tuple<PipelineSettings, std::weak_ptr<Pipeline>>> pipelines;
 
-		std::pair<Pipeline*, std::string_view> FindPipeline(const PipelineSettings& with_settings);
+		std::pair<std::shared_ptr<Pipeline>, std::string_view> FindPipeline(
+			const PipelineSettings& with_settings
+		);
+
+		void PipelineDeallocCallback();
 	};
 
 	struct PipelineUserRef final : public InstanceOwned
@@ -40,7 +49,10 @@ namespace Engine::Rendering::Vulkan
 	public:
 		Pipeline::UserData* user_data = nullptr;
 
-		PipelineUserRef(InstanceOwned::value_t with_instance, Pipeline* with_origin);
+		PipelineUserRef(
+			InstanceOwned::value_t	  with_instance,
+			std::shared_ptr<Pipeline> with_origin
+		);
 		~PipelineUserRef();
 
 		// Disable copy
@@ -67,6 +79,6 @@ namespace Engine::Rendering::Vulkan
 		void UpdateDescriptorSetsAll(const vk::WriteDescriptorSet& with_write);
 
 	private:
-		Pipeline* origin = nullptr;
+		std::shared_ptr<Pipeline> origin = nullptr;
 	};
 } // namespace Engine::Rendering::Vulkan

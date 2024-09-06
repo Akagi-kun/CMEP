@@ -1,14 +1,25 @@
 #include "Rendering/Renderers/Renderer.hpp"
 
+#include "Assets/Asset.hpp"
 #include "Assets/Font.hpp"
 #include "Assets/Texture.hpp"
+#include "Rendering/MeshBuilders/IMeshBuilder.hpp"
 #include "Rendering/SupplyData.hpp"
 #include "Rendering/Vulkan/backend.hpp"
-#include "Rendering/Vulkan/exports.hpp"
+#include "Rendering/Vulkan/common.hpp"
+#include "Rendering/Vulkan/rendering.hpp"
 #include "Rendering/framework.hpp"
 
 #include "Engine.hpp"
+#include "InternalEngineObject.hpp"
+#include "objects/CommandBuffer.hpp"
 #include "vulkan/vulkan.hpp"
+
+#include <cassert>
+#include <cstdint>
+#include <functional>
+#include <memory>
+#include <string_view>
 
 namespace Engine::Rendering
 {
@@ -95,18 +106,22 @@ namespace Engine::Rendering
 		{
 			auto* texture_image = texture->GetTextureImage();
 
-			VkDescriptorImageInfo descriptor_image_info{};
-			descriptor_image_info.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-			descriptor_image_info.imageView	  = *texture_image->GetNativeViewHandle();
-			descriptor_image_info.sampler	  = *texture_image->texture_sampler;
+			vk::DescriptorImageInfo descriptor_image_info(
+				*texture_image->texture_sampler,
+				*texture_image->GetNativeViewHandle(),
+				vk::ImageLayout::eShaderReadOnlyOptimal
+			);
 
-			VkWriteDescriptorSet descriptor_write{};
-			descriptor_write.sType			 = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-			descriptor_write.dstBinding		 = 1;
-			descriptor_write.dstArrayElement = 0;
-			descriptor_write.descriptorType	 = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-			descriptor_write.descriptorCount = 1;
-			descriptor_write.pImageInfo		 = &(descriptor_image_info);
+			vk::WriteDescriptorSet descriptor_write(
+				{},
+				1,
+				0,
+				1,
+				vk::DescriptorType::eCombinedImageSampler,
+				&descriptor_image_info,
+				{},
+				{}
+			);
 
 			pipeline->UpdateDescriptorSetsAll(descriptor_write);
 		}

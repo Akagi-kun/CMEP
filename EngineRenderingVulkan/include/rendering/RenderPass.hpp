@@ -1,10 +1,10 @@
 #pragma once
+// IWYU pragma: private; include Rendering/Vulkan/rendering.hpp
 
 #include "fwd.hpp"
 
 #include "common/InstanceOwned.hpp"
 #include "vulkan/vulkan_raii.hpp"
-
 
 namespace Engine::Rendering::Vulkan
 {

@@ -1,4 +1,5 @@
 #pragma once
+// IWYU pragma: private; include Rendering/Vulkan/rendering.hpp
 
 #include "fwd.hpp"
 
@@ -9,8 +10,9 @@
 #include "common/InstanceOwned.hpp"
 #include "vulkan/vulkan_raii.hpp"
 
+#include <cstddef>
 #include <functional>
-
+#include <utility>
 
 // Include GLFW
 #define GLFW_INCLUDE_NONE
@@ -39,12 +41,12 @@ namespace Engine::Rendering::Vulkan
 		using mods_value_t = std::bitset<mods_highest_bit>;
 
 		InputEventType type;
-		key_value_t key;
-		mods_value_t mods;
+		key_value_t	   key;
+		mods_value_t   mods;
 
 		InputEvent(int with_action, int with_key, unsigned int with_mods)
-			: type(static_cast<InputEventType>(with_action)), key(static_cast<key_value_t>(with_key)),
-			  mods(static_cast<mods_value_t>(with_mods))
+			: type(static_cast<InputEventType>(with_action)),
+			  key(static_cast<key_value_t>(with_key)), mods(static_cast<mods_value_t>(with_mods))
 		{
 		}
 	};
@@ -52,7 +54,7 @@ namespace Engine::Rendering::Vulkan
 	class Window final : public InstanceOwned, public HandleWrapper<GLFWwindow*>
 	{
 	public:
-		glm::vec<2, double> cursor_position;
+		glm::vec<2, double>	   cursor_position;
 		std::queue<InputEvent> input_events;
 
 		struct StatusBits
@@ -63,16 +65,16 @@ namespace Engine::Rendering::Vulkan
 		} status;
 
 		Window(
-			InstanceOwned::value_t with_instance,
-			ScreenSize with_size,
-			const std::string& with_title,
+			InstanceOwned::value_t					with_instance,
+			ScreenSize								with_size,
+			const std::string&						with_title,
 			const std::vector<std::pair<int, int>>& with_hints
 		);
 		~Window();
 
 		void SetVisibility(bool visible);
 
-		void SetShouldClose(bool should_close);
+		void			   SetShouldClose(bool should_close);
 		[[nodiscard]] bool GetShouldClose() const;
 
 		[[nodiscard]] const ScreenSize& GetFramebufferSize() const
@@ -95,7 +97,7 @@ namespace Engine::Rendering::Vulkan
 
 		void SetRenderCallback(
 			std::function<void(Vulkan::CommandBuffer*, uint32_t, void*)> with_callback,
-			void* with_user_data
+			void*														 with_user_data
 		)
 		{
 			render_callback = std::move(with_callback);
@@ -104,14 +106,14 @@ namespace Engine::Rendering::Vulkan
 
 	private:
 		ScreenSize size;
-		uint32_t current_frame = 0;
+		uint32_t   current_frame = 0;
 
 		Swapchain* swapchain = nullptr;
-		Surface surface;
+		Surface	   surface;
 
 		// Rendering related
 		std::function<void(Vulkan::CommandBuffer*, uint32_t, void*)> render_callback;
-		void* user_data = nullptr;
+		void*														 user_data = nullptr;
 
 		static Window* GetWindowPtrFromGLFW(GLFWwindow* window);
 
@@ -119,10 +121,16 @@ namespace Engine::Rendering::Vulkan
 		static void CallbackOnFramebufferResize(GLFWwindow* window, int width, int height);
 		static void CallbackOnCursorEnterLeave(GLFWwindow* window, int entered);
 		static void CallbackOnCursorPosition(GLFWwindow* window, double xpos, double ypos);
-		static void CallbackOnKeyEvent(GLFWwindow* window, int key, int scancode, int action, int mods);
+		static void CallbackOnKeyEvent(
+			GLFWwindow* window,
+			int			key,
+			int			scancode,
+			int			action,
+			int			mods
+		);
 
 		static vk::Extent2D ChooseVulkanSwapExtent(
-			const Window* with_window,
+			const Window*					  with_window,
 			const vk::SurfaceCapabilitiesKHR& capabilities
 		);
 

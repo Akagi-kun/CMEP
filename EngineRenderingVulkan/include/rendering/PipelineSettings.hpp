@@ -1,16 +1,21 @@
 #pragma once
+// IWYU pragma: private; include Rendering/Vulkan/rendering.hpp
 
 #include "vulkan/vulkan.hpp"
 
+#include <cstddef>
+#include <cstdint>
 #include <map>
 #include <optional>
+#include <string>
+#include <string_view>
 
 namespace Engine::Rendering::Vulkan
 {
 	struct DescriptorBindingSetting
 	{
-		uint32_t descriptor_count;
-		vk::DescriptorType type;
+		uint32_t			 descriptor_count;
+		vk::DescriptorType	 type;
 		vk::ShaderStageFlags stage_flags;
 
 		// Specify this only if this binding has some identifiable information
@@ -26,24 +31,24 @@ namespace Engine::Rendering::Vulkan
 				opt_match = (opt_match_hash.value() == other.opt_match_hash.value());
 			}
 
-			return /* (binding == other.binding) && */ (descriptor_count == other.descriptor_count) &&
-				   (type == other.type) && (stage_flags == other.stage_flags) && opt_match;
+			return (descriptor_count == other.descriptor_count) && (type == other.type) &&
+				   (stage_flags == other.stage_flags) && opt_match;
 		}
 	};
 
 	struct PipelineSettings
 	{
 		vk::PrimitiveTopology input_topology;
-		vk::Extent2D extent;
-		std::string shader;
-		vk::Rect2D scissor;
+		vk::Extent2D		  extent;
+		std::string			  shader;
+		vk::Rect2D			  scissor;
 		// maps binding->setting
 		std::map<uint32_t, DescriptorBindingSetting> descriptor_settings;
 
 		PipelineSettings() = default;
 		PipelineSettings(
-			const vk::Extent2D with_extent,
-			const std::string_view with_shader,
+			const vk::Extent2D			with_extent,
+			const std::string_view		with_shader,
 			const vk::PrimitiveTopology with_topology
 		)
 			: input_topology(with_topology), extent(with_extent), shader(with_shader),
@@ -55,7 +60,8 @@ namespace Engine::Rendering::Vulkan
 		{
 			bool topo_match = (input_topology == other.input_topology);
 
-			bool extent_match = ((extent.width == other.extent.width) && (extent.height == other.extent.height));
+			bool extent_match =
+				((extent.width == other.extent.width) && (extent.height == other.extent.height));
 
 			bool shader_match = (shader == other.shader);
 
@@ -94,7 +100,7 @@ namespace Engine::Rendering::Vulkan
 
 		static vk::PipelineInputAssemblyStateCreateInfo GetInputAssemblySettings(
 			vk::PrimitiveTopology with_topology,
-			bool enable_primitive_restart = false
+			bool				  enable_primitive_restart = false
 		)
 		{
 			vk::PipelineInputAssemblyStateCreateInfo input_assembly(
@@ -108,8 +114,14 @@ namespace Engine::Rendering::Vulkan
 
 		static vk::Viewport GetViewportSettings(vk::Extent2D extent)
 		{
-			vk::Viewport
-				viewport(0.f, 0.f, static_cast<float>(extent.width), static_cast<float>(extent.height), 0.f, 1.f);
+			vk::Viewport viewport(
+				0.f,
+				0.f,
+				static_cast<float>(extent.width),
+				static_cast<float>(extent.height),
+				0.f,
+				1.f
+			);
 
 			return viewport;
 		}
@@ -138,7 +150,8 @@ namespace Engine::Rendering::Vulkan
 			vk::SampleCountFlagBits msaa_samples
 		)
 		{
-			static vk::PipelineMultisampleStateCreateInfo multisampling({}, msaa_samples, vk::False, 1.f, {}, {}, {});
+			static vk::PipelineMultisampleStateCreateInfo
+				multisampling({}, msaa_samples, vk::False, 1.f, {}, {}, {});
 
 			return &multisampling;
 		}
@@ -153,8 +166,8 @@ namespace Engine::Rendering::Vulkan
 				vk::BlendFactor::eOne,
 				vk::BlendFactor::eZero,
 				vk::BlendOp::eAdd,
-				vk::ColorComponentFlagBits::eR | vk::ColorComponentFlagBits::eG | vk::ColorComponentFlagBits::eB |
-					vk::ColorComponentFlagBits::eA
+				vk::ColorComponentFlagBits::eR | vk::ColorComponentFlagBits::eG |
+					vk::ColorComponentFlagBits::eB | vk::ColorComponentFlagBits::eA
 			);
 
 			return &color_blend_attachment;
@@ -176,8 +189,19 @@ namespace Engine::Rendering::Vulkan
 
 		static const vk::PipelineDepthStencilStateCreateInfo* GetDepthStencilSettings()
 		{
-			static vk::PipelineDepthStencilStateCreateInfo
-				depth_stencil({}, vk::True, vk::True, vk::CompareOp::eLess, vk::False, vk::False, {}, {}, 0.f, 1.f, {});
+			static vk::PipelineDepthStencilStateCreateInfo depth_stencil(
+				{},
+				vk::True,
+				vk::True,
+				vk::CompareOp::eLess,
+				vk::False,
+				vk::False,
+				{},
+				{},
+				0.f,
+				1.f,
+				{}
+			);
 
 			return &depth_stencil;
 		}

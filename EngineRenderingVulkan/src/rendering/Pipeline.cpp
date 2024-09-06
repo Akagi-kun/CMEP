@@ -1,22 +1,32 @@
 #include "rendering/Pipeline.hpp"
 
+#include "fwd.hpp"
+
 #include "backend/Instance.hpp"
 #include "backend/LogicalDevice.hpp"
+#include "common/StructDefs.hpp"
 #include "objects/Buffer.hpp"
+#include "rendering/PipelineSettings.hpp"
 #include "rendering/RenderPass.hpp"
 #include "rendering/ShaderModule.hpp"
 #include "vulkan/vulkan_raii.hpp"
 
+#include <array>
+#include <cassert>
+#include <cstddef>
+#include <cstdint>
+#include <filesystem>
 #include <string>
+#include <vector>
 
 namespace Engine::Rendering::Vulkan
 {
 #pragma region Public
 
 	Pipeline::Pipeline(
-		InstanceOwned::value_t with_instance,
-		RenderPass* with_render_pass,
-		PipelineSettings settings,
+		InstanceOwned::value_t		 with_instance,
+		RenderPass*					 with_render_pass,
+		PipelineSettings			 settings,
 		const std::filesystem::path& shader_path
 	)
 		: InstanceOwned(with_instance), HoldsVMA(with_instance->GetGraphicMemoryAllocator())
@@ -89,8 +99,8 @@ namespace Engine::Rendering::Vulkan
 			}
 		);
 
-		std::vector<vk::DescriptorSetLayoutBinding> bindings  = {};
-		std::vector<vk::DescriptorBindingFlags> binding_flags = {};
+		std::vector<vk::DescriptorSetLayoutBinding> bindings	  = {};
+		std::vector<vk::DescriptorBindingFlags>		binding_flags = {};
 
 		for (const auto& [binding_idx, setting] : settings.descriptor_settings)
 		{
@@ -174,8 +184,8 @@ namespace Engine::Rendering::Vulkan
 	}
 
 	void Pipeline::UpdateDescriptorSets(
-		const vk::raii::Device& logical_device,
-		UserData& from,
+		const vk::raii::Device&					logical_device,
+		UserData&								from,
 		per_frame_array<vk::WriteDescriptorSet> with_writes
 	)
 	{
@@ -188,9 +198,9 @@ namespace Engine::Rendering::Vulkan
 	}
 
 	void Pipeline::BindPipeline(
-		UserData& from,
+		UserData&		  from,
 		vk::CommandBuffer with_command_buffer,
-		uint32_t current_frame
+		uint32_t		  current_frame
 	)
 	{
 		with_command_buffer.bindDescriptorSets(
@@ -220,7 +230,7 @@ namespace Engine::Rendering::Vulkan
 
 		// Set up binding 0 to point to uniform buffers
 		per_frame_array<vk::DescriptorBufferInfo> descriptor_buffer_infos{};
-		per_frame_array<vk::WriteDescriptorSet> descriptor_writes{};
+		per_frame_array<vk::WriteDescriptorSet>	  descriptor_writes{};
 
 		for (uint32_t frame_idx = 0; frame_idx < max_frames_in_flight; frame_idx++)
 		{
@@ -268,7 +278,7 @@ namespace Engine::Rendering::Vulkan
 		LogicalDevice* logical_device = instance->GetLogicalDevice();
 
 		std::vector<vk::DescriptorSetLayout> layouts(max_frames_in_flight, *descriptor_set_layout);
-		vk::DescriptorSetAllocateInfo alloc_info(*data_ref.descriptor_pool, layouts);
+		vk::DescriptorSetAllocateInfo		 alloc_info(*data_ref.descriptor_pool, layouts);
 
 		data_ref.descriptor_sets = vk::raii::DescriptorSets(*logical_device, alloc_info);
 	}

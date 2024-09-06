@@ -9,6 +9,8 @@
 #include "InternalEngineObject.hpp"
 
 #include <cstdint>
+#include <memory>
+#include <string_view>
 
 namespace Engine::Rendering
 {
@@ -17,8 +19,8 @@ namespace Engine::Rendering
 	{
 	public:
 		IRenderer(
-			Engine* with_engine,
-			IMeshBuilder* with_builder, // TODO: Make const
+			Engine*			 with_engine,
+			IMeshBuilder*	 with_builder, // TODO: Make const
 			std::string_view with_pipeline_program
 		);
 		virtual ~IRenderer();
@@ -29,8 +31,8 @@ namespace Engine::Rendering
 		virtual void UpdateMatrices() = 0;
 
 		void UpdateTransform(
-			const Transform& with_transform,
-			const Transform& with_parent_transform,
+			const Transform&  with_transform,
+			const Transform&  with_parent_transform,
 			const ScreenSize& with_screen
 		)
 		{
@@ -47,20 +49,21 @@ namespace Engine::Rendering
 		void Render(Vulkan::CommandBuffer* command_buffer, uint32_t current_frame);
 
 	protected:
-		Transform transform;
-		Transform parent_transform;
+		Transform  transform;
+		Transform  parent_transform;
 		ScreenSize screen;
 
 		// Renderer configuration
 		std::string_view pipeline_name;
-		Vulkan::PipelineUserRef* pipeline = nullptr;
+
+		Vulkan::PipelineUserRef*				 pipeline = nullptr;
 		std::shared_ptr<Vulkan::PipelineManager> pipeline_manager;
 
-		IMeshBuilder* mesh_builder = nullptr;
+		IMeshBuilder*	 mesh_builder = nullptr;
 		MeshBuildContext mesh_context{};
 
 		std::shared_ptr<Rendering::Texture> texture = nullptr;
-		RendererMatrixData matrix_data;
+		RendererMatrixData					matrix_data;
 
 		// When false, UpdateDescriptorSets shall be internally called on next Render
 		bool has_updated_descriptors = false;

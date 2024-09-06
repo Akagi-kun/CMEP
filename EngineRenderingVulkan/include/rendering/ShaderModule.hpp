@@ -1,23 +1,23 @@
 #pragma once
+// IWYU pragma: private; include Rendering/Vulkan/rendering.hpp
+
+#include "fwd.hpp"
 
 #include "common/HandleWrapper.hpp"
-#include "common/InstanceOwned.hpp"
 #include "vulkan/vulkan_raii.hpp"
 
 #include <filesystem>
-
+#include <string>
 
 namespace Engine::Rendering::Vulkan
 {
 	class ShaderModule final : public HandleWrapper<vk::raii::ShaderModule>
 	{
 	public:
-		// TODO: create with logical device
 		ShaderModule(
-			LogicalDevice* with_device,
-			// InstanceOwned::value_t with_instance,
+			LogicalDevice*		  with_device,
 			std::filesystem::path with_path,
-			const std::string& filename
+			const std::string&	  filename
 		);
 	};
 } // namespace Engine::Rendering::Vulkan
