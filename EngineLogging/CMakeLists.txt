@@ -1,7 +1,6 @@
 set(SRC_FILES
 	src/Logging.cpp
 	src/LoggingPrefix.cpp
-	src/ConsoleColors.cpp
 	)
 
 add_library(EngineLogging STATIC ${SRC_FILES})

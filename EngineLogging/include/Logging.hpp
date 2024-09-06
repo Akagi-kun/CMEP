@@ -1,13 +1,14 @@
 #pragma once
-
 // IWYU pragma: private; include Logging/Logging.hpp
 
 #include "PlatformSemantics.hpp"
 
 #include <cstdarg>
+#include <cstdint>
 #include <cstdio>
 #include <memory>
 #include <string>
+#include <type_traits>
 
 namespace Logging
 {
