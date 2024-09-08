@@ -6,11 +6,14 @@
 #include "SceneManager.hpp"
 #include "lua.hpp"
 
+#include <string>
+#include <unordered_map>
+
 namespace Engine::Scripting::API
 {
-	namespace Functions_SceneManager
+	namespace
 	{
-		static int GetCameraHVRotation(lua_State* state)
+		int getCameraRotation(lua_State* state)
 		{
 			CMEP_LUACHECK_FN_ARGC(state, 1)
 			CMEP_LUAGET_PTR(state, SceneManager)
@@ -23,7 +26,7 @@ namespace Engine::Scripting::API
 			return 2;
 		}
 
-		static int SetCameraHVRotation(lua_State* state)
+		int setCameraRotation(lua_State* state)
 		{
 			CMEP_LUACHECK_FN_ARGC(state, 3)
 			CMEP_LUAGET_PTR(state, SceneManager)
@@ -36,7 +39,7 @@ namespace Engine::Scripting::API
 			return 0;
 		}
 
-		static int GetCameraTransform(lua_State* state)
+		int getCameraTransform(lua_State* state)
 		{
 			CMEP_LUACHECK_FN_ARGC(state, 1)
 			CMEP_LUAGET_PTR(state, SceneManager)
@@ -50,7 +53,7 @@ namespace Engine::Scripting::API
 			return 3;
 		}
 
-		static int SetCameraTransform(lua_State* state)
+		int setCameraTransform(lua_State* state)
 		{
 			CMEP_LUACHECK_FN_ARGC(state, 4)
 			CMEP_LUAGET_PTR(state, SceneManager)
@@ -64,7 +67,7 @@ namespace Engine::Scripting::API
 			return 0;
 		}
 
-		static int GetLightTransform(lua_State* state)
+		int getLightTransform(lua_State* state)
 		{
 			CMEP_LUACHECK_FN_ARGC(state, 1)
 			CMEP_LUAGET_PTR(state, SceneManager)
@@ -78,7 +81,7 @@ namespace Engine::Scripting::API
 			return 3;
 		}
 
-		static int SetLightTransform(lua_State* state)
+		int setLightTransform(lua_State* state)
 		{
 			CMEP_LUACHECK_FN_ARGC(state, 4)
 			CMEP_LUAGET_PTR(state, SceneManager)
@@ -92,27 +95,27 @@ namespace Engine::Scripting::API
 			return 0;
 		}
 
-		static int GetSceneCurrent(lua_State* state)
+		int getSceneCurrent(lua_State* state)
 		{
 			CMEP_LUACHECK_FN_ARGC(state, 1)
 			CMEP_LUAGET_PTR(state, SceneManager)
 
 			auto& scene = self->getSceneCurrent();
 
-			LuaFactories::SceneFactory(state, scene.get());
+			LuaFactories::sceneFactory(state, scene.get());
 
 			return 1;
 		}
 
-	} // namespace Functions_SceneManager
+	} // namespace
 
 	std::unordered_map<std::string, const lua_CFunction> scene_manager_mappings = {
-		CMEP_LUAMAPPING_DEFINE(Functions_SceneManager, GetCameraHVRotation),
-		CMEP_LUAMAPPING_DEFINE(Functions_SceneManager, SetCameraHVRotation),
-		CMEP_LUAMAPPING_DEFINE(Functions_SceneManager, GetCameraTransform),
-		CMEP_LUAMAPPING_DEFINE(Functions_SceneManager, SetCameraTransform),
-		CMEP_LUAMAPPING_DEFINE(Functions_SceneManager, GetLightTransform),
-		CMEP_LUAMAPPING_DEFINE(Functions_SceneManager, SetLightTransform),
-		CMEP_LUAMAPPING_DEFINE(Functions_SceneManager, GetSceneCurrent)
+		CMEP_LUAMAPPING_DEFINE(getCameraRotation),
+		CMEP_LUAMAPPING_DEFINE(setCameraRotation),
+		CMEP_LUAMAPPING_DEFINE(getCameraTransform),
+		CMEP_LUAMAPPING_DEFINE(setCameraTransform),
+		CMEP_LUAMAPPING_DEFINE(getLightTransform),
+		CMEP_LUAMAPPING_DEFINE(setLightTransform),
+		CMEP_LUAMAPPING_DEFINE(getSceneCurrent)
 	};
 } // namespace Engine::Scripting::API

@@ -17,10 +17,9 @@ namespace Engine::Rendering::Vulkan
 	CommandBuffer::CommandBuffer(LogicalDevice* with_device, vk::raii::CommandPool& from_pool)
 		: device(with_device)
 	{
-		vk::CommandBufferAllocateInfo
-			alloc_info(*from_pool, vk::CommandBufferLevel::ePrimary, 1, {});
-
-		native_handle = std::move(device->allocateCommandBuffers(alloc_info)[0]);
+		native_handle = std::move(device->allocateCommandBuffers(
+			{*from_pool, vk::CommandBufferLevel::ePrimary, 1, {}}
+		)[0]);
 	}
 
 	vk::CommandBufferBeginInfo CommandBuffer::getBeginInfo(vk::CommandBufferUsageFlags usage_flags)

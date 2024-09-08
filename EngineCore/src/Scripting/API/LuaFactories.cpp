@@ -83,7 +83,7 @@ namespace Engine::Scripting::API::LuaFactories
 		}
 	} // namespace
 
-	void SceneManagerFactory(lua_State* state, SceneManager* scene_manager_ptr)
+	void sceneManagerFactory(lua_State* state, SceneManager* scene_manager_ptr)
 	{
 		// Generate SceneManager table
 		lua_createtable(state, 0, static_cast<int>(scene_manager_mappings.size() + 1));
@@ -95,7 +95,7 @@ namespace Engine::Scripting::API::LuaFactories
 		lua_setfield(state, -2, "_ptr");
 	}
 
-	void SceneFactory(lua_State* state, Scene* scene_ptr)
+	void sceneFactory(lua_State* state, Scene* scene_ptr)
 	{
 		// Generate Scene table
 		lua_createtable(state, 0, 1);
@@ -106,7 +106,7 @@ namespace Engine::Scripting::API::LuaFactories
 		lua_setfield(state, -2, "_ptr");
 	}
 
-	void ObjectFactory(lua_State* state, Object* object_ptr)
+	void objectFactory(lua_State* state, Object* object_ptr)
 	{
 		// Generate Object table
 		lua_createtable(state, 0, static_cast<int>(object_mappings.size() + 2));
@@ -125,7 +125,7 @@ namespace Engine::Scripting::API::LuaFactories
 		lua_setfield(state, -2, "meshbuilder");
 	}
 
-	void AssetManagerFactory(lua_State* state, std::weak_ptr<AssetManager> asset_manager_ptr)
+	void assetManagerFactory(lua_State* state, std::weak_ptr<AssetManager> asset_manager_ptr)
 	{
 		// Generate AssetManager table
 		lua_createtable(state, 0, static_cast<int>(asset_manager_mappings.size() + 1));
@@ -138,7 +138,7 @@ namespace Engine::Scripting::API::LuaFactories
 		lua_setfield(state, -2, "_smart_ptr");
 	}
 
-	void EngineFactory(lua_State* state, Engine* engine_ptr)
+	void engineFactory(lua_State* state, Engine* engine_ptr)
 	{
 		// Generate Engine table
 		lua_createtable(state, 0, static_cast<int>(engine_mappings.size() + 1));
@@ -150,14 +150,13 @@ namespace Engine::Scripting::API::LuaFactories
 		lua_setfield(state, -2, "_ptr");
 	}
 
-	std::weak_ptr<Logging::Logger> MetaLoggerFactory(lua_State* state)
+	std::weak_ptr<Logging::Logger> loggerObjectFactory(lua_State* state)
 	{
 		lua_getglobal(state, "engine");
 		lua_getfield(state, -1, "logger");
 		lua_getfield(state, -1, "_smart_ptr");
-		std::weak_ptr<Logging::Logger> logger = *static_cast<std::weak_ptr<Logging::Logger>*>(
-			lua_touserdata(state, -1)
-		);
+		std::weak_ptr<Logging::Logger> logger =
+			*static_cast<std::weak_ptr<Logging::Logger>*>(lua_touserdata(state, -1));
 
 		return logger;
 	}

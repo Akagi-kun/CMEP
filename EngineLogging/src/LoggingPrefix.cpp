@@ -56,7 +56,7 @@ namespace Logging
 	PREFIX_DECL(Engine::Rendering::Font)					= "FONT   ";
 	PREFIX_DECL(Engine::AssetManager)						= "ASSET_M";
 	PREFIX_DECL(Engine::Rendering::Texture)					= "TXTR   ";
-	//
-	PREFIX_DECL(void)										= " ? ? ? ";
+	// no-prefix
+	PREFIX_DECL(void)										= "       ";
 
 } // namespace Logging

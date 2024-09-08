@@ -45,24 +45,24 @@ local game_score = 0 -- The score
 -- Scrolls ground objects
 local handleGroundLayer = function(scene, event, layer)
 
-	local ground3 = scene:FindObject(layer..2)
-	local g3_x, g3_y, g3_z = ground3:GetPosition()
+	local ground3 = scene:findObject(layer..2)
+	local g3_x, g3_y, g3_z = ground3:getPosition()
 	g3_x = g3_x - (pipe_move_speed * 1.1) * event.deltaTime
 	
 	local last_x = g3_x
 
 	for i = 0, 2 do
-		local ground = scene:FindObject(layer..i)
-		local ground_x, ground_y, ground_z = ground:GetPosition()
+		local ground = scene:findObject(layer..i)
+		local ground_x, ground_y, ground_z = ground:getPosition()
 
 		-- Move ground (slightly faster than pipes)
 		ground_x = ground_x - (pipe_move_speed * 1.1) * event.deltaTime
 	
 		if(ground_x > util.pxToScreenX(-630))
 		then
-			ground:SetPosition(ground_x, ground_y, ground_z)
+			ground:setPosition(ground_x, ground_y, ground_z)
 		else
-			ground:SetPosition(last_x + util.pxToScreenX(630), ground_y, ground_z)
+			ground:setPosition(last_x + util.pxToScreenX(630), ground_y, ground_z)
 		end
 
 		last_x = ground_x
@@ -81,20 +81,20 @@ local checkCollisionsGrounds = function(birbx, birby)
 								 	  0.0,		util.pxToScreenY(util.screen_size_y - 60), 	1.0, 					 	util.pxToScreenY(60)))
 end
 
-local gameOnGameOver = function(owner_engine, asset_manager, scene_manager)
+local gameOnGameOver = function(engine, asset_manager, scene_manager)
 	game_midgameover_state = true
 	birb_velocity = -0.4
 
 	print("Game over!")
 
-	local font = asset_manager:GetFont("myfont")
+	local font = asset_manager:getFont("myfont")
 
-	local object = engine.CreateSceneObject(owner_engine, "renderer_2d/text", "text", {
+	local object = createSceneObject(engine, "renderer_2d/text", "text", {
 		{"font", font}}, { {"text", "GAME OVER"} }
 	)
-	object:SetPosition(0.34, 0.45, -0.01)
-	object:SetSize(64, 64, 1.0)
-	scene_manager:GetSceneCurrent():AddObject("text_gameover", object)
+	object:setPosition(0.34, 0.45, -0.01)
+	object:setSize(64, 64, 1.0)
+	scene_manager:getSceneCurrent():addObject("text_gameover", object)
 end
 
 --> Local functions <--
@@ -146,7 +146,7 @@ onKeyDown = function(event)
 	-- 256 is the keycode of the ESC key
 	--
 	if event.keycode == 256 then
-		event.engine:Stop()
+		event.engine:stop()
 	end
 
 	return 0
@@ -188,16 +188,16 @@ onUpdate = function(event)
 		event.engine:Stop()
 	end
 
-	local asset_manager = event.engine:GetAssetManager()
-	local scene_manager = event.engine:GetSceneManager()
-	local scene = scene_manager:GetSceneCurrent()
+	local asset_manager = event.engine:getAssetManager()
+	local scene_manager = event.engine:getSceneManager()
+	local scene = scene_manager:getSceneCurrent()
 
 	-- Updates frametime counter, recommend to leave this here for debugging purposes
 	if deltaTime_accum >= 1.0 then
 		local deltaTime_avg = deltaTime_accum / deltaTime_count
 		--print(string.format("Frametime is: %f ms!", deltaTime_accum / deltaTime_count * 1000))
-		local object = scene:FindObject("_debug_info")
-		engine.MeshBuilderSupplyData(object.meshbuilder, "text", string.format("avg: %fms\nmin: %fms\nmax: %fms", deltaTime_avg * 1000, deltaTime_min * 1000, deltaTime_max * 1000))
+		local object = scene:findObject("_debug_info")
+		meshBuilderSupplyData(object.meshbuilder, "text", string.format("avg: %fms\nmin: %fms\nmax: %fms", deltaTime_avg * 1000, deltaTime_min * 1000, deltaTime_max * 1000))
 
 		deltaTime_min = 2000.0
 		deltaTime_max = 0.0
@@ -216,13 +216,13 @@ onUpdate = function(event)
 			
 			local pipe_id = tostring(spawn_pipe_last_idx + 1)
 
-			local pipe1 = scene:AddTemplatedObject("sprite_pipe_down"..pipe_id, "pipe_down")
-			pipe1:SetPosition(1.0, util.pxToScreenY(pipe_y_offset - (pipe_spacing / 2)), -0.15)
-			pipe1:SetSize(util.pxToScreenX(config.pipe_x_size), util.pxToScreenY(config.pipe_y_size), 1.0)
+			local pipe1 = scene:addTemplatedObject("sprite_pipe_down"..pipe_id, "pipe_down")
+			pipe1:setPosition(1.0, util.pxToScreenY(pipe_y_offset - (pipe_spacing / 2)), -0.15)
+			pipe1:setSize(util.pxToScreenX(config.pipe_x_size), util.pxToScreenY(config.pipe_y_size), 1.0)
 
-			local pipe2 = scene:AddTemplatedObject("sprite_pipe_up"..pipe_id, "pipe_up")
-			pipe2:SetPosition(1.0, util.pxToScreenY(config.pipe_y_size + (pipe_spacing / 2) + pipe_y_offset), -0.15)
-			pipe2:SetSize(util.pxToScreenX(config.pipe_x_size), util.pxToScreenY(config.pipe_y_size), 1.0)
+			local pipe2 = scene:addTemplatedObject("sprite_pipe_up"..pipe_id, "pipe_up")
+			pipe2:setPosition(1.0, util.pxToScreenY(config.pipe_y_size + (pipe_spacing / 2) + pipe_y_offset), -0.15)
+			pipe2:setSize(util.pxToScreenX(config.pipe_x_size), util.pxToScreenY(config.pipe_y_size), 1.0)
 
 			spawn_pipe_last_idx = spawn_pipe_last_idx + 1
 			spawn_pipe_count = spawn_pipe_count + 1
@@ -232,20 +232,20 @@ onUpdate = function(event)
 		spawn_pipe_since_last = spawn_pipe_since_last + event.deltaTime
 
 		-- Get birb position
-		local birb = scene:FindObject("birb")
-		local birbx, birby, birbz = birb:GetPosition()
+		local birb = scene:findObject("birb")
+		local birbx, birby, birbz = birb:getPosition()
 
 		if spawn_pipe_count >= 1 then
 			for pipeIdx = spawn_pipe_first_idx, spawn_pipe_last_idx, 1 do
 				-- Move pipes
-				local pipe1 = scene:FindObject("sprite_pipe_down"..tostring(pipeIdx))
-				local pipe2 = scene:FindObject("sprite_pipe_up"..tostring(pipeIdx))
-				local x1, y1, z1 = pipe1:GetPosition()
-				local x2, y2, z2 = pipe2:GetPosition()
+				local pipe1 = scene:findObject("sprite_pipe_down"..tostring(pipeIdx))
+				local pipe2 = scene:findObject("sprite_pipe_up"..tostring(pipeIdx))
+				local x1, y1, z1 = pipe1:getPosition()
+				local x2, y2, z2 = pipe2:getPosition()
 				x1 = x1 - pipe_move_speed * event.deltaTime
 				x2 = x2 - pipe_move_speed * event.deltaTime
-				pipe1:SetPosition(x1, y1, z1)
-				pipe2:SetPosition(x2, y2, z2)
+				pipe1:setPosition(x1, y1, z1)
+				pipe2:setPosition(x2, y2, z2)
 
 				-- Check collisions with both pipes
 				if util.checkCollisions2DBox(birbx, birby, util.pxToScreenX(config.birb_x_size), util.pxToScreenY(config.birb_y_size), x1, y1, util.pxToScreenX(config.pipe_x_size), util.pxToScreenY(config.pipe_y_size)) or -- pipe 1
@@ -261,8 +261,8 @@ onUpdate = function(event)
 				then
 					game_score = game_score + 1
 					game_last_scored_pipe_idx = pipeIdx
-					local score_object = scene:FindObject("text_score")
-					engine.MeshBuilderSupplyData(score_object.meshbuilder, "text", tostring(game_score))
+					local score_object = scene:findObject("text_score")
+					meshBuilderSupplyData(score_object.meshbuilder, "text", tostring(game_score))
 
 					pipe_move_speed = pipe_move_speed * 1.005 -- Increase pipe move speed
 					pipe_spacing = pipe_spacing * 0.9990 -- Decrease pipe spacing (between top and bottom pipe)
@@ -271,8 +271,8 @@ onUpdate = function(event)
 
 				if x1 < (0.0 - util.pxToScreenX(config.pipe_x_size + 5)) then
 					-- Destroy objects
-					scene:RemoveObject("sprite_pipe_down"..tostring(pipeIdx))
-					scene:RemoveObject("sprite_pipe_up"..tostring(pipeIdx))
+					scene:removeObject("sprite_pipe_down"..tostring(pipeIdx))
+					scene:removeObject("sprite_pipe_up"..tostring(pipeIdx))
 					spawn_pipe_first_idx = spawn_pipe_first_idx + 1
 				end
 			end
@@ -288,18 +288,18 @@ onUpdate = function(event)
 		-- Fall birb
 		-- we already have birbx/y/z from before
 		birby = birby - birb_velocity * event.deltaTime
-		birb:SetPosition(birbx, birby, birbz)
+		birb:setPosition(birbx, birby, birbz)
 		birb_velocity = birb_velocity - config.birb_gravity * event.deltaTime
 
 		gameOnHandleGrounds(scene, event)
 
 	elseif (game_midgameover_state == true and game_gameover_state == false) then
 
-		local birb = scene:FindObject("birb")
-		local birbx, birby, birbz = birb:GetPosition()
+		local birb = scene:findObject("birb")
+		local birbx, birby, birbz = birb:getPosition()
 
 		birby = birby - birb_velocity * event.deltaTime
-		birb:SetPosition(birbx, birby, birbz)
+		birb:setPosition(birbx, birby, birbz)
 		
 		birb_velocity = birb_velocity * 1.01
 
@@ -323,73 +323,73 @@ onInit = function(event)
 	-- uncomment this to set the desired framerate target
 	-- the engine will spinsleep until the target is reached
 	--
-	--event.engine:SetFramerateTarget(30)
+	--event.engine:setFramerateTarget(30)
 
 	-- Get managers
-	local asset_manager = event.engine:GetAssetManager()
-	local scene_manager = event.engine:GetSceneManager()
-	local scene = scene_manager:GetSceneCurrent()
+	local asset_manager = event.engine:getAssetManager()
+	local scene_manager = event.engine:getSceneManager()
+	local scene = scene_manager:getSceneCurrent()
 
-	local font = asset_manager:GetFont("myfont")
+	local font = asset_manager:getFont("myfont")
 
 	-- Create frametime counter and add it to scene
-	local object = engine.CreateSceneObject(event.engine, "renderer_2d/text", "text",
+	local object = createSceneObject(event.engine, "renderer_2d/text", "text",
 		{ {"font", font} }, { {"text", "avg: \nmin: \nmax: "} }
 	)
-	object:SetPosition(0.0, 0.0, -0.01)
-	object:SetSize(24, 24, 1.0)
-	scene:AddObject("_debug_info", object)
+	object:setPosition(0.0, 0.0, -0.01)
+	object:setSize(24, 24, 1.0)
+	scene:addObject("_debug_info", object)
 
 	-- Add score
-	local object = engine.CreateSceneObject(event.engine, "renderer_2d/text", "text", {
+	local object = createSceneObject(event.engine, "renderer_2d/text", "text", {
 		{"font", font}
 	}, {{"text", "0"}})
-	object:SetPosition(0.5, 0.0, -0.01)
-	object:SetSize(64, 64, 1.0)
-	scene:AddObject("text_score", object)
+	object:setPosition(0.5, 0.0, -0.01)
+	object:setSize(64, 64, 1.0)
+	scene:addObject("text_score", object)
 
 	-- Add background
-	local object = engine.CreateSceneObject(event.engine, "renderer_2d/sprite", "sprite", {
-		{"texture", asset_manager:GetTexture("background")}
+	local object = createSceneObject(event.engine, "renderer_2d/sprite", "sprite", {
+		{"texture", asset_manager:getTexture("background")}
 	}, {})
-	object:SetPosition(0.0, 0.0, -0.8)
-	object:SetSize(1, 1, 1)
-	scene:AddObject("background", object)
+	object:setPosition(0.0, 0.0, -0.8)
+	object:setSize(1, 1, 1)
+	scene:addObject("background", object)
 
 	-- Add birb
-	local object = engine.CreateSceneObject(event.engine, "renderer_2d/sprite", "sprite", {
-		{"texture", asset_manager:GetTexture("birb")}
+	local object = createSceneObject(event.engine, "renderer_2d/sprite", "sprite", {
+		{"texture", asset_manager:getTexture("birb")}
 	}, {})
-	object:SetPosition(0.2, util.pxToScreenY(360), 0.0)
-	object:SetSize(util.pxToScreenX(72), util.pxToScreenY(44), 1.0)
-	scene:AddObject("birb", object)
+	object:setPosition(0.2, util.pxToScreenY(360), 0.0)
+	object:setSize(util.pxToScreenX(72), util.pxToScreenY(44), 1.0)
+	scene:addObject("birb", object)
 
 	-- Add grounds
 	for i = 0, 2 do
-		local ground_top = engine.CreateSceneObject(event.engine, "renderer_2d/sprite", "sprite", {
-			{"texture", asset_manager:GetTexture("ground_top")}
+		local ground_top = createSceneObject(event.engine, "renderer_2d/sprite", "sprite", {
+			{"texture", asset_manager:getTexture("ground_top")}
 		}, {})
-		ground_top:SetPosition(util.pxToScreenX(630) * i, 0.0, -0.1)
-		ground_top:SetSize(util.pxToScreenX(630), util.pxToScreenY(60), 1)
-		scene:AddObject("ground_top"..i, ground_top)
+		ground_top:setPosition(util.pxToScreenX(630) * i, 0.0, -0.1)
+		ground_top:setSize(util.pxToScreenX(630), util.pxToScreenY(60), 1)
+		scene:addObject("ground_top"..i, ground_top)
 
-		local ground_bottom = engine.CreateSceneObject(event.engine, "renderer_2d/sprite", "sprite", {
-			{"texture", asset_manager:GetTexture("ground_bottom")}
+		local ground_bottom = createSceneObject(event.engine, "renderer_2d/sprite", "sprite", {
+			{"texture", asset_manager:getTexture("ground_bottom")}
 	 	}, {})
 
-		ground_bottom:SetPosition(util.pxToScreenX(630) * i, util.pxToScreenY(util.screen_size_y - 60), -0.1)
-		ground_bottom:SetSize(util.pxToScreenX(630), util.pxToScreenY(60), 1)
-		scene:AddObject("ground_bottom"..i, ground_bottom)
+		ground_bottom:setPosition(util.pxToScreenX(630) * i, util.pxToScreenY(util.screen_size_y - 60), -0.1)
+		ground_bottom:setSize(util.pxToScreenX(630), util.pxToScreenY(60), 1)
+		scene:addObject("ground_bottom"..i, ground_bottom)
 	end
 
 	-- Set-up camera
 	-- (this is essentially unnecessary for 2D-only scenes)
-	scene_manager:SetCameraTransform(0.0, 0.0, 0.0)
-	scene_manager:SetCameraHVRotation(0, 0)
+	scene_manager:setCameraTransform(0.0, 0.0, 0.0)
+	scene_manager:setCameraRotation(0, 0)
 
 	-- Set-up light
 	-- (unnecessary for scenes that don't employ renderers or shaders with lighting)
-	scene_manager:SetLightTransform(-1, 1, 0)
+	scene_manager:setLightTransform(-1, 1, 0)
 
 	return 0
 end

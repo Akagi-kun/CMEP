@@ -14,9 +14,9 @@
 
 namespace Engine::Scripting::API
 {
-	namespace Functions_Engine
+	namespace
 	{
-		static int GetAssetManager(lua_State* state)
+		int getAssetManager(lua_State* state)
 		{
 			CMEP_LUACHECK_FN_ARGC(state, 1)
 			CMEP_LUAGET_PTR(state, Engine)
@@ -25,7 +25,7 @@ namespace Engine::Scripting::API
 
 			if (!asset_manager.expired())
 			{
-				API::LuaFactories::AssetManagerFactory(state, asset_manager);
+				API::LuaFactories::assetManagerFactory(state, asset_manager);
 
 				return 1;
 			}
@@ -33,7 +33,7 @@ namespace Engine::Scripting::API
 			return luaL_error(state, "AssetManager is expired");
 		}
 
-		static int GetSceneManager(lua_State* state)
+		int getSceneManager(lua_State* state)
 		{
 			CMEP_LUACHECK_FN_ARGC(state, 1)
 			CMEP_LUAGET_PTR(state, Engine)
@@ -42,7 +42,7 @@ namespace Engine::Scripting::API
 
 			if (auto locked_scene_manager = scene_manager.lock())
 			{
-				API::LuaFactories::SceneManagerFactory(state, locked_scene_manager.get());
+				API::LuaFactories::sceneManagerFactory(state, locked_scene_manager.get());
 
 				return 1;
 			}
@@ -50,7 +50,7 @@ namespace Engine::Scripting::API
 			return luaL_error(state, "SceneManager is expired");
 		}
 
-		static int SetFramerateTarget(lua_State* state)
+		int setFramerateTarget(lua_State* state)
 		{
 			CMEP_LUACHECK_FN_ARGC(state, 2)
 			CMEP_LUAGET_PTR(state, Engine)
@@ -62,7 +62,7 @@ namespace Engine::Scripting::API
 			return 0;
 		}
 
-		static int Stop(lua_State* state)
+		int stop(lua_State* state)
 		{
 			CMEP_LUACHECK_FN_ARGC(state, 1)
 			CMEP_LUAGET_PTR(state, Engine)
@@ -72,12 +72,12 @@ namespace Engine::Scripting::API
 			return 0;
 		}
 
-	} // namespace Functions_Engine
+	} // namespace
 
 	std::unordered_map<std::string, const lua_CFunction> engine_mappings = {
-		CMEP_LUAMAPPING_DEFINE(Functions_Engine, GetAssetManager),
-		CMEP_LUAMAPPING_DEFINE(Functions_Engine, GetSceneManager),
-		CMEP_LUAMAPPING_DEFINE(Functions_Engine, SetFramerateTarget),
-		CMEP_LUAMAPPING_DEFINE(Functions_Engine, Stop),
+		CMEP_LUAMAPPING_DEFINE(getAssetManager),
+		CMEP_LUAMAPPING_DEFINE(getSceneManager),
+		CMEP_LUAMAPPING_DEFINE(setFramerateTarget),
+		CMEP_LUAMAPPING_DEFINE(stop),
 	};
 } // namespace Engine::Scripting::API

@@ -10,9 +10,9 @@
 
 namespace Engine::Scripting::API
 {
-	namespace Functions_Object
+	namespace
 	{
-		static int AddChild(lua_State* state)
+		int addChild(lua_State* state)
 		{
 			CMEP_LUACHECK_FN_ARGC(state, 2)
 			CMEP_LUAGET_PTR(state, Object)
@@ -25,7 +25,7 @@ namespace Engine::Scripting::API
 			return 0;
 		}
 
-		static int GetRotation(lua_State* state)
+		int getRotation(lua_State* state)
 		{
 			CMEP_LUACHECK_FN_ARGC(state, 1)
 			CMEP_LUAGET_PTR(state, Object)
@@ -39,7 +39,7 @@ namespace Engine::Scripting::API
 			return 3;
 		}
 
-		static int SetRotation(lua_State* state)
+		int setRotation(lua_State* state)
 		{
 			CMEP_LUACHECK_FN_ARGC(state, 4)
 			CMEP_LUAGET_PTR(state, Object)
@@ -54,7 +54,7 @@ namespace Engine::Scripting::API
 			return 0;
 		}
 
-		static int GetSize(lua_State* state)
+		int getSize(lua_State* state)
 		{
 			CMEP_LUACHECK_FN_ARGC(state, 1)
 			CMEP_LUAGET_PTR(state, Object)
@@ -68,7 +68,7 @@ namespace Engine::Scripting::API
 			return 3;
 		}
 
-		static int SetSize(lua_State* state)
+		int setSize(lua_State* state)
 		{
 			CMEP_LUACHECK_FN_ARGC(state, 4)
 			CMEP_LUAGET_PTR(state, Object)
@@ -83,7 +83,7 @@ namespace Engine::Scripting::API
 			return 0;
 		}
 
-		static int GetPosition(lua_State* state)
+		int getPosition(lua_State* state)
 		{
 			CMEP_LUACHECK_FN_ARGC(state, 1)
 			CMEP_LUAGET_PTR(state, Object)
@@ -97,7 +97,7 @@ namespace Engine::Scripting::API
 			return 3;
 		}
 
-		static int SetPosition(lua_State* state)
+		int setPosition(lua_State* state)
 		{
 			CMEP_LUACHECK_FN_ARGC(state, 4)
 			CMEP_LUAGET_PTR(state, Object)
@@ -111,15 +111,15 @@ namespace Engine::Scripting::API
 
 			return 0;
 		}
-	} // namespace Functions_Object
+	} // namespace
 
 	std::unordered_map<std::string, const lua_CFunction> object_mappings = {
-		CMEP_LUAMAPPING_DEFINE(Functions_Object, AddChild),
-		CMEP_LUAMAPPING_DEFINE(Functions_Object, GetSize),
-		CMEP_LUAMAPPING_DEFINE(Functions_Object, SetSize),
-		CMEP_LUAMAPPING_DEFINE(Functions_Object, GetRotation),
-		CMEP_LUAMAPPING_DEFINE(Functions_Object, SetRotation),
-		CMEP_LUAMAPPING_DEFINE(Functions_Object, GetPosition),
-		CMEP_LUAMAPPING_DEFINE(Functions_Object, SetPosition)
+		CMEP_LUAMAPPING_DEFINE(addChild),
+		CMEP_LUAMAPPING_DEFINE(getSize),
+		CMEP_LUAMAPPING_DEFINE(setSize),
+		CMEP_LUAMAPPING_DEFINE(getRotation),
+		CMEP_LUAMAPPING_DEFINE(setRotation),
+		CMEP_LUAMAPPING_DEFINE(getPosition),
+		CMEP_LUAMAPPING_DEFINE(setPosition)
 	};
 } // namespace Engine::Scripting::API

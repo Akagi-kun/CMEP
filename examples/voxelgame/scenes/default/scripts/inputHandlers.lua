@@ -10,16 +10,16 @@
 onMouseMoved = function(event)
 	local mouseSpeed = 5.0;
 
-	local scene_manager = event.engine:GetSceneManager()
+	local scene_manager = event.engine:getSceneManager()
 
-	local h, v = scene_manager:GetCameraHVRotation()
+	local h, v = scene_manager:getCameraRotation()
 
 	--engine.logger.SimpleLog(string.format("X: %f Y: %f", event.mouse.x, event.mouse.y))
 
 	h = h + (mouseSpeed * event.deltaTime) * event.mouse.x
 	v = v + (mouseSpeed * event.deltaTime) * event.mouse.y
 
-	scene_manager:SetCameraHVRotation(h, v)
+	scene_manager:setCameraRotation(h, v)
 
 	return 0
 end
@@ -58,7 +58,7 @@ onKeyDown = function(event)
 	-- 256 is the keycode of the ESC key
 	--
 	if event.keycode == 256 then
-		event.engine:Stop()
+		event.engine:stop()
 		
 		return 0
 	end
@@ -127,8 +127,8 @@ end
 onMovementTick = function(event)
 	local moveSpeed = 15.0 * event.deltaTime;
 	  
-	local scene_manager = event.engine:GetSceneManager()
-	local camera_h, camera_v = scene_manager:GetCameraHVRotation();
+	local scene_manager = event.engine:getSceneManager()
+	local camera_h, camera_v = scene_manager:getCameraRotation();
 
 	local pitch = math.rad(camera_v)
 	local yaw = math.rad(camera_h) 
@@ -142,7 +142,7 @@ onMovementTick = function(event)
 
 	local up_x, up_y, up_z = vectorCross(right_x, right_y, right_z, front_x, front_y, front_z)
 
-	local transform_x, transform_y, transform_z = scene_manager:GetCameraTransform();
+	local transform_x, transform_y, transform_z = scene_manager:getCameraTransform();
 
 	local keycodeSwitchTbl = {
 	  	function() -- forward
@@ -181,7 +181,7 @@ onMovementTick = function(event)
 		if keystates[i] == true then
 			keycodeSwitchTbl[i]();
 
-			scene_manager:SetCameraTransform(transform_x, transform_y, transform_z);
+			scene_manager:setCameraTransform(transform_x, transform_y, transform_z);
 		end
 	end
 	return 0

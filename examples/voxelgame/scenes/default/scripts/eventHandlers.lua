@@ -44,9 +44,12 @@ end
 
 -- Chunk boundary marking step
 --
--- Marks blocks that neighbor a non-opaque block in a neighboring chunk
--- So we don't have to generate a side mesh for them
---  
+-- Optimize mesh generation by marking blocks that neighbor blocks in other chunks
+-- so we can include the mesh only for "visible" edges of the chunks
+--
+-- without this it'd be necessary to build the mesh for all boundary blocks
+-- making huge meshes that are mostly invisible
+--
 local generate_boundary_info = function(chunk_x, chunk_z)
 	assert(chunks[chunk_x] ~= nil and chunks[chunk_x][chunk_z] ~= nil and chunks[chunk_x][chunk_z].data ~= nil)
 	local this_chunk = chunks[chunk_x][chunk_z].data
@@ -130,8 +133,6 @@ local generate_boundary_info = function(chunk_x, chunk_z)
 		if bounds_check then
 			generate_chunk(chunk_x + 1, chunk_z)
 			goto before_check4
---		else
---			print("Skipping generation for chunk outside range")
 		end
 	end
 end
@@ -242,7 +243,7 @@ end
 --		for chunk_z = -chunks_z, chunks_z, 1 do
 --			if chunks[chunk_x][chunk_z] == nil then
 --
---				local chunk_obj = engine.CreateSceneObject(asset_manager, "renderer_3d/generator", "terrain", {
+--				local chunk_obj = engine.createSceneObject(asset_manager, "renderer_3d/generator", "terrain", {
 --					{"texture", "atlas"}, {"generator_script", "testgen"}, {"generator_supplier", "script0/terrain_generator"}
 --				})
 --				chunk_obj:SetPosition((chunk_x) * config.chunk_size_x, 0.0, (chunk_z) * config.chunk_size_z)
@@ -268,7 +269,6 @@ end
 -- and is the period between the last onUpdate and the current one
 --
 onUpdate = function(event)
-	--return 0
 	deltaTime_accum = deltaTime_accum + event.deltaTime
 
 	deltaTime_max = math.max(deltaTime_max, event.deltaTime)
@@ -276,9 +276,9 @@ onUpdate = function(event)
 
 	deltaTime_count = deltaTime_count + 1
 
-	local asset_manager = event.engine:GetAssetManager()
-	local scene_manager = event.engine:GetSceneManager()
-	local scene = scene_manager:GetSceneCurrent()
+	local asset_manager = event.engine:getAssetManager()
+	local scene_manager = event.engine:getSceneManager()
+	local scene = scene_manager:getSceneCurrent()
 
 	--[[ if coroutine.status(load_chunks_coro) ~= "dead" then
 		coroutine.resume(load_chunks_coro, asset_manager, scene)
@@ -287,9 +287,9 @@ onUpdate = function(event)
 	-- Updates frametime counter, recommend to leave this here for debugging purposes
 	if deltaTime_accum >= 1.0 then
 		local deltaTime_avg = deltaTime_accum / deltaTime_count
-		local object = scene:FindObject("_debug_info")
+		local object = scene:findObject("_debug_info")
 
-		engine.MeshBuilderSupplyData(object.meshbuilder, "text", string.format("avg: %fms\nmin: %fms\nmax: %fms", deltaTime_avg * 1000, deltaTime_min * 1000, deltaTime_max * 1000))
+		meshBuilderSupplyData(object.meshbuilder, "text", string.format("avg: %fms\nmin: %fms\nmax: %fms", deltaTime_avg * 1000, deltaTime_min * 1000, deltaTime_max * 1000))
 
 		deltaTime_min = 2000.0
 		deltaTime_max = 0.0
@@ -297,11 +297,11 @@ onUpdate = function(event)
 		deltaTime_count = 0
 	end
 
-	local camx, camy, camz = scene_manager:GetCameraTransform()
-	local camh, camv = scene_manager:GetCameraHVRotation()
+	local camx, camy, camz = scene_manager:getCameraTransform()
+	local camh, camv = scene_manager:getCameraRotation()
 
-	local dbg2 = scene:FindObject("_debug_info2")
-	engine.MeshBuilderSupplyData(dbg2.meshbuilder, "text", string.format("H: %f V: %f\nX: %f Y: %f Z: %f", camh, camv, camx, camy, camz))
+	local dbg2 = scene:findObject("_debug_info2")
+	meshBuilderSupplyData(dbg2.meshbuilder, "text", string.format("H: %f V: %f\nX: %f Y: %f Z: %f", camh, camv, camx, camy, camz))
 
 	return 0
 end
@@ -313,55 +313,49 @@ end
 --
 onInit = function(event)
 	-- Get managers
-	local asset_manager = event.engine:GetAssetManager()
-	local scene_manager = event.engine:GetSceneManager()
-	local scene = scene_manager:GetSceneCurrent()
+	local asset_manager = event.engine:getAssetManager()
+	local scene_manager = event.engine:getSceneManager()
+	local scene = scene_manager:getSceneCurrent()
 
-	local font = asset_manager:GetFont("myfont")
+	local font = asset_manager:getFont("myfont")
 
 	-- Set-up camera
-	scene_manager:SetCameraTransform(-1.0, 55.8, 2.5)
-	scene_manager:SetCameraHVRotation(114.0, 224.8)
+	scene_manager:setCameraTransform(-1.0, 55.8, 2.5)
+	scene_manager:setCameraRotation(114.0, 224.8)
 
 	-- Create frametime counter and add it to scene
-	local object0 = engine.CreateSceneObject(event.engine, "renderer_2d/text", "text",
+	local object0 = createSceneObject(event.engine, "renderer_2d/text", "text",
 		{ {"font", font} }, { {"text", "avg: \nmin: \nmax: "} }
 	)
-	object0:SetPosition(0.0, 0.0, -0.01)
-	object0:SetSize(24, 24, 1.0)
-	scene:AddObject("_debug_info", object0)
+	object0:setPosition(0.0, 0.0, -0.01)
+	object0:setSize(24, 24, 1.0)
+	scene:addObject("_debug_info", object0)
 	
-	local object1 = engine.CreateSceneObject(event.engine, "renderer_2d/text", "text",
+	local object1 = createSceneObject(event.engine, "renderer_2d/text", "text",
 		{ {"font", font} }, { {"text", "H: V: \nX: Y: Z: "} }
 	)
-	object1:SetPosition(0.6, 0.0, -0.01)
-	object1:SetSize(24, 24, 1.0)
-	scene:AddObject("_debug_info2", object1)
+	object1:setPosition(0.6, 0.0, -0.01)
+	object1:setSize(24, 24, 1.0)
+	scene:addObject("_debug_info2", object1)
 
 	print("Generating chunks...")
 	generate_chunk(0, 0)
-	--for chunk_x = -chunks_x, chunks_x, 1 do
-	--	for chunk_z = -chunks_z, chunks_z, 1 do
-	--		--print("Generating chunk "..chunk_x.." "..chunk_z)
-	--		generate_chunk(chunk_x, chunk_z) -- multiplied by chunk size
-	--	end
-	--end
 	collectgarbage()
 
-	local testgen_script = asset_manager:GetScript("testgen")
-	local supplier_script = asset_manager:GetScript("script0")
+	local testgen_script = asset_manager:getScript("testgen")
+	local supplier_script = asset_manager:getScript("script0")
 
-	local atlas_texture = asset_manager:GetTexture("atlas")
+	local atlas_texture = asset_manager:getTexture("atlas")
 
-	for chunk_x = -chunks_x, chunks_x, 1 do -- chunks_x, chunks_x, 1
+	for chunk_x = -chunks_x, chunks_x, 1 do
 		for chunk_z = -chunks_z, chunks_z, 1 do
-			local chunk_obj = engine.CreateSceneObject(event.engine, "renderer_3d/generator", "terrain",
+			local chunk_obj = createSceneObject(event.engine, "renderer_3d/generator", "terrain",
 				{ {"texture", atlas_texture} }, { {"generator", cdefs.CreateGeneratorData(testgen_script, "generate_fn", supplier_script, "terrain_generator")} }
 			)
-			chunk_obj:SetPosition(chunk_x * config.chunk_size_x, 0.0, chunk_z * config.chunk_size_z)
-			chunk_obj:SetSize(1, 1, 1)
-			chunk_obj:SetRotation(0, 0, 0)
-			scene:AddObject(string.format("chunk_%i_%i", chunk_x, chunk_z), chunk_obj)
+			chunk_obj:setPosition(chunk_x * config.chunk_size_x, 0.0, chunk_z * config.chunk_size_z)
+			chunk_obj:setSize(1, 1, 1)
+			chunk_obj:setRotation(0, 0, 0)
+			scene:addObject(string.format("chunk_%i_%i", chunk_x, chunk_z), chunk_obj)
 			chunks[chunk_x][chunk_z].object = {chunk_obj}
 		end
 	end

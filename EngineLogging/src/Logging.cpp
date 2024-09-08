@@ -4,7 +4,7 @@
 #include "Logging.hpp"
 
 #if defined(__GNUC__) || defined(__llvm__)
-#	define ATTRIBUTE_PRINTF_COMPAT(string_idx, arg_check)                                         \
+#	define ATTRIBUTE_PRINTF_COMPAT(string_idx, arg_check)                               \
 		__attribute__((__format__(__printf__, string_idx, arg_check)))
 #else
 #	define ATTRIBUTE_PRINTF_COMPAT(string_idx, arg_check)
@@ -79,7 +79,8 @@ namespace Logging
 			bool use_name = (find_result != state->threadid_name_map.end());
 
 			// Use the name, else format the ID in hexadecimal
-			auto output = use_name ? find_result->second : std::format("{:X}", current_thread);
+			auto output = use_name ? find_result->second
+								   : std::format("{:X}", current_thread);
 
 			// Limit size to 8 characters
 			if (output.length() > 8)
@@ -179,7 +180,7 @@ namespace Logging
 					output.use_colors ? color_str : "",
 					level_str,
 					getMaxLevelLength(),
-					log_prefix != nullptr ? log_prefix : "no prefix"
+					log_prefix != nullptr ? log_prefix : logpfx_generator<void>{}
 				);
 
 				fputs(out.c_str(), output.handle);

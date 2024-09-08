@@ -11,11 +11,11 @@
 
 namespace Engine::Scripting::API
 {
-	namespace Functions_Scene
+	namespace
 	{
-		static int AddObject(lua_State* state)
+		int addObject(lua_State* state)
 		{
-			CMEP_LUACHECK_FN_ARGC(state, 3);
+			CMEP_LUACHECK_FN_ARGC(state, 3)
 
 			lua_getfield(state, 1, "_ptr");
 			auto* scene = static_cast<Scene*>(lua_touserdata(state, -1));
@@ -30,9 +30,9 @@ namespace Engine::Scripting::API
 			return 0;
 		}
 
-		static int FindObject(lua_State* state)
+		int findObject(lua_State* state)
 		{
-			CMEP_LUACHECK_FN_ARGC(state, 2);
+			CMEP_LUACHECK_FN_ARGC(state, 2)
 
 			lua_getfield(state, 1, "_ptr");
 			auto* scene = static_cast<Scene*>(lua_touserdata(state, -1));
@@ -43,7 +43,7 @@ namespace Engine::Scripting::API
 
 			if (obj != nullptr)
 			{
-				API::LuaFactories::ObjectFactory(state, obj);
+				API::LuaFactories::objectFactory(state, obj);
 
 				return 1;
 			}
@@ -55,9 +55,9 @@ namespace Engine::Scripting::API
 			);
 		}
 
-		static int RemoveObject(lua_State* state)
+		int removeObject(lua_State* state)
 		{
-			CMEP_LUACHECK_FN_ARGC(state, 2);
+			CMEP_LUACHECK_FN_ARGC(state, 2)
 
 			lua_getfield(state, 1, "_ptr");
 			auto* scene = static_cast<Scene*>(lua_touserdata(state, -1));
@@ -69,9 +69,9 @@ namespace Engine::Scripting::API
 			return 0;
 		}
 
-		static int AddTemplatedObject(lua_State* state)
+		int addTemplatedObject(lua_State* state)
 		{
-			CMEP_LUACHECK_FN_ARGC(state, 3);
+			CMEP_LUACHECK_FN_ARGC(state, 3)
 
 			lua_getfield(state, 1, "_ptr");
 			auto* scene = static_cast<Scene*>(lua_touserdata(state, -1));
@@ -84,7 +84,7 @@ namespace Engine::Scripting::API
 
 			if (obj != nullptr)
 			{
-				API::LuaFactories::ObjectFactory(state, obj);
+				API::LuaFactories::objectFactory(state, obj);
 
 				return 1;
 			}
@@ -95,12 +95,12 @@ namespace Engine::Scripting::API
 				name.c_str()
 			);
 		}
-	} // namespace Functions_Scene
+	} // namespace
 
 	std::unordered_map<std::string, const lua_CFunction> scene_mappings = {
-		CMEP_LUAMAPPING_DEFINE(Functions_Scene, AddObject),
-		CMEP_LUAMAPPING_DEFINE(Functions_Scene, FindObject),
-		CMEP_LUAMAPPING_DEFINE(Functions_Scene, RemoveObject),
-		CMEP_LUAMAPPING_DEFINE(Functions_Scene, AddTemplatedObject)
+		CMEP_LUAMAPPING_DEFINE(addObject),
+		CMEP_LUAMAPPING_DEFINE(findObject),
+		CMEP_LUAMAPPING_DEFINE(removeObject),
+		CMEP_LUAMAPPING_DEFINE(addTemplatedObject)
 	};
 } // namespace Engine::Scripting::API

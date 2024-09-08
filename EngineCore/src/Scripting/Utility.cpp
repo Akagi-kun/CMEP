@@ -2,10 +2,10 @@
 
 #include "Scripting/API/AssetManager_API.hpp"
 #include "Scripting/API/Engine_API.hpp"
+#include "Scripting/API/Global_API.hpp"
 #include "Scripting/API/Object_API.hpp"
 #include "Scripting/API/SceneManager_API.hpp"
 #include "Scripting/API/Scene_API.hpp"
-#include "Scripting/Mappings.hpp"
 
 #include "Factories/ObjectFactory.hpp"
 
@@ -121,15 +121,14 @@ namespace Engine::Scripting::Utility
 
 	std::string_view mappingReverseLookup(lua_CFunction lookup_function)
 	{
-		static const std::vector<std::unordered_map<std::string, const lua_CFunction>>
-			all_mappings = {
-				Mappings::mappings,
-				API::object_mappings,
-				API::scene_manager_mappings,
-				API::asset_manager_mappings,
-				API::scene_mappings,
-				API::engine_mappings
-			};
+		static const std::vector<std::unordered_map<std::string, const lua_CFunction>> all_mappings = {
+			API::global_mappings,
+			API::object_mappings,
+			API::scene_manager_mappings,
+			API::asset_manager_mappings,
+			API::scene_mappings,
+			API::engine_mappings
+		};
 
 		for (const auto& mapping : all_mappings)
 		{
@@ -197,7 +196,8 @@ namespace Engine::Scripting::Utility
 	} // namespace
 
 	LuaValue::LuaValue(lua_State* state, int stack_index)
-		: type(luaTypeGetter(state, stack_index)), value(luaValueGetter(state, stack_index, type))
+		: type(luaTypeGetter(state, stack_index)),
+		  value(luaValueGetter(state, stack_index, type))
 	{
 	}
 

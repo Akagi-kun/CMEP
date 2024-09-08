@@ -1,6 +1,6 @@
 #include "Scripting/ILuaScript.hpp"
 
-#include "Scripting/Mappings.hpp"
+#include "Scripting/API/Global_API.hpp"
 #include "Scripting/Utility.hpp"
 
 #include "Logging/Logging.hpp"
@@ -75,28 +75,25 @@ namespace Engine::Scripting
 		// Register C callback functions from mappings
 		void registerCallbacks(lua_State* state, const std::shared_ptr<Logging::Logger>& logger)
 		{
-			lua_newtable(state);
-
-			for (auto& mapping : Mappings::mappings)
+			// Push global mappings into global namespace
+			for (auto& mapping : API::global_mappings)
 			{
 				lua_pushcfunction(state, mapping.second);
-				lua_setfield(state, -2, mapping.first.c_str());
+				lua_setglobal(state, mapping.first.c_str());
 			}
-
-			lua_setglobal(state, "engine");
 
 			// Replace print by a simpleLog wrapper
 			void* ptr_obj = lua_newuserdata(state, sizeof(std::weak_ptr<Logging::Logger>));
 			new (ptr_obj) std::weak_ptr<Logging::Logger>(logger);
 
-			lua_pushcclosure(state, Mappings::Functions::PrintReplace, 1);
+			lua_pushcclosure(state, API::printReplace, 1);
 			lua_setglobal(state, "print");
 
 			lua_settop(state, 0);
 		}
 
-		// Catches exceptions when executing lua-mapped C/C++ code and returns them as luaL_error
-		// functions can still return them manually,
+		// Catches exceptions when executing lua-mapped C/C++ code and returns them as
+		// luaL_error functions can still return them manually,
 		int luajitExceptionWrap(lua_State* state, lua_CFunction function)
 		{
 			try
@@ -111,7 +108,8 @@ namespace Engine::Scripting
 			{
 				return luaL_error(
 					state,
-					"Exception wrapper caught exception!\n\tFunction: %s\n\tStacktrace: %s",
+					"Exception wrapper caught exception!\n\tFunction: %s\n\tStacktrace: "
+					"%s",
 					Utility::mappingReverseLookup(function).data(),
 					unrollExceptions(e).c_str()
 				);
@@ -125,14 +123,11 @@ namespace Engine::Scripting
 		void registerRequirePath(lua_State* state, ILuaScript* with_script)
 		{
 			lua_getglobal(state, LUA_LOADLIBNAME);
-			ENGINE_EXCEPTION_ON_ASSERT(
-				lua_istable(state, -1),
-				"Lua Module 'package' is not loaded!"
-			)
+			ENGINE_EXCEPTION_ON_ASSERT(lua_istable(state, -1), "Lua Module 'package' is not loaded!")
 
 			std::filesystem::path require_origin = with_script->getPath();
-			std::string require_origin_str = require_origin.remove_filename().parent_path().string(
-			);
+			std::string			  require_origin_str =
+				require_origin.remove_filename().parent_path().string();
 
 			std::string require_path_str = (require_origin_str + "/modules/?.lua");
 
@@ -158,7 +153,8 @@ namespace Engine::Scripting
 				"void* generator_supplier,const char* generator_supplier_fn"
 				");"
 				"]]\n"
-				"package.loaded['cdef'] = { CreateGeneratorData = lib.CreateGeneratorData }";
+				"package.loaded['cdef'] = { CreateGeneratorData = "
+				"lib.CreateGeneratorData }";
 
 			int load_return = luaL_loadstring(state, preload_code);
 			if (load_return != LUA_OK)
@@ -245,11 +241,7 @@ namespace Engine::Scripting
 
 #pragma region Public functions
 
-	ILuaScript::ILuaScript(
-		Engine*				  with_engine,
-		std::filesystem::path with_path,
-		bool				  with_enable_profiling
-	)
+	ILuaScript::ILuaScript(Engine* with_engine, std::filesystem::path with_path, bool with_enable_profiling)
 		: InternalEngineObject(with_engine), path(std::move(with_path)),
 		  enable_profiling(with_enable_profiling)
 	{
