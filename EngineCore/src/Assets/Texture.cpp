@@ -3,8 +3,11 @@
 #include "Logging/Logging.hpp"
 
 #include "Engine.hpp"
+#include "InternalEngineObject.hpp"
 
 #include <cassert>
+#include <memory>
+#include <utility>
 
 namespace Engine::Rendering
 {
@@ -15,12 +18,10 @@ namespace Engine::Rendering
 
 	Texture::~Texture()
 	{
-		this->logger->simpleLog<decltype(this)>(
-			Logging::LogLevel::VerboseDebug,
-			"Destructor called"
-		);
+		this->logger->simpleLog<decltype(this)>(Logging::LogLevel::VerboseDebug, "Destructor called");
 
-		delete this->data->texture_image;
+		delete this->data->image;
+		delete this->data->sampler;
 
 		this->data.reset();
 	}

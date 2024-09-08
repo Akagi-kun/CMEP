@@ -103,11 +103,12 @@ namespace Engine::Rendering
 
 		if (texture)
 		{
-			auto* texture_image = texture->getTextureImage();
+			auto* image	  = texture->getImage();
+			auto* sampler = texture->getSampler();
 
 			vk::DescriptorImageInfo descriptor_image_info(
-				*texture_image->texture_sampler,
-				*texture_image->getNativeViewHandle(),
+				*sampler,
+				*image->getNativeViewHandle(),
 				vk::ImageLayout::eShaderReadOnlyOptimal
 			);
 

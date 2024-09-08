@@ -20,7 +20,8 @@ namespace Engine::Rendering::Vulkan
 		{
 		}
 
-		[[nodiscard]] vk::SampleCountFlagBits getMSAASamples() const;
+		[[nodiscard]] vk::PhysicalDeviceLimits getLimits() const;
+		[[nodiscard]] vk::SampleCountFlagBits  getMSAASamples() const;
 
 		[[nodiscard]] std::string getDeviceName() const;
 

@@ -71,7 +71,7 @@ namespace Engine::Factories
 					unsigned int size_y;
 
 					error = lodepng::decode(data, size_x, size_y, path.string());
-					size = {size_x, size_y};
+					size  = {size_x, size_y};
 				}
 
 				ENGINE_EXCEPTION_ON_ASSERT_NOMSG(error == 0)
@@ -91,14 +91,7 @@ namespace Engine::Factories
 					filtering
 				);
 
-				initRaw(
-					texture_data,
-					std::move(data),
-					4,
-					filtering,
-					sampler_address_mode,
-					size
-				);
+				initRaw(texture_data, std::move(data), 4, filtering, sampler_address_mode, size);
 				break;
 			}
 			default:
@@ -110,10 +103,7 @@ namespace Engine::Factories
 		}
 
 		std::shared_ptr<Rendering::Texture> texture =
-			std::make_shared<Rendering::Texture>(
-				owner_engine,
-				std::move(texture_data)
-			);
+			std::make_shared<Rendering::Texture>(owner_engine, std::move(texture_data));
 
 		return texture;
 	}
@@ -133,49 +123,38 @@ namespace Engine::Factories
 		texture_data->color_fmt = color_format;
 		texture_data->size		= size;
 
-		auto memory_size = static_cast<vk::DeviceSize>(size.x * size.y) *
-						   channel_count;
+		auto memory_size = static_cast<vk::DeviceSize>(size.x * size.y) * channel_count;
 
-		Rendering::Vulkan::Instance* vk_instance = owner_engine->getVulkanInstance(
-		);
+		Rendering::Vulkan::Instance* vk_instance = owner_engine->getVulkanInstance();
 		assert(vk_instance);
 
-		Rendering::Vulkan::Buffer* staging_buffer =
-			new Rendering::Vulkan::StagingBuffer(
-				vk_instance,
-				raw_data.data(),
-				memory_size
-			);
+		Rendering::Vulkan::StagingBuffer staging_buffer(vk_instance, raw_data.data(), memory_size);
 
-		texture_data->texture_image =
-			new Rendering::Vulkan::SampledImage<Rendering::Vulkan::ViewedImage>(
-				vk_instance,
-				{size.x, size.y},
-				vk::SampleCountFlagBits::e1,
-				vk::Format::eR8G8B8A8Srgb,
-				vk::ImageUsageFlagBits::eTransferDst |
-					vk::ImageUsageFlagBits::eSampled,
-				filtering, // Filter for both mag and min
-				sampler_address_mode,
-				vk::ImageAspectFlagBits::eColor
-			);
+		texture_data->image = new Rendering::Vulkan::ViewedImage(
+			vk_instance,
+			{size.x, size.y},
+			vk::SampleCountFlagBits::e1,
+			vk::Format::eR8G8B8A8Srgb,
+			vk::ImageUsageFlagBits::eTransferDst | vk::ImageUsageFlagBits::eSampled,
+			vk::ImageAspectFlagBits::eColor
+		);
+
+		texture_data->sampler = new Rendering::Vulkan::Sampler(
+			vk_instance->getLogicalDevice(),
+			filtering,
+			sampler_address_mode,
+			vk_instance->getPhysicalDevice()->getLimits().maxSamplerAnisotropy
+		);
 
 		// Transfer image layout to compatible with transfers
-		texture_data->texture_image->transitionImageLayout(
-			vk::ImageLayout::eTransferDstOptimal
-		);
+		texture_data->image->transitionImageLayout(vk::ImageLayout::eTransferDstOptimal);
 
-		auto command_buffer =
-			vk_instance->getCommandPool()->constructCommandBuffer();
+		auto command_buffer = vk_instance->getCommandPool()->constructCommandBuffer();
 
-		command_buffer.copyBufferImage(staging_buffer, texture_data->texture_image);
-
-		delete staging_buffer;
+		command_buffer.copyBufferImage(&staging_buffer, texture_data->image);
 
 		// Transfer image layout to compatible with rendering
-		texture_data->texture_image->transitionImageLayout(
-			vk::ImageLayout::eShaderReadOnlyOptimal
-		);
+		texture_data->image->transitionImageLayout(vk::ImageLayout::eShaderReadOnlyOptimal);
 
 		return 0;
 	}

@@ -13,6 +13,11 @@ namespace Engine::Rendering::Vulkan
 {
 #pragma region Public
 
+	vk::PhysicalDeviceLimits PhysicalDevice::getLimits() const
+	{
+		return getProperties().limits;
+	}
+
 	vk::SampleCountFlagBits PhysicalDevice::getMSAASamples() const
 	{
 		return Utility::getMaxFramebufferSampleCount(*this);

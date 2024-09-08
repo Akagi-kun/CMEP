@@ -56,7 +56,7 @@ namespace Engine::Scripting::API
 
 			if (auto locked_asset_manager = asset_manager.lock())
 			{
-				auto asset = locked_asset_manager->GetFont(name);
+				auto asset = locked_asset_manager->getFont(name);
 
 				void* ud_ptr = lua_newuserdata(state, sizeof(std::weak_ptr<Rendering::Font>));
 				new (ud_ptr) std::weak_ptr<Rendering::Font>(asset);
@@ -79,7 +79,7 @@ namespace Engine::Scripting::API
 
 			if (auto locked_asset_manager = asset_manager.lock())
 			{
-				auto asset = locked_asset_manager->GetTexture(name);
+				auto asset = locked_asset_manager->getTexture(name);
 
 				void* ud_ptr = lua_newuserdata(state, sizeof(std::weak_ptr<Rendering::Texture>));
 				new (ud_ptr) std::weak_ptr<Rendering::Texture>(asset);
@@ -102,7 +102,7 @@ namespace Engine::Scripting::API
 
 			if (auto locked_asset_manager = asset_manager.lock())
 			{
-				auto asset = locked_asset_manager->GetLuaScript(name);
+				auto asset = locked_asset_manager->getLuaScript(name);
 
 				void* ud_ptr = lua_newuserdata(state, sizeof(std::weak_ptr<ILuaScript>));
 				new (ud_ptr) std::weak_ptr<ILuaScript>(asset);

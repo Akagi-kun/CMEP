@@ -1,5 +1,6 @@
 #pragma once
 
+#include <cstddef>
 #include <cstdint>
 #include <functional>
 
@@ -10,7 +11,7 @@ namespace Engine
 	public:
 		Asset() = default;
 
-		void AssignUID(uint_least32_t with_uid)
+		void assignUID(uint_least32_t with_uid)
 		{
 			uid = with_uid;
 		}

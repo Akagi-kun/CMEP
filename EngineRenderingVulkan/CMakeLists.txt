@@ -18,8 +18,8 @@ set(SRC_FILES
 
 	src/objects/Image.cpp
 	src/objects/Buffer.cpp
+	src/objects/Sampler.cpp
 	src/objects/CommandPool.cpp
-	src/objects/SampledImage.cpp
 	src/objects/CommandBuffer.cpp
 	)
 

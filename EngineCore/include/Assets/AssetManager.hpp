@@ -32,21 +32,22 @@ namespace Engine
 		AssetManager(Engine* with_engine);
 		~AssetManager();
 
-		void AddTexture(const std::string& name, const std::shared_ptr<Rendering::Texture>& asset);
+		void addTexture(const std::string& name, const std::shared_ptr<Rendering::Texture>& asset);
 
-		void AddFont(const std::string& name, const std::shared_ptr<Rendering::Font>& asset);
+		void addFont(const std::string& name, const std::shared_ptr<Rendering::Font>& asset);
 
-		void AddLuaScript(
-			const std::string& name,
+		void addLuaScript(
+			const std::string&							  name,
 			const std::shared_ptr<Scripting::ILuaScript>& asset
 		);
 
-		[[nodiscard]] std::shared_ptr<Rendering::Texture> GetTexture(const std::string& name);
-		[[nodiscard]] std::shared_ptr<Rendering::Font> GetFont(const std::string& name);
-		[[nodiscard]] std::shared_ptr<Scripting::ILuaScript> GetLuaScript(const std::string& name);
+		[[nodiscard]] std::shared_ptr<Rendering::Texture> getTexture(const std::string& name);
+		[[nodiscard]] std::shared_ptr<Rendering::Font> getFont(const std::string& name);
+		[[nodiscard]] std::shared_ptr<Scripting::ILuaScript> getLuaScript(const std::string& name
+		);
 
-		[[deprecated, nodiscard]] std::shared_ptr<void> GetAsset(
-			AssetType with_type,
+		[[deprecated, nodiscard]] std::shared_ptr<void> getAsset(
+			AssetType		   with_type,
 			const std::string& name
 		);
 
@@ -61,6 +62,6 @@ namespace Engine
 
 		std::unordered_map<std::string, std::shared_ptr<Scripting::ILuaScript>> luascripts;
 		std::unordered_map<std::string, std::shared_ptr<Rendering::Texture>> textures;
-		std::unordered_map<std::string, std::shared_ptr<Rendering::Font>> fonts;
+		std::unordered_map<std::string, std::shared_ptr<Rendering::Font>>	 fonts;
 	};
 } // namespace Engine

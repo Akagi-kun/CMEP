@@ -9,8 +9,14 @@
 #include "Exception.hpp"
 #include "InternalEngineObject.hpp"
 
+#include <memory>
+#include <string>
+
 namespace Engine
 {
+
+#pragma region Public
+
 	AssetManager::AssetManager(Engine* with_engine) : InternalEngineObject(with_engine)
 	{
 	}
@@ -36,38 +42,36 @@ namespace Engine
 	}
 
 #pragma region Adding Assets
-	void AssetManager::AddTexture(
+
+	void AssetManager::addTexture(
 		const std::string&						   name,
 		const std::shared_ptr<Rendering::Texture>& asset
 	)
 	{
-		asset->AssignUID(last_uid.texture++);
+		asset->assignUID(last_uid.texture++);
 		textures.emplace(name, asset);
 	}
 
-	void AssetManager::AddFont(
-		const std::string&						name,
-		const std::shared_ptr<Rendering::Font>& asset
-	)
+	void AssetManager::addFont(const std::string& name, const std::shared_ptr<Rendering::Font>& asset)
 	{
-		asset->AssignUID(last_uid.font++);
-
+		asset->assignUID(last_uid.font++);
 		fonts.emplace(name, asset);
 	}
 
-	void AssetManager::AddLuaScript(
+	void AssetManager::addLuaScript(
 		const std::string&							  name,
 		const std::shared_ptr<Scripting::ILuaScript>& asset
 	)
 	{
-		asset->AssignUID(last_uid.script++);
+		asset->assignUID(last_uid.script++);
 		luascripts.emplace(name, asset);
 	}
 
 #pragma endregion
 
 #pragma region Getting Assets
-	std::shared_ptr<Rendering::Texture> AssetManager::GetTexture(const std::string& name)
+
+	std::shared_ptr<Rendering::Texture> AssetManager::getTexture(const std::string& name)
 	{
 		if (textures.find(name) != textures.end())
 		{
@@ -83,7 +87,7 @@ namespace Engine
 		return nullptr;
 	}
 
-	std::shared_ptr<Rendering::Font> AssetManager::GetFont(const std::string& name)
+	std::shared_ptr<Rendering::Font> AssetManager::getFont(const std::string& name)
 	{
 		if (fonts.find(name) != fonts.end())
 		{
@@ -99,7 +103,7 @@ namespace Engine
 		return nullptr;
 	}
 
-	std::shared_ptr<Scripting::ILuaScript> AssetManager::GetLuaScript(const std::string& name)
+	std::shared_ptr<Scripting::ILuaScript> AssetManager::getLuaScript(const std::string& name)
 	{
 		if (luascripts.find(name) != luascripts.end())
 		{
@@ -115,7 +119,7 @@ namespace Engine
 		return nullptr;
 	}
 
-	[[nodiscard]] std::shared_ptr<void> AssetManager::GetAsset(
+	[[nodiscard]] std::shared_ptr<void> AssetManager::getAsset(
 		AssetType		   with_type,
 		const std::string& name
 	)
@@ -124,15 +128,15 @@ namespace Engine
 		{
 			case AssetType::FONT:
 			{
-				return GetFont(name);
+				return getFont(name);
 			}
 			case AssetType::SCRIPT:
 			{
-				return GetLuaScript(name);
+				return getLuaScript(name);
 			}
 			case AssetType::TEXTURE:
 			{
-				return GetTexture(name);
+				return getTexture(name);
 			}
 			default:
 			{
@@ -140,5 +144,9 @@ namespace Engine
 			}
 		}
 	}
+
 #pragma endregion
+
+#pragma endregion
+
 } // namespace Engine

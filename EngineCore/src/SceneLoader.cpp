@@ -49,11 +49,11 @@ namespace Engine
 				{
 					case Rendering::RendererSupplyData::Type::FONT:
 					{
-						return {type, asset_manager->GetFont(value)};
+						return {type, asset_manager->getFont(value)};
 					}
 					case Rendering::RendererSupplyData::Type::TEXTURE:
 					{
-						return {type, asset_manager->GetTexture(value)};
+						return {type, asset_manager->getTexture(value)};
 					}
 					default:
 					{
@@ -86,10 +86,7 @@ namespace Engine
 
 	SceneLoader::~SceneLoader()
 	{
-		this->logger->simpleLog<decltype(this)>(
-			Logging::LogLevel::VerboseDebug,
-			"Destructor called"
-		);
+		this->logger->simpleLog<decltype(this)>(Logging::LogLevel::VerboseDebug, "Destructor called");
 	}
 
 	std::shared_ptr<Scene> SceneLoader::loadScene(std::string scene_name)
@@ -168,15 +165,14 @@ namespace Engine
 			for (const auto& event_handler_entry : data["event_handlers"])
 			{
 				std::string event_handler_type = event_handler_entry["type"].get<std::string>();
-				std::string script_name		   = event_handler_entry["file"].get<std::string>();
-				std::string script_function	   = event_handler_entry["function"].get<std::string>();
+				std::string script_name = event_handler_entry["file"].get<std::string>();
+				std::string script_function = event_handler_entry["function"].get<std::string>();
 
-				EventHandling::EventType event_type = EnumStringConvertor<EventHandling::EventType>(
-					event_handler_type
-				);
+				EventHandling::EventType event_type =
+					EnumStringConvertor<EventHandling::EventType>(event_handler_type);
 
 				std::shared_ptr<Scripting::ILuaScript> event_handler =
-					locked_asset_manager->GetLuaScript(script_name);
+					locked_asset_manager->getLuaScript(script_name);
 
 				if (event_handler == nullptr)
 				{
@@ -209,9 +205,9 @@ namespace Engine
 			{
 				Factories::ObjectFactory::ObjectTemplate object_template{};
 
-				object_template.with_renderer	  = template_entry["renderer"].get<std::string>();
-				object_template.with_mesh_builder = template_entry["mesh_builder"].get<std::string>(
-				);
+				object_template.with_renderer = template_entry["renderer"].get<std::string>();
+				object_template.with_mesh_builder =
+					template_entry["mesh_builder"].get<std::string>();
 				object_template.with_shader = template_entry["shader_name"].get<std::string>();
 
 				for (auto& supply_entry : template_entry["renderer_supply_data"])
@@ -272,9 +268,9 @@ namespace Engine
 		static auto font_factory	= Factories::FontFactory(owner_engine);
 		static auto texture_factory = Factories::TextureFactory(owner_engine);
 
-		EnumStringConvertor<AssetType> asset_type	  = asset_entry["type"].get<std::string>();
-		std::string					   asset_name	  = asset_entry["name"].get<std::string>();
-		std::string					   asset_location = asset_entry["location"].get<std::string>();
+		EnumStringConvertor<AssetType> asset_type = asset_entry["type"].get<std::string>();
+		std::string asset_name	   = asset_entry["name"].get<std::string>();
+		std::string asset_location = asset_entry["location"].get<std::string>();
 
 		if (asset_type == AssetType::TEXTURE)
 		{
@@ -303,7 +299,7 @@ namespace Engine
 				sampling_mode
 			);
 
-			asset_manager->AddTexture(asset_name, texture);
+			asset_manager->addTexture(asset_name, texture);
 		}
 		else if (asset_type == AssetType::SCRIPT)
 		{
@@ -324,20 +320,22 @@ namespace Engine
 				);
 			}
 
-			asset_manager->AddLuaScript(asset_name, script);
+			asset_manager->addLuaScript(asset_name, script);
 		}
 		else if (asset_type == AssetType::FONT)
 		{
 			// Use a lambda as the callback to CreateFont
 			auto callback = [&](const std::filesystem::path& path) {
-				auto texture = asset_manager->GetTexture(path.string());
+				auto texture = asset_manager->getTexture(path.string());
 
 				if (texture == nullptr)
 				{
 					assert(!path.empty());
 
-					texture =
-						texture_factory.initFile(path, Rendering::Texture_InitFiletype::FILE_PNG);
+					texture = texture_factory.initFile(
+						path,
+						Rendering::Texture_InitFiletype::FILE_PNG
+					);
 				}
 
 				return texture;
@@ -346,7 +344,7 @@ namespace Engine
 			std::shared_ptr<Rendering::Font> font =
 				font_factory.createFont(scene_path + asset_location, callback);
 
-			asset_manager->AddFont(asset_name, font);
+			asset_manager->addFont(asset_name, font);
 		}
 		else
 		{

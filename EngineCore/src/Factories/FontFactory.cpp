@@ -37,10 +37,7 @@ namespace Engine::Factories
 			return Utility::SplitKVPair(Utility::StreamGetNextToken(from_stream), "=");
 		}
 
-		void parseBmfontEntryChar(
-			std::unique_ptr<Rendering::FontData>& font,
-			std::stringstream&					  line_stream
-		)
+		void parseBmfontEntryChar(std::unique_ptr<Rendering::FontData>& font, std::stringstream& line_stream)
 		{
 			// When reading the code in this function,
 			// take care to not die from pain as you see the horrible code I have written here.
@@ -223,7 +220,7 @@ namespace Engine::Factories
 
 		if (auto locked_asset_manager = asset_manager.lock())
 		{
-			std::shared_ptr<Rendering::Texture> texture = locked_asset_manager->GetTexture(
+			std::shared_ptr<Rendering::Texture> texture = locked_asset_manager->getTexture(
 				page_path.string()
 			);
 
@@ -275,8 +272,8 @@ namespace Engine::Factories
 			case BmFontLineType::CHARS:
 			{
 				// chars has only a single entry (the count of chars), no loop required
-				tie(key,
-					value) = Utility::SplitKVPair(Utility::StreamGetNextToken(line_stream), "=");
+				tie(key, value
+				) = Utility::SplitKVPair(Utility::StreamGetNextToken(line_stream), "=");
 				font->char_count = static_cast<unsigned int>(std::stoi(value));
 
 				break;
@@ -295,7 +292,9 @@ namespace Engine::Factories
 				}
 				catch (...)
 				{
-					std::throw_with_nested(ENGINE_EXCEPTION("Could not initialize a Font page!"));
+					std::throw_with_nested(
+						ENGINE_EXCEPTION("Could not initialize a Font page!")
+					);
 				}
 			}
 			default:
