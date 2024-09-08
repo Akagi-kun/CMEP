@@ -1,5 +1,6 @@
 #pragma once
 
+#include <cstddef>
 #include <type_traits>
 
 namespace Engine::Rendering::Vulkan
@@ -35,7 +36,7 @@ namespace Engine::Rendering::Vulkan
 			}
 		}
 
-		[[nodiscard]] value_t& GetHandle()
+		[[nodiscard]] value_t& getHandle()
 		{
 			return native_handle;
 		}
@@ -43,10 +44,10 @@ namespace Engine::Rendering::Vulkan
 	protected:
 		static constexpr bool is_pointer		  = std::is_pointer_v<value_t>;
 		static constexpr bool is_bool_convertible = std::is_convertible_v<value_t, bool>;
-		static constexpr bool default_ctor		  = std::is_default_constructible_v<value_t>;
+		static constexpr bool default_ctor = std::is_default_constructible_v<value_t>;
 		static constexpr bool nullptr_ctor = std::is_constructible_v<value_t, std::nullptr_t>;
 
-		constexpr value_t DefaultVal()
+		constexpr value_t defaultVal()
 		{
 			if constexpr (default_ctor)
 			{
@@ -58,7 +59,7 @@ namespace Engine::Rendering::Vulkan
 			}
 		}
 
-		value_t native_handle = DefaultVal();
+		value_t native_handle = defaultVal();
 	};
 
 } // namespace Engine::Rendering::Vulkan

@@ -1,9 +1,12 @@
 #pragma once
 
+#include "Rendering/MeshBuilders/IMeshBuilder.hpp"
 #include "Rendering/Renderers/Renderer.hpp"
 #include "Rendering/Transform.hpp"
 
 #include "InternalEngineObject.hpp"
+
+#include <vector>
 
 namespace Engine
 {
@@ -17,31 +20,31 @@ namespace Engine
 		);
 		~Object() noexcept;
 
-		void ScreenSizeInform(Rendering::ScreenSize with_screen_size);
+		void screenSizeInform(Rendering::ScreenSize with_screen_size);
 
 		// TODO: relative functions?
-		void SetPosition(glm::vec3 with_pos);
-		void SetSize(glm::vec3 with_size);
-		void SetRotation(glm::vec3 with_rotation);
+		void setPosition(glm::vec3 with_pos);
+		void setSize(glm::vec3 with_size);
+		void setRotation(glm::vec3 with_rotation);
 
-		[[nodiscard]] Rendering::IRenderer* GetRenderer()
+		[[nodiscard]] Rendering::IRenderer* getRenderer()
 		{
 			return renderer;
 		}
-		[[nodiscard]] Rendering::IMeshBuilder* GetMeshBuilder()
+		[[nodiscard]] Rendering::IMeshBuilder* getMeshBuilder()
 		{
 			return mesh_builder;
 		}
 
-		[[nodiscard]] glm::vec3 GetPosition() const noexcept;
-		[[nodiscard]] glm::vec3 GetSize() const noexcept;
-		[[nodiscard]] glm::vec3 GetRotation() const noexcept;
+		[[nodiscard]] glm::vec3 getPosition() const noexcept;
+		[[nodiscard]] glm::vec3 getSize() const noexcept;
+		[[nodiscard]] glm::vec3 getRotation() const noexcept;
 
-		void SetParentTransform(Rendering::Transform with_parent_transform);
+		void setParentTransform(Rendering::Transform with_parent_transform);
 
-		void AddChild(Object* with_child);
-		void RemoveChildren();
-		void SetParent(Object* with_parent);
+		void addChild(Object* with_child);
+		void removeChildren();
+		void setParent(Object* with_parent);
 
 	private:
 		Rendering::Transform transform;
@@ -56,6 +59,6 @@ namespace Engine
 		Rendering::IRenderer*	 renderer	  = nullptr;
 		Rendering::IMeshBuilder* mesh_builder = nullptr;
 
-		void UpdateRenderer();
+		void updateRenderer();
 	};
 } // namespace Engine

@@ -20,20 +20,19 @@ namespace Engine::Rendering::Vulkan
 		{
 		}
 
-		[[nodiscard]] vk::SampleCountFlagBits GetMSAASamples() const;
+		[[nodiscard]] vk::SampleCountFlagBits getMSAASamples() const;
 
-		[[nodiscard]] std::string GetDeviceName() const;
+		[[nodiscard]] std::string getDeviceName() const;
 
-		[[nodiscard]] vk::Format FindSupportedFormat(
+		[[nodiscard]] vk::Format findSupportedFormat(
 			const std::vector<vk::Format>& candidates,
 			vk::ImageTiling				   tiling,
 			vk::FormatFeatureFlags		   features
 		) const;
 
-		[[nodiscard]] vk::Format FindSupportedDepthFormat() const;
+		[[nodiscard]] vk::Format findSupportedDepthFormat() const;
 
-		[[nodiscard]] std::optional<QueueFamilyIndices> FindVulkanQueueFamilies(
-			const Surface* with_surface
+		[[nodiscard]] std::optional<QueueFamilyIndices> findVulkanQueueFamilies(const Surface* with_surface
 		) const;
 	};
 

@@ -8,6 +8,7 @@
 #include "Scripting/Utility.hpp"
 
 #include "Exception.hpp"
+#include "InternalEngineObject.hpp"
 #include "glm/glm.hpp"
 #include "lua.hpp"
 
@@ -27,7 +28,7 @@ namespace Engine::Scripting
 	{
 	}
 
-	int GeneratorLuaScript::InternalCall(const std::string& function, void* data)
+	int GeneratorLuaScript::internalCall(const std::string& function, void* data)
 	{
 		auto* generator_data = static_cast<std::array<void*, 3>*>(data);
 
@@ -40,9 +41,9 @@ namespace Engine::Scripting
 
 		if (auto locked_supplier = supplier->script.lock())
 		{
-			auto* state_ptr = locked_supplier->GetState();
+			auto* state_ptr = locked_supplier->getState();
 
-			CreateCrossStateCallBridge(&(state_ptr), supplier->function, coroutine);
+			createCrossStateCallBridge(&(state_ptr), supplier->function, coroutine);
 		}
 
 		lua_pushnumber(coroutine, static_cast<lua_Number>(world_pos->x));
@@ -61,7 +62,7 @@ namespace Engine::Scripting
 					throw ENGINE_EXCEPTION(std::format(
 						"Failed executing generator script! lua_resume: {}\n{}",
 						last_ret,
-						Utility::UnwindStack(coroutine)
+						Utility::unwindStack(coroutine)
 					));
 				}
 

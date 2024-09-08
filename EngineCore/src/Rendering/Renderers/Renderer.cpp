@@ -23,20 +23,17 @@
 
 namespace Engine::Rendering
 {
-	IRenderer::IRenderer(
-		Engine*			 with_engine,
-		IMeshBuilder*	 with_builder,
-		std::string_view with_pipeline_program
-	)
+	IRenderer::IRenderer(Engine* with_engine, IMeshBuilder* with_builder, std::string_view with_pipeline_program)
 		: InternalEngineObject(with_engine), pipeline_name(with_pipeline_program),
-		  pipeline_manager(with_engine->GetVulkanPipelineManager()), mesh_builder(with_builder)
+		  pipeline_manager(with_engine->getVulkanPipelineManager()),
+		  mesh_builder(with_builder)
 	{
-		Vulkan::Instance* instance = this->owner_engine->GetVulkanInstance();
+		Vulkan::Instance* instance = this->owner_engine->getVulkanInstance();
 
 		settings = {
-			instance->GetWindow()->GetSwapchain()->GetExtent(),
+			instance->getWindow()->getSwapchain()->getExtent(),
 			pipeline_name,
-			mesh_builder->GetSupportedTopology()
+			mesh_builder->getSupportedTopology()
 		};
 
 		settings.descriptor_settings.emplace(
@@ -58,7 +55,7 @@ namespace Engine::Rendering
 		mesh_builder = nullptr;
 	}
 
-	void IRenderer::SupplyData(const RendererSupplyData& data)
+	void IRenderer::supplyData(const RendererSupplyData& data)
 	{
 		switch (data.type)
 		{
@@ -67,12 +64,14 @@ namespace Engine::Rendering
 				const auto& payload_ref = std::get<std::weak_ptr<void>>(data.payload);
 				assert(!payload_ref.expired() && "Cannot lock expired payload!");
 
-				auto font_cast			= std::static_pointer_cast<Font>(payload_ref.lock());
-				texture					= font_cast->GetPageTexture(0);
+				auto font_cast = std::static_pointer_cast<Font>(payload_ref.lock());
+				// TODO: Support multiple-page fonts?
+				//       page 0 may not be guaranteed to be present
+				texture		   = font_cast->getPageTexture(0);
 				has_updated_descriptors = false;
 
 				// TODO: Remove
-				mesh_builder->SupplyData({MeshBuilderSupplyData::Type::FONT, font_cast});
+				mesh_builder->supplyData({MeshBuilderSupplyData::Type::FONT, font_cast});
 				break;
 			}
 			case RendererSupplyData::Type::TEXTURE:
@@ -80,7 +79,7 @@ namespace Engine::Rendering
 				const auto& payload_ref = std::get<std::weak_ptr<void>>(data.payload);
 				assert(!payload_ref.expired() && "Cannot lock expired payload!");
 
-				texture					= std::static_pointer_cast<Texture>(payload_ref.lock());
+				texture = std::static_pointer_cast<Texture>(payload_ref.lock());
 				has_updated_descriptors = false;
 				break;
 			}
@@ -91,7 +90,7 @@ namespace Engine::Rendering
 		}
 	}
 
-	void IRenderer::UpdateDescriptorSets()
+	void IRenderer::updateDescriptorSets()
 	{
 		has_updated_descriptors = true;
 
@@ -100,15 +99,15 @@ namespace Engine::Rendering
 			settings.descriptor_settings[1].opt_match_hash = std::hash<Asset>{}(*texture);
 		}
 
-		pipeline = pipeline_manager->GetPipeline(settings);
+		pipeline = pipeline_manager->getPipeline(settings);
 
 		if (texture)
 		{
-			auto* texture_image = texture->GetTextureImage();
+			auto* texture_image = texture->getTextureImage();
 
 			vk::DescriptorImageInfo descriptor_image_info(
 				*texture_image->texture_sampler,
-				*texture_image->GetNativeViewHandle(),
+				*texture_image->getNativeViewHandle(),
 				vk::ImageLayout::eShaderReadOnlyOptimal
 			);
 
@@ -123,70 +122,71 @@ namespace Engine::Rendering
 				{}
 			);
 
-			pipeline->UpdateDescriptorSetsAll(descriptor_write);
+			pipeline->updateDescriptorSetsAll(descriptor_write);
 		}
 	}
 
-	void IRenderer::Render(Vulkan::CommandBuffer* command_buffer, uint32_t current_frame)
+	void IRenderer::render(Vulkan::CommandBuffer* command_buffer, uint32_t current_frame)
 	{
 		if (!has_updated_matrices)
 		{
-			UpdateMatrices();
+			updateMatrices();
 		}
 
 		if (!has_updated_descriptors)
 		{
-			UpdateDescriptorSets();
+			updateDescriptorSets();
 		}
 
 		// If builder requests a rebuild, do it
-		if (mesh_builder->NeedsRebuild())
+		if (mesh_builder->needsRebuild())
 		{
-			mesh_builder->Build();
+			mesh_builder->build();
 		}
-		mesh_context = mesh_builder->GetContext();
+		mesh_context = mesh_builder->getContext();
 
 		// Render only if VBO non-empty
 		if (mesh_context.vbo_vert_count > 0)
 		{
-			pipeline->GetUniformBuffer(current_frame)
-				->MemoryCopy(&matrix_data, sizeof(RendererMatrixData));
+			pipeline->getUniformBuffer(current_frame)
+				->memoryCopy(&matrix_data, sizeof(RendererMatrixData));
 
-			pipeline->BindPipeline(*command_buffer->GetHandle(), current_frame);
+			pipeline->bindPipeline(*command_buffer->getHandle(), current_frame);
 
-			command_buffer->GetHandle().bindVertexBuffers(0, {*mesh_context.vbo->GetHandle()}, {0});
+			command_buffer->getHandle()
+				.bindVertexBuffers(0, {*mesh_context.vbo->getHandle()}, {0});
 
-			command_buffer->GetHandle()
+			command_buffer->getHandle()
 				.draw(static_cast<uint32_t>(mesh_context.vbo_vert_count), 1, 0, 0);
 		}
 	}
 
-	void Renderer2D::UpdateMatrices()
+	void Renderer2D::updateMatrices()
 	{
 		glm::mat4 projection{};
-		if (auto locked_scene_manager = this->owner_engine->GetSceneManager().lock())
+		if (auto locked_scene_manager = this->owner_engine->getSceneManager().lock())
 		{
-			projection = locked_scene_manager->GetProjectionMatrixOrtho();
+			projection = locked_scene_manager->getProjectionMatrixOrtho();
 		}
 
-		matrix_data.mat_model = CalculateModelMatrix(transform, parent_transform);
+		matrix_data.mat_model = calculateModelMatrix(transform, parent_transform);
 		matrix_data.mat_vp	  = projection;
 
 		has_updated_matrices = true;
 	}
 
-	void Renderer3D::UpdateMatrices()
+	void Renderer3D::updateMatrices()
 	{
 		glm::mat4 view;
 		glm::mat4 projection;
-		if (auto locked_scene_manager = this->owner_engine->GetSceneManager().lock())
+		if (auto locked_scene_manager = this->owner_engine->getSceneManager().lock())
 		{
-			view	   = locked_scene_manager->GetCameraViewMatrix();
-			projection = locked_scene_manager->GetProjectionMatrix(screen);
+			view	   = locked_scene_manager->getCameraViewMatrix();
+			projection = locked_scene_manager->getProjectionMatrix(screen);
 		}
 		projection[1][1] *= -1;
 
-		matrix_data.mat_model = CalculateModelMatrix(transform, parent_transform);
+		matrix_data.mat_model = calculateModelMatrix(transform, parent_transform);
 		matrix_data.mat_vp	  = projection * view;
 
 		has_updated_matrices = true;

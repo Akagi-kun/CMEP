@@ -3,13 +3,14 @@
 #include "rendering/Surface.hpp"
 
 #include <set>
+#include <string>
+#include <vector>
 
 namespace Engine::Rendering::Vulkan
 {
 	const std::vector<const char*> DeviceScore::device_extensions = {
-		VK_KHR_SWAPCHAIN_EXTENSION_NAME,
-		VK_EXT_DESCRIPTOR_INDEXING_EXTENSION_NAME,
-		VK_EXT_ROBUSTNESS_2_EXTENSION_NAME,
+		vk::KHRSwapchainExtensionName,
+		vk::EXTRobustness2ExtensionName,
 	};
 
 	DeviceScore::DeviceScore(const PhysicalDevice& with_device, const Surface* const with_surface)
@@ -43,7 +44,7 @@ namespace Engine::Rendering::Vulkan
 		}
 		// NOLINTEND(readability-magic-numbers)
 
-		auto indices = with_device.FindVulkanQueueFamilies(with_surface);
+		auto indices = with_device.findVulkanQueueFamilies(with_surface);
 
 		// Return (unsuitable) if some of the required functions aren't supported
 		if (!indices.has_value())
@@ -52,7 +53,7 @@ namespace Engine::Rendering::Vulkan
 			return;
 		}
 
-		if (!CheckDeviceExtensionSupport(with_device))
+		if (!checkDeviceExtensionSupport(with_device))
 		{
 			unsupported_reason = "required extensions unsupported";
 			return;
@@ -64,9 +65,11 @@ namespace Engine::Rendering::Vulkan
 			return;
 		}
 
-		bool swap_chain_adequate				   = false;
-		SwapChainSupportDetails swap_chain_support = with_surface->QuerySwapChainSupport(with_device);
-		swap_chain_adequate = !swap_chain_support.formats.empty() && !swap_chain_support.present_modes.empty();
+		SwapChainSupportDetails swap_chain_support = with_surface->querySwapChainSupport(with_device
+		);
+
+		bool swap_chain_adequate = !swap_chain_support.formats.empty() &&
+								   !swap_chain_support.present_modes.empty();
 
 		if (!swap_chain_adequate)
 		{
@@ -78,11 +81,15 @@ namespace Engine::Rendering::Vulkan
 		supported = true;
 	}
 
-	bool DeviceScore::CheckDeviceExtensionSupport(const vk::raii::PhysicalDevice& device)
+	bool DeviceScore::checkDeviceExtensionSupport(const vk::raii::PhysicalDevice& device)
 	{
-		std::vector<vk::ExtensionProperties> available_extensions = device.enumerateDeviceExtensionProperties();
+		std::vector<vk::ExtensionProperties> available_extensions =
+			device.enumerateDeviceExtensionProperties();
 
-		std::set<std::string> required_extensions(device_extensions.begin(), device_extensions.end());
+		std::set<std::string> required_extensions(
+			device_extensions.begin(),
+			device_extensions.end()
+		);
 
 		for (const auto& extension : available_extensions)
 		{

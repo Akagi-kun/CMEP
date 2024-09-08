@@ -37,7 +37,7 @@ namespace Engine
 	namespace
 	{
 		template <typename supply_data_t>
-		[[nodiscard]] supply_data_t InterpretSupplyData(
+		[[nodiscard]] supply_data_t interpretSupplyData(
 			AssetManager*				 asset_manager,
 			typename supply_data_t::Type type,
 			const std::string&			 value
@@ -86,23 +86,23 @@ namespace Engine
 
 	SceneLoader::~SceneLoader()
 	{
-		this->logger->SimpleLog<decltype(this)>(
+		this->logger->simpleLog<decltype(this)>(
 			Logging::LogLevel::VerboseDebug,
 			"Destructor called"
 		);
 	}
 
-	std::shared_ptr<Scene> SceneLoader::LoadScene(std::string scene_name)
+	std::shared_ptr<Scene> SceneLoader::loadScene(std::string scene_name)
 	{
 		std::shared_ptr<Scene> new_scene = std::make_shared<Scene>(owner_engine);
 
-		this->logger->SimpleLog<decltype(this)>(
+		this->logger->simpleLog<decltype(this)>(
 			Logging::LogLevel::Info,
 			"Loading scene: '%s'",
 			scene_name.c_str()
 		);
 
-		LoadSceneInternal(new_scene, scene_name);
+		loadSceneInternal(new_scene, scene_name);
 
 		return new_scene;
 	}
@@ -111,7 +111,7 @@ namespace Engine
 
 #pragma region Protected
 
-	void SceneLoader::LoadSceneInternal(std::shared_ptr<Scene>& scene, std::string& scene_name)
+	void SceneLoader::loadSceneInternal(std::shared_ptr<Scene>& scene, std::string& scene_name)
 	{
 		std::string scene_path = scene_prefix + scene_name + "/";
 
@@ -129,7 +129,7 @@ namespace Engine
 			std::throw_with_nested(ENGINE_EXCEPTION("Failed on json parse"));
 		}
 
-		this->logger->SimpleLog<decltype(this)>(
+		this->logger->simpleLog<decltype(this)>(
 			Logging::LogLevel::VerboseDebug,
 			"Loading scene prefix is: %s",
 			scene_path.c_str()
@@ -138,7 +138,7 @@ namespace Engine
 		try
 		{
 			// Load Assets
-			LoadSceneAssets(data, scene_path);
+			loadSceneAssets(data, scene_path);
 		}
 		catch (...)
 		{
@@ -148,10 +148,10 @@ namespace Engine
 		try
 		{
 			// Load Event Handlers
-			LoadSceneEventHandlers(data, scene);
+			loadSceneEventHandlers(data, scene);
 
 			// Load Templates
-			LoadSceneTemplates(data, scene);
+			loadSceneTemplates(data, scene);
 		}
 		catch (...)
 		{
@@ -159,9 +159,9 @@ namespace Engine
 		}
 	}
 
-	void SceneLoader::LoadSceneEventHandlers(nlohmann::json& data, std::shared_ptr<Scene>& scene)
+	void SceneLoader::loadSceneEventHandlers(nlohmann::json& data, std::shared_ptr<Scene>& scene)
 	{
-		std::weak_ptr<AssetManager> asset_manager = owner_engine->GetAssetManager();
+		std::weak_ptr<AssetManager> asset_manager = owner_engine->getAssetManager();
 		if (auto locked_asset_manager = asset_manager.lock())
 		{
 			// Load scene event handlers
@@ -192,16 +192,16 @@ namespace Engine
 				);
 			}
 
-			this->logger->SimpleLog<decltype(this)>(
+			this->logger->simpleLog<decltype(this)>(
 				Logging::LogLevel::Debug,
 				"Done stage: Event Handlers"
 			);
 		}
 	}
 
-	void SceneLoader::LoadSceneTemplates(nlohmann::json& data, std::shared_ptr<Scene>& scene)
+	void SceneLoader::loadSceneTemplates(nlohmann::json& data, std::shared_ptr<Scene>& scene)
 	{
-		std::weak_ptr<AssetManager> asset_manager = owner_engine->GetAssetManager();
+		std::weak_ptr<AssetManager> asset_manager = owner_engine->getAssetManager();
 		if (auto locked_asset_manager = asset_manager.lock())
 		{
 			// Load scene object templates
@@ -221,7 +221,7 @@ namespace Engine
 					std::string val = supply_entry[1].get<std::string>();
 
 					object_template.renderer_supply_list.emplace_back(
-						InterpretSupplyData<Rendering::RendererSupplyData>(
+						interpretSupplyData<Rendering::RendererSupplyData>(
 							locked_asset_manager.get(),
 							type,
 							val
@@ -236,7 +236,7 @@ namespace Engine
 					std::string val = supply_entry[1].get<std::string>();
 
 					object_template.meshbuilder_supply_list.emplace_back(
-						InterpretSupplyData<Rendering::MeshBuilderSupplyData>(
+						interpretSupplyData<Rendering::MeshBuilderSupplyData>(
 							locked_asset_manager.get(),
 							type,
 							val
@@ -246,23 +246,23 @@ namespace Engine
 
 				std::string name = template_entry["name"].get<std::string>();
 
-				scene->LoadTemplatedObject(name, object_template);
+				scene->loadTemplatedObject(name, object_template);
 
-				this->logger->SimpleLog<decltype(this)>(
+				this->logger->simpleLog<decltype(this)>(
 					Logging::LogLevel::VerboseDebug,
 					"Loaded template '%s'",
 					name.c_str()
 				);
 			}
 
-			this->logger->SimpleLog<decltype(this)>(
+			this->logger->simpleLog<decltype(this)>(
 				Logging::LogLevel::Debug,
 				"Done stage: Templates"
 			);
 		}
 	}
 
-	void SceneLoader::LoadSceneAsset(
+	void SceneLoader::loadSceneAsset(
 		std::shared_ptr<AssetManager>& asset_manager,
 		nlohmann::json&				   asset_entry,
 		const std::string&			   scene_path
@@ -296,7 +296,7 @@ namespace Engine
 				);
 			}
 
-			auto texture = texture_factory.InitFile(
+			auto texture = texture_factory.initFile(
 				scene_path + asset_location,
 				Rendering::Texture_InitFiletype::FILE_PNG,
 				filtering,
@@ -337,14 +337,14 @@ namespace Engine
 					assert(!path.empty());
 
 					texture =
-						texture_factory.InitFile(path, Rendering::Texture_InitFiletype::FILE_PNG);
+						texture_factory.initFile(path, Rendering::Texture_InitFiletype::FILE_PNG);
 				}
 
 				return texture;
 			};
 
 			std::shared_ptr<Rendering::Font> font =
-				font_factory.CreateFont(scene_path + asset_location, callback);
+				font_factory.createFont(scene_path + asset_location, callback);
 
 			asset_manager->AddFont(asset_name, font);
 		}
@@ -358,9 +358,9 @@ namespace Engine
 		}
 	}
 
-	void SceneLoader::LoadSceneAssets(nlohmann::json& data, const std::string& scene_path)
+	void SceneLoader::loadSceneAssets(nlohmann::json& data, const std::string& scene_path)
 	{
-		std::weak_ptr<AssetManager> asset_manager = owner_engine->GetAssetManager();
+		std::weak_ptr<AssetManager> asset_manager = owner_engine->getAssetManager();
 
 		if (auto locked_asset_manager = asset_manager.lock())
 		{
@@ -368,7 +368,7 @@ namespace Engine
 			{
 				try
 				{
-					LoadSceneAsset(locked_asset_manager, asset_entry, scene_path);
+					loadSceneAsset(locked_asset_manager, asset_entry, scene_path);
 				}
 				catch (...)
 				{
@@ -379,7 +379,7 @@ namespace Engine
 				}
 			}
 
-			this->logger->SimpleLog<decltype(this)>(Logging::LogLevel::Debug, "Done stage: Assets");
+			this->logger->simpleLog<decltype(this)>(Logging::LogLevel::Debug, "Done stage: Assets");
 		}
 	}
 

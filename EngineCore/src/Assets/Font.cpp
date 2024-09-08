@@ -5,8 +5,14 @@
 
 #include "Logging/Logging.hpp"
 
+#include "Exception.hpp"
+#include "InternalEngineObject.hpp"
+
 #include <cassert>
+#include <memory>
+#include <optional>
 #include <string>
+#include <utility>
 
 namespace Engine::Rendering
 {
@@ -19,48 +25,51 @@ namespace Engine::Rendering
 
 	Font::~Font()
 	{
-		logger->SimpleLog<decltype(this)>(Logging::LogLevel::VerboseDebug, "Destructor called");
+		logger->simpleLog<decltype(this)>(Logging::LogLevel::VerboseDebug, "Destructor called");
 
 		data.reset();
 	}
 
-	const FontChar* Font::GetChar(char character_id) const
+	std::shared_ptr<Texture> Font::getPageTexture(int page)
 	{
-		auto find_ret = data->chars.find(character_id);
+		auto find_ret = data->pages.find(page);
+		if (find_ret != data->pages.end())
+		{
+			return find_ret->second;
+		}
+
+		throw ENGINE_EXCEPTION("Failed getting page texture!");
+	}
+
+	std::shared_ptr<const Texture> Font::getPageTexture(int page) const
+	{
+		auto find_ret = data->pages.find(page);
+		if (find_ret != data->pages.end())
+		{
+			return find_ret->second;
+		}
+
+		throw ENGINE_EXCEPTION("Failed getting page texture!");
+	}
+
+	std::optional<const FontChar*> Font::getChar(char character) const
+	{
+		auto find_ret = data->chars.find(character);
 		if (find_ret != data->chars.end())
 		{
 			return &find_ret->second;
 		}
-		return nullptr;
+		return {};
 	}
 
-	std::shared_ptr<Texture> Font::GetPageTexture(int page)
-	{
-		auto find_ret = data->pages.find(page);
-		if (find_ret != data->pages.end())
-		{
-			return find_ret->second;
-		}
-		return nullptr;
-	}
-
-	std::shared_ptr<const Texture> Font::GetPageTexture(int page) const
-	{
-		auto find_ret = data->pages.find(page);
-		if (find_ret != data->pages.end())
-		{
-			return find_ret->second;
-		}
-		return nullptr;
-	}
-
-	std::optional<std::string> Font::GetFontInfoParameter(const std::string& name) const
+	std::optional<std::string> Font::getFontInfoParameter(const std::string& name) const
 	{
 		auto find_ret = data->info.find(name);
 		if (find_ret != data->info.end())
 		{
 			return find_ret->second;
 		}
+
 		return {};
 	}
 

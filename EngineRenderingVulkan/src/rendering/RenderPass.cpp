@@ -12,9 +12,9 @@ namespace Engine::Rendering::Vulkan
 	RenderPass::RenderPass(InstanceOwned::value_t with_instance, vk::Format with_format)
 		: InstanceOwned(with_instance)
 	{
-		const auto& physical_device = instance->GetPhysicalDevice();
+		const auto& physical_device = instance->getPhysicalDevice();
 
-		const auto msaa_samples = physical_device->GetMSAASamples();
+		const auto msaa_samples = physical_device->getMSAASamples();
 
 		vk::AttachmentDescription color_attachment(
 			{},
@@ -30,7 +30,7 @@ namespace Engine::Rendering::Vulkan
 
 		vk::AttachmentDescription depth_attachment(
 			{},
-			physical_device->FindSupportedDepthFormat(),
+			physical_device->findSupportedDepthFormat(),
 			msaa_samples,
 			vk::AttachmentLoadOp::eClear,
 			vk::AttachmentStoreOp::eDontCare,
@@ -88,7 +88,7 @@ namespace Engine::Rendering::Vulkan
 
 		vk::RenderPassCreateInfo create_info({}, attachments, subpass, dependency, {});
 
-		LogicalDevice* logical_device = instance->GetLogicalDevice();
+		LogicalDevice* logical_device = instance->getLogicalDevice();
 
 		native_handle = logical_device->createRenderPass(create_info);
 	}

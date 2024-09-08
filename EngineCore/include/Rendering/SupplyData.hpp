@@ -5,6 +5,7 @@
 #include "Scripting/ILuaScript.hpp"
 
 #include <cassert>
+#include <cstdint>
 #include <memory>
 #include <string>
 #include <utility>
@@ -58,11 +59,11 @@ namespace Engine::Rendering
 			{
 				case Type::FONT:
 				{
-					return PayloadCompareOp<std::weak_ptr<void>, Font>(payload, other.payload);
+					return payloadCompareOp<std::weak_ptr<void>, Font>(payload, other.payload);
 				}
 				case Type::TEXTURE:
 				{
-					return PayloadCompareOp<std::weak_ptr<void>, Texture>(payload, other.payload);
+					return payloadCompareOp<std::weak_ptr<void>, Texture>(payload, other.payload);
 				}
 				default:
 				{
@@ -74,7 +75,7 @@ namespace Engine::Rendering
 		}
 
 		template <typename value_t, typename cast_t>
-		[[nodiscard]] bool PayloadCompareOp(payload_t left, payload_t right) const
+		[[nodiscard]] bool payloadCompareOp(payload_t left, payload_t right) const
 			requires(std::is_same_v<value_t, std::weak_ptr<void>>)
 		{
 			const auto& left_payload_ref = std::get<value_t>(left);

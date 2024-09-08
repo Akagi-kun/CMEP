@@ -2,18 +2,29 @@
 
 #include "Assets/Font.hpp"
 #include "Assets/Texture.hpp"
+#include "Rendering/MeshBuilders/IMeshBuilder.hpp"
+#include "Rendering/MeshBuilders/MeshBuildContext.hpp"
+#include "Rendering/SupplyData.hpp"
+#include "Rendering/Transform.hpp"
+
+#include "Logging/Logging.hpp"
 
 #include "Engine.hpp"
 #include "Exception.hpp"
 #include "backend/Instance.hpp"
 
+#include <cassert>
+#include <format>
 #include <iterator>
+#include <memory>
+#include <string>
+#include <vector>
 
 namespace Engine::Rendering
 {
-	void TextMeshBuilder::SupplyData(const MeshBuilderSupplyData& data)
+	void TextMeshBuilder::supplyData(const MeshBuilderSupplyData& data)
 	{
-		IMeshBuilder::SupplyData(data);
+		IMeshBuilder::supplyData(data);
 
 		switch (data.type)
 		{
@@ -39,7 +50,7 @@ namespace Engine::Rendering
 		}
 	}
 
-	void TextMeshBuilder::Build()
+	void TextMeshBuilder::build()
 	{
 		if (context.vbo != nullptr)
 		{
@@ -49,13 +60,15 @@ namespace Engine::Rendering
 			mesh.clear();
 		}
 
-		const auto* window_data = owner_engine->GetVulkanInstance()->GetWindow();
-		screen_size				= window_data->GetFramebufferSize();
+		const auto* window_data = owner_engine->getVulkanInstance()->getWindow();
+		screen_size				= window_data->getFramebufferSize();
 
-		auto size_param = font->GetFontInfoParameter("size");
+		auto size_param = font->getFontInfoParameter("size");
 		if (!size_param.has_value())
 		{
-			throw ENGINE_EXCEPTION("Could not find parameter 'size' in font! Malformed font file?");
+			throw ENGINE_EXCEPTION(
+				"Could not find parameter 'size' in font! Malformed font file?"
+			);
 		}
 		int font_size = std::stoi(size_param.value());
 
@@ -67,7 +80,7 @@ namespace Engine::Rendering
 		float char_origin_y = 0.f;
 
 		// Iteratively generate a quad for each character based on font information
-		for (char text_char : text)
+		for (char character : text)
 		{
 			// Following calculations assume that font sizes are specified in pixels
 			// Selected font size is assumed to be 1px in all calculations
@@ -80,7 +93,7 @@ namespace Engine::Rendering
 			// (as screen size increases, this value decreases)
 			const auto screen_size_ratio = (1.0f / static_cast<float>(screen_size.y));
 
-			if (text_char == '\n')
+			if (character == '\n')
 			{
 				// Simulate a newline
 				char_origin_y += screen_size_ratio;
@@ -89,43 +102,61 @@ namespace Engine::Rendering
 			else
 			{
 				// Get character info
-				const Rendering::FontChar* chardata = font->GetChar(text_char);
+				const Rendering::FontChar* char_data = nullptr;
+
+				auto char_data_opt = font->getChar(character);
+				if (char_data_opt.has_value())
+				{
+					char_data = char_data_opt.value();
+				}
+				else
+				{
+					// TODO: Handle characters not in the font
+					throw ENGINE_EXCEPTION(std::format(
+						"Tried to access font character outside of range (invalid "
+						"character "
+						"'{}')",
+						character
+					));
+				}
 
 				// Check if font contains this character
-				if (chardata == nullptr)
+				if (char_data == nullptr)
 				{
-					logger->SimpleLog<void>(
+					logger->simpleLog<void>(
 						Logging::LogLevel::Error,
 						"Char 0x%x is not found in set font",
-						text_char
+						character
 					);
 					continue;
 				}
 
 				// Get texture information
-				ImageSize texture_size = font->GetPageTexture(chardata->page)->GetSize();
+				ImageSize texture_size = font->getPageTexture(char_data->page)->getSize();
+
 				assert(texture_size.x > 0 && texture_size.y > 0);
 
 				// Character parameters as specified in .fnt file
-				const auto char_x	   = static_cast<float>(chardata->x);
-				const auto char_y	   = static_cast<float>(chardata->y);
-				const auto char_width  = static_cast<float>(chardata->width);
-				const auto char_height = static_cast<float>(chardata->height);
+				const auto char_x	   = static_cast<float>(char_data->x);
+				const auto char_y	   = static_cast<float>(char_data->y);
+				const auto char_width  = static_cast<float>(char_data->width);
+				const auto char_height = static_cast<float>(char_data->height);
 
 				// Offset origin by xoffset (specified in .fnt file) of this char
-				const float position_x = char_origin_x + ((static_cast<float>(chardata->xoffset) *
-														   font_size_ratio) /
-														  static_cast<float>(screen_size.x));
+				const float position_x = char_origin_x +
+										 ((static_cast<float>(char_data->xoffset) *
+										   font_size_ratio) /
+										  static_cast<float>(screen_size.x));
 				const float position_y = char_origin_y;
 				const float position_z = 0.0f;
 
 				// position_x is already set so we can
 				// move origin to the next character using xadvance from font
-				char_origin_x += (static_cast<float>(chardata->xadvance) * font_size_ratio) /
+				char_origin_x += (static_cast<float>(char_data->xadvance) * font_size_ratio) /
 								 static_cast<float>(screen_size.x);
 
 				// If current character is space we can skip generating a mesh for it
-				if (text_char == ' ')
+				if (character == ' ')
 				{
 					continue;
 				}
@@ -133,10 +164,10 @@ namespace Engine::Rendering
 				// Convert character size to screen-space coordinates
 				// in renderer, multiply with selected size
 				//
-				// Final size equation: ((character_width_px / font_size_px) / screen_width_ss) *
-				// selected_size_px
+				// Final size equation: ((character_width_px / font_size_px) /
+				// screen_width_ss) * selected_size_px
 				//
-				const float char_width_ratio  = (char_width / static_cast<float>(font_size));
+				const float char_width_ratio = (char_width / static_cast<float>(font_size));
 				const float char_height_ratio = (char_height / static_cast<float>(font_size));
 				const float size_x = (char_width_ratio / static_cast<float>(screen_size.x));
 				const float size_y = (char_height_ratio / static_cast<float>(screen_size.y));
@@ -205,7 +236,7 @@ namespace Engine::Rendering
 		std::copy(generated_mesh.begin(), generated_mesh.end(), std::back_inserter(mesh));
 
 		context = MeshBuildContext();
-		context.RebuildVBO(instance, mesh);
+		context.rebuildVBO(instance, mesh);
 		needs_rebuild = false;
 	}
 } // namespace Engine::Rendering

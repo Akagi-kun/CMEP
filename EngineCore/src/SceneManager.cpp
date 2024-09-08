@@ -28,7 +28,7 @@ namespace Engine
 	SceneManager::SceneManager(Engine* with_engine) : InternalEngineObject(with_engine)
 	{
 		// Reset transform and rotation
-		this->logger = owner_engine->GetLogger();
+		this->logger = owner_engine->getLogger();
 
 		std::shared_ptr<Scene> default_scene = std::make_shared<Scene>(with_engine);
 
@@ -37,46 +37,47 @@ namespace Engine
 		scene_loader = std::make_unique<SceneLoader>(with_engine);
 
 		// Reset transform and rotation
-		SetCameraHVRotation({0.0, 0.0});
-		SetCameraTransform({0.0, 0.0, 0.0});
+		setCameraRotation({0.0, 0.0});
+		setCameraTransform({0.0, 0.0, 0.0});
 	}
 
 	SceneManager::~SceneManager()
 	{
-		this->logger->SimpleLog<decltype(this)>(Logging::LogLevel::Info, "Destructor called");
+		this->logger->simpleLog<decltype(this)>(Logging::LogLevel::Info, "Destructor called");
 
 		scenes.clear();
 
 		scene_loader.reset();
 	}
 
-	void SceneManager::OnCameraUpdated()
+	void SceneManager::onCameraUpdated()
 	{
 		auto& current_scene = scenes.at(current_scene_name);
 
 		// Explicitly update matrices of all objects
 		// since otherwise they'd update them only on transform updates
-		for (const auto& [name, ptr] : current_scene->GetAllObjects())
+		for (const auto& [name, ptr] : current_scene->getAllObjects())
 		{
-			auto* object_renderer = static_cast<Rendering::IRenderer*>(ptr->GetRenderer());
+			auto* object_renderer = static_cast<Rendering::IRenderer*>(ptr->getRenderer());
 			assert(object_renderer != nullptr);
 
-			object_renderer->UpdateMatrices();
+			object_renderer->updateMatrices();
 		}
 	}
 
-	void SceneManager::SetSceneLoadPrefix(const std::string& scene_prefix)
+	void SceneManager::setSceneLoadPrefix(const std::string& scene_prefix)
 	{
 		scene_loader->scene_prefix = scene_prefix;
 	}
 
-	void SceneManager::LoadScene(const std::string& scene_name)
+	// TODO: Pass Scene* here? maybe don't do any loading in the manager?
+	void SceneManager::loadScene(const std::string& scene_name)
 	{
 		assert(owner_engine != nullptr);
 
 		try
 		{
-			scenes.emplace(scene_name, scene_loader->LoadScene(scene_name));
+			scenes.emplace(scene_name, scene_loader->loadScene(scene_name));
 		}
 		catch (...)
 		{
@@ -84,37 +85,37 @@ namespace Engine
 		}
 	}
 
-	void SceneManager::SetScene(const std::string& scene_name)
+	void SceneManager::setScene(const std::string& scene_name)
 	{
 		current_scene_name = scene_name;
 	}
 
-	std::shared_ptr<Scene>& SceneManager::GetSceneCurrent()
+	std::shared_ptr<Scene>& SceneManager::getSceneCurrent()
 	{
 		return scenes.at(current_scene_name);
 	}
 
-	glm::vec3 SceneManager::GetLightTransform()
+	glm::vec3 SceneManager::getLightTransform()
 	{
 		return light_position;
 	}
 
-	void SceneManager::SetLightTransform(glm::vec3 newpos)
+	void SceneManager::setLightTransform(glm::vec3 newpos)
 	{
 		light_position = newpos;
 	}
 
-	glm::vec3 SceneManager::GetCameraTransform()
+	glm::vec3 SceneManager::getCameraTransform()
 	{
 		return camera_transform;
 	}
 
-	glm::vec2 SceneManager::GetCameraHVRotation()
+	glm::vec2 SceneManager::getCameraRotation()
 	{
 		return camera_hv_rotation;
 	}
 
-	glm::mat4 SceneManager::GetProjectionMatrix(Rendering::ScreenSize screen) const
+	glm::mat4 SceneManager::getProjectionMatrix(Rendering::ScreenSize screen) const
 	{
 		static constexpr float nearplane = 0.1f;
 		static constexpr float farplane	 = 1000.0f;
@@ -127,12 +128,12 @@ namespace Engine
 		);
 	}
 
-	glm::mat4 SceneManager::GetProjectionMatrixOrtho()
+	glm::mat4 SceneManager::getProjectionMatrixOrtho()
 	{
 		return glm::ortho(0.0f, 1.0f, 0.0f, 1.0f);
 	}
 
-	glm::mat4 SceneManager::GetCameraViewMatrix()
+	glm::mat4 SceneManager::getCameraViewMatrix()
 	{
 		auto pitch = glm::radians(camera_hv_rotation.y);
 		auto yaw   = glm::radians(camera_hv_rotation.x);
@@ -155,13 +156,13 @@ namespace Engine
 		return view_matrix;
 	}
 
-	void SceneManager::SetCameraTransform(glm::vec3 transform)
+	void SceneManager::setCameraTransform(glm::vec3 transform)
 	{
 		camera_transform = transform;
-		OnCameraUpdated();
+		onCameraUpdated();
 	}
 
-	void SceneManager::SetCameraHVRotation(glm::vec2 hvrotation)
+	void SceneManager::setCameraRotation(glm::vec2 hvrotation)
 	{
 		static constexpr float y_center = 180.f;
 		static constexpr float y_min	= y_center - 90.f;
@@ -194,6 +195,6 @@ namespace Engine
 		}
 
 		camera_hv_rotation = hvrotation;
-		OnCameraUpdated();
+		onCameraUpdated();
 	}
 } // namespace Engine

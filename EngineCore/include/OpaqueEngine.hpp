@@ -17,12 +17,11 @@ namespace Engine
 		CMEP_EXPORT OpaqueEngine(std::shared_ptr<Logging::Logger>& logger) noexcept;
 		CMEP_EXPORT ~OpaqueEngine() noexcept;
 
-		[[noreturn]] CMEP_EXPORT void ThrowTest();
+		[[noreturn]] CMEP_EXPORT void throwTest();
 
-		CMEP_EXPORT void Init();
-		CMEP_EXPORT void Run();
+		CMEP_EXPORT void run();
 
-		CMEP_EXPORT void ConfigFile(const char* path);
+		CMEP_EXPORT void configFile(const char* path);
 
 	private:
 		std::unique_ptr<Engine> d_engine;

@@ -7,7 +7,7 @@
 
 namespace Engine::Rendering
 {
-	[[nodiscard]] inline glm::mat4 CalculateModelMatrix(
+	[[nodiscard]] inline glm::mat4 calculateModelMatrix(
 		const Transform& local_transform,
 		const Transform& parent_transform
 	)
@@ -18,7 +18,8 @@ namespace Engine::Rendering
 		glm::mat4 model = glm::scale(
 			glm::translate(
 				glm::scale(
-					glm::translate(glm::identity<glm::mat4>(), parent_transform.pos) * glm::mat4_cast(parent_rotation),
+					glm::translate(glm::identity<glm::mat4>(), parent_transform.pos) *
+						glm::mat4_cast(parent_rotation),
 					parent_transform.size
 				),
 				local_transform.pos

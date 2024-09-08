@@ -14,10 +14,16 @@
 #include "rendering/Window.hpp"
 #include "vulkan/vulkan_raii.hpp"
 
+#include <string>
+#include <utility>
 #include <vector>
 
 namespace Engine::Rendering::Vulkan
 {
+#if defined(ENGINERENDERINGVULKAN_LIBRARY_IMPLEMENTATION)
+	extern PFN_vkDebugUtilsMessengerCallbackEXT debug_callback;
+#endif
+
 	class Instance final : public Logging::SupportsLogging, public HandleWrapper<vk::raii::Instance>
 	{
 	public:
@@ -34,27 +40,27 @@ namespace Engine::Rendering::Vulkan
 		);
 		~Instance();
 
-		[[nodiscard]] Window* GetWindow()
+		[[nodiscard]] Window* getWindow()
 		{
 			return window;
 		}
 
-		[[nodiscard]] PhysicalDevice* GetPhysicalDevice()
+		[[nodiscard]] PhysicalDevice* getPhysicalDevice()
 		{
 			return physical_device;
 		}
 
-		[[nodiscard]] LogicalDevice* GetLogicalDevice()
+		[[nodiscard]] LogicalDevice* getLogicalDevice()
 		{
 			return logical_device;
 		}
 
-		[[nodiscard]] CommandPool* GetCommandPool()
+		[[nodiscard]] CommandPool* getCommandPool()
 		{
 			return command_pool;
 		}
 
-		[[nodiscard]] MemoryAllocator* GetGraphicMemoryAllocator()
+		[[nodiscard]] MemoryAllocator* getGraphicMemoryAllocator()
 		{
 			return memory_allocator;
 		}
@@ -76,9 +82,9 @@ namespace Engine::Rendering::Vulkan
 
 		static const std::vector<const char*> validation_layers;
 
-		void InitInstance();
-		void InitDevice();
+		void initInstance();
+		void initDevice();
 
-		static bool CheckVulkanValidationLayers();
+		static bool checkVulkanValidationLayers();
 	};
 } // namespace Engine::Rendering::Vulkan

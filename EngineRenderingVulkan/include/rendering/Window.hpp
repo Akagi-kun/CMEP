@@ -46,7 +46,8 @@ namespace Engine::Rendering::Vulkan
 
 		InputEvent(int with_action, int with_key, unsigned int with_mods)
 			: type(static_cast<InputEventType>(with_action)),
-			  key(static_cast<key_value_t>(with_key)), mods(static_cast<mods_value_t>(with_mods))
+			  key(static_cast<key_value_t>(with_key)),
+			  mods(static_cast<mods_value_t>(with_mods))
 		{
 		}
 	};
@@ -72,30 +73,30 @@ namespace Engine::Rendering::Vulkan
 		);
 		~Window();
 
-		void SetVisibility(bool visible);
+		void setVisibility(bool visible);
 
-		void			   SetShouldClose(bool should_close);
-		[[nodiscard]] bool GetShouldClose() const;
+		void			   setShouldClose(bool should_close);
+		[[nodiscard]] bool getShouldClose() const;
 
-		[[nodiscard]] const ScreenSize& GetFramebufferSize() const
+		[[nodiscard]] const ScreenSize& getFramebufferSize() const
 		{
 			return size;
 		}
 
-		[[nodiscard]] Swapchain* GetSwapchain()
+		[[nodiscard]] Swapchain* getSwapchain()
 		{
 			return swapchain;
 		}
 
-		[[nodiscard]] const Surface* GetSurface() const
+		[[nodiscard]] const Surface* getSurface() const
 		{
 			return &surface;
 		}
 
-		void CreateSwapchain();
-		void DrawFrame();
+		void createSwapchain();
+		void drawFrame();
 
-		void SetRenderCallback(
+		void setRenderCallback(
 			std::function<void(Vulkan::CommandBuffer*, uint32_t, void*)> with_callback,
 			void*														 with_user_data
 		)
@@ -115,25 +116,19 @@ namespace Engine::Rendering::Vulkan
 		std::function<void(Vulkan::CommandBuffer*, uint32_t, void*)> render_callback;
 		void*														 user_data = nullptr;
 
-		static Window* GetWindowPtrFromGLFW(GLFWwindow* window);
+		static Window* getWindowPtrFromGlfw(GLFWwindow* window);
 
-		static void CallbackOnWindowFocus(GLFWwindow* window, int focused);
-		static void CallbackOnFramebufferResize(GLFWwindow* window, int width, int height);
-		static void CallbackOnCursorEnterLeave(GLFWwindow* window, int entered);
-		static void CallbackOnCursorPosition(GLFWwindow* window, double xpos, double ypos);
-		static void CallbackOnKeyEvent(
-			GLFWwindow* window,
-			int			key,
-			int			scancode,
-			int			action,
-			int			mods
-		);
+		static void callbackOnWindowFocus(GLFWwindow* window, int focused);
+		static void callbackOnFramebufferResize(GLFWwindow* window, int width, int height);
+		static void callbackOnCursorEnterLeave(GLFWwindow* window, int entered);
+		static void callbackOnCursorPosition(GLFWwindow* window, double xpos, double ypos);
+		static void callbackOnKeyEvent(GLFWwindow* window, int key, int scancode, int action, int mods);
 
-		static vk::Extent2D ChooseVulkanSwapExtent(
+		static vk::Extent2D chooseVulkanSwapExtent(
 			const Window*					  with_window,
 			const vk::SurfaceCapabilitiesKHR& capabilities
 		);
 
-		void Resize(ScreenSize to_size);
+		void resize(ScreenSize to_size);
 	};
 } // namespace Engine::Rendering::Vulkan

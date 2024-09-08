@@ -14,7 +14,9 @@
 
 namespace Engine::Rendering::Vulkan
 {
-	class Image : public InstanceOwned, public HoldsVMA, public HandleWrapper<vk::raii::Image>
+	class Image : public InstanceOwned,
+				  public HoldsVMA,
+				  public HandleWrapper<vk::raii::Image>
 	{
 	public:
 		Image(
@@ -23,14 +25,15 @@ namespace Engine::Rendering::Vulkan
 			vk::SampleCountFlagBits num_samples,
 			vk::Format				format,
 			vk::ImageUsageFlags		usage,
-			vk::MemoryPropertyFlags properties	= vk::MemoryPropertyFlagBits::eDeviceLocal,
-			vk::ImageTiling			with_tiling = vk::ImageTiling::eOptimal
+			vk::MemoryPropertyFlags properties =
+				vk::MemoryPropertyFlagBits::eDeviceLocal,
+			vk::ImageTiling with_tiling = vk::ImageTiling::eOptimal
 		);
 		~Image();
 
-		void TransitionImageLayout(vk::ImageLayout new_layout);
+		void transitionImageLayout(vk::ImageLayout new_layout);
 
-		[[nodiscard]] ImageSize GetSize() const
+		[[nodiscard]] ImageSize getSize() const
 		{
 			return size;
 		}
@@ -56,11 +59,12 @@ namespace Engine::Rendering::Vulkan
 			vk::Format				format,
 			vk::ImageUsageFlags		usage,
 			vk::ImageAspectFlags	with_aspect_flags,
-			vk::MemoryPropertyFlags properties	= vk::MemoryPropertyFlagBits::eDeviceLocal,
-			vk::ImageTiling			with_tiling = vk::ImageTiling::eOptimal
+			vk::MemoryPropertyFlags properties =
+				vk::MemoryPropertyFlagBits::eDeviceLocal,
+			vk::ImageTiling with_tiling = vk::ImageTiling::eOptimal
 		);
 
-		[[nodiscard]] vk::raii::ImageView& GetNativeViewHandle()
+		[[nodiscard]] vk::raii::ImageView& getNativeViewHandle()
 		{
 			return view_handle;
 		}

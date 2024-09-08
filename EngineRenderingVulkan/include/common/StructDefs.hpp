@@ -5,6 +5,7 @@
 #include "vulkan/vulkan_raii.hpp"
 
 #include <array>
+#include <cstddef>
 #include <cstdint>
 #include <vector>
 
@@ -50,7 +51,7 @@ namespace Engine::Rendering
 		{
 		}
 
-		static constexpr std::array<vk::VertexInputBindingDescription, 1> GetBindingDescription()
+		static constexpr std::array<vk::VertexInputBindingDescription, 1> getBindingDescription()
 		{
 			return {
 				vk::VertexInputBindingDescription{
@@ -61,8 +62,7 @@ namespace Engine::Rendering
 			};
 		}
 
-		static constexpr std::array<vk::VertexInputAttributeDescription, 4>
-		GetAttributeDescriptions()
+		static constexpr std::array<vk::VertexInputAttributeDescription, 4> getAttributeDescriptions()
 		{
 			return {
 				vk::VertexInputAttributeDescription{

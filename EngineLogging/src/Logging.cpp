@@ -47,7 +47,7 @@ namespace Logging
 			(sizeof(level_to_string_table) / sizeof(level_t))
 		);
 
-		constexpr size_t GetMaxLevelLength()
+		constexpr size_t getMaxLevelLength()
 		{
 			size_t accum = 0;
 
@@ -59,19 +59,19 @@ namespace Logging
 			return accum;
 		}
 
-		uint64_t GetCurrentThreadID()
+		uint64_t getCurrentThreadId()
 		{
 			return std::hash<std::thread::id>{}(std::this_thread::get_id());
 		}
 
-		constexpr bool IsValid(Logging::LogLevel level)
+		constexpr bool isValid(Logging::LogLevel level)
 		{
 			return level >= LogLevel::VerboseDebug && level <= LogLevel::Exception;
 		}
 
-		std::string GetThreadOutputName(LoggerInternalState* state)
+		std::string getThreadOutputName(LoggerInternalState* state)
 		{
-			const uint64_t current_thread = GetCurrentThreadID();
+			const uint64_t current_thread = getCurrentThreadId();
 
 			auto find_result = state->threadid_name_map.find(current_thread);
 
@@ -110,9 +110,9 @@ namespace Logging
 		delete state;
 	}
 
-	void Logger::AddOutputHandle(Logging::LogLevel min_level, FILE* handle, bool use_colors)
+	void Logger::addOutputHandle(Logging::LogLevel min_level, FILE* handle, bool use_colors)
 	{
-		if (!IsValid(min_level))
+		if (!isValid(min_level))
 		{
 			return;
 		}
@@ -128,23 +128,23 @@ namespace Logging
 		state->outputs.push_back(new_map);
 	}
 
-	void Logger::MapCurrentThreadToName(std::string name)
+	void Logger::mapCurrentThreadToName(std::string name)
 	{
 		assert(name.length() <= 8);
 
 		// Protect member access
 		state->thread_mutex.lock();
 
-		uint64_t thread_id = GetCurrentThreadID();
+		uint64_t thread_id = getCurrentThreadId();
 
 		state->threadid_name_map.emplace(thread_id, name);
 
 		state->thread_mutex.unlock();
 	}
 
-	void Logger::InternalStartLog(Logging::LogLevel level, const char* log_prefix)
+	void Logger::internalStartLog(Logging::LogLevel level, const char* log_prefix)
 	{
-		if (!IsValid(level))
+		if (!isValid(level))
 		{
 			return;
 		}
@@ -161,7 +161,7 @@ namespace Logging
 			std::chrono::system_clock::now()
 		);
 
-		std::string thread_name = GetThreadOutputName(state);
+		std::string thread_name = getThreadOutputName(state);
 
 		// For all outputs
 		for (auto& output : state->outputs)
@@ -178,7 +178,7 @@ namespace Logging
 					thread_name,
 					output.use_colors ? color_str : "",
 					level_str,
-					GetMaxLevelLength(),
+					getMaxLevelLength(),
 					log_prefix != nullptr ? log_prefix : "no prefix"
 				);
 
@@ -188,17 +188,17 @@ namespace Logging
 		assert(thread_name.length() <= 8);
 	}
 
-	void Logger::Log(const char* format, ...)
+	void Logger::log(const char* format, ...)
 	{
 		assert(format != nullptr);
 
 		va_list args;
 		va_start(args, format);
-		InternalLog(format, args);
+		internalLog(format, args);
 		va_end(args);
 	}
 
-	void Logger::StopLog()
+	void Logger::stopLog()
 	{
 		for (auto& output : state->outputs)
 		{
@@ -218,7 +218,7 @@ namespace Logging
 	}
 
 	ATTRIBUTE_PRINTF_COMPAT(2, 0)
-	void Logger::InternalLog(const char* const format, va_list args)
+	void Logger::internalLog(const char* const format, va_list args)
 	{
 		for (auto& output : state->outputs)
 		{

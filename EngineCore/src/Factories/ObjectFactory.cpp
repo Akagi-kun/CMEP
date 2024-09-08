@@ -20,7 +20,7 @@
 
 namespace Engine::Factories::ObjectFactory
 {
-	object_factory_t GetSceneObjectFactory(
+	object_factory_t getSceneObjectFactory(
 		EnumStringConvertor<RendererType>	 with_renderer,
 		EnumStringConvertor<MeshBuilderType> with_mesh_builder
 	)
@@ -36,20 +36,20 @@ namespace Engine::Factories::ObjectFactory
 					{
 						using mb_type = Rendering::SpriteMeshBuilder;
 
-						return CreateSceneObject<r_type, mb_type>;
+						return createSceneObject<r_type, mb_type>;
 					}
 					case MeshBuilderType::TEXT:
 					{
 						using mb_type = Rendering::TextMeshBuilder;
 
-						return CreateSceneObject<r_type, mb_type>;
+						return createSceneObject<r_type, mb_type>;
 					}
 					// Axis is not compatible with 2D rendering
 					/* case MeshBuilderType::AXIS:
 					{
 						using mb_type = Rendering::AxisMeshBuilder;
 
-						return CreateSceneObject<r_type, mb_type>;
+						return createSceneObject<r_type, mb_type>;
 					} */
 					default:
 					{
@@ -66,25 +66,25 @@ namespace Engine::Factories::ObjectFactory
 					{
 						using mb_type = Rendering::SpriteMeshBuilder;
 
-						return CreateSceneObject<r_type, mb_type>;
+						return createSceneObject<r_type, mb_type>;
 					}
 					case MeshBuilderType::TEXT:
 					{
 						using mb_type = Rendering::TextMeshBuilder;
 
-						return CreateSceneObject<r_type, mb_type>;
+						return createSceneObject<r_type, mb_type>;
 					}
 					case MeshBuilderType::AXIS:
 					{
 						using mb_type = Rendering::AxisMeshBuilder;
 
-						return CreateSceneObject<r_type, mb_type>;
+						return createSceneObject<r_type, mb_type>;
 					}
 					case MeshBuilderType::GENERATOR:
 					{
 						using mb_type = Rendering::GeneratorMeshBuilder;
 
-						return CreateSceneObject<r_type, mb_type>;
+						return createSceneObject<r_type, mb_type>;
 					}
 					default:
 					{
@@ -99,10 +99,10 @@ namespace Engine::Factories::ObjectFactory
 		}
 	}
 
-	Object* InstantiateObjectTemplate(Engine* with_engine, ObjectTemplate& from_template)
+	Object* instantiateObjectTemplate(Engine* with_engine, ObjectTemplate& from_template)
 	{
 		const auto& factory =
-			GetSceneObjectFactory(from_template.with_renderer, from_template.with_mesh_builder);
+			getSceneObjectFactory(from_template.with_renderer, from_template.with_mesh_builder);
 
 		return factory(
 			with_engine,
@@ -112,7 +112,7 @@ namespace Engine::Factories::ObjectFactory
 		);
 	}
 
-	Rendering::RendererSupplyData GenerateRendererSupplyData(
+	Rendering::RendererSupplyData generateRendererSupplyData(
 		EnumStringConvertor<Rendering::RendererSupplyData::Type> of_type,
 		supply_data_value_t										 with_value
 	)
@@ -145,7 +145,7 @@ namespace Engine::Factories::ObjectFactory
 		}
 	}
 
-	Rendering::MeshBuilderSupplyData GenerateMeshBuilderSupplyData(
+	Rendering::MeshBuilderSupplyData generateMeshBuilderSupplyData(
 		EnumStringConvertor<Rendering::MeshBuilderSupplyData::Type> of_type,
 		supply_data_value_t											with_value
 	)

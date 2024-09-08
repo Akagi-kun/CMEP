@@ -1,9 +1,12 @@
 #pragma once
 
+#include "Rendering/Transform.hpp"
+
 #include "InternalEngineObject.hpp"
 #include "Scene.hpp"
 
 #include <memory>
+#include <string>
 #include <unordered_map>
 
 namespace Engine
@@ -18,23 +21,24 @@ namespace Engine
 		SceneManager(Engine* with_engine);
 		~SceneManager();
 
-		void					SetSceneLoadPrefix(const std::string& scene_prefix);
-		void					LoadScene(const std::string& scene_name);
-		void					SetScene(const std::string& scene_name);
-		std::shared_ptr<Scene>& GetSceneCurrent();
+		void					setSceneLoadPrefix(const std::string& scene_prefix);
+		void					loadScene(const std::string& scene_name);
+		void					setScene(const std::string& scene_name);
+		std::shared_ptr<Scene>& getSceneCurrent();
 
-		glm::vec3 GetLightTransform();
-		void	  SetLightTransform(glm::vec3 newpos);
+		// TODO: Remove?
+		glm::vec3 getLightTransform();
+		void	  setLightTransform(glm::vec3 newpos);
 
-		glm::vec3 GetCameraTransform();
-		glm::vec2 GetCameraHVRotation();
-		glm::mat4 GetCameraViewMatrix();
+		glm::vec3 getCameraTransform();
+		glm::vec2 getCameraRotation();
+		glm::mat4 getCameraViewMatrix();
 
-		[[nodiscard]] glm::mat4		   GetProjectionMatrix(Rendering::ScreenSize screen) const;
-		[[nodiscard]] static glm::mat4 GetProjectionMatrixOrtho();
+		[[nodiscard]] glm::mat4		   getProjectionMatrix(Rendering::ScreenSize screen) const;
+		[[nodiscard]] static glm::mat4 getProjectionMatrixOrtho();
 
-		void SetCameraTransform(glm::vec3 transform);
-		void SetCameraHVRotation(glm::vec2 hvrotation);
+		void setCameraTransform(glm::vec3 transform);
+		void setCameraRotation(glm::vec2 hvrotation);
 
 	private:
 		std::unordered_map<std::string, std::shared_ptr<Scene>> scenes;
@@ -50,6 +54,6 @@ namespace Engine
 
 		std::unique_ptr<SceneLoader> scene_loader;
 
-		void OnCameraUpdated();
+		void onCameraUpdated();
 	};
 } // namespace Engine

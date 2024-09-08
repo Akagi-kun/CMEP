@@ -9,7 +9,10 @@
 #include "Object.hpp"
 
 #include <map>
+#include <memory>
+#include <string>
 #include <unordered_map>
+#include <utility>
 
 namespace Engine
 {
@@ -24,14 +27,14 @@ namespace Engine
 		using InternalEngineObject::InternalEngineObject;
 		~Scene();
 
-		[[nodiscard]] const std::unordered_map<std::string, Object*>& GetAllObjects() noexcept;
+		[[nodiscard]] const std::unordered_map<std::string, Object*>& getAllObjects() noexcept;
 
-		void AddObject(const std::string& name, Object* ptr);
-		void AddTemplatedObject(const std::string& name, const std::string& template_name);
-		[[nodiscard]] Object* FindObject(const std::string& name);
-		void				  RemoveObject(const std::string& name);
+		void addObject(const std::string& name, Object* ptr);
+		void addTemplatedObject(const std::string& name, const std::string& template_name);
+		[[nodiscard]] Object* findObject(const std::string& name);
+		void				  removeObject(const std::string& name);
 
-		void LoadTemplatedObject(
+		void loadTemplatedObject(
 			const std::string&								name,
 			const Factories::ObjectFactory::ObjectTemplate& object
 		);

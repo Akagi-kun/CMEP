@@ -61,7 +61,8 @@ namespace Engine::Rendering::Vulkan
 			bool topo_match = (input_topology == other.input_topology);
 
 			bool extent_match =
-				((extent.width == other.extent.width) && (extent.height == other.extent.height));
+				((extent.width == other.extent.width) &&
+				 (extent.height == other.extent.height));
 
 			bool shader_match = (shader == other.shader);
 
@@ -71,7 +72,8 @@ namespace Engine::Rendering::Vulkan
 								 (scissor.offset.y == other.scissor.offset.y);
 
 			// If this results in false, the final value will also have to be false
-			bool settings_match = descriptor_settings.size() == other.descriptor_settings.size();
+			bool settings_match = descriptor_settings.size() ==
+								  other.descriptor_settings.size();
 
 			// O(pow(N, 2))
 			for (const auto& [binding, setting] : descriptor_settings)
@@ -95,10 +97,11 @@ namespace Engine::Rendering::Vulkan
 				}
 			}
 
-			return topo_match && extent_match && shader_match && scissor_match && settings_match;
+			return topo_match && extent_match && shader_match && scissor_match &&
+				   settings_match;
 		}
 
-		static vk::PipelineInputAssemblyStateCreateInfo GetInputAssemblySettings(
+		static vk::PipelineInputAssemblyStateCreateInfo getInputAssemblySettings(
 			vk::PrimitiveTopology with_topology,
 			bool				  enable_primitive_restart = false
 		)
@@ -112,7 +115,7 @@ namespace Engine::Rendering::Vulkan
 			return input_assembly;
 		}
 
-		static vk::Viewport GetViewportSettings(vk::Extent2D extent)
+		static vk::Viewport getViewportSettings(vk::Extent2D extent)
 		{
 			vk::Viewport viewport(
 				0.f,
@@ -126,7 +129,7 @@ namespace Engine::Rendering::Vulkan
 			return viewport;
 		}
 
-		static const vk::PipelineRasterizationStateCreateInfo* GetRasterizerSettings()
+		static const vk::PipelineRasterizationStateCreateInfo* getRasterizerSettings()
 		{
 			static vk::PipelineRasterizationStateCreateInfo rasterizer(
 				{},
@@ -146,7 +149,7 @@ namespace Engine::Rendering::Vulkan
 			return &rasterizer;
 		}
 
-		static const vk::PipelineMultisampleStateCreateInfo* GetMultisamplingSettings(
+		static const vk::PipelineMultisampleStateCreateInfo* getMultisamplingSettings(
 			vk::SampleCountFlagBits msaa_samples
 		)
 		{
@@ -156,7 +159,7 @@ namespace Engine::Rendering::Vulkan
 			return &multisampling;
 		}
 
-		static const vk::PipelineColorBlendAttachmentState* GetColorBlendAttachmentSettings()
+		static const vk::PipelineColorBlendAttachmentState* getColorBlendAttachmentSettings()
 		{
 			static vk::PipelineColorBlendAttachmentState color_blend_attachment(
 				vk::True,
@@ -173,21 +176,21 @@ namespace Engine::Rendering::Vulkan
 			return &color_blend_attachment;
 		}
 
-		static const vk::PipelineColorBlendStateCreateInfo* GetColorBlendSettings()
+		static const vk::PipelineColorBlendStateCreateInfo* getColorBlendSettings()
 		{
 			static vk::PipelineColorBlendStateCreateInfo color_blending(
 				{},
 				vk::False,
 				vk::LogicOp::eClear,
 				1,
-				PipelineSettings::GetColorBlendAttachmentSettings(),
+				PipelineSettings::getColorBlendAttachmentSettings(),
 				{0.f}
 			);
 
 			return &color_blending;
 		}
 
-		static const vk::PipelineDepthStencilStateCreateInfo* GetDepthStencilSettings()
+		static const vk::PipelineDepthStencilStateCreateInfo* getDepthStencilSettings()
 		{
 			static vk::PipelineDepthStencilStateCreateInfo depth_stencil(
 				{},

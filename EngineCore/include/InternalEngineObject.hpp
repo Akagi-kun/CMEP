@@ -14,12 +14,12 @@ namespace Engine
 		InternalEngineObject() = delete;
 		InternalEngineObject(Engine* with_engine);
 
-		Engine* GetOwnerEngine()
+		Engine* getOwnerEngine()
 		{
 			return this->owner_engine;
 		}
 
-		std::weak_ptr<Logging::Logger> GetLogger()
+		std::weak_ptr<Logging::Logger> getLogger()
 		{
 			return this->logger;
 		}

@@ -33,7 +33,7 @@ namespace Engine::Rendering::Vulkan
 
 	PipelineManager::~PipelineManager()
 	{
-		this->logger->SimpleLog<decltype(this)>(
+		this->logger->simpleLog<decltype(this)>(
 			Logging::LogLevel::Debug,
 			"Destructor called with %u pipelines left",
 			pipelines.size()
@@ -42,12 +42,12 @@ namespace Engine::Rendering::Vulkan
 		pipelines.clear();
 	}
 
-	PipelineUserRef* PipelineManager::GetPipeline(const PipelineSettings& with_settings)
+	PipelineUserRef* PipelineManager::getPipeline(const PipelineSettings& with_settings)
 	{
 		std::shared_ptr<Pipeline> pipeline = nullptr;
 		std::string_view		  reason;
 
-		std::tie(pipeline, reason) = FindPipeline(with_settings);
+		std::tie(pipeline, reason) = findPipeline(with_settings);
 
 		if (pipeline != nullptr)
 		{
@@ -56,7 +56,7 @@ namespace Engine::Rendering::Vulkan
 			return user_ref;
 		}
 
-		this->logger->SimpleLog<decltype(this)>(
+		this->logger->simpleLog<decltype(this)>(
 			Logging::LogLevel::VerboseDebug,
 			"Creating new pipeline (none found, '%s'), current pipelines: %u",
 			reason.data(),
@@ -67,13 +67,13 @@ namespace Engine::Rendering::Vulkan
 		pipeline = std::shared_ptr<Pipeline>(
 			new Pipeline(
 				instance,
-				instance->GetWindow()->GetSwapchain()->GetRenderPass(),
+				instance->getWindow()->getSwapchain()->getRenderPass(),
 				with_settings,
 				shader_path
 			),
 			// Pass a lambda deleter to remove it from the vector too
 			[&](Pipeline* ptr) {
-				this->PipelineDeallocCallback();
+				this->pipelineDeallocCallback();
 				delete ptr;
 			}
 		);
@@ -91,7 +91,7 @@ namespace Engine::Rendering::Vulkan
 	)
 		: InstanceOwned(with_instance), origin(std::move(with_origin))
 	{
-		user_data = origin->AllocateNewUserData();
+		user_data = origin->allocateNewUserData();
 	}
 
 	PipelineUserRef::~PipelineUserRef()
@@ -104,17 +104,17 @@ namespace Engine::Rendering::Vulkan
 		delete user_data;
 	}
 
-	void PipelineUserRef::UpdateDescriptorSets(per_frame_array<vk::WriteDescriptorSet> with_writes)
+	void PipelineUserRef::updateDescriptorSets(per_frame_array<vk::WriteDescriptorSet> with_writes)
 	{
-		Pipeline::UpdateDescriptorSets(*instance->GetLogicalDevice(), *user_data, with_writes);
+		Pipeline::updateDescriptorSets(*instance->getLogicalDevice(), *user_data, with_writes);
 	}
 
-	void PipelineUserRef::UpdateDescriptorSetsAll(const vk::WriteDescriptorSet& with_write)
+	void PipelineUserRef::updateDescriptorSetsAll(const vk::WriteDescriptorSet& with_write)
 	{
 		per_frame_array<vk::WriteDescriptorSet> writes;
 		std::fill(writes.begin(), writes.end(), with_write);
 
-		UpdateDescriptorSets(writes);
+		updateDescriptorSets(writes);
 	}
 
 #pragma endregion
@@ -122,7 +122,7 @@ namespace Engine::Rendering::Vulkan
 #pragma region Private
 
 	// string_view is guaranteed to be null-terminated
-	std::pair<std::shared_ptr<Pipeline>, std::string_view> PipelineManager::FindPipeline(
+	std::pair<std::shared_ptr<Pipeline>, std::string_view> PipelineManager::findPipeline(
 		const PipelineSettings& with_settings
 	)
 	{
@@ -147,10 +147,12 @@ namespace Engine::Rendering::Vulkan
 	}
 
 	// Called when a pipeline's ref counter reaches 0
-	void PipelineManager::PipelineDeallocCallback()
+	void PipelineManager::pipelineDeallocCallback()
 	{
 		// Delete all entries that are expired
-		std::erase_if(pipelines, [](auto pred_val) { return std::get<1>(pred_val).expired(); });
+		std::erase_if(pipelines, [](auto pred_val) {
+			return std::get<1>(pred_val).expired();
+		});
 	}
 
 #pragma endregion

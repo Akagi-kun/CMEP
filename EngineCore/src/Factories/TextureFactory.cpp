@@ -7,8 +7,10 @@
 #include "Exception.hpp"
 #include "InternalEngineObject.hpp"
 
+#include <cassert>
 #include <filesystem>
 #include <memory>
+#include <utility>
 #include <vector>
 
 #pragma warning(push, 2)
@@ -29,7 +31,7 @@ namespace Engine::Factories
 {
 	static constexpr size_t max_texture_size = 0x2fff;
 
-	std::shared_ptr<Rendering::Texture> TextureFactory::InitFile(
+	std::shared_ptr<Rendering::Texture> TextureFactory::initFile(
 		const std::filesystem::path&	path,
 		Rendering::Texture_InitFiletype filetype,
 		vk::Filter						filtering,
@@ -44,7 +46,7 @@ namespace Engine::Factories
 			));
 		}
 
-		this->logger->SimpleLog<decltype(this)>(
+		this->logger->simpleLog<decltype(this)>(
 			Logging::LogLevel::VerboseDebug,
 			"Initializing texture from file %s",
 			path.string().c_str()
@@ -62,25 +64,25 @@ namespace Engine::Factories
 				unsigned int		 error;
 
 				// lodepng uses references for output
-				// this makes it incompatible with ImageSize when defined with different sized
-				// integer
+				// this makes it incompatible with ImageSize when defined with
+				// different sized integer
 				{
 					unsigned int size_x;
 					unsigned int size_y;
 
-					error = lodepng::decode(data, std::ref(size_x), size_y, path.string());
-					size  = {size_x, size_y};
+					error = lodepng::decode(data, size_x, size_y, path.string());
+					size = {size_x, size_y};
 				}
 
 				ENGINE_EXCEPTION_ON_ASSERT_NOMSG(error == 0)
 
-				if (error != 0 || 0 >= size.x || size.x >= max_texture_size || 0 >= size.y ||
-					size.y >= max_texture_size)
+				if (error != 0 || 0 >= size.x || size.x >= max_texture_size ||
+					0 >= size.y || size.y >= max_texture_size)
 				{
 					throw ENGINE_EXCEPTION("Failed decoding PNG file!");
 				}
 
-				this->logger->SimpleLog<decltype(this)>(
+				this->logger->simpleLog<decltype(this)>(
 					Logging::LogLevel::VerboseDebug,
 					"Decoded png file %s; width %u; height %u; filter %u",
 					path.c_str(),
@@ -89,22 +91,34 @@ namespace Engine::Factories
 					filtering
 				);
 
-				InitRaw(texture_data, std::move(data), 4, filtering, sampler_address_mode, size);
+				initRaw(
+					texture_data,
+					std::move(data),
+					4,
+					filtering,
+					sampler_address_mode,
+					size
+				);
 				break;
 			}
 			default:
 			{
-				throw ENGINE_EXCEPTION("Unknown texture filetype passed to TextureFactory!");
+				throw ENGINE_EXCEPTION(
+					"Unknown texture filetype passed to TextureFactory!"
+				);
 			}
 		}
 
 		std::shared_ptr<Rendering::Texture> texture =
-			std::make_shared<Rendering::Texture>(owner_engine, std::move(texture_data));
+			std::make_shared<Rendering::Texture>(
+				owner_engine,
+				std::move(texture_data)
+			);
 
 		return texture;
 	}
 
-	int TextureFactory::InitRaw(
+	int TextureFactory::initRaw(
 		std::unique_ptr<Rendering::TextureData>& texture_data,
 		std::vector<unsigned char>				 raw_data,
 		int										 color_format,
@@ -119,13 +133,19 @@ namespace Engine::Factories
 		texture_data->color_fmt = color_format;
 		texture_data->size		= size;
 
-		auto memory_size = static_cast<vk::DeviceSize>(size.x * size.y) * channel_count;
+		auto memory_size = static_cast<vk::DeviceSize>(size.x * size.y) *
+						   channel_count;
 
-		Rendering::Vulkan::Instance* vk_instance = owner_engine->GetVulkanInstance();
+		Rendering::Vulkan::Instance* vk_instance = owner_engine->getVulkanInstance(
+		);
 		assert(vk_instance);
 
 		Rendering::Vulkan::Buffer* staging_buffer =
-			new Rendering::Vulkan::StagingBuffer(vk_instance, raw_data.data(), memory_size);
+			new Rendering::Vulkan::StagingBuffer(
+				vk_instance,
+				raw_data.data(),
+				memory_size
+			);
 
 		texture_data->texture_image =
 			new Rendering::Vulkan::SampledImage<Rendering::Vulkan::ViewedImage>(
@@ -133,23 +153,29 @@ namespace Engine::Factories
 				{size.x, size.y},
 				vk::SampleCountFlagBits::e1,
 				vk::Format::eR8G8B8A8Srgb,
-				vk::ImageUsageFlagBits::eTransferDst | vk::ImageUsageFlagBits::eSampled,
+				vk::ImageUsageFlagBits::eTransferDst |
+					vk::ImageUsageFlagBits::eSampled,
 				filtering, // Filter for both mag and min
 				sampler_address_mode,
 				vk::ImageAspectFlagBits::eColor
 			);
 
 		// Transfer image layout to compatible with transfers
-		texture_data->texture_image->TransitionImageLayout(vk::ImageLayout::eTransferDstOptimal);
+		texture_data->texture_image->transitionImageLayout(
+			vk::ImageLayout::eTransferDstOptimal
+		);
 
-		auto command_buffer = vk_instance->GetCommandPool()->ConstructCommandBuffer();
+		auto command_buffer =
+			vk_instance->getCommandPool()->constructCommandBuffer();
 
-		command_buffer.BufferImageCopy(staging_buffer, texture_data->texture_image);
+		command_buffer.copyBufferImage(staging_buffer, texture_data->texture_image);
 
 		delete staging_buffer;
 
 		// Transfer image layout to compatible with rendering
-		texture_data->texture_image->TransitionImageLayout(vk::ImageLayout::eShaderReadOnlyOptimal);
+		texture_data->texture_image->transitionImageLayout(
+			vk::ImageLayout::eShaderReadOnlyOptimal
+		);
 
 		return 0;
 	}

@@ -11,7 +11,7 @@
 
 namespace Engine::Rendering
 {
-	void AxisMeshBuilder::Build()
+	void AxisMeshBuilder::build()
 	{
 		if (context.vbo == nullptr)
 		{
@@ -29,7 +29,7 @@ namespace Engine::Rendering
 			std::copy(generated_mesh.begin(), generated_mesh.end(), std::back_inserter(mesh));
 
 			context = MeshBuildContext();
-			context.RebuildVBO(instance, mesh);
+			context.rebuildVBO(instance, mesh);
 			needs_rebuild = false;
 		}
 	}

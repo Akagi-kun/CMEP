@@ -11,21 +11,20 @@
 
 #include <memory>
 #include <stdexcept>
+#include <string>
+#include <unordered_map>
 
 namespace Engine
 {
 	Scene::~Scene()
 	{
-		this->logger->SimpleLog<decltype(this)>(
-			Logging::LogLevel::VerboseDebug,
-			"Destructor called"
-		);
+		this->logger->simpleLog<decltype(this)>(Logging::LogLevel::VerboseDebug, "Destructor called");
 
-		this->templates.clear();
+		templates.clear();
 
-		for (auto& [name, ptr] : this->objects)
+		for (auto& [name, ptr] : objects)
 		{
-			this->logger->SimpleLog<decltype(this)>(
+			this->logger->simpleLog<decltype(this)>(
 				Logging::LogLevel::VerboseDebug,
 				"Deleting object '%s'",
 				name.c_str()
@@ -33,26 +32,26 @@ namespace Engine
 			delete ptr;
 		}
 
-		this->objects.clear();
+		objects.clear();
 	}
 
-	const std::unordered_map<std::string, Object*>& Scene::GetAllObjects() noexcept
+	const std::unordered_map<std::string, Object*>& Scene::getAllObjects() noexcept
 	{
-		return this->objects;
+		return objects;
 	}
 
-	void Scene::AddTemplatedObject(const std::string& name, const std::string& template_name)
+	void Scene::addTemplatedObject(const std::string& name, const std::string& template_name)
 	{
-		auto templated_object = this->templates.find(template_name);
+		auto templated_object = templates.find(template_name);
 
-		if (templated_object != this->templates.end())
+		if (templated_object != templates.end())
 		{
-			Object* obj = Factories::ObjectFactory::InstantiateObjectTemplate(
-				this->GetOwnerEngine(),
+			Object* obj = Factories::ObjectFactory::instantiateObjectTemplate(
+				getOwnerEngine(),
 				templated_object->second
 			);
 
-			this->AddObject(name, obj);
+			addObject(name, obj);
 		}
 		else
 		{
@@ -62,22 +61,22 @@ namespace Engine
 		}
 	}
 
-	void Scene::AddObject(const std::string& name, Object* ptr)
+	void Scene::addObject(const std::string& name, Object* ptr)
 	{
 		if (ptr != nullptr)
 		{
-			this->logger->SimpleLog<decltype(this)>(
+			this->logger->simpleLog<decltype(this)>(
 				Logging::LogLevel::Debug,
 				"Adding object '%s'",
 				name.c_str()
 			);
 
-			const auto* window_data = this->owner_engine->GetVulkanInstance()->GetWindow();
-			const auto& screen_size = window_data->GetFramebufferSize();
+			const auto* window_data = owner_engine->getVulkanInstance()->getWindow();
+			const auto& screen_size = window_data->getFramebufferSize();
 
-			ptr->ScreenSizeInform(screen_size);
+			ptr->screenSizeInform(screen_size);
 
-			this->objects.emplace(name, ptr);
+			objects.emplace(name, ptr);
 		}
 		else
 		{
@@ -85,23 +84,23 @@ namespace Engine
 		}
 	}
 
-	Object* Scene::FindObject(const std::string& name)
+	Object* Scene::findObject(const std::string& name)
 	{
-		auto find_ret = this->objects.find(name);
-		if (find_ret != this->objects.end())
+		auto find_ret = objects.find(name);
+		if (find_ret != objects.end())
 		{
 			return find_ret->second;
 		}
 		return nullptr;
 	}
 
-	void Scene::RemoveObject(const std::string& name)
+	void Scene::removeObject(const std::string& name)
 	{
-		Object* object = this->FindObject(name);
+		Object* object = findObject(name);
 
 		if (object != nullptr)
 		{
-			this->objects.erase(name);
+			objects.erase(name);
 			delete object;
 		}
 		else
@@ -110,11 +109,11 @@ namespace Engine
 		}
 	}
 
-	void Scene::LoadTemplatedObject(
+	void Scene::loadTemplatedObject(
 		const std::string&								name,
 		const Factories::ObjectFactory::ObjectTemplate& object
 	)
 	{
-		this->templates.emplace(name, object);
+		templates.emplace(name, object);
 	}
 } // namespace Engine

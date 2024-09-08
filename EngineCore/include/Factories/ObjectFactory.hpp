@@ -1,12 +1,18 @@
 #pragma once
 
+#include "Rendering/Renderers/Renderer.hpp"
 #include "Rendering/SupplyData.hpp"
 
 #include "EnumStringConvertor.hpp"
+#include "InternalEngineObject.hpp"
 #include "Object.hpp"
 
+#include <cstdint>
+#include <functional>
 #include <stdexcept>
 #include <string>
+#include <variant>
+#include <vector>
 
 namespace Engine::Factories::ObjectFactory
 {
@@ -42,7 +48,7 @@ namespace Engine::Factories::ObjectFactory
 	};
 
 	template <class TRenderer, class TMeshBuilder>
-	Object* CreateSceneObject(
+	Object* createSceneObject(
 		Engine*												 with_engine,
 		std::string											 with_pipeline_program,
 		const std::vector<Rendering::RendererSupplyData>&	 renderer_supply_data,
@@ -62,7 +68,7 @@ namespace Engine::Factories::ObjectFactory
 
 		for (const auto& supply : meshbuilder_supply_data)
 		{
-			with_builder->SupplyData(supply);
+			with_builder->supplyData(supply);
 		}
 
 		auto* with_renderer =
@@ -70,7 +76,7 @@ namespace Engine::Factories::ObjectFactory
 
 		for (const auto& supply : renderer_supply_data)
 		{
-			with_renderer->SupplyData(supply);
+			with_renderer->supplyData(supply);
 		}
 
 		auto* object = new Object(with_engine, with_renderer, with_builder);
@@ -82,21 +88,21 @@ namespace Engine::Factories::ObjectFactory
 		Object*(Engine*, std::string, const std::vector<Rendering::RendererSupplyData>&, const std::vector<Rendering::MeshBuilderSupplyData>&)>;
 
 	// Returns a Callable capable of creating the desired object
-	object_factory_t GetSceneObjectFactory(
+	object_factory_t getSceneObjectFactory(
 		EnumStringConvertor<RendererType>	 with_renderer,
 		EnumStringConvertor<MeshBuilderType> with_mesh_builder
 	);
 
-	Object* InstantiateObjectTemplate(Engine* with_engine, ObjectTemplate& from_template);
+	Object* instantiateObjectTemplate(Engine* with_engine, ObjectTemplate& from_template);
 
 	using supply_data_value_t = std::variant<std::monostate, void*, std::string>;
 
-	Rendering::RendererSupplyData GenerateRendererSupplyData(
+	Rendering::RendererSupplyData generateRendererSupplyData(
 		EnumStringConvertor<Rendering::RendererSupplyData::Type> of_type,
 		supply_data_value_t										 with_value
 	);
 
-	Rendering::MeshBuilderSupplyData GenerateMeshBuilderSupplyData(
+	Rendering::MeshBuilderSupplyData generateMeshBuilderSupplyData(
 		EnumStringConvertor<Rendering::MeshBuilderSupplyData::Type> of_type,
 		supply_data_value_t											with_value
 	);

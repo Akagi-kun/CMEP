@@ -1,5 +1,6 @@
 set(SRC_FILES
 	src/lib_impl.cpp
+	src/backend/DebugCallback.cpp
 
 	src/backend/Instance.cpp
 	src/backend/DeviceScore.cpp
@@ -45,7 +46,7 @@ target_compile_options(EngineRenderingVulkan PRIVATE ${ENGINE_COMPILE_OPTIONS})
 
 target_precompile_headers(EngineRenderingVulkan PRIVATE [["vulkan/vulkan.hpp"]] [["vulkan/vulkan_raii.hpp"]])
 
-target_link_directories(EngineRenderingVulkan PRIVATE ../build ${ENGINE_VULKAN_LINK_PATH})
+target_link_directories(EngineRenderingVulkan PRIVATE ../build)
 target_include_directories(EngineRenderingVulkan PRIVATE include
 											 ../EngineLogging/export_include
 											 ../external/glfw/include

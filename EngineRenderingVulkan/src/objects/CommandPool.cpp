@@ -7,26 +7,27 @@
 
 namespace Engine::Rendering::Vulkan
 {
-	CommandPool::CommandPool(InstanceOwned::value_t with_instance) : InstanceOwned(with_instance)
+	CommandPool::CommandPool(InstanceOwned::value_t with_instance)
+		: InstanceOwned(with_instance)
 	{
-		LogicalDevice* logical_device = instance->GetLogicalDevice();
+		LogicalDevice* logical_device = instance->getLogicalDevice();
 
 		vk::CommandPoolCreateInfo pool_info(
 			vk::CommandPoolCreateFlagBits::eResetCommandBuffer,
-			logical_device->GetQueueFamilies().graphics_family
+			logical_device->getQueueFamilies().graphics_family
 		);
 
 		native_handle = logical_device->createCommandPool(pool_info);
 	}
 
-	[[nodiscard]] CommandBuffer* CommandPool::AllocateCommandBuffer()
+	[[nodiscard]] CommandBuffer* CommandPool::allocateCommandBuffer()
 	{
-		return new CommandBuffer(instance->GetLogicalDevice(), native_handle);
+		return new CommandBuffer(instance->getLogicalDevice(), native_handle);
 	}
 
-	[[nodiscard]] CommandBuffer CommandPool::ConstructCommandBuffer()
+	[[nodiscard]] CommandBuffer CommandPool::constructCommandBuffer()
 	{
-		return {instance->GetLogicalDevice(), native_handle};
+		return {instance->getLogicalDevice(), native_handle};
 	}
 
 } // namespace Engine::Rendering::Vulkan

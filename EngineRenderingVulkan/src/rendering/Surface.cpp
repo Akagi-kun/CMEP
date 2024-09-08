@@ -1,10 +1,13 @@
 #include "rendering/Surface.hpp"
 
+#include <cstdint>
+
 namespace Engine::Rendering::Vulkan
 {
 #pragma region Public
 
-	SwapChainSupportDetails Surface::QuerySwapChainSupport(const vk::raii::PhysicalDevice& device) const
+	SwapChainSupportDetails Surface::querySwapChainSupport(const vk::raii::PhysicalDevice& device
+	) const
 	{
 		SwapChainSupportDetails details;
 		details.capabilities  = device.getSurfaceCapabilitiesKHR(native_handle);
@@ -14,7 +17,10 @@ namespace Engine::Rendering::Vulkan
 		return details;
 	}
 
-	bool Surface::QueryQueueSupport(const vk::raii::PhysicalDevice& physical_device, uint32_t queue_family) const
+	bool Surface::queryQueueSupport(
+		const vk::raii::PhysicalDevice& physical_device,
+		uint32_t						queue_family
+	) const
 	{
 		vk::Bool32 support = physical_device.getSurfaceSupportKHR(queue_family, native_handle);
 

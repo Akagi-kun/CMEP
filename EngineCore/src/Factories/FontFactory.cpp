@@ -30,70 +30,74 @@ namespace Engine::Factories
 {
 #pragma region Static
 
-	static std::tuple<std::string, std::string> GetNextKVPair(std::stringstream& from_stream)
+	namespace
 	{
-		return Utility::SplitKVPair(Utility::StreamGetNextToken(from_stream), "=");
-	}
-
-	static void ParseBmfontEntryChar(
-		std::unique_ptr<Rendering::FontData>& font,
-		std::stringstream&					  line_stream
-	)
-	{
-		// When reading the code in this function,
-		// take care to not die from pain as you see the horrible code I have written here.
-		// It is designed to be extensible and reduce performance penalty at runtime
-
-		std::unordered_map<std::string, size_t> struct_offsets = {
-			{"x", offsetof(Rendering::FontChar, x)},
-			{"y", offsetof(Rendering::FontChar, y)},
-			{"width", offsetof(Rendering::FontChar, width)},
-			{"height", offsetof(Rendering::FontChar, height)},
-			{"xoffset", offsetof(Rendering::FontChar, xoffset)},
-			{"yoffset", offsetof(Rendering::FontChar, yoffset)},
-			{"xadvance", offsetof(Rendering::FontChar, xadvance)},
-			{"page", offsetof(Rendering::FontChar, page)},
-			{"channel", offsetof(Rendering::FontChar, channel)},
-		};
-
-		int					fchar_id = -1;
-		Rendering::FontChar fchar{};
-
-		// Using bytes instead of int is safer here
-		// because the struct may have padding
-		//
-		// Treat fchar as bytes in memory
-		auto* fchar_memory = reinterpret_cast<char*>(&fchar);
-
-		while (!line_stream.eof())
+		std::tuple<std::string, std::string> getNextKvPair(std::stringstream& from_stream)
 		{
-			auto [key, value] = GetNextKVPair(line_stream);
-
-			// First try finding the key in the offset table
-			auto result_offset = struct_offsets.find(key);
-			if (result_offset != struct_offsets.end())
-			{
-				// Offset in memory (pointing to the member of struct)
-				int* fchar_entry_ptr = reinterpret_cast<Rendering::FontChar::value_t*>(
-					&fchar_memory[result_offset->second]
-				);
-
-				// Finally fill the member of the struct
-				(*fchar_entry_ptr) = std::stoi(value);
-			}
-			else if (key == "id")
-			{
-				fchar_id = std::stoi(value);
-			}
+			return Utility::SplitKVPair(Utility::StreamGetNextToken(from_stream), "=");
 		}
 
-		font->chars.emplace(fchar_id, fchar);
-	}
+		void parseBmfontEntryChar(
+			std::unique_ptr<Rendering::FontData>& font,
+			std::stringstream&					  line_stream
+		)
+		{
+			// When reading the code in this function,
+			// take care to not die from pain as you see the horrible code I have written here.
+			// It is designed to be extensible and reduce performance penalty at runtime
+
+			std::unordered_map<std::string, size_t> struct_offsets = {
+				{"x", offsetof(Rendering::FontChar, x)},
+				{"y", offsetof(Rendering::FontChar, y)},
+				{"width", offsetof(Rendering::FontChar, width)},
+				{"height", offsetof(Rendering::FontChar, height)},
+				{"xoffset", offsetof(Rendering::FontChar, xoffset)},
+				{"yoffset", offsetof(Rendering::FontChar, yoffset)},
+				{"xadvance", offsetof(Rendering::FontChar, xadvance)},
+				{"page", offsetof(Rendering::FontChar, page)},
+				{"channel", offsetof(Rendering::FontChar, channel)},
+			};
+
+			int					fchar_id = -1;
+			Rendering::FontChar fchar{};
+
+			// Using bytes instead of int is safer here
+			// because the struct may have padding
+			//
+			// Treat fchar as bytes in memory
+			auto* fchar_memory = reinterpret_cast<char*>(&fchar);
+
+			while (!line_stream.eof())
+			{
+				auto [key, value] = getNextKvPair(line_stream);
+
+				// First try finding the key in the offset table
+				auto result_offset = struct_offsets.find(key);
+				if (result_offset != struct_offsets.end())
+				{
+					// Offset in memory (pointing to the member of struct)
+					int* fchar_entry_ptr = reinterpret_cast<Rendering::FontChar::value_t*>(
+						&fchar_memory[result_offset->second]
+					);
+
+					// Finally fill the member of the struct
+					(*fchar_entry_ptr) = std::stoi(value);
+				}
+				else if (key == "id")
+				{
+					fchar_id = std::stoi(value);
+				}
+			}
+
+			font->chars.emplace(fchar_id, fchar);
+		}
+	} // namespace
 
 #pragma endregion
 
 #pragma region Public
-	std::shared_ptr<Rendering::Font> FontFactory::CreateFont(
+
+	std::shared_ptr<Rendering::Font> FontFactory::createFont(
 		const std::filesystem::path& font_path,
 		const pageload_callback_t&	 opt_callback
 	)
@@ -105,16 +109,16 @@ namespace Engine::Factories
 			std::format("font file {} could not be opened", font_path.string())
 		)
 
-		this->logger->SimpleLog<decltype(this)>(
+		this->logger->simpleLog<decltype(this)>(
 			Logging::LogLevel::VerboseDebug,
 			"Loading file %s",
 			font_path.string().c_str()
 		);
 
 		std::unique_ptr<Rendering::FontData> font_data =
-			ParseBmfont(font_path, font_file, opt_callback);
+			parseBmfont(font_path, font_file, opt_callback);
 
-		this->logger->SimpleLog<decltype(this)>(
+		this->logger->simpleLog<decltype(this)>(
 			Logging::LogLevel::Debug,
 			"File %s loaded successfully",
 			font_path.string().c_str()
@@ -127,7 +131,7 @@ namespace Engine::Factories
 
 #pragma region Private
 
-	std::unique_ptr<Rendering::FontData> FontFactory::ParseBmfont(
+	std::unique_ptr<Rendering::FontData> FontFactory::parseBmfont(
 		const std::filesystem::path& font_path,
 		std::ifstream&				 font_file,
 		const pageload_callback_t&	 pageload_cb
@@ -169,7 +173,7 @@ namespace Engine::Factories
 					std::stringstream line_remainder;
 					line_data >> line_remainder.rdbuf();
 
-					ParseBmfontLine(font_path, font, result->second, line_remainder, pageload_cb);
+					parseBmfontLine(font_path, font, result->second, line_remainder, pageload_cb);
 				}
 			}
 		}
@@ -177,7 +181,7 @@ namespace Engine::Factories
 		return font;
 	}
 
-	void FontFactory::ParseBmfontEntryPage(
+	void FontFactory::parseBmfontEntryPage(
 		std::filesystem::path				  font_path,
 		std::unique_ptr<Rendering::FontData>& font,
 		std::stringstream&					  line_stream,
@@ -189,7 +193,7 @@ namespace Engine::Factories
 
 		do
 		{
-			auto [key, value] = GetNextKVPair(line_stream);
+			auto [key, value] = getNextKvPair(line_stream);
 
 			if (key == "file")
 			{
@@ -208,14 +212,14 @@ namespace Engine::Factories
 			}
 		} while ((page_idx == -1) || page_path.empty());
 
-		this->logger->SimpleLog<decltype(this)>(
+		this->logger->simpleLog<decltype(this)>(
 			Logging::LogLevel::VerboseDebug,
 			"Font page index %u is '%s'",
 			page_idx,
 			page_path.string().c_str()
 		);
 
-		auto asset_manager = owner_engine->GetAssetManager();
+		auto asset_manager = owner_engine->getAssetManager();
 
 		if (auto locked_asset_manager = asset_manager.lock())
 		{
@@ -242,7 +246,7 @@ namespace Engine::Factories
 		throw std::runtime_error("AssetManager could not be locked!");
 	}
 
-	void FontFactory::ParseBmfontLine(
+	void FontFactory::parseBmfontLine(
 		const std::filesystem::path&		  font_path,
 		std::unique_ptr<Rendering::FontData>& font,
 		const BmFontLineType				  line_type,
@@ -279,14 +283,14 @@ namespace Engine::Factories
 			}
 			case BmFontLineType::CHAR:
 			{
-				ParseBmfontEntryChar(font, line_stream);
+				parseBmfontEntryChar(font, line_stream);
 				break;
 			}
 			case BmFontLineType::PAGE:
 			{
 				try
 				{
-					ParseBmfontEntryPage(font_path, font, line_stream, pageload_cb);
+					parseBmfontEntryPage(font_path, font, line_stream, pageload_cb);
 					return;
 				}
 				catch (...)

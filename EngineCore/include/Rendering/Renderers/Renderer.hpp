@@ -25,12 +25,12 @@ namespace Engine::Rendering
 		);
 		virtual ~IRenderer();
 
-		void SupplyData(const RendererSupplyData& data);
+		void supplyData(const RendererSupplyData& data);
 
 		// Renderers shall implement this to update their matrix_data
-		virtual void UpdateMatrices() = 0;
+		virtual void updateMatrices() = 0;
 
-		void UpdateTransform(
+		void updateTransform(
 			const Transform&  with_transform,
 			const Transform&  with_parent_transform,
 			const ScreenSize& with_screen
@@ -43,10 +43,10 @@ namespace Engine::Rendering
 			has_updated_matrices = false;
 
 			// TODO: Remove
-			mesh_builder->SupplyWorldPosition(with_transform.pos + with_parent_transform.pos);
+			mesh_builder->supplyWorldPosition(with_transform.pos + with_parent_transform.pos);
 		}
 
-		void Render(Vulkan::CommandBuffer* command_buffer, uint32_t current_frame);
+		void render(Vulkan::CommandBuffer* command_buffer, uint32_t current_frame);
 
 	protected:
 		Transform  transform;
@@ -67,7 +67,7 @@ namespace Engine::Rendering
 
 		// When false, UpdateDescriptorSets shall be internally called on next Render
 		bool has_updated_descriptors = false;
-		void UpdateDescriptorSets();
+		void updateDescriptorSets();
 
 		// When false, UpdateMatrices will be called
 		// Note that UpdateMatrices is also manually called from SceneManager
@@ -82,7 +82,7 @@ namespace Engine::Rendering
 	public:
 		using IRenderer::IRenderer;
 
-		void UpdateMatrices() override;
+		void updateMatrices() override;
 	};
 
 	class Renderer2D final : public IRenderer
@@ -90,6 +90,6 @@ namespace Engine::Rendering
 	public:
 		using IRenderer::IRenderer;
 
-		void UpdateMatrices() override;
+		void updateMatrices() override;
 	};
 } // namespace Engine::Rendering

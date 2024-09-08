@@ -4,7 +4,13 @@
 #include "Scripting/API/framework.hpp"
 
 #include "Engine.hpp"
+#include "SceneManager.hpp"
 #include "lua.hpp"
+
+#include <cstdint>
+#include <memory>
+#include <string>
+#include <unordered_map>
 
 namespace Engine::Scripting::API
 {
@@ -15,7 +21,7 @@ namespace Engine::Scripting::API
 			CMEP_LUACHECK_FN_ARGC(state, 1)
 			CMEP_LUAGET_PTR(state, Engine)
 
-			std::weak_ptr<AssetManager> asset_manager = self->GetAssetManager();
+			std::weak_ptr<AssetManager> asset_manager = self->getAssetManager();
 
 			if (!asset_manager.expired())
 			{
@@ -32,7 +38,7 @@ namespace Engine::Scripting::API
 			CMEP_LUACHECK_FN_ARGC(state, 1)
 			CMEP_LUAGET_PTR(state, Engine)
 
-			std::weak_ptr<SceneManager> scene_manager = self->GetSceneManager();
+			std::weak_ptr<SceneManager> scene_manager = self->getSceneManager();
 
 			if (auto locked_scene_manager = scene_manager.lock())
 			{
@@ -51,7 +57,7 @@ namespace Engine::Scripting::API
 
 			auto framerate_target = static_cast<uint_fast16_t>(lua_tointeger(state, 2));
 
-			self->SetFramerateTarget(framerate_target);
+			self->setFramerateTarget(framerate_target);
 
 			return 0;
 		}
@@ -61,7 +67,7 @@ namespace Engine::Scripting::API
 			CMEP_LUACHECK_FN_ARGC(state, 1)
 			CMEP_LUAGET_PTR(state, Engine)
 
-			self->Stop();
+			self->stop();
 
 			return 0;
 		}

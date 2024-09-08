@@ -25,8 +25,9 @@ namespace Engine::Rendering::Vulkan
 			vk::ImageUsageFlags		usage,
 			vk::Filter				with_filter,
 			vk::SamplerAddressMode	with_address_mode,
-			vk::MemoryPropertyFlags properties	= vk::MemoryPropertyFlagBits::eDeviceLocal,
-			vk::ImageTiling			with_tiling = vk::ImageTiling::eOptimal
+			vk::MemoryPropertyFlags properties =
+				vk::MemoryPropertyFlagBits::eDeviceLocal,
+			vk::ImageTiling with_tiling = vk::ImageTiling::eOptimal
 		)
 			requires(std::is_same_v<base_t, Image>);
 
@@ -39,8 +40,9 @@ namespace Engine::Rendering::Vulkan
 			vk::Filter				with_filter,
 			vk::SamplerAddressMode	with_address_mode,
 			vk::ImageAspectFlags	with_aspect,
-			vk::MemoryPropertyFlags properties	= vk::MemoryPropertyFlagBits::eDeviceLocal,
-			vk::ImageTiling			with_tiling = vk::ImageTiling::eOptimal
+			vk::MemoryPropertyFlags properties =
+				vk::MemoryPropertyFlagBits::eDeviceLocal,
+			vk::ImageTiling with_tiling = vk::ImageTiling::eOptimal
 		)
 			requires(std::is_same_v<base_t, ViewedImage>);
 
@@ -50,7 +52,7 @@ namespace Engine::Rendering::Vulkan
 		vk::Filter			   use_filter;
 		vk::SamplerAddressMode use_address_mode;
 
-		[[nodiscard]] static vk::SamplerCreateInfo GetSamplerCreateInfo(
+		[[nodiscard]] static vk::SamplerCreateInfo getSamplerCreateInfo(
 			vk::Filter			   use_filter,
 			vk::SamplerAddressMode use_address_mode,
 			float				   max_anisotropy

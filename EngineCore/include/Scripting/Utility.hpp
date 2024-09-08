@@ -16,20 +16,20 @@ namespace Engine::Scripting::Utility
 {
 	static constexpr int lua_cdata_typeid = 10;
 
-	std::string UnwindStack(lua_State* of_state);
-	int			LuaErrorHandler(lua_State* state);
+	std::string unwindStack(lua_State* of_state);
+	int			luaErrorHandler(lua_State* state);
 
-	std::string StackContentToString(lua_State* state);
+	std::string stackContentToString(lua_State* state);
 
 	template <typename value_t = void*>
-	value_t GetCData(lua_State* from_state, int idx)
+	value_t getCData(lua_State* from_state, int idx)
 		requires(std::is_pointer_v<value_t>)
 	{
 		return const_cast<value_t>(*reinterpret_cast<void* const*>(lua_topointer(from_state, idx)));
 	}
 
 	// Guaranteed to return null terminated string
-	std::string_view MappingReverseLookup(lua_CFunction lookup_function);
+	std::string_view mappingReverseLookup(lua_CFunction lookup_function);
 
 	struct LuaValue final
 	{
@@ -80,7 +80,7 @@ namespace Engine::Scripting::Utility
 		}
 		explicit operator uintptr_t() const;
 
-		static std::string ToString(const LuaValue& val);
+		static std::string toString(const LuaValue& val);
 
 		// protected:
 		//	std::optional<table_entry_t> TableElemAccess(table_array_key_t key);

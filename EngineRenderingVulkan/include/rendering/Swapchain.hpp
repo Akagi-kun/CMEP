@@ -66,35 +66,35 @@ namespace Engine::Rendering::Vulkan
 		);
 		~Swapchain();
 
-		void BeginRenderPass(CommandBuffer* with_buffer, size_t image_index);
-		void RenderFrame(
-			CommandBuffer*														command_buffer,
-			uint32_t															image_index,
+		void beginRenderPass(CommandBuffer* with_buffer, size_t image_index);
+		void renderFrame(
+			CommandBuffer* command_buffer,
+			uint32_t	   image_index,
 			const std::function<void(Vulkan::CommandBuffer*, uint32_t, void*)>& callback,
 			void*																user_data
 		);
 
-		[[nodiscard]] RenderTarget& GetRenderTarget(size_t index)
+		[[nodiscard]] RenderTarget& getRenderTarget(size_t index)
 		{
 			return *render_targets[index];
 		}
 
-		[[nodiscard]] vk::Format GetImageFormat() const
+		[[nodiscard]] vk::Format getImageFormat() const
 		{
 			return surface_format.format;
 		}
 
-		[[nodiscard]] std::vector<vk::raii::ImageView>& GetImageViewHandles()
+		[[nodiscard]] std::vector<vk::raii::ImageView>& getImageViewHandles()
 		{
 			return image_view_handles;
 		}
 
-		[[nodiscard]] const vk::Extent2D& GetExtent() const
+		[[nodiscard]] const vk::Extent2D& getExtent() const
 		{
 			return extent;
 		}
 
-		[[nodiscard]] RenderPass* GetRenderPass()
+		[[nodiscard]] RenderPass* getRenderPass()
 		{
 			return render_pass;
 		}

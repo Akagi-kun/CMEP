@@ -8,17 +8,17 @@
 
 #include <cassert>
 
-
 namespace Engine::Rendering::Vulkan
 {
-	class CommandPool : public InstanceOwned, public HandleWrapper<vk::raii::CommandPool>
+	class CommandPool : public InstanceOwned,
+						public HandleWrapper<vk::raii::CommandPool>
 	{
 	public:
 		CommandPool(InstanceOwned::value_t with_instance);
 
 		~CommandPool() = default;
 
-		[[nodiscard]] CommandBuffer* AllocateCommandBuffer();
-		[[nodiscard]] CommandBuffer ConstructCommandBuffer();
+		[[nodiscard]] CommandBuffer* allocateCommandBuffer();
+		[[nodiscard]] CommandBuffer	 constructCommandBuffer();
 	};
 } // namespace Engine::Rendering::Vulkan

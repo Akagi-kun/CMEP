@@ -3,14 +3,15 @@
 #include "Scripting/API/framework.hpp"
 
 #include "Object.hpp"
-#include "lua.h"
+#include "lua.hpp"
+
+#include <string>
+#include <unordered_map>
 
 namespace Engine::Scripting::API
 {
 	namespace Functions_Object
 	{
-		using glm::vec3;
-
 		static int AddChild(lua_State* state)
 		{
 			CMEP_LUACHECK_FN_ARGC(state, 2)
@@ -19,7 +20,7 @@ namespace Engine::Scripting::API
 			lua_getfield(state, 2, "_ptr");
 			auto* ptr_child = static_cast<Object*>(lua_touserdata(state, -1));
 
-			self->AddChild(ptr_child);
+			self->addChild(ptr_child);
 
 			return 0;
 		}
@@ -29,7 +30,7 @@ namespace Engine::Scripting::API
 			CMEP_LUACHECK_FN_ARGC(state, 1)
 			CMEP_LUAGET_PTR(state, Object)
 
-			glm::vec3 rotation = self->GetRotation();
+			glm::vec3 rotation = self->getRotation();
 
 			lua_pushnumber(state, static_cast<double>(rotation.x));
 			lua_pushnumber(state, static_cast<double>(rotation.y));
@@ -48,7 +49,7 @@ namespace Engine::Scripting::API
 			rotation.y = static_cast<float>(lua_tonumber(state, 3));
 			rotation.z = static_cast<float>(lua_tonumber(state, 4));
 
-			self->SetRotation(rotation);
+			self->setRotation(rotation);
 
 			return 0;
 		}
@@ -58,7 +59,7 @@ namespace Engine::Scripting::API
 			CMEP_LUACHECK_FN_ARGC(state, 1)
 			CMEP_LUAGET_PTR(state, Object)
 
-			glm::vec3 size = self->GetSize();
+			glm::vec3 size = self->getSize();
 
 			lua_pushnumber(state, static_cast<double>(size.x));
 			lua_pushnumber(state, static_cast<double>(size.y));
@@ -77,7 +78,7 @@ namespace Engine::Scripting::API
 			size.y = static_cast<float>(lua_tonumber(state, 3));
 			size.z = static_cast<float>(lua_tonumber(state, 4));
 
-			self->SetSize(size);
+			self->setSize(size);
 
 			return 0;
 		}
@@ -87,7 +88,7 @@ namespace Engine::Scripting::API
 			CMEP_LUACHECK_FN_ARGC(state, 1)
 			CMEP_LUAGET_PTR(state, Object)
 
-			auto rotation = self->GetPosition();
+			auto rotation = self->getPosition();
 
 			lua_pushnumber(state, static_cast<double>(rotation.x));
 			lua_pushnumber(state, static_cast<double>(rotation.y));
@@ -106,7 +107,7 @@ namespace Engine::Scripting::API
 			position.y = static_cast<float>(lua_tonumber(state, 3));
 			position.z = static_cast<float>(lua_tonumber(state, 4));
 
-			self->SetPosition(position);
+			self->setPosition(position);
 
 			return 0;
 		}

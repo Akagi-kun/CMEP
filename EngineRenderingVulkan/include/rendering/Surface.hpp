@@ -16,10 +16,11 @@ namespace Engine::Rendering::Vulkan
 		const Instance* created_by;
 		vk::SurfaceKHR	native_handle;
 
-		[[nodiscard]] SwapChainSupportDetails QuerySwapChainSupport(
+		[[nodiscard]] SwapChainSupportDetails querySwapChainSupport(
 			const vk::raii::PhysicalDevice& device
 		) const;
-		[[nodiscard]] bool QueryQueueSupport(
+
+		[[nodiscard]] bool queryQueueSupport(
 			const vk::raii::PhysicalDevice& physical_device,
 			uint32_t						queue_family
 		) const;

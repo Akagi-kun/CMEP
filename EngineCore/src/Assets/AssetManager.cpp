@@ -17,13 +17,13 @@ namespace Engine
 
 	AssetManager::~AssetManager()
 	{
-		this->logger->SimpleLog<decltype(this)>(Logging::LogLevel::Info, "Destructor called");
+		this->logger->simpleLog<decltype(this)>(Logging::LogLevel::Info, "Destructor called");
 
 		fonts.clear();
 
 		for (auto& texture : textures)
 		{
-			this->logger->SimpleLog<decltype(this)>(
+			this->logger->simpleLog<decltype(this)>(
 				Logging::LogLevel::VerboseDebug,
 				"Texture '%s' use_count: %u",
 				texture.first.c_str(),
@@ -74,7 +74,7 @@ namespace Engine
 			return textures.at(name);
 		}
 
-		this->logger->SimpleLog<decltype(this)>(
+		this->logger->simpleLog<decltype(this)>(
 			Logging::LogLevel::VerboseDebug,
 			"Texture asset '%s' not found",
 			name.c_str()
@@ -90,7 +90,7 @@ namespace Engine
 			return fonts.at(name);
 		}
 
-		this->logger->SimpleLog<decltype(this)>(
+		this->logger->simpleLog<decltype(this)>(
 			Logging::LogLevel::VerboseDebug,
 			"Font asset '%s' not found",
 			name.c_str()
@@ -106,7 +106,7 @@ namespace Engine
 			return luascripts.at(name);
 		}
 
-		this->logger->SimpleLog<decltype(this)>(
+		this->logger->simpleLog<decltype(this)>(
 			Logging::LogLevel::VerboseDebug,
 			"LuaScript asset '%s' not found",
 			name.c_str()

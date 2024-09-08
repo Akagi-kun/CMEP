@@ -10,11 +10,11 @@ namespace Engine::Rendering
 	public:
 		using IMeshBuilder::IMeshBuilder;
 
-		using IMeshBuilder::SupplyData;
+		using IMeshBuilder::supplyData;
 
-		void Build() override;
+		void build() override;
 
-		[[nodiscard]] vk::PrimitiveTopology GetSupportedTopology() const noexcept override
+		[[nodiscard]] vk::PrimitiveTopology getSupportedTopology() const noexcept override
 		{
 			return vk::PrimitiveTopology::eLineList;
 		}

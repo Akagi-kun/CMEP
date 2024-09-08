@@ -10,13 +10,17 @@
 
 #include "Logging/Logging.hpp"
 
+#include "EventHandling.hpp"
 #include "Exception.hpp"
 #include "GLFW/glfw3.h"
 #include "Object.hpp"
+#include "SceneManager.hpp"
 #include "buildinfo.hpp"
 #include "nlohmann/json.hpp"
 
+#include <algorithm>
 #include <chrono>
+#include <cmath>
 #include <cstdint>
 #include <exception>
 #include <fstream>
@@ -24,59 +28,64 @@
 #include <stdexcept>
 #include <string>
 #include <thread>
+#include <utility>
 
 namespace Engine
 {
-	// Utility sleep function
-	// algorithm I found somewhere on stackoverflow
-	void Engine::SpinSleep(double seconds)
+	namespace
 	{
-		static constexpr double nano_to_sec = 1e9;
-		static constexpr double spin_init	= 5e-3;
-
-		double	estimate   = spin_init;
-		double	mean	   = spin_init;
-		double	sumsquares = 0; // also known as m2
-		int64_t count	   = 1;
-
-		while (seconds > estimate)
+		// Utility sleep function
+		// algorithm I found somewhere on stackoverflow
+		void spinSleep(double seconds)
 		{
-			// Perform measured sleep
+			static constexpr double nano_to_sec = 1e9;
+			static constexpr double spin_init	= 5e-3;
+
+			double	estimate   = spin_init;
+			double	mean	   = spin_init;
+			double	sumsquares = 0; // also known as m2
+			int64_t count	   = 1;
+
+			while (seconds > estimate)
+			{
+				// Perform measured sleep
+				const auto start = std::chrono::steady_clock::now();
+				std::this_thread::sleep_for(std::chrono::milliseconds(2));
+				const auto end = std::chrono::steady_clock::now();
+
+				// Observed passage of time (as was performed by sleep_for)
+				const double observed = static_cast<double>((end - start).count()) /
+										nano_to_sec;
+				// Substract observed passage of time
+				// from total needed amount of sleep
+				seconds -= observed;
+
+				count++;
+				// change against mean average
+				const double delta = observed - mean;
+				// create new mean by adding current change to it
+				mean += delta / static_cast<double>(count);
+				// sum of squares accumulate
+				sumsquares += delta * (observed - mean);
+				// calculate standard deviation
+				const double stddev = sqrt(sumsquares / static_cast<double>(count - 1));
+				estimate			= mean + stddev;
+			}
+
+			// spin lock
 			const auto start = std::chrono::steady_clock::now();
-			std::this_thread::sleep_for(std::chrono::milliseconds(2));
-			const auto end = std::chrono::steady_clock::now();
-
-			// Observed passage of time (as was performed by sleep_for)
-			const double observed = static_cast<double>((end - start).count()) / nano_to_sec;
-			// Substract observed passage of time
-			// from total needed amount of sleep
-			seconds -= observed;
-
-			count++;
-			// change against mean average
-			const double delta = observed - mean;
-			// create new mean by adding current change to it
-			mean += delta / static_cast<double>(count);
-			// sum of squares accumulate
-			sumsquares += delta * (observed - mean);
-			// calculate standard deviation
-			const double stddev = sqrt(sumsquares / static_cast<double>(count - 1));
-			estimate			= mean + stddev;
+			while (static_cast<double>((std::chrono::steady_clock::now() - start).count()
+				   ) / nano_to_sec <
+				   seconds)
+			{
+			}
 		}
+	} // namespace
 
-		// spin lock
-		const auto start = std::chrono::steady_clock::now();
-		while (static_cast<double>((std::chrono::steady_clock::now() - start).count()) /
-				   nano_to_sec <
-			   seconds)
-		{
-		}
-	}
-
-	void Engine::HandleInput(const double delta_time)
+	void Engine::handleInput(const double delta_time)
 	{
-		auto*		window_data = vk_instance->GetWindow();
-		const auto& screen_size = window_data->GetFramebufferSize();
+		auto*		window_data = vk_instance->getWindow();
+		const auto& screen_size = window_data->getFramebufferSize();
 
 		static glm::vec<2, double> last_pos = {
 			static_cast<double>(screen_size.x) / 2,
@@ -104,7 +113,9 @@ namespace Engine
 				);
 
 				event.delta_time = delta_time;
-				FireEvent(event);
+
+				int event_return = fireEvent(event);
+				ENGINE_EXCEPTION_ON_ASSERT_NOMSG(event_return == 0)
 
 				last_pos = window_data->cursor_position;
 			}
@@ -113,7 +124,9 @@ namespace Engine
 		while (!window_data->input_events.empty())
 		{
 			auto& input_event = window_data->input_events.front();
-			// begín
+			// begin
+
+			int event_return = 0;
 
 			switch (input_event.type)
 			{
@@ -122,17 +135,17 @@ namespace Engine
 				{
 					auto event = EventHandling::Event(this, EventHandling::EventType::ON_KEYDOWN);
 					event.keycode	 = static_cast<uint16_t>(input_event.key);
-					event.delta_time = GetLastDeltaTime();
-					FireEvent(event);
+					event.delta_time = getLastDeltaTime();
+					event_return	 = fireEvent(event);
 					break;
 				}
 				case Rendering::Vulkan::InputEvent::KEY_RELEASE:
 				{
 
-					auto event	  = EventHandling::Event(this, EventHandling::EventType::ON_KEYUP);
-					event.keycode = static_cast<uint16_t>(input_event.key);
-					event.delta_time = GetLastDeltaTime();
-					FireEvent(event);
+					auto event = EventHandling::Event(this, EventHandling::EventType::ON_KEYUP);
+					event.keycode	 = static_cast<uint16_t>(input_event.key);
+					event.delta_time = getLastDeltaTime();
+					event_return	 = fireEvent(event);
 					break;
 				}
 				default:
@@ -141,12 +154,17 @@ namespace Engine
 				}
 			}
 
+			if (event_return != 0)
+			{
+				stop();
+			}
+
 			// end
 			window_data->input_events.pop();
 		}
 	}
 
-	void Engine::HandleConfig()
+	void Engine::handleConfig()
 	{
 		std::ifstream file(config_path);
 
@@ -174,55 +192,54 @@ namespace Engine
 		config->shader_path = data["shader_path"].get<std::string>();
 	}
 
-	void Engine::RenderCallback(
+	void Engine::renderCallback(
 		Rendering::Vulkan::CommandBuffer* command_buffer,
 		uint32_t						  current_frame,
 		void*							  engine
 	)
 	{
-		auto* engine_cast = static_cast<Engine*>(engine);
+		auto* engine_cast	= static_cast<Engine*>(engine);
+		auto& current_scene = engine_cast->scene_manager->getSceneCurrent();
 
-		auto& current_scene = engine_cast->scene_manager->GetSceneCurrent();
-
-		const auto& objects = current_scene->GetAllObjects();
-
-		// engine->logger->SimpleLog(Logging::LogLevel::Info, "Object count: %lu", objects->size());
+		const auto& objects = current_scene->getAllObjects();
 
 		for (const auto& [name, ptr] : objects)
 		{
 			try
 			{
-				ptr->GetRenderer()->Render(command_buffer, current_frame);
+				ptr->getRenderer()->render(command_buffer, current_frame);
 			}
 			catch (...)
 			{
-				std::throw_with_nested(ENGINE_EXCEPTION("Caught exception rendering object!"));
+				std::throw_with_nested(
+					ENGINE_EXCEPTION("Caught exception rendering object!")
+				);
 			}
 		}
 	}
 
-	void Engine::EngineLoop()
+	void Engine::engineLoop()
 	{
 		static constexpr double nano_to_msec = 1e6;
 		static constexpr double nano_to_sec	 = 1e9;
 		static constexpr double sec_to_msec	 = 1e3;
 
-		auto& scene = scene_manager->GetSceneCurrent();
+		auto& scene = scene_manager->getSceneCurrent();
 
 		// TODO: Remove this!
 		// Create axis object
 		{
-			auto* object = Factories::ObjectFactory::CreateSceneObject<
+			auto* object = Factories::ObjectFactory::createSceneObject<
 				Rendering::Renderer3D,
 				Rendering::AxisMeshBuilder>(this, "axis", {}, {});
 
-			scene->AddObject("_axis", object);
+			scene->addObject("_axis", object);
 		}
 
 		// Pre-make ON_UPDATE event so we don't have to create it over and over again in hot loop
 		auto on_update_event = EventHandling::Event(this, EventHandling::EventType::ON_UPDATE);
 
-		this->logger->SimpleLog<decltype(this)>(
+		this->logger->simpleLog<decltype(this)>(
 			Logging::LogLevel::VerboseDebug,
 			"Locked to framerate %u%s",
 			config->framerate_target,
@@ -231,15 +248,15 @@ namespace Engine
 
 		auto build_clock = std::chrono::steady_clock::now();
 
-		this->logger->SimpleLog<decltype(this)>(Logging::LogLevel::Info, "Starting scene build");
-		for (const auto& [name, object] : scene->GetAllObjects())
+		this->logger->simpleLog<decltype(this)>(Logging::LogLevel::Info, "Starting scene build");
+		for (const auto& [name, object] : scene->getAllObjects())
 		{
-			this->logger->SimpleLog<decltype(this)>(
+			this->logger->simpleLog<decltype(this)>(
 				Logging::LogLevel::Debug,
 				"Building object '%s'",
 				name.c_str()
 			);
-			object->GetMeshBuilder()->Build();
+			object->getMeshBuilder()->build();
 		}
 
 		auto scene_build_time = static_cast<double>(
@@ -247,15 +264,15 @@ namespace Engine
 								) /
 								nano_to_msec;
 
-		this->logger->SimpleLog<decltype(this)>(
+		this->logger->simpleLog<decltype(this)>(
 			Logging::LogLevel::Info,
 			"Scene build finished in %lums",
 			static_cast<uint_fast32_t>(scene_build_time)
 		);
 
 		// Show window
-		auto* glfw_window = vk_instance->GetWindow();
-		glfw_window->SetVisibility(true);
+		auto* glfw_window = vk_instance->getWindow();
+		glfw_window->setVisibility(true);
 
 		double	 average_event_total = 0.00;
 		uint64_t average_event_count = 1;
@@ -264,7 +281,7 @@ namespace Engine
 
 		bool first_frame = true;
 		// hot loop
-		while (!glfw_window->GetShouldClose())
+		while (!glfw_window->getShouldClose())
 		{
 			const auto				next_clock = std::chrono::steady_clock::now();
 			static constexpr double min_delta  = 0.1 / sec_to_msec;
@@ -279,13 +296,13 @@ namespace Engine
 			// Check return code of FireEvent (events should return non-zero codes as failure)
 			if (!first_frame)
 			{
-				HandleInput(delta_time);
+				handleInput(delta_time);
 
 				on_update_event.delta_time = delta_time;
-				const auto ret			   = FireEvent(on_update_event);
+				const auto ret			   = fireEvent(on_update_event);
 				if (ret != 0)
 				{
-					this->logger->SimpleLog<decltype(this)>(
+					this->logger->simpleLog<decltype(this)>(
 						Logging::LogLevel::Error,
 						"Firing event ON_UPDATE returned %u! Exiting event-loop",
 						ret
@@ -298,7 +315,7 @@ namespace Engine
 			const auto event_clock = std::chrono::steady_clock::now();
 
 			// Render
-			glfw_window->DrawFrame();
+			glfw_window->drawFrame();
 
 			const auto draw_clock = std::chrono::steady_clock::now();
 
@@ -323,7 +340,7 @@ namespace Engine
 
 			if (event_time > limits[0] || time_sum > limits[1] || time_sum < limits[2])
 			{
-				this->logger->SimpleLog<decltype(this)>(
+				this->logger->simpleLog<decltype(this)>(
 					Logging::LogLevel::Warning,
 					"delta %lf sum %lf (event %lf draw %lf poll %lf)",
 					delta_time * sec_to_msec,
@@ -334,41 +351,44 @@ namespace Engine
 				);
 			}
 
-			/* const auto frame_clock	= std::chrono::steady_clock::now();
-			const double sleep_secs = 1.0 / framerate_target -
-									  static_cast<double>((frame_clock - next_clock).count()) /
-			nano_to_sec;
+			const auto	 frame_clock = std::chrono::steady_clock::now();
+			const double sleep_secs	 = 1.0 / config->framerate_target -
+									  static_cast<double>((frame_clock - next_clock).count()
+									  ) / nano_to_sec;
 			// spin sleep if sleep necessary and VSYNC disabled
-			if (sleep_secs > 0 && framerate_target != 0)
+			if (sleep_secs > 0 && config->framerate_target != 0)
 			{
-				SpinSleep(sleep_secs);
-			} */
+				spinSleep(sleep_secs);
+			}
 
 			prev_clock = next_clock;
 		}
 
-		this->logger->SimpleLog<decltype(this)>(
+		this->logger->simpleLog<decltype(this)>(
 			Logging::LogLevel::Debug,
 			"Closing engine (eventtime avg %lf)",
 			average_event_total / static_cast<double>(average_event_count)
 		);
 	}
 
-	int Engine::FireEvent(EventHandling::Event& event)
+	int Engine::fireEvent(EventHandling::Event& event)
 	{
 		int sum = 0;
 
-		auto current_scene	   = scene_manager->GetSceneCurrent();
-		auto lua_handler_range = current_scene->lua_event_handlers.equal_range(event.event_type);
-		for (auto handler = lua_handler_range.first; handler != lua_handler_range.second; ++handler)
+		auto current_scene = scene_manager->getSceneCurrent();
+		auto lua_handler_range = current_scene->lua_event_handlers.equal_range(event.event_type
+		);
+		for (auto handler = lua_handler_range.first; handler != lua_handler_range.second;
+			 ++handler)
 		{
 			try
 			{
-				sum += handler->second.first->CallFunction(handler->second.second, &event);
+				// TODO: Use structs instead of this weird ->second.first-> syntax
+				sum += handler->second.first->callFunction(handler->second.second, &event);
 			}
 			catch (std::runtime_error& e)
 			{
-				this->logger->SimpleLog<decltype(this)>(
+				this->logger->simpleLog<decltype(this)>(
 					Logging::LogLevel::Exception,
 					"Caught exception trying to fire event '%u'! e.what(): %s",
 					event.event_type,
@@ -386,7 +406,7 @@ namespace Engine
 
 	Engine::~Engine()
 	{
-		this->logger->SimpleLog<decltype(this)>(Logging::LogLevel::Info, "Destructor called");
+		this->logger->simpleLog<decltype(this)>(Logging::LogLevel::Info, "Destructor called");
 
 		scene_manager.reset();
 
@@ -397,12 +417,14 @@ namespace Engine
 		delete vk_instance;
 	}
 
-	void Engine::Init()
+	void Engine::run()
 	{
-		this->logger->MapCurrentThreadToName("engine");
+		auto init_start = std::chrono::steady_clock::now();
+
+		this->logger->mapCurrentThreadToName("engine");
 
 		// Engine info printout
-		this->logger->SimpleLog<decltype(this)>(
+		this->logger->simpleLog<decltype(this)>(
 			Logging::LogLevel::Info,
 			"build info:\n////\nRunning %s\nCompiled by %s\n////\n",
 			buildinfo_build,
@@ -412,7 +434,7 @@ namespace Engine
 		// Load configuration
 		try
 		{
-			HandleConfig();
+			handleConfig();
 		}
 		catch (...)
 		{
@@ -421,11 +443,6 @@ namespace Engine
 
 		asset_manager = std::make_shared<AssetManager>(this);
 		scene_manager = std::make_shared<SceneManager>(this);
-	}
-
-	void Engine::Run()
-	{
-		auto start = std::chrono::steady_clock::now();
 
 		vk_instance = new Rendering::Vulkan::Instance(
 			this->logger,
@@ -439,7 +456,7 @@ namespace Engine
 			}
 		);
 
-		vk_instance->GetWindow()->SetRenderCallback(Engine::RenderCallback, this);
+		vk_instance->getWindow()->setRenderCallback(Engine::renderCallback, this);
 
 		pipeline_manager = std::make_shared<Rendering::Vulkan::PipelineManager>(
 			logger,
@@ -447,44 +464,55 @@ namespace Engine
 			config->game_path + config->shader_path
 		);
 
-		scene_manager->SetSceneLoadPrefix(config->game_path + config->scene_path);
-		scene_manager->LoadScene(config->default_scene);
-		scene_manager->SetScene(config->default_scene);
+		scene_manager->setSceneLoadPrefix(config->game_path + config->scene_path);
+		scene_manager->loadScene(config->default_scene);
+		scene_manager->setScene(config->default_scene);
 
+		auto oninit_start = std::chrono::steady_clock::now();
+
+		// TODO: Fire ON_INIT on scene load!
 		// Fire ON_INIT event
-		auto on_init_event	   = EventHandling::Event(this, EventHandling::EventType::ON_INIT);
-		int	 on_init_event_ret = FireEvent(on_init_event);
+		auto on_init_event = EventHandling::Event(this, EventHandling::EventType::ON_INIT);
+		int on_init_event_ret = fireEvent(on_init_event);
+
+		const auto end = std::chrono::steady_clock::now();
 
 		// Measure and log ON_INIT time
 		static constexpr double nano_to_msec = 1.e6;
-		double total = static_cast<double>((std::chrono::steady_clock::now() - start).count()) /
-					   nano_to_msec;
-		this->logger->SimpleLog<decltype(this)>(
+		double init_total = static_cast<double>((end - init_start).count()) / nano_to_msec;
+		double oninit_total = static_cast<double>((end - oninit_start).count()) / nano_to_msec;
+
+		this->logger->simpleLog<decltype(this)>(
 			Logging::LogLevel::Info,
-			"Handling ON_INIT took %.3lf ms total and returned %i",
-			total,
-			on_init_event_ret
+			"Initialized in %.3lfms (of that %.3lfms ON_INIT)",
+			init_total,
+			oninit_total
 		);
 
 		if (on_init_event_ret != 0)
 		{
+			this->logger->simpleLog<decltype(this)>(
+				Logging::LogLevel::VerboseDebug,
+				"ON_INIT returned non-zero %u",
+				on_init_event_ret
+			);
 			return;
 		}
 
-		EngineLoop();
+		engineLoop();
 	}
 
-	[[noreturn]] void Engine::ThrowTest()
+	[[noreturn]] void Engine::throwTest()
 	{
 		throw std::runtime_error("BEBEACAC");
 	}
 
-	void Engine::Stop()
+	void Engine::stop()
 	{
-		vk_instance->GetWindow()->SetShouldClose(true);
+		vk_instance->getWindow()->setShouldClose(true);
 	}
 
-	void Engine::ConfigFile(std::string path)
+	void Engine::configFile(std::string path)
 	{
 		config_path = std::move(path);
 	}

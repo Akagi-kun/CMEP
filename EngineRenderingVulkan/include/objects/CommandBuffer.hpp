@@ -6,7 +6,7 @@
 #include "vulkan/vulkan_raii.hpp"
 
 #include <functional>
-
+#include <vector>
 
 namespace Engine::Rendering::Vulkan
 {
@@ -16,17 +16,17 @@ namespace Engine::Rendering::Vulkan
 		CommandBuffer(LogicalDevice* with_device, vk::raii::CommandPool& from_pool);
 		~CommandBuffer() = default;
 
-		// void BeginCmdBuffer(vk::CommandBufferUsageFlags usage_flags);
-
 		// TODO: Remove this in the future
-		void RecordCmds(std::function<void(vk::raii::CommandBuffer*)> const& lambda);
+		void recordCmds(std::function<void(vk::raii::CommandBuffer*)> const& lambda);
 
-		// void QueueSubmit(const vk::raii::Queue& to_queue);
+		void copyBufferBuffer(
+			Buffer*						from_buffer,
+			Buffer*						to_buffer,
+			std::vector<vk::BufferCopy> regions
+		);
+		void copyBufferImage(Buffer* from_buffer, Image* to_image);
 
-		void BufferBufferCopy(Buffer* from_buffer, Buffer* to_buffer, std::vector<vk::BufferCopy> regions);
-		void BufferImageCopy(Buffer* from_buffer, Image* to_image);
-
-		static vk::CommandBufferBeginInfo GetBeginInfo(vk::CommandBufferUsageFlags usage_flags);
+		static vk::CommandBufferBeginInfo getBeginInfo(vk::CommandBufferUsageFlags usage_flags);
 
 	private:
 		LogicalDevice* device;

@@ -1,7 +1,9 @@
 #include <cassert>
 #include <cstdio>
+#include <cstdlib>
 #include <cstring>
 #include <exception>
+#include <memory>
 
 #if defined(_MSC_VER)
 #	include <Windows.h>
@@ -14,7 +16,7 @@
 namespace
 {
 #if defined(_MSC_VER)
-	void InitConsoleWin32()
+	void initConsoleWin32()
 	{
 		HANDLE my_console = GetStdHandle(STD_OUTPUT_HANDLE);
 		DWORD  dw_mode	  = 0;
@@ -34,13 +36,13 @@ namespace
 #	define VERBOSE_LOG_LEVEL Logging::LogLevel::Debug
 #endif
 
-	int RunEngine(bool verbose)
+	int runEngine(bool verbose)
 	{
 		std::shared_ptr<Logging::Logger> my_logger = std::make_shared<Logging::Logger>();
 
 		const Logging::LogLevel stdout_loglevel = verbose ? VERBOSE_LOG_LEVEL : DEFAULT_LOG_LEVEL;
 
-		my_logger->AddOutputHandle(stdout_loglevel, stdout, true);
+		my_logger->addOutputHandle(stdout_loglevel, stdout, true);
 
 		constexpr const char* logfile_name = "latest.log";
 
@@ -52,18 +54,18 @@ namespace
 #endif
 		if (logfile != nullptr)
 		{
-			my_logger->AddOutputHandle(VERBOSE_LOG_LEVEL, logfile, false);
+			my_logger->addOutputHandle(VERBOSE_LOG_LEVEL, logfile, false);
 		}
 		else
 		{
-			my_logger->SimpleLog<void>(
+			my_logger->simpleLog<void>(
 				Logging::LogLevel::Warning,
 				"Failed opening logfile '%s', will log only to stdout",
 				logfile_name
 			);
 		}
 
-		my_logger->SimpleLog<void>(Logging::LogLevel::Info, "Logger initialized");
+		my_logger->simpleLog<void>(Logging::LogLevel::Info, "Logger initialized");
 
 		// Initialize engine
 		std::unique_ptr<Engine::OpaqueEngine> engine = std::make_unique<Engine::OpaqueEngine>(
@@ -74,13 +76,13 @@ namespace
 		// can be successfully caught in rungame
 		try
 		{
-			engine->ThrowTest();
+			engine->throwTest();
 		}
 		catch (std::exception& e)
 		{
 			if (strcmp(e.what(), "BEBEACAC") == 0)
 			{
-				my_logger->SimpleLog<void>(
+				my_logger->simpleLog<void>(
 					Logging::LogLevel::Info,
 					"ABI exception check successful"
 				);
@@ -96,15 +98,14 @@ namespace
 		// Initialize engine, load config
 		try
 		{
-			engine->ConfigFile("game/config.json");
-			engine->Init();
+			engine->configFile("game/config.json");
 		}
 		catch (std::exception& e)
 		{
-			my_logger->SimpleLog<void>(
+			my_logger->simpleLog<void>(
 				Logging::LogLevel::Exception,
 				"Caught exception loading config!\n%s",
-				Engine::UnrollExceptions(e).c_str()
+				Engine::unrollExceptions(e).c_str()
 			);
 
 			return 1;
@@ -113,20 +114,20 @@ namespace
 		// Start execution
 		try
 		{
-			engine->Run();
+			engine->run();
 		}
 		catch (std::exception& e)
 		{
-			my_logger->SimpleLog<void>(
+			my_logger->simpleLog<void>(
 				Logging::LogLevel::Exception,
 				"Caught exception running engine!\n%s",
-				Engine::UnrollExceptions(e).c_str()
+				Engine::unrollExceptions(e).c_str()
 			);
 			return 2;
 		}
 
 		engine.reset();
-		my_logger->SimpleLog<void>(Logging::LogLevel::Info, "Bye!");
+		my_logger->simpleLog<void>(Logging::LogLevel::Info, "Bye!");
 
 		return 0;
 	}
@@ -146,8 +147,8 @@ int main(int argc, char** argv)
 
 #if defined(_MSC_VER)
 	// Enable colored output on Win32
-	InitConsoleWin32();
+	initConsoleWin32();
 #endif
 
-	return RunEngine(verbose);
+	return runEngine(verbose);
 }

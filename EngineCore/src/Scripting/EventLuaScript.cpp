@@ -5,23 +5,25 @@
 
 #include "EventHandling.hpp"
 
+#include <string>
+
 namespace Engine::Scripting
 {
-	void EventLuaScript::InitializeCall(const std::string& function)
+	void EventLuaScript::initializeCall(const std::string& function)
 	{
 		// Clear stack
 		lua_settop(state, 0);
 
 		// Push error handler
-		lua_pushcfunction(state, Utility::LuaErrorHandler);
+		lua_pushcfunction(state, Utility::luaErrorHandler);
 
 		// Get start function
 		lua_getglobal(state, function.c_str());
 	}
 
-	int EventLuaScript::InternalCall(const std::string& function, void* data)
+	int EventLuaScript::internalCall(const std::string& function, void* data)
 	{
-		this->InitializeCall(function);
+		initializeCall(function);
 
 		const auto* event = static_cast<EventHandling::Event*>(data);
 

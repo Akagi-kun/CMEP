@@ -6,11 +6,14 @@
 #include "Asset.hpp"
 #include "InternalEngineObject.hpp"
 
+#include <cstdint>
 #include <memory>
+#include <type_traits>
 #include <vector>
 
 namespace Engine::Rendering
 {
+	// TODO: Consider removing? Separate out texture loading
 	typedef enum class Texture_InitFiletypeEnum : uint8_t
 	{
 		MIN_ENUM = 0x00,
@@ -22,9 +25,9 @@ namespace Engine::Rendering
 
 	struct TextureData
 	{
-		ImageSize size;
-		int color_fmt = 4;
-		std::vector<unsigned char> data;
+		ImageSize								   size;
+		int										   color_fmt = 4;
+		std::vector<unsigned char>				   data;
 		Vulkan::SampledImage<Vulkan::ViewedImage>* texture_image = nullptr;
 	};
 
@@ -34,19 +37,17 @@ namespace Engine::Rendering
 		Texture(Engine* with_engine, std::unique_ptr<TextureData> init_data);
 		~Texture();
 
-		// Texture(const Texture&) = delete;
-
-		[[nodiscard]] ImageSize GetSize() const
+		[[nodiscard]] ImageSize getSize() const
 		{
 			return data->size;
 		}
 
-		[[nodiscard]] auto& GetTextureImage() const
+		[[nodiscard]] auto& getTextureImage() const
 		{
 			return data->texture_image;
 		}
 
-		[[nodiscard]] int GetColorFormat() const
+		[[nodiscard]] int getColorFormat() const
 		{
 			return data->color_fmt;
 		}
@@ -54,5 +55,6 @@ namespace Engine::Rendering
 	private:
 		std::unique_ptr<TextureData> data;
 	};
+	static_assert(!std::is_move_constructible_v<Texture> && !std::is_move_assignable_v<Texture>);
 
 } // namespace Engine::Rendering

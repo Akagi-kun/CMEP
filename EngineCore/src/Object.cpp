@@ -1,14 +1,19 @@
 #include "Object.hpp"
 
+#include "Rendering/MeshBuilders/IMeshBuilder.hpp"
 #include "Rendering/Renderers/Renderer.hpp"
+#include "Rendering/Transform.hpp"
+
+#include "Logging/Logging.hpp"
+
+#include "InternalEngineObject.hpp"
 
 namespace Engine
 {
-	Object::Object(
-		Engine*					 with_engine,
-		Rendering::IRenderer*	 with_renderer,
-		Rendering::IMeshBuilder* with_mesh_builder
-	)
+	using Rendering::IMeshBuilder;
+	using Rendering::IRenderer;
+
+	Object::Object(Engine* with_engine, IRenderer* with_renderer, IMeshBuilder* with_mesh_builder)
 		: InternalEngineObject(with_engine), renderer(with_renderer),
 		  mesh_builder(with_mesh_builder)
 	{
@@ -16,7 +21,7 @@ namespace Engine
 
 	Object::~Object() noexcept
 	{
-		this->logger->SimpleLog<decltype(this)>(
+		this->logger->simpleLog<decltype(this)>(
 			Logging::LogLevel::VerboseDebug,
 			"Destructor called"
 		);
@@ -24,90 +29,90 @@ namespace Engine
 		delete renderer;
 	}
 
-	void Object::UpdateRenderer()
+	void Object::updateRenderer()
 	{
 		if (renderer != nullptr)
 		{
-			renderer->UpdateTransform(transform, parent_transform, screen);
+			renderer->updateTransform(transform, parent_transform, screen);
 		}
 	}
 
-	void Object::ScreenSizeInform(Rendering::ScreenSize with_screen_size)
+	void Object::screenSizeInform(Rendering::ScreenSize with_screen_size)
 	{
 		screen = with_screen_size;
 
-		UpdateRenderer();
+		updateRenderer();
 	}
 
-	void Object::SetPosition(const glm::vec3 with_pos)
+	void Object::setPosition(const glm::vec3 with_pos)
 	{
 		transform.pos = with_pos;
-		UpdateRenderer();
+		updateRenderer();
 
 		for (auto& child : children)
 		{
-			child->SetParentTransform(transform);
-			child->UpdateRenderer();
+			child->setParentTransform(transform);
+			child->updateRenderer();
 		}
 	}
 
-	void Object::SetSize(const glm::vec3 with_size)
+	void Object::setSize(const glm::vec3 with_size)
 	{
 		transform.size = with_size;
-		UpdateRenderer();
+		updateRenderer();
 
 		for (auto& child : children)
 		{
-			child->SetParentTransform(transform);
-			child->UpdateRenderer();
+			child->setParentTransform(transform);
+			child->updateRenderer();
 		}
 	}
 
-	void Object::SetRotation(const glm::vec3 with_rotation)
+	void Object::setRotation(const glm::vec3 with_rotation)
 	{
 		transform.rotation = with_rotation;
 
-		UpdateRenderer();
+		updateRenderer();
 
 		for (auto& child : children)
 		{
-			child->SetParentTransform(transform);
-			child->UpdateRenderer();
+			child->setParentTransform(transform);
+			child->updateRenderer();
 		}
 	}
 
-	glm::vec3 Object::GetPosition() const noexcept
+	glm::vec3 Object::getPosition() const noexcept
 	{
 		return transform.pos;
 	}
-	glm::vec3 Object::GetSize() const noexcept
+	glm::vec3 Object::getSize() const noexcept
 	{
 		return transform.size;
 	}
-	glm::vec3 Object::GetRotation() const noexcept
+	glm::vec3 Object::getRotation() const noexcept
 	{
 		return transform.rotation;
 	}
 
-	void Object::SetParentTransform(Rendering::Transform with_parent_transform)
+	void Object::setParentTransform(Rendering::Transform with_parent_transform)
 	{
 		parent_transform = with_parent_transform;
 	}
 
-	void Object::AddChild(Object* with_child)
+	void Object::addChild(Object* with_child)
 	{
-		with_child->SetParent(this);
-		with_child->SetParentTransform(transform);
-		with_child->UpdateRenderer();
+		with_child->setParent(this);
+		with_child->setParentTransform(transform);
+		with_child->updateRenderer();
 		children.push_back(with_child);
 	}
 
-	void Object::RemoveChildren()
+	void Object::removeChildren()
 	{
 		children.clear();
 	}
 
-	void Object::SetParent(Object* with_parent)
+	void Object::setParent(Object* with_parent)
 	{
 		parent = with_parent;
 	}

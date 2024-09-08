@@ -6,6 +6,7 @@
 #include "lua.hpp"
 
 #include <filesystem>
+#include <memory>
 #include <string>
 
 namespace Engine::Scripting
@@ -21,39 +22,39 @@ namespace Engine::Scripting
 	{
 	public:
 		ILuaScript(
-			Engine* with_engine,
+			Engine*				  with_engine,
 			std::filesystem::path with_path,
-			bool with_enable_profiling = false
+			bool				  with_enable_profiling = false
 		);
 		virtual ~ILuaScript();
 
-		int CallFunction(const std::string& function, void* data);
+		int callFunction(const std::string& function, void* data);
 
-		[[nodiscard]] const ScriptPerfState& GetProfilerState() const
+		[[nodiscard]] const ScriptPerfState& getProfilerState() const
 		{
 			return profiler_state;
 		}
 
-		[[nodiscard]] lua_State* GetState()
+		[[nodiscard]] lua_State* getState()
 		{
 			return state;
 		}
 
-		[[nodiscard]] const std::filesystem::path& GetPath() const
+		[[nodiscard]] const std::filesystem::path& getPath() const
 		{
 			return path;
 		}
 
 	protected:
-		lua_State* state;
+		lua_State*		state;
 		ScriptPerfState profiler_state;
 
 		std::filesystem::path path;
 
-		void PerformPreloadSteps();
-		void LoadAndCompileScript();
+		void performPreloadSteps();
+		void loadAndCompileScript();
 
-		virtual int InternalCall(const std::string& function, void* data) = 0;
+		virtual int internalCall(const std::string& function, void* data) = 0;
 
 	private:
 		const bool enable_profiling;
@@ -62,7 +63,7 @@ namespace Engine::Scripting
 	struct ScriptFunctionRef
 	{
 		std::weak_ptr<ILuaScript> script;
-		std::string function;
+		std::string				  function;
 
 		int operator()(void* data);
 	};

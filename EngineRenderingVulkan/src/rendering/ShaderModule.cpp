@@ -3,15 +3,19 @@
 #include "backend/LogicalDevice.hpp"
 #include "common/Utility.hpp"
 
+#include <cstdint>
+#include <filesystem>
+#include <string>
+
 namespace Engine::Rendering::Vulkan
 {
 	ShaderModule::ShaderModule(
-		LogicalDevice* with_device,
+		LogicalDevice*		  with_device,
 		std::filesystem::path with_path,
-		const std::string& filename
+		const std::string&	  filename
 	)
 	{
-		const auto shader_code = Vulkan::Utility::ReadShaderFile(with_path.append(filename));
+		const auto shader_code = Vulkan::Utility::readShaderFile(with_path.append(filename));
 
 		vk::ShaderModuleCreateInfo create_info(
 			{},

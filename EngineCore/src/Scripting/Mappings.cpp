@@ -1,5 +1,7 @@
 #include "Scripting/Mappings.hpp"
 
+#include "Rendering/MeshBuilders/IMeshBuilder.hpp"
+#include "Rendering/Renderers/Renderer.hpp"
 #include "Rendering/SupplyData.hpp"
 
 #include "Scripting/API/LuaFactories.hpp"
@@ -45,17 +47,17 @@ namespace Engine::Scripting::Mappings
 
 			if (auto locked_logger = logger.lock())
 			{
-				locked_logger->StartLog<void>(Logging::LogLevel::Info);
+				locked_logger->startLog<void>(Logging::LogLevel::Info);
 
 				for (int arg = 1; arg <= argc; arg++)
 				{
 					Utility::LuaValue value(state, arg);
-					std::string		  string = Utility::LuaValue::ToString(value);
+					std::string		  string = Utility::LuaValue::toString(value);
 
-					locked_logger->Log("%s\t", string.c_str());
+					locked_logger->log("%s\t", string.c_str());
 				}
 
-				locked_logger->StopLog();
+				locked_logger->stopLog();
 			}
 			else
 			{
@@ -72,7 +74,7 @@ namespace Engine::Scripting::Mappings
 		namespace
 		{
 			template <typename supply_data_t>
-			[[nodiscard]] supply_data_t InterpretSupplyData(lua_State* state)
+			[[nodiscard]] supply_data_t interpretSupplyData(lua_State* state)
 			{
 				ENGINE_EXCEPTION_ON_ASSERT(lua_objlen(state, -1) == 2, "Incorrect data supplied")
 
@@ -85,16 +87,16 @@ namespace Engine::Scripting::Mappings
 
 				if constexpr (std::is_same_v<supply_data_t, Rendering::RendererSupplyData>)
 				{
-					return Factories::ObjectFactory::GenerateRendererSupplyData(type, value);
+					return Factories::ObjectFactory::generateRendererSupplyData(type, value);
 				}
 				else if constexpr (std::is_same_v<supply_data_t, Rendering::MeshBuilderSupplyData>)
 				{
-					return Factories::ObjectFactory::GenerateMeshBuilderSupplyData(type, value);
+					return Factories::ObjectFactory::generateMeshBuilderSupplyData(type, value);
 				}
 			}
 
 			template <typename supply_data_t>
-			std::vector<supply_data_t> InterpretSupplyDataTable(lua_State* state, int start_idx)
+			std::vector<supply_data_t> interpretSupplyDataTable(lua_State* state, int start_idx)
 			{
 				std::vector<supply_data_t> supply_data;
 
@@ -111,7 +113,7 @@ namespace Engine::Scripting::Mappings
 
 					try
 					{
-						supply_data.emplace_back(InterpretSupplyData<supply_data_t>(state));
+						supply_data.emplace_back(interpretSupplyData<supply_data_t>(state));
 					}
 					catch (...)
 					{
@@ -157,13 +159,13 @@ namespace Engine::Scripting::Mappings
 			if (lua_istable(state, r_table_idx) && lua_istable(state, mb_table_idx))
 			{
 				std::vector<Rendering::RendererSupplyData> renderer_supply_data =
-					InterpretSupplyDataTable<Rendering::RendererSupplyData>(state, r_table_idx);
+					interpretSupplyDataTable<Rendering::RendererSupplyData>(state, r_table_idx);
 
 				std::vector<Rendering::MeshBuilderSupplyData> meshbuilder_supply_data =
-					InterpretSupplyDataTable<Rendering::MeshBuilderSupplyData>(state, mb_table_idx);
+					interpretSupplyDataTable<Rendering::MeshBuilderSupplyData>(state, mb_table_idx);
 
 				// Check if mesh builder type is valid, if so, get a factory for it
-				const auto factory = Factories::ObjectFactory::GetSceneObjectFactory(
+				const auto factory = Factories::ObjectFactory::getSceneObjectFactory(
 					renderer_type,
 					mesh_builder_type
 				);
@@ -206,7 +208,7 @@ namespace Engine::Scripting::Mappings
 			auto type  = Utility::LuaValue(state, 2);
 			auto value = Utility::LuaValue(state, 3);
 
-			renderer->SupplyData(Factories::ObjectFactory::GenerateRendererSupplyData(type, value));
+			renderer->supplyData(Factories::ObjectFactory::generateRendererSupplyData(type, value));
 
 			return 0;
 		}
@@ -220,8 +222,8 @@ namespace Engine::Scripting::Mappings
 			auto type  = Utility::LuaValue(state, 2);
 			auto value = Utility::LuaValue(state, 3);
 
-			mesh_builder->SupplyData(
-				Factories::ObjectFactory::GenerateMeshBuilderSupplyData(type, value)
+			mesh_builder->supplyData(
+				Factories::ObjectFactory::generateMeshBuilderSupplyData(type, value)
 			);
 
 			return 0;

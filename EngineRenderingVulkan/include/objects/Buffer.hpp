@@ -19,29 +19,29 @@ namespace Engine::Rendering::Vulkan
 		void* mapped_data = nullptr;
 
 		Buffer(
-			InstanceOwned::value_t with_instance,
-			vk::DeviceSize with_size,
-			vk::BufferUsageFlags with_usage,
+			InstanceOwned::value_t	with_instance,
+			vk::DeviceSize			with_size,
+			vk::BufferUsageFlags	with_usage,
 			vk::MemoryPropertyFlags with_properties
 		);
 		~Buffer();
 
-		void MapMemory();
-		void UnmapMemory();
+		void mapMemory();
+		void unmapMemory();
 
-		void MemoryCopy(const void* with_data, size_t with_size)
+		void memoryCopy(const void* with_data, size_t with_size)
 		{
-			MapMemory();
+			mapMemory();
 
 			std::memcpy(mapped_data, with_data, with_size);
 
-			UnmapMemory();
+			unmapMemory();
 		}
 
 	protected:
 		vk::DeviceSize buffer_size;
 
-		VmaAllocation allocation;
+		VmaAllocation	  allocation;
 		VmaAllocationInfo allocation_info;
 	};
 
@@ -51,8 +51,8 @@ namespace Engine::Rendering::Vulkan
 	public:
 		StagingBuffer(
 			InstanceOwned::value_t with_instance,
-			const void* with_data,
-			vk::DeviceSize with_size
+			const void*			   with_data,
+			vk::DeviceSize		   with_size
 		);
 	};
 
@@ -60,7 +60,7 @@ namespace Engine::Rendering::Vulkan
 	{
 	public:
 		VertexBuffer(
-			InstanceOwned::value_t with_instance,
+			InstanceOwned::value_t				with_instance,
 			const std::vector<RenderingVertex>& vertices
 		);
 	};

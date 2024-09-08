@@ -6,6 +6,7 @@
 #include "Scene.hpp"
 
 #include <memory>
+#include <string>
 
 #ifndef JSON_USE_IMPLICIT_CONVERSIONS
 #	define JSON_USE_IMPLICIT_CONVERSIONS 0
@@ -22,20 +23,20 @@ namespace Engine
 		using InternalEngineObject::InternalEngineObject;
 		~SceneLoader();
 
-		std::shared_ptr<Scene> LoadScene(std::string name);
+		std::shared_ptr<Scene> loadScene(std::string name);
 
 	protected:
-		void LoadSceneAsset(
+		void loadSceneAsset(
 			std::shared_ptr<AssetManager>& asset_manager,
 			nlohmann::json&				   asset_entry,
 			const std::string&			   scene_path
 		);
-		void LoadSceneAssets(nlohmann::json& data, const std::string& scene_path);
+		void loadSceneAssets(nlohmann::json& data, const std::string& scene_path);
 
-		void LoadSceneTemplates(nlohmann::json& data, std::shared_ptr<Scene>& scene);
-		void LoadSceneTree(nlohmann::json& data, std::shared_ptr<Scene>& scene);
-		void LoadSceneEventHandlers(nlohmann::json& data, std::shared_ptr<Scene>& scene);
+		void loadSceneTemplates(nlohmann::json& data, std::shared_ptr<Scene>& scene);
+		void loadSceneTree(nlohmann::json& data, std::shared_ptr<Scene>& scene);
+		void loadSceneEventHandlers(nlohmann::json& data, std::shared_ptr<Scene>& scene);
 
-		void LoadSceneInternal(std::shared_ptr<Scene>& scene, std::string& scene_name);
+		void loadSceneInternal(std::shared_ptr<Scene>& scene, std::string& scene_name);
 	};
 } // namespace Engine

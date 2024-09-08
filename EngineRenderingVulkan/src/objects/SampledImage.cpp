@@ -1,5 +1,7 @@
 #include "objects/SampledImage.hpp"
 
+#include "Rendering/Transform.hpp"
+
 #include "backend/Instance.hpp"
 #include "backend/LogicalDevice.hpp"
 
@@ -18,16 +20,24 @@ namespace Engine::Rendering::Vulkan
 		vk::ImageTiling			with_tiling
 	)
 		requires(std::is_same_v<base_t, Image>)
-		: Image(with_instance, with_size, num_samples, format, usage, properties, with_tiling),
+		: Image(
+			  with_instance,
+			  with_size,
+			  num_samples,
+			  format,
+			  usage,
+			  properties,
+			  with_tiling
+		  ),
 		  use_filter(with_filter), use_address_mode(with_address_mode)
 	{
 
-		LogicalDevice* logical_device = this->instance->GetLogicalDevice();
+		LogicalDevice* logical_device = this->instance->getLogicalDevice();
 
 		vk::PhysicalDeviceProperties device_properties =
-			this->instance->GetPhysicalDevice()->getProperties();
+			this->instance->getPhysicalDevice()->getProperties();
 
-		texture_sampler = logical_device->createSampler(GetSamplerCreateInfo(
+		texture_sampler = logical_device->createSampler(getSamplerCreateInfo(
 			use_filter,
 			use_address_mode,
 			device_properties.limits.maxSamplerAnisotropy
@@ -60,12 +70,12 @@ namespace Engine::Rendering::Vulkan
 		  ),
 		  use_filter(with_filter), use_address_mode(with_address_mode)
 	{
-		LogicalDevice* logical_device = this->instance->GetLogicalDevice();
+		LogicalDevice* logical_device = this->instance->getLogicalDevice();
 
 		vk::PhysicalDeviceProperties device_properties =
-			this->instance->GetPhysicalDevice()->getProperties();
+			this->instance->getPhysicalDevice()->getProperties();
 
-		texture_sampler = logical_device->createSampler(GetSamplerCreateInfo(
+		texture_sampler = logical_device->createSampler(getSamplerCreateInfo(
 			use_filter,
 			use_address_mode,
 			device_properties.limits.maxSamplerAnisotropy
@@ -73,7 +83,7 @@ namespace Engine::Rendering::Vulkan
 	}
 
 	template <typename base_t>
-	[[nodiscard]] vk::SamplerCreateInfo SampledImage<base_t>::GetSamplerCreateInfo(
+	[[nodiscard]] vk::SamplerCreateInfo SampledImage<base_t>::getSamplerCreateInfo(
 		vk::Filter			   use_filter,
 		vk::SamplerAddressMode use_address_mode,
 		float				   max_anisotropy

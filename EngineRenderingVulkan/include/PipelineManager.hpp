@@ -31,28 +31,28 @@ namespace Engine::Rendering::Vulkan
 		);
 		~PipelineManager();
 
-		PipelineUserRef* GetPipeline(const PipelineSettings& with_settings);
+		PipelineUserRef* getPipeline(const PipelineSettings& with_settings);
 
 	private:
 		std::filesystem::path											   shader_path;
 		std::vector<std::tuple<PipelineSettings, std::weak_ptr<Pipeline>>> pipelines;
 
-		std::pair<std::shared_ptr<Pipeline>, std::string_view> FindPipeline(
+		std::pair<std::shared_ptr<Pipeline>, std::string_view> findPipeline(
 			const PipelineSettings& with_settings
 		);
 
-		void PipelineDeallocCallback();
+		void pipelineDeallocCallback();
 	};
 
+	// Indirection for Pipeline so that they can be shared
+	// there may be many of these for a single origin
+	//
 	struct PipelineUserRef final : public InstanceOwned
 	{
 	public:
 		Pipeline::UserData* user_data = nullptr;
 
-		PipelineUserRef(
-			InstanceOwned::value_t	  with_instance,
-			std::shared_ptr<Pipeline> with_origin
-		);
+		PipelineUserRef(InstanceOwned::value_t with_instance, std::shared_ptr<Pipeline> with_origin);
 		~PipelineUserRef();
 
 		// Disable copy
@@ -64,19 +64,18 @@ namespace Engine::Rendering::Vulkan
 			return origin != nullptr;
 		}
 
-		[[nodiscard]] auto GetUniformBuffer(uint32_t current_frame
-		) const -> decltype(user_data->GetUniformBuffer(current_frame))
+		[[nodiscard]] auto getUniformBuffer(uint32_t current_frame) const
 		{
-			return user_data->GetUniformBuffer(current_frame);
+			return user_data->getUniformBuffer(current_frame);
 		}
 
-		void BindPipeline(vk::CommandBuffer with_command_buffer, uint32_t current_frame)
+		void bindPipeline(vk::CommandBuffer with_command_buffer, uint32_t current_frame)
 		{
-			origin->BindPipeline(*user_data, with_command_buffer, current_frame);
+			origin->bindPipeline(*user_data, with_command_buffer, current_frame);
 		}
 
-		void UpdateDescriptorSets(per_frame_array<vk::WriteDescriptorSet> with_writes);
-		void UpdateDescriptorSetsAll(const vk::WriteDescriptorSet& with_write);
+		void updateDescriptorSets(per_frame_array<vk::WriteDescriptorSet> with_writes);
+		void updateDescriptorSetsAll(const vk::WriteDescriptorSet& with_write);
 
 	private:
 		std::shared_ptr<Pipeline> origin = nullptr;

@@ -1,15 +1,21 @@
 #include "Rendering/MeshBuilders/GeneratorMeshBuilder.hpp"
 
+#include "Rendering/MeshBuilders/MeshBuildContext.hpp"
 #include "Rendering/SupplyData.hpp"
 
 #include "Scripting/ILuaScript.hpp"
 
+#include <algorithm>
+#include <array>
 #include <iterator>
+#include <vector>
 
 namespace Engine::Rendering
 {
-	void GeneratorMeshBuilder::SupplyData(const MeshBuilderSupplyData& data)
+	void GeneratorMeshBuilder::supplyData(const MeshBuilderSupplyData& data)
 	{
+		IMeshBuilder::supplyData(data);
+
 		switch (data.type)
 		{
 			case Rendering::MeshBuilderSupplyData::Type::GENERATOR:
@@ -24,7 +30,7 @@ namespace Engine::Rendering
 		}
 	}
 
-	void GeneratorMeshBuilder::Build()
+	void GeneratorMeshBuilder::build()
 	{
 		if (context.vbo == nullptr)
 		{
@@ -42,7 +48,7 @@ namespace Engine::Rendering
 				std::copy(generated_mesh.begin(), generated_mesh.end(), std::back_inserter(mesh));
 
 				context = MeshBuildContext();
-				context.RebuildVBO(instance, mesh);
+				context.rebuildVBO(instance, mesh);
 			}
 			else
 			{

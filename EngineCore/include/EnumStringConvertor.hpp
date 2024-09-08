@@ -4,6 +4,7 @@
 
 #include <optional>
 #include <string>
+#include <string_view>
 #include <type_traits>
 #include <unordered_map>
 
@@ -22,21 +23,21 @@ namespace Engine
 		EnumStringConvertor(value_t from) : value(from)
 		{
 		}
-		EnumStringConvertor(const std::string& from) : value(Lookup(from))
+		EnumStringConvertor(const std::string& from) : value(lookup(from))
 		{
 		}
 
 		operator value_t() const
 		{
-			return CheckedValueGetter();
+			return checkedValueGetter();
 		}
 
 		operator std::string_view() const
 		{
-			return ReverseLookup(CheckedValueGetter());
+			return reverseLookup(checkedValueGetter());
 		}
 
-		static bool Valid(const std::string& from)
+		static bool valid(const std::string& from)
 		{
 			const auto& found_type = self_t::type_map.find(from);
 
@@ -48,7 +49,7 @@ namespace Engine
 
 		std::optional<value_t> value;
 
-		value_t CheckedValueGetter() const
+		value_t checkedValueGetter() const
 		{
 			if (value.has_value())
 			{
@@ -61,7 +62,7 @@ namespace Engine
 		}
 
 		// Finds type match from type_map
-		auto Lookup(const std::string& from) const -> value_t
+		auto lookup(const std::string& from) const -> value_t
 		{
 			if (from.empty())
 			{
@@ -79,7 +80,7 @@ namespace Engine
 		}
 
 		// Slow linear lookup, use only on cold paths
-		auto ReverseLookup(value_t from) const -> std::string_view
+		auto reverseLookup(value_t from) const -> std::string_view
 		{
 			for (auto [key, val] : type_map)
 			{

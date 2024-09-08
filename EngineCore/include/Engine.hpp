@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Rendering/Transform.hpp"
 #include "Rendering/Vulkan/exports.hpp"
 
 #include "Logging/Logging.hpp"
@@ -49,49 +50,49 @@ namespace Engine
 		Engine(std::shared_ptr<Logging::Logger>& logger);
 		~Engine();
 
-		void Init();
-		void Run();
+		void run();
 
-		void ConfigFile(std::string path);
+		void configFile(std::string path);
 
-		void Stop();
+		void stop();
 
-		[[noreturn]] static void ThrowTest();
+		[[noreturn]] static void throwTest();
 
-		int FireEvent(EventHandling::Event& event);
+		// Event return code should be checked
+		[[nodiscard]] int fireEvent(EventHandling::Event& event);
 
-		void SetFramerateTarget(uint_fast16_t framerate) noexcept
+		void setFramerateTarget(uint_fast16_t framerate) noexcept
 		{
 			config->framerate_target = framerate;
 		}
 
-		[[nodiscard]] const std::string& GetShaderPath() const
+		[[nodiscard]] const std::string& getShaderPath() const
 		{
 			return config->shader_path;
 		}
 
-		[[nodiscard]] double GetLastDeltaTime() const
+		[[nodiscard]] double getLastDeltaTime() const
 		{
 			return last_delta_time;
 		}
 
-		[[nodiscard]] std::shared_ptr<Logging::Logger> GetLogger() const noexcept
+		[[nodiscard]] std::shared_ptr<Logging::Logger> getLogger() const noexcept
 		{
 			return logger;
 		}
-		[[nodiscard]] std::weak_ptr<AssetManager> GetAssetManager() noexcept
+		[[nodiscard]] std::weak_ptr<AssetManager> getAssetManager() noexcept
 		{
 			return asset_manager;
 		}
-		[[nodiscard]] std::shared_ptr<Rendering::Vulkan::PipelineManager> GetVulkanPipelineManager()
+		[[nodiscard]] std::shared_ptr<Rendering::Vulkan::PipelineManager> getVulkanPipelineManager()
 		{
 			return pipeline_manager;
 		}
-		[[nodiscard]] Rendering::Vulkan::Instance* GetVulkanInstance()
+		[[nodiscard]] Rendering::Vulkan::Instance* getVulkanInstance()
 		{
 			return vk_instance;
 		}
-		[[nodiscard]] std::weak_ptr<SceneManager> GetSceneManager() noexcept
+		[[nodiscard]] std::weak_ptr<SceneManager> getSceneManager() noexcept
 		{
 			return scene_manager;
 		}
@@ -111,21 +112,17 @@ namespace Engine
 
 		std::shared_ptr<Rendering::Vulkan::PipelineManager> pipeline_manager;
 
-		static void SpinSleep(double seconds);
-
-		static void RenderCallback(
+		static void renderCallback(
 			Rendering::Vulkan::CommandBuffer* command_buffer,
 			uint32_t						  current_frame,
 			void*							  engine
 		);
 
-		static void ErrorCallback(int code, const char* message);
+		void handleInput(double delta_time);
 
-		void HandleInput(double delta_time);
+		void engineLoop();
 
-		void EngineLoop();
-
-		void HandleConfig();
+		void handleConfig();
 
 		std::shared_ptr<SceneManager> scene_manager;
 	};

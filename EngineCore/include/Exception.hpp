@@ -15,7 +15,7 @@ namespace Engine
 			const std::string&	 with_message,
 			std::source_location location = std::source_location::current()
 		)
-			: message(GenerateWhat(with_message, location))
+			: message(generateWhat(with_message, location))
 		{
 		}
 
@@ -27,13 +27,13 @@ namespace Engine
 	private:
 		std::string message;
 
-		static CMEP_EXPORT std::string GenerateWhat(
+		static CMEP_EXPORT std::string generateWhat(
 			const std::string&	 with_message,
 			std::source_location location
 		);
 	};
 
-	CMEP_EXPORT std::string UnrollExceptions(const std::exception& caught_exception);
+	CMEP_EXPORT std::string unrollExceptions(const std::exception& caught_exception);
 } // namespace Engine
 
 // NOLINTBEGIN(*unused-macros)

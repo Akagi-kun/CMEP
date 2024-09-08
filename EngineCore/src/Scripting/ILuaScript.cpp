@@ -7,11 +7,17 @@
 
 #include "EventHandling.hpp"
 #include "Exception.hpp"
+#include "InternalEngineObject.hpp"
 #include "lua.hpp"
 
+#include <cassert>
 #include <cstddef>
+#include <cstdint>
+#include <cstdio>
+#include <exception>
 #include <filesystem>
 #include <format>
+#include <memory>
 #include <string>
 #include <utility>
 
@@ -21,7 +27,7 @@ namespace Engine::Scripting
 
 	namespace
 	{
-		void ProfilerCallback(void* data, lua_State* state, int samples, int vmstate)
+		void profilerCallback(void* data, lua_State* state, int samples, int vmstate)
 		{
 			(void)(samples);
 
@@ -67,7 +73,7 @@ namespace Engine::Scripting
 		}
 
 		// Register C callback functions from mappings
-		void RegisterCallbacks(lua_State* state, const std::shared_ptr<Logging::Logger>& logger)
+		void registerCallbacks(lua_State* state, const std::shared_ptr<Logging::Logger>& logger)
 		{
 			lua_newtable(state);
 
@@ -79,7 +85,7 @@ namespace Engine::Scripting
 
 			lua_setglobal(state, "engine");
 
-			// Replace print by a SimpleLog wrapper
+			// Replace print by a simpleLog wrapper
 			void* ptr_obj = lua_newuserdata(state, sizeof(std::weak_ptr<Logging::Logger>));
 			new (ptr_obj) std::weak_ptr<Logging::Logger>(logger);
 
@@ -89,7 +95,9 @@ namespace Engine::Scripting
 			lua_settop(state, 0);
 		}
 
-		int LuajitExceptionWrap(lua_State* state, lua_CFunction function)
+		// Catches exceptions when executing lua-mapped C/C++ code and returns them as luaL_error
+		// functions can still return them manually,
+		int luajitExceptionWrap(lua_State* state, lua_CFunction function)
 		{
 			try
 			{
@@ -104,8 +112,8 @@ namespace Engine::Scripting
 				return luaL_error(
 					state,
 					"Exception wrapper caught exception!\n\tFunction: %s\n\tStacktrace: %s",
-					Utility::MappingReverseLookup(function).data(),
-					UnrollExceptions(e).c_str()
+					Utility::mappingReverseLookup(function).data(),
+					unrollExceptions(e).c_str()
 				);
 			}
 			catch (...)
@@ -114,7 +122,7 @@ namespace Engine::Scripting
 			}
 		}
 
-		void RegisterRequirePath(lua_State* state, ILuaScript* with_script)
+		void registerRequirePath(lua_State* state, ILuaScript* with_script)
 		{
 			lua_getglobal(state, LUA_LOADLIBNAME);
 			ENGINE_EXCEPTION_ON_ASSERT(
@@ -122,7 +130,7 @@ namespace Engine::Scripting
 				"Lua Module 'package' is not loaded!"
 			)
 
-			std::filesystem::path require_origin = with_script->GetPath();
+			std::filesystem::path require_origin = with_script->getPath();
 			std::string require_origin_str = require_origin.remove_filename().parent_path().string(
 			);
 
@@ -132,14 +140,14 @@ namespace Engine::Scripting
 			lua_setfield(state, -2, "path");
 		}
 
-		void RegisterWrapper(lua_State* state)
+		void registerWrapper(lua_State* state)
 		{
-			lua_pushlightuserdata(state, reinterpret_cast<void*>(LuajitExceptionWrap));
+			lua_pushlightuserdata(state, reinterpret_cast<void*>(luajitExceptionWrap));
 			luaJIT_setmode(state, -1, LUAJIT_MODE_WRAPCFUNC | LUAJIT_MODE_ON);
 			lua_pop(state, 1);
 		}
 
-		int CdefLazyLoader(lua_State* state)
+		int cdefLazyLoader(lua_State* state)
 		{
 			const char* preload_code =
 				"local ffi = require('ffi');"
@@ -178,7 +186,7 @@ namespace Engine::Scripting
 
 #pragma endregion
 
-	void ILuaScript::PerformPreloadSteps()
+	void ILuaScript::performPreloadSteps()
 	{
 		lua_getglobal(state, LUA_LOADLIBNAME);
 		ENGINE_EXCEPTION_ON_ASSERT(lua_istable(state, -1), "Lua Module 'package' is not loaded!")
@@ -186,18 +194,18 @@ namespace Engine::Scripting
 		lua_getfield(state, -1, "preload");
 		assert(lua_istable(state, -1));
 
-		lua_pushcfunction(state, CdefLazyLoader);
+		lua_pushcfunction(state, cdefLazyLoader);
 		lua_setfield(state, -2, "cdef");
 	}
 
-	void ILuaScript::LoadAndCompileScript()
+	void ILuaScript::loadAndCompileScript()
 	{
-		RegisterRequirePath(state, this);
+		registerRequirePath(state, this);
 
 		std::filesystem::path script_path = path;
 
 		// Register exception-handling wrapper
-		RegisterWrapper(state);
+		registerWrapper(state);
 
 		// Load file and compile it
 		// this can raise syntax errors
@@ -226,9 +234,9 @@ namespace Engine::Scripting
 		// luaJIT_setmode(state, 0, LUAJIT_MODE_ENGINE | LUAJIT_MODE_OFF);
 
 		// Register c callback functions
-		RegisterCallbacks(state, this->logger);
+		registerCallbacks(state, this->logger);
 
-		this->logger->SimpleLog<decltype(this)>(
+		this->logger->simpleLog<decltype(this)>(
 			Logging::LogLevel::Debug,
 			"Loaded and compiled Lua script: '%s'",
 			script_path.string().c_str()
@@ -250,11 +258,11 @@ namespace Engine::Scripting
 
 		if (with_enable_profiling)
 		{
-			luaJIT_profile_start(state, "fl", &ProfilerCallback, &profiler_state);
+			luaJIT_profile_start(state, "fl", &profilerCallback, &profiler_state);
 		}
 
-		PerformPreloadSteps();
-		LoadAndCompileScript();
+		performPreloadSteps();
+		loadAndCompileScript();
 	}
 
 	ILuaScript::~ILuaScript()
@@ -263,7 +271,7 @@ namespace Engine::Scripting
 		{
 			luaJIT_profile_stop(state);
 
-			this->logger->SimpleLog<decltype(this)>(
+			this->logger->simpleLog<decltype(this)>(
 				Logging::LogLevel::Info,
 				"Profiling result:\n E:%i N:%i I:%i\n",
 				profiler_state.engine_count,
@@ -275,10 +283,10 @@ namespace Engine::Scripting
 		lua_close(state);
 	}
 
-	int ILuaScript::CallFunction(const std::string& function, void* data)
+	int ILuaScript::callFunction(const std::string& function, void* data)
 	{
 		// Perform actual call
-		int errcall = InternalCall(function, data);
+		int errcall = internalCall(function, data);
 
 		if (errcall != LUA_OK)
 		{
@@ -303,7 +311,7 @@ namespace Engine::Scripting
 	{
 		if (auto locked_script = script.lock())
 		{
-			return locked_script->CallFunction(function, data);
+			return locked_script->callFunction(function, data);
 		}
 
 		throw ENGINE_EXCEPTION("Could not lock script!");

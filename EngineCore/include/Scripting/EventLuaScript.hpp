@@ -2,6 +2,8 @@
 
 #include "Scripting/ILuaScript.hpp"
 
+#include <string>
+
 namespace Engine::Scripting
 {
 	class EventLuaScript final : public ILuaScript
@@ -10,8 +12,8 @@ namespace Engine::Scripting
 		using ILuaScript::ILuaScript;
 
 	private:
-		void InitializeCall(const std::string& function);
+		void initializeCall(const std::string& function);
 
-		int InternalCall(const std::string& function, void* data) override;
+		int internalCall(const std::string& function, void* data) override;
 	};
 } // namespace Engine::Scripting

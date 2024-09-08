@@ -2,6 +2,8 @@
 
 #include "Engine.hpp"
 
+#include <memory>
+
 namespace Engine
 {
 	OpaqueEngine::OpaqueEngine(std::shared_ptr<Logging::Logger>& logger) noexcept
@@ -14,23 +16,18 @@ namespace Engine
 		d_engine.reset();
 	}
 
-	void OpaqueEngine::Init()
+	[[noreturn]] void OpaqueEngine::throwTest()
 	{
-		d_engine->Init();
+		d_engine->throwTest();
 	}
 
-	[[noreturn]] void OpaqueEngine::ThrowTest()
+	void OpaqueEngine::run()
 	{
-		d_engine->ThrowTest();
+		d_engine->run();
 	}
 
-	void OpaqueEngine::Run()
+	void OpaqueEngine::configFile(const char* path)
 	{
-		d_engine->Run();
-	}
-
-	void OpaqueEngine::ConfigFile(const char* path)
-	{
-		d_engine->ConfigFile(path);
+		d_engine->configFile(path);
 	}
 } // namespace Engine

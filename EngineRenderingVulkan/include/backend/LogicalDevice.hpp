@@ -16,17 +16,17 @@ namespace Engine::Rendering::Vulkan
 
 		LogicalDevice(InstanceOwned::value_t with_instance, const Surface* with_surface);
 
-		[[nodiscard]] const QueueFamilyIndices& GetQueueFamilies() const
+		[[nodiscard]] const QueueFamilyIndices& getQueueFamilies() const
 		{
 			return queue_family_indices;
 		}
 
-		[[nodiscard]] vk::raii::Queue& GetGraphicsQueue()
+		[[nodiscard]] vk::raii::Queue& getGraphicsQueue()
 		{
 			return graphics_queue;
 		}
 
-		[[nodiscard]] vk::raii::Queue& GetPresentQueue()
+		[[nodiscard]] vk::raii::Queue& getPresentQueue()
 		{
 			return present_queue;
 		}
@@ -36,6 +36,6 @@ namespace Engine::Rendering::Vulkan
 		vk::raii::Queue	   graphics_queue = nullptr;
 		vk::raii::Queue	   present_queue  = nullptr;
 
-		vk::raii::Device CreateDevice(Instance* with_instance, const Surface* with_surface);
+		vk::raii::Device createDevice(Instance* with_instance, const Surface* with_surface);
 	};
 } // namespace Engine::Rendering::Vulkan

@@ -8,33 +8,35 @@
 #include "vulkan/vulkan_raii.hpp"
 
 #include <stdexcept>
-
+#include <vector>
 
 namespace Engine::Rendering::Vulkan
 {
 #pragma region Public
 
 	Buffer::Buffer(
-		InstanceOwned::value_t with_instance,
-		vk::DeviceSize with_size,
-		vk::BufferUsageFlags with_usage,
+		InstanceOwned::value_t	with_instance,
+		vk::DeviceSize			with_size,
+		vk::BufferUsageFlags	with_usage,
 		vk::MemoryPropertyFlags with_properties
 	)
-		: InstanceOwned(with_instance), HoldsVMA(with_instance->GetGraphicMemoryAllocator()), buffer_size(with_size)
+		: InstanceOwned(with_instance),
+		  HoldsVMA(with_instance->getGraphicMemoryAllocator()), buffer_size(with_size)
 	{
-		LogicalDevice* logical_device = instance->GetLogicalDevice();
+		LogicalDevice* logical_device = instance->getLogicalDevice();
 
-		vk::BufferCreateInfo create_info({}, buffer_size, with_usage, vk::SharingMode::eExclusive, {}, {}, {});
+		vk::BufferCreateInfo
+			create_info({}, buffer_size, with_usage, vk::SharingMode::eExclusive, {}, {}, {});
 
 		VmaAllocationCreateInfo vma_alloc_info = {};
 		vma_alloc_info.usage				   = VMA_MEMORY_USAGE_UNKNOWN;
 		vma_alloc_info.flags				   = 0;
-		vma_alloc_info.requiredFlags		   = static_cast<VkMemoryPropertyFlags>(with_properties);
+		vma_alloc_info.requiredFlags = static_cast<VkMemoryPropertyFlags>(with_properties);
 
 		native_handle = logical_device->createBuffer(create_info);
 
 		if (vmaAllocateMemoryForBuffer(
-				allocator->GetHandle(),
+				allocator->getHandle(),
 				*native_handle,
 				&vma_alloc_info,
 				&allocation,
@@ -44,34 +46,39 @@ namespace Engine::Rendering::Vulkan
 			throw std::runtime_error("Could not allocate buffer memory!");
 		}
 
-		if (vmaBindBufferMemory(allocator->GetHandle(), allocation, *native_handle) != VK_SUCCESS)
+		if (vmaBindBufferMemory(allocator->getHandle(), allocation, *native_handle) !=
+			VK_SUCCESS)
 		{
 			throw std::runtime_error("Could not bind buffer memory!");
 		}
 
-		vmaSetAllocationName(allocator->GetHandle(), allocation, "Buffer");
+		vmaSetAllocationName(allocator->getHandle(), allocation, "Buffer");
 	}
 
 	Buffer::~Buffer()
 	{
-		LogicalDevice* logical_device = instance->GetLogicalDevice();
+		LogicalDevice* logical_device = instance->getLogicalDevice();
 
 		logical_device->waitIdle();
 
-		vmaFreeMemory(allocator->GetHandle(), allocation);
+		vmaFreeMemory(allocator->getHandle(), allocation);
 	}
 
-	void Buffer::MapMemory()
+	void Buffer::mapMemory()
 	{
-		LogicalDevice* logical_device = instance->GetLogicalDevice();
+		LogicalDevice* logical_device = instance->getLogicalDevice();
 
-		mapped_data =
-			(**logical_device).mapMemory(allocation_info.deviceMemory, allocation_info.offset, allocation_info.size);
+		mapped_data = (**logical_device)
+						  .mapMemory(
+							  allocation_info.deviceMemory,
+							  allocation_info.offset,
+							  allocation_info.size
+						  );
 	}
 
-	void Buffer::UnmapMemory()
+	void Buffer::unmapMemory()
 	{
-		LogicalDevice* logical_device = instance->GetLogicalDevice();
+		LogicalDevice* logical_device = instance->getLogicalDevice();
 
 		(**logical_device).unmapMemory(allocation_info.deviceMemory);
 
@@ -79,7 +86,11 @@ namespace Engine::Rendering::Vulkan
 		mapped_data = nullptr;
 	}
 
-	StagingBuffer::StagingBuffer(InstanceOwned::value_t with_instance, const void* with_data, vk::DeviceSize with_size)
+	StagingBuffer::StagingBuffer(
+		InstanceOwned::value_t with_instance,
+		const void*			   with_data,
+		vk::DeviceSize		   with_size
+	)
 		: Buffer(
 			  with_instance,
 			  with_size,
@@ -87,10 +98,13 @@ namespace Engine::Rendering::Vulkan
 			  vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent
 		  )
 	{
-		MemoryCopy(with_data, with_size);
+		memoryCopy(with_data, with_size);
 	}
 
-	VertexBuffer::VertexBuffer(InstanceOwned::value_t with_instance, const std::vector<RenderingVertex>& vertices)
+	VertexBuffer::VertexBuffer(
+		InstanceOwned::value_t				with_instance,
+		const std::vector<RenderingVertex>& vertices
+	)
 		: Buffer(
 			  with_instance,
 			  sizeof(vertices[0]) * vertices.size(),
@@ -98,12 +112,13 @@ namespace Engine::Rendering::Vulkan
 			  vk::MemoryPropertyFlagBits::eDeviceLocal
 		  )
 	{
-		CommandBuffer* command_buffer = with_instance->GetCommandPool()->AllocateCommandBuffer();
+		CommandBuffer* command_buffer = with_instance->getCommandPool()->allocateCommandBuffer();
 
 		auto staging_buffer = StagingBuffer(with_instance, vertices.data(), buffer_size);
 
 		// Copy into final buffer
-		command_buffer->BufferBufferCopy(&staging_buffer, this, {vk::BufferCopy{0, 0, buffer_size}});
+		command_buffer
+			->copyBufferBuffer(&staging_buffer, this, {vk::BufferCopy{0, 0, buffer_size}});
 
 		delete command_buffer;
 	}

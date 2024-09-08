@@ -35,7 +35,7 @@ namespace Engine::Rendering::Vulkan
 		DeviceScore(const PhysicalDevice& with_device, const Surface* with_surface);
 
 		static const std::vector<const char*> device_extensions;
-		static bool CheckDeviceExtensionSupport(const vk::raii::PhysicalDevice& device);
+		static bool checkDeviceExtensionSupport(const vk::raii::PhysicalDevice& device);
 
 		operator bool() const
 		{
@@ -48,7 +48,7 @@ namespace Engine::Rendering::Vulkan
 				supported && "Tried to call operator< on an unsupported device, possibly a bug?"
 			);
 
-			return std::less<int>{}(preference_score, other.preference_score);
+			return std::less<>{}(preference_score, other.preference_score);
 		}
 	};
 } // namespace Engine::Rendering::Vulkan

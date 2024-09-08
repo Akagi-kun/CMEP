@@ -24,7 +24,7 @@
 
 namespace Engine::Scripting::Utility
 {
-	std::string UnwindStack(lua_State* of_state)
+	std::string unwindStack(lua_State* of_state)
 	{
 		std::string error_msg =
 			"--- BEGIN LUA STACK UNWIND ---\n\nError that caused this stack unwind:\n";
@@ -92,17 +92,17 @@ namespace Engine::Scripting::Utility
 		return error_msg;
 	}
 
-	int LuaErrorHandler(lua_State* state)
+	int luaErrorHandler(lua_State* state)
 	{
 		// Describe error by unwinding the stack
-		lua_pushstring(state, UnwindStack(state).c_str());
+		lua_pushstring(state, unwindStack(state).c_str());
 
 		// UnwindStack pops the error string
 		// so we return only a single string containing the stack trace
 		return 1;
 	}
 
-	std::string StackContentToString(lua_State* state)
+	std::string stackContentToString(lua_State* state)
 	{
 		std::string output;
 
@@ -119,7 +119,7 @@ namespace Engine::Scripting::Utility
 		return output;
 	}
 
-	std::string_view MappingReverseLookup(lua_CFunction lookup_function)
+	std::string_view mappingReverseLookup(lua_CFunction lookup_function)
 	{
 		static const std::vector<std::unordered_map<std::string, const lua_CFunction>>
 			all_mappings = {
@@ -147,7 +147,7 @@ namespace Engine::Scripting::Utility
 
 	namespace
 	{
-		LuaValue::Type LuaTypeGetter(lua_State* state, int stack_index)
+		LuaValue::Type luaTypeGetter(lua_State* state, int stack_index)
 		{
 			ENGINE_EXCEPTION_ON_ASSERT(
 				!lua_isnone(state, stack_index),
@@ -157,7 +157,7 @@ namespace Engine::Scripting::Utility
 			return static_cast<LuaValue::Type>(lua_type(state, stack_index));
 		}
 
-		LuaValue::value_t LuaValueGetter(lua_State* state, int stack_index, LuaValue::Type type)
+		LuaValue::value_t luaValueGetter(lua_State* state, int stack_index, LuaValue::Type type)
 		{
 			using Type = LuaValue::Type;
 
@@ -177,7 +177,7 @@ namespace Engine::Scripting::Utility
 				}
 				case Type::CDATA:
 				{
-					return GetCData(state, stack_index);
+					return getCData(state, stack_index);
 				}
 				case Type::LUSERDATA:
 				case Type::USERDATA:
@@ -197,7 +197,7 @@ namespace Engine::Scripting::Utility
 	} // namespace
 
 	LuaValue::LuaValue(lua_State* state, int stack_index)
-		: type(LuaTypeGetter(state, stack_index)), value(LuaValueGetter(state, stack_index, type))
+		: type(luaTypeGetter(state, stack_index)), value(luaValueGetter(state, stack_index, type))
 	{
 	}
 
@@ -257,7 +257,7 @@ namespace Engine::Scripting::Utility
 		return reinterpret_cast<uintptr_t>(std::get<void*>(value));
 	}
 
-	std::string LuaValue::ToString(const LuaValue& value)
+	std::string LuaValue::toString(const LuaValue& value)
 	{
 		switch (value.type)
 		{

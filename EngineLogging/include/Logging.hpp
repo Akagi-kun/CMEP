@@ -9,12 +9,13 @@
 #include <memory>
 #include <string>
 #include <type_traits>
+#include <utility>
 
 namespace Logging
 {
 	enum class LogLevel : uint8_t
 	{
-		// Debug3 = 0,
+		// 0 is invalid
 
 		// Information only useful for debugging the engine itself
 		// (constructors/destructors being called, stuff being initialized etc.)
@@ -90,34 +91,34 @@ namespace Logging
 		Logger();
 		~Logger();
 
-		void AddOutputHandle(LogLevel min_level, FILE* handle, bool use_colors = false);
-		void MapCurrentThreadToName(std::string name);
+		void addOutputHandle(LogLevel min_level, FILE* handle, bool use_colors = false);
+		void mapCurrentThreadToName(std::string name);
 
-		template <typename class_t> void StartLog(LogLevel level)
+		template <typename class_t> void startLog(LogLevel level)
 		{
-			InternalStartLog(level, logpfx_generator<class_t>{});
+			internalStartLog(level, logpfx_generator<class_t>{});
 		}
-		void Log(const char* format, ...);
-		void StopLog();
+		void log(const char* format, ...);
+		void stopLog();
 
-		template <typename class_t> void SimpleLog(LogLevel level, const char* format, ...)
+		template <typename class_t> void simpleLog(LogLevel level, const char* format, ...)
 		{
-			StartLog<class_t>(level);
+			startLog<class_t>(level);
 
 			va_list args;
 			va_start(args, format);
-			InternalLog(format, args);
+			internalLog(format, args);
 			va_end(args);
 
-			StopLog();
+			stopLog();
 		}
 
 	private:
 		LoggerInternalState* state;
 
-		void InternalStartLog(LogLevel level, const char* log_prefix);
+		void internalStartLog(LogLevel level, const char* log_prefix);
 
-		void InternalLog(const char* format, va_list args);
+		void internalLog(const char* format, va_list args);
 	};
 
 	class CMEP_EXPORT_CLASS SupportsLogging
@@ -130,7 +131,7 @@ namespace Logging
 		{
 		}
 
-		[[nodiscard]] CMEP_EXPORT logger_t GetLogger()
+		[[nodiscard]] CMEP_EXPORT logger_t getLogger()
 		{
 			return logger;
 		}

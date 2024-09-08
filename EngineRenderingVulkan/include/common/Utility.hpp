@@ -5,28 +5,31 @@
 
 #include "vulkan/vulkan_raii.hpp"
 
+#include <cstdint>
 #include <cstring>
 #include <filesystem>
 #include <fstream>
+#include <ios>
+#include <stdexcept>
 #include <vector>
 
 namespace Engine::Rendering::Vulkan::Utility
 {
 	template <typename T>
-	[[nodiscard]] constexpr auto ConvertToExtent(ImageSize& size) -> T
+	[[nodiscard]] constexpr auto convertToExtent(ImageSize& size) -> T
 		requires(std::is_same_v<T, vk::Extent2D>)
 	{
 		return {static_cast<uint32_t>(size.x), static_cast<uint32_t>(size.y)};
 	}
 
 	template <typename T>
-	[[nodiscard]] constexpr auto ConvertToExtent(ImageSize& size, uint32_t depth) -> T
+	[[nodiscard]] constexpr auto convertToExtent(ImageSize& size, uint32_t depth) -> T
 		requires(std::is_same_v<T, vk::Extent3D>)
 	{
 		return {static_cast<uint32_t>(size.x), static_cast<uint32_t>(size.y), depth};
 	}
 
-	inline vk::SurfaceFormatKHR ChooseSwapSurfaceFormat(
+	inline vk::SurfaceFormatKHR chooseSwapSurfaceFormat(
 		const std::vector<vk::SurfaceFormatKHR>& available_formats
 	)
 	{
@@ -43,8 +46,7 @@ namespace Engine::Rendering::Vulkan::Utility
 		return available_formats[0];
 	}
 
-	inline vk::PresentModeKHR ChooseSwapPresentMode(
-		const std::vector<vk::PresentModeKHR>& available_present_modes
+	inline vk::PresentModeKHR chooseSwapPresentMode(const std::vector<vk::PresentModeKHR>& available_present_modes
 	)
 	{
 		(void)(available_present_modes);
@@ -63,7 +65,7 @@ namespace Engine::Rendering::Vulkan::Utility
 		// return vk::PresentModeKHR::eFifoRelaxed;
 	}
 
-	inline std::vector<char> ReadShaderFile(const std::filesystem::path& path)
+	inline std::vector<char> readShaderFile(const std::filesystem::path& path)
 	{
 		std::ifstream file(path, std::ios::ate | std::ios::binary);
 
@@ -83,8 +85,7 @@ namespace Engine::Rendering::Vulkan::Utility
 		return buffer;
 	}
 
-	inline vk::SampleCountFlagBits GetMaxFramebufferSampleCount(
-		const vk::raii::PhysicalDevice& device
+	inline vk::SampleCountFlagBits getMaxFramebufferSampleCount(const vk::raii::PhysicalDevice& device
 	)
 	{
 		const vk::PhysicalDeviceProperties physical_device_properties = device.getProperties();

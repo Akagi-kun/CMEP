@@ -4,7 +4,7 @@
 #include "Scripting/API/framework.hpp"
 
 #include "SceneManager.hpp"
-#include "lua.h"
+#include "lua.hpp"
 
 namespace Engine::Scripting::API
 {
@@ -15,7 +15,7 @@ namespace Engine::Scripting::API
 			CMEP_LUACHECK_FN_ARGC(state, 1)
 			CMEP_LUAGET_PTR(state, SceneManager)
 
-			glm::vec2 hvrot = self->GetCameraHVRotation();
+			glm::vec2 hvrot = self->getCameraRotation();
 
 			lua_pushnumber(state, static_cast<double>(hvrot.x));
 			lua_pushnumber(state, static_cast<double>(hvrot.y));
@@ -31,7 +31,7 @@ namespace Engine::Scripting::API
 			double h_rot = lua_tonumber(state, 2);
 			double v_rot = lua_tonumber(state, 3);
 
-			self->SetCameraHVRotation(glm::vec2(h_rot, v_rot));
+			self->setCameraRotation(glm::vec2(h_rot, v_rot));
 
 			return 0;
 		}
@@ -41,7 +41,7 @@ namespace Engine::Scripting::API
 			CMEP_LUACHECK_FN_ARGC(state, 1)
 			CMEP_LUAGET_PTR(state, SceneManager)
 
-			glm::vec3 transform = self->GetCameraTransform();
+			glm::vec3 transform = self->getCameraTransform();
 
 			lua_pushnumber(state, static_cast<double>(transform.x));
 			lua_pushnumber(state, static_cast<double>(transform.y));
@@ -59,7 +59,7 @@ namespace Engine::Scripting::API
 			double y_pos = lua_tonumber(state, 3);
 			double z_pos = lua_tonumber(state, 4);
 
-			self->SetCameraTransform(glm::vec3(x_pos, y_pos, z_pos));
+			self->setCameraTransform(glm::vec3(x_pos, y_pos, z_pos));
 
 			return 0;
 		}
@@ -69,7 +69,7 @@ namespace Engine::Scripting::API
 			CMEP_LUACHECK_FN_ARGC(state, 1)
 			CMEP_LUAGET_PTR(state, SceneManager)
 
-			glm::vec3 transform = self->GetLightTransform();
+			glm::vec3 transform = self->getLightTransform();
 
 			lua_pushnumber(state, static_cast<double>(transform.x));
 			lua_pushnumber(state, static_cast<double>(transform.y));
@@ -87,7 +87,7 @@ namespace Engine::Scripting::API
 			double y_pos = lua_tonumber(state, 3);
 			double z_pos = lua_tonumber(state, 4);
 
-			self->SetLightTransform(glm::vec3(x_pos, y_pos, z_pos));
+			self->setLightTransform(glm::vec3(x_pos, y_pos, z_pos));
 
 			return 0;
 		}
@@ -97,7 +97,7 @@ namespace Engine::Scripting::API
 			CMEP_LUACHECK_FN_ARGC(state, 1)
 			CMEP_LUAGET_PTR(state, SceneManager)
 
-			auto& scene = self->GetSceneCurrent();
+			auto& scene = self->getSceneCurrent();
 
 			LuaFactories::SceneFactory(state, scene.get());
 

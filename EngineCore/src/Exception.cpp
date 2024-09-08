@@ -12,16 +12,13 @@
 
 namespace Engine
 {
-	std::string Exception::GenerateWhat(
-		const std::string&	 with_message,
-		std::source_location location
-	)
+	std::string Exception::generateWhat(const std::string& with_message, std::source_location location)
 	{
 		std::filesystem::path file = location.file_name();
 		file					   = file.lexically_relative(CMAKE_CONFIGURE_SOURCE_DIR);
 
 		return std::format(
-			"({}:{}:{}):\ne.what(): '{}'",
+			"{}({},{}):\ne.what(): '{}'",
 			file.string(),
 			location.line(),
 			location.column(),
@@ -33,7 +30,7 @@ namespace Engine
 	{
 		// prints the explanatory string of an exception. If the exception is nested,
 		// recurses to print the explanatory of the exception it holds
-		void PrintException(
+		void printException(
 			std::vector<std::string>& output,
 			const std::exception&	  caught_exception,
 			int						  level = 0
@@ -47,7 +44,7 @@ namespace Engine
 			}
 			catch (const std::exception& nested_exception)
 			{
-				PrintException(output, nested_exception, ++level);
+				printException(output, nested_exception, ++level);
 			}
 			catch (...)
 			{
@@ -56,13 +53,13 @@ namespace Engine
 		}
 	} // namespace
 
-	std::string UnrollExceptions(const std::exception& caught_exception)
+	std::string unrollExceptions(const std::exception& caught_exception)
 	{
 		std::string output = "Unrolling nested exceptions...\n";
 
 		std::vector<std::string> whats{};
 
-		PrintException(whats, caught_exception);
+		printException(whats, caught_exception);
 
 		ENGINE_EXCEPTION_ON_ASSERT_NOMSG(!whats.empty())
 

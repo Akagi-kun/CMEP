@@ -3,26 +3,30 @@
 #include "common/Utility.hpp"
 #include "rendering/Surface.hpp"
 
+#include <cstdint>
+#include <optional>
 #include <stdexcept>
+#include <string>
+#include <vector>
 
 namespace Engine::Rendering::Vulkan
 {
 #pragma region Public
 
-	vk::SampleCountFlagBits PhysicalDevice::GetMSAASamples() const
+	vk::SampleCountFlagBits PhysicalDevice::getMSAASamples() const
 	{
-		return Utility::GetMaxFramebufferSampleCount(*this);
+		return Utility::getMaxFramebufferSampleCount(*this);
 	}
 
-	std::string PhysicalDevice::GetDeviceName() const
+	std::string PhysicalDevice::getDeviceName() const
 	{
 		return getProperties().deviceName;
 	}
 
-	vk::Format PhysicalDevice::FindSupportedFormat(
+	vk::Format PhysicalDevice::findSupportedFormat(
 		const std::vector<vk::Format>& candidates,
-		vk::ImageTiling tiling,
-		vk::FormatFeatureFlags features
+		vk::ImageTiling				   tiling,
+		vk::FormatFeatureFlags		   features
 	) const
 	{
 		for (vk::Format format : candidates)
@@ -45,17 +49,16 @@ namespace Engine::Rendering::Vulkan
 		throw std::runtime_error("failed to find supported format!");
 	}
 
-	vk::Format PhysicalDevice::FindSupportedDepthFormat() const
+	vk::Format PhysicalDevice::findSupportedDepthFormat() const
 	{
-		return FindSupportedFormat(
+		return findSupportedFormat(
 			{vk::Format::eD32Sfloat, vk::Format::eD32SfloatS8Uint, vk::Format::eD24UnormS8Uint},
 			vk::ImageTiling::eOptimal,
 			vk::FormatFeatureFlagBits::eDepthStencilAttachment
 		);
 	}
 
-	std::optional<QueueFamilyIndices> PhysicalDevice::FindVulkanQueueFamilies(
-		const Surface* with_surface
+	std::optional<QueueFamilyIndices> PhysicalDevice::findVulkanQueueFamilies(const Surface* with_surface
 	) const
 	{
 		QueueFamilyIndices indices;
@@ -75,7 +78,7 @@ namespace Engine::Rendering::Vulkan
 			}
 
 			// check surface support
-			if (with_surface->QueryQueueSupport(*this, indice))
+			if (with_surface->queryQueueSupport(*this, indice))
 			{
 				indices.present_family = indice;
 				present_found		   = true;

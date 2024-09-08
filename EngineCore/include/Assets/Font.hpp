@@ -3,7 +3,10 @@
 #include "Asset.hpp"
 #include "InternalEngineObject.hpp"
 
+#include <memory>
 #include <optional>
+#include <string>
+#include <type_traits>
 #include <unordered_map>
 
 namespace Engine::Rendering
@@ -41,15 +44,16 @@ namespace Engine::Rendering
 		Font(Engine* with_engine, std::unique_ptr<FontData> init_data);
 		~Font();
 
-		[[nodiscard]] std::shared_ptr<Texture>		 GetPageTexture(int page);
-		[[nodiscard]] std::shared_ptr<const Texture> GetPageTexture(int page) const;
+		// Use FontChar::page, will throw exception if page isn't found
+		[[nodiscard]] std::shared_ptr<Texture>		 getPageTexture(int page);
+		[[nodiscard]] std::shared_ptr<const Texture> getPageTexture(int page) const;
 
-		[[nodiscard]] const FontChar* GetChar(char character_id) const;
-
-		[[nodiscard]] std::optional<std::string> GetFontInfoParameter(const std::string& name
-		) const;
+		[[nodiscard]] std::optional<const FontChar*> getChar(char character) const;
+		[[nodiscard]] std::optional<std::string>	 getFontInfoParameter(const std::string& name
+			) const;
 
 	private:
 		std::unique_ptr<FontData> data;
 	};
+	static_assert(!std::is_move_constructible_v<Font> && !std::is_move_assignable_v<Font>);
 } // namespace Engine::Rendering

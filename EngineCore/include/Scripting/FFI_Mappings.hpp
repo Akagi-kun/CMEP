@@ -4,7 +4,7 @@
 
 extern "C"
 {
-	CMEP_EXPORT void* CreateGeneratorData(
+	CMEP_EXPORT void* createGeneratorData(
 		void*		generator_script,
 		const char* generator_script_fn,
 		void*		generator_supplier,

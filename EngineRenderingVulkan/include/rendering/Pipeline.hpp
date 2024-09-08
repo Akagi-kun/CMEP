@@ -25,12 +25,12 @@ namespace Engine::Rendering::Vulkan
 			vk::raii::DescriptorPool descriptor_pool = nullptr;
 			vk::raii::DescriptorSets descriptor_sets = nullptr;
 
-			[[nodiscard]] Buffer* GetUniformBuffer(uint32_t current_frame)
+			[[nodiscard]] Buffer* getUniformBuffer(uint32_t current_frame)
 			{
 				return uniform_buffers[current_frame];
 			}
 
-			[[nodiscard]] vk::raii::DescriptorSet& GetDescriptorSet(uint32_t current_frame)
+			[[nodiscard]] vk::raii::DescriptorSet& getDescriptorSet(uint32_t current_frame)
 			{
 				return descriptor_sets[current_frame];
 			}
@@ -44,15 +44,11 @@ namespace Engine::Rendering::Vulkan
 		);
 		~Pipeline() = default;
 
-		UserData* AllocateNewUserData();
+		UserData* allocateNewUserData();
 
-		void BindPipeline(
-			UserData&		  from,
-			vk::CommandBuffer with_command_buffer,
-			uint32_t		  current_frame
-		);
+		void bindPipeline(UserData& from, vk::CommandBuffer with_command_buffer, uint32_t current_frame);
 
-		static void UpdateDescriptorSets(
+		static void updateDescriptorSets(
 			const vk::raii::Device&					logical_device,
 			UserData&								from,
 			per_frame_array<vk::WriteDescriptorSet> writes
@@ -65,7 +61,7 @@ namespace Engine::Rendering::Vulkan
 
 		std::vector<vk::DescriptorPoolSize> pool_sizes;
 
-		void AllocateNewDescriptorPool(UserData& data_ref);
-		void AllocateNewDescriptorSets(UserData& data_ref);
+		void allocateNewDescriptorPool(UserData& data_ref);
+		void allocateNewDescriptorSets(UserData& data_ref);
 	};
 } // namespace Engine::Rendering::Vulkan

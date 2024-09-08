@@ -4,7 +4,12 @@
 
 #include "InternalEngineObject.hpp"
 
+#include <cstdint>
 #include <filesystem>
+#include <fstream>
+#include <functional>
+#include <memory>
+#include <sstream>
 
 namespace Engine::Factories
 {
@@ -16,9 +21,9 @@ namespace Engine::Factories
 		using pageload_callback_t =
 			std::function<Rendering::FontData::page_t(const std::filesystem::path&)>;
 
-		std::shared_ptr<Rendering::Font> CreateFont(
+		std::shared_ptr<Rendering::Font> createFont(
 			const std::filesystem::path& font_path,
-			const pageload_callback_t& opt_callback
+			const pageload_callback_t&	 opt_callback
 		);
 
 	private:
@@ -33,25 +38,26 @@ namespace Engine::Factories
 			MAX_ENUM = 0xFF
 		};
 
-		std::unique_ptr<Rendering::FontData> ParseBmfont(
+		std::unique_ptr<Rendering::FontData> parseBmfont(
 			const std::filesystem::path& font_path,
-			std::ifstream& font_file,
-			const pageload_callback_t& pageload_cb
+			std::ifstream&				 font_file,
+			const pageload_callback_t&	 pageload_cb
 		);
 
-		void ParseBmfontLine(
-			const std::filesystem::path& font_path,
+		// TODO: Make library for these
+		void parseBmfontLine(
+			const std::filesystem::path&		  font_path,
 			std::unique_ptr<Rendering::FontData>& font,
-			BmFontLineType line_type,
-			std::stringstream& line_stream,
-			const pageload_callback_t& pageload_cb
+			BmFontLineType						  line_type,
+			std::stringstream&					  line_stream,
+			const pageload_callback_t&			  pageload_cb
 		);
 
-		void ParseBmfontEntryPage(
-			std::filesystem::path font_path,
+		void parseBmfontEntryPage(
+			std::filesystem::path				  font_path,
 			std::unique_ptr<Rendering::FontData>& font,
-			std::stringstream& line_stream,
-			const pageload_callback_t& pageload_cb
+			std::stringstream&					  line_stream,
+			const pageload_callback_t&			  pageload_cb
 		);
 	};
 } // namespace Engine::Factories
