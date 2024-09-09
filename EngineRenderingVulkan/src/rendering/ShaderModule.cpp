@@ -17,11 +17,10 @@ namespace Engine::Rendering::Vulkan
 	{
 		const auto shader_code = Vulkan::Utility::readShaderFile(with_path.append(filename));
 
-		vk::ShaderModuleCreateInfo create_info(
-			{},
-			shader_code.size(),
-			reinterpret_cast<const uint32_t*>(shader_code.data())
-		);
+		vk::ShaderModuleCreateInfo create_info{
+			.codeSize = shader_code.size(),
+			.pCode	  = reinterpret_cast<const uint32_t*>(shader_code.data())
+		};
 
 		native_handle = with_device->createShaderModule(create_info);
 	}

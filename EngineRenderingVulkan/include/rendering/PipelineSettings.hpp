@@ -106,45 +106,42 @@ namespace Engine::Rendering::Vulkan
 			bool				  enable_primitive_restart = false
 		)
 		{
-			vk::PipelineInputAssemblyStateCreateInfo input_assembly(
-				{},
-				with_topology,
-				static_cast<vk::Bool32>(enable_primitive_restart)
-			);
+			vk::PipelineInputAssemblyStateCreateInfo input_assembly{
+				.topology = with_topology,
+				.primitiveRestartEnable = static_cast<vk::Bool32>(enable_primitive_restart)
+			};
 
 			return input_assembly;
 		}
 
 		static vk::Viewport getViewportSettings(vk::Extent2D extent)
 		{
-			vk::Viewport viewport(
-				0.f,
-				0.f,
-				static_cast<float>(extent.width),
-				static_cast<float>(extent.height),
-				0.f,
-				1.f
-			);
+			vk::Viewport viewport{
+				.x		  = 0,
+				.y		  = 0,
+				.width	  = static_cast<float>(extent.width),
+				.height	  = static_cast<float>(extent.height),
+				.minDepth = 0.f,
+				.maxDepth = 1.f
+			};
 
 			return viewport;
 		}
 
 		static const vk::PipelineRasterizationStateCreateInfo* getRasterizerSettings()
 		{
-			static vk::PipelineRasterizationStateCreateInfo rasterizer(
-				{},
-				vk::False,
-				vk::False,
-				vk::PolygonMode::eFill,
-				vk::CullModeFlagBits::eFront,
-				vk::FrontFace::eClockwise,
-				vk::False,
-				{},
-				{},
-				{},
-				1.f,
-				{}
-			);
+			static vk::PipelineRasterizationStateCreateInfo rasterizer{
+				.depthClampEnable		 = vk::False,
+				.rasterizerDiscardEnable = vk::False,
+				.polygonMode			 = vk::PolygonMode::eFill,
+				.cullMode				 = vk::CullModeFlagBits::eFront,
+				.frontFace				 = vk::FrontFace::eClockwise,
+				.depthBiasEnable		 = vk::False,
+				.depthBiasConstantFactor = {},
+				.depthBiasClamp			 = {},
+				.depthBiasSlopeFactor	 = {},
+				.lineWidth				 = 1.f
+			};
 
 			return &rasterizer;
 		}
@@ -153,58 +150,62 @@ namespace Engine::Rendering::Vulkan
 			vk::SampleCountFlagBits msaa_samples
 		)
 		{
-			static vk::PipelineMultisampleStateCreateInfo
-				multisampling({}, msaa_samples, vk::False, 1.f, {}, {}, {});
+			static vk::PipelineMultisampleStateCreateInfo multisampling{
+				.rasterizationSamples  = msaa_samples,
+				.sampleShadingEnable   = vk::False,
+				.minSampleShading	   = 1.f,
+				.pSampleMask		   = {},
+				.alphaToCoverageEnable = {},
+				.alphaToOneEnable	   = {}
+			};
 
 			return &multisampling;
 		}
 
 		static const vk::PipelineColorBlendAttachmentState* getColorBlendAttachmentSettings()
 		{
-			static vk::PipelineColorBlendAttachmentState color_blend_attachment(
-				vk::True,
-				vk::BlendFactor::eSrcAlpha,
-				vk::BlendFactor::eOneMinusSrcAlpha,
-				vk::BlendOp::eAdd,
-				vk::BlendFactor::eOne,
-				vk::BlendFactor::eZero,
-				vk::BlendOp::eAdd,
-				vk::ColorComponentFlagBits::eR | vk::ColorComponentFlagBits::eG |
+			static vk::PipelineColorBlendAttachmentState color_blend_attachment{
+				.blendEnable		 = vk::True,
+				.srcColorBlendFactor = vk::BlendFactor::eSrcAlpha,
+				.dstColorBlendFactor = vk::BlendFactor::eOneMinusSrcAlpha,
+				.colorBlendOp		 = vk::BlendOp::eAdd,
+				.srcAlphaBlendFactor = vk::BlendFactor::eOne,
+				.dstAlphaBlendFactor = vk::BlendFactor::eZero,
+				.alphaBlendOp		 = vk::BlendOp::eAdd,
+				.colorWriteMask =
+					vk::ColorComponentFlagBits::eR | vk::ColorComponentFlagBits::eG |
 					vk::ColorComponentFlagBits::eB | vk::ColorComponentFlagBits::eA
-			);
+			};
 
 			return &color_blend_attachment;
 		}
 
 		static const vk::PipelineColorBlendStateCreateInfo* getColorBlendSettings()
 		{
-			static vk::PipelineColorBlendStateCreateInfo color_blending(
-				{},
-				vk::False,
-				vk::LogicOp::eClear,
-				1,
-				PipelineSettings::getColorBlendAttachmentSettings(),
-				{0.f}
-			);
+			static vk::PipelineColorBlendStateCreateInfo color_blending{
+				.logicOpEnable	 = vk::False,
+				.logicOp		 = vk::LogicOp::eClear,
+				.attachmentCount = 1,
+				.pAttachments	 = PipelineSettings::getColorBlendAttachmentSettings(),
+				.blendConstants	 = {{0.f, 0.f, 0.f, 0.f}}
+			};
 
 			return &color_blending;
 		}
 
 		static const vk::PipelineDepthStencilStateCreateInfo* getDepthStencilSettings()
 		{
-			static vk::PipelineDepthStencilStateCreateInfo depth_stencil(
-				{},
-				vk::True,
-				vk::True,
-				vk::CompareOp::eLess,
-				vk::False,
-				vk::False,
-				{},
-				{},
-				0.f,
-				1.f,
-				{}
-			);
+			static vk::PipelineDepthStencilStateCreateInfo depth_stencil{
+				.depthTestEnable	   = vk::True,
+				.depthWriteEnable	   = vk::True,
+				.depthCompareOp		   = vk::CompareOp::eLess,
+				.depthBoundsTestEnable = vk::False,
+				.stencilTestEnable	   = vk::False,
+				.front				   = {},
+				.back				   = {},
+				.minDepthBounds		   = 0.f,
+				.maxDepthBounds		   = 1.f
+			};
 
 			return &depth_stencil;
 		}

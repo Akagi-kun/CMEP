@@ -25,8 +25,13 @@ namespace Engine::Rendering::Vulkan
 	{
 		LogicalDevice* logical_device = instance->getLogicalDevice();
 
-		vk::BufferCreateInfo
-			create_info({}, buffer_size, with_usage, vk::SharingMode::eExclusive, {}, {}, {});
+		vk::BufferCreateInfo create_info{
+			.size				   = buffer_size,
+			.usage				   = with_usage,
+			.sharingMode		   = vk::SharingMode::eExclusive,
+			.queueFamilyIndexCount = {},
+			.pQueueFamilyIndices   = {}
+		};
 
 		VmaAllocationCreateInfo vma_alloc_info = {};
 		vma_alloc_info.usage				   = VMA_MEMORY_USAGE_UNKNOWN;
@@ -95,7 +100,8 @@ namespace Engine::Rendering::Vulkan
 			  with_instance,
 			  with_size,
 			  vk::BufferUsageFlagBits::eTransferSrc,
-			  vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent
+			  vk::MemoryPropertyFlagBits::eHostVisible |
+				  vk::MemoryPropertyFlagBits::eHostCoherent
 		  )
 	{
 		memoryCopy(with_data, with_size);
@@ -112,7 +118,8 @@ namespace Engine::Rendering::Vulkan
 			  vk::MemoryPropertyFlagBits::eDeviceLocal
 		  )
 	{
-		CommandBuffer* command_buffer = with_instance->getCommandPool()->allocateCommandBuffer();
+		CommandBuffer* command_buffer =
+			with_instance->getCommandPool()->allocateCommandBuffer();
 
 		auto staging_buffer = StagingBuffer(with_instance, vertices.data(), buffer_size);
 
@@ -128,7 +135,8 @@ namespace Engine::Rendering::Vulkan
 			  with_instance,
 			  with_size,
 			  vk::BufferUsageFlagBits::eUniformBuffer,
-			  vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent
+			  vk::MemoryPropertyFlagBits::eHostVisible |
+				  vk::MemoryPropertyFlagBits::eHostCoherent
 		  )
 	{
 	}

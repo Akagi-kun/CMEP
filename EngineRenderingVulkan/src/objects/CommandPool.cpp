@@ -12,10 +12,10 @@ namespace Engine::Rendering::Vulkan
 	{
 		LogicalDevice* logical_device = instance->getLogicalDevice();
 
-		vk::CommandPoolCreateInfo pool_info(
-			vk::CommandPoolCreateFlagBits::eResetCommandBuffer,
-			logical_device->getQueueFamilies().graphics_family
-		);
+		vk::CommandPoolCreateInfo pool_info{
+			.flags			  = vk::CommandPoolCreateFlagBits::eResetCommandBuffer,
+			.queueFamilyIndex = logical_device->getQueueFamilies().graphics_family
+		};
 
 		native_handle = logical_device->createCommandPool(pool_info);
 	}

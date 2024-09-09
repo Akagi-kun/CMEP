@@ -60,36 +60,43 @@ namespace Engine::Rendering::Vulkan
 		};
 
 		// Fill queueCreateInfos
-		float queue_priority = 1.0f;
+		float queue_priorities[] = {1.0f};
 		for (uint32_t queue_family : unique_queue_families)
 		{
-			vk::DeviceQueueCreateInfo queue_create_info({}, queue_family, 1, &queue_priority);
+			vk::DeviceQueueCreateInfo queue_create_info{
+				.queueFamilyIndex = queue_family,
+				.queueCount		  = 1,
+				.pQueuePriorities = queue_priorities
+			};
 
 			queue_create_infos.push_back(queue_create_info);
 		}
 
-		vk::PhysicalDeviceDescriptorIndexingFeatures device_descriptor_indexing_features({});
-		device_descriptor_indexing_features.setDescriptorBindingPartiallyBound(vk::True);
+		// Fill structs for required features and extensions
+		vk::PhysicalDeviceDescriptorIndexingFeatures device_descriptor_indexing_features{
+			.descriptorBindingPartiallyBound = vk::True
+		};
 
-		vk::PhysicalDeviceRobustness2FeaturesEXT device_robustness_features(
-			{},
-			{},
-			vk::True,
-			&device_descriptor_indexing_features
-		);
+		vk::PhysicalDeviceRobustness2FeaturesEXT device_robustness_features{
+			.pNext				 = &device_descriptor_indexing_features,
+			.robustBufferAccess2 = vk::True,
+		};
 
 		vk::PhysicalDeviceFeatures2 device_features2 =
 			physical_device->getFeatures2().setPNext(&device_robustness_features);
 
 		// Logical device creation information
-		vk::DeviceCreateInfo create_info(
-			{},
-			queue_create_infos,
-			device_validation_layers,
-			DeviceScore::device_extensions,
-			{},
-			&device_features2
-		);
+		vk::DeviceCreateInfo create_info{
+			.pNext				  = &device_features2,
+			.queueCreateInfoCount = static_cast<uint32_t>(queue_create_infos.size()),
+			.pQueueCreateInfos	  = queue_create_infos.data(),
+			.enabledLayerCount	 = static_cast<uint32_t>(device_validation_layers.size()),
+			.ppEnabledLayerNames = device_validation_layers.data(),
+			.enabledExtensionCount =
+				static_cast<uint32_t>(DeviceScore::device_extensions.size()),
+			.ppEnabledExtensionNames = DeviceScore::device_extensions.data(),
+			.pEnabledFeatures		 = nullptr,
+		};
 
 		// Create logical device
 		return physical_device->createDevice(create_info);

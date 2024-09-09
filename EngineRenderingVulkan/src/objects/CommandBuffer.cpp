@@ -15,27 +15,33 @@
 namespace Engine::Rendering::Vulkan
 {
 	CommandBuffer::CommandBuffer(LogicalDevice* with_device, vk::raii::CommandPool& from_pool)
-		: device(with_device)
+		: vk::raii::CommandBuffer(std::move(with_device->allocateCommandBuffers(
+			  {.commandPool		   = *from_pool,
+			   .level			   = vk::CommandBufferLevel::ePrimary,
+			   .commandBufferCount = 1}
+		  )[0])),
+		  device(with_device)
 	{
-		native_handle = std::move(device->allocateCommandBuffers(
-			{*from_pool, vk::CommandBufferLevel::ePrimary, 1, {}}
-		)[0]);
 	}
 
-	vk::CommandBufferBeginInfo CommandBuffer::getBeginInfo(vk::CommandBufferUsageFlags usage_flags)
+	vk::CommandBufferBeginInfo CommandBuffer::getBeginInfo(vk::CommandBufferUsageFlags usage_flags
+	)
 	{
-		return {usage_flags, {}, {}};
+		return {.flags = usage_flags};
 	}
 
 	void CommandBuffer::recordCmds(std::function<void(vk::raii::CommandBuffer*)> const& lambda)
 	{
-		// TODO: Check if we should really pass non-zero here
-		native_handle.begin(getBeginInfo(vk::CommandBufferUsageFlagBits::eOneTimeSubmit));
+		// Pass VK_ONE_TIME_SUBMIT here
+		// allows driver to optimize in the case where the buffer is not resubmitted after recording
+		begin(getBeginInfo(vk::CommandBufferUsageFlagBits::eOneTimeSubmit));
 
-		lambda(&native_handle);
+		lambda(this);
 
-		native_handle.end();
-		device->getGraphicsQueue().submit(vk::SubmitInfo().setCommandBuffers(*native_handle));
+		end();
+		device->getGraphicsQueue().submit(
+			vk::SubmitInfo{.commandBufferCount = 1, .pCommandBuffers = &**this}
+		);
 
 		device->getGraphicsQueue().waitIdle();
 	}
@@ -56,14 +62,14 @@ namespace Engine::Rendering::Vulkan
 		ImageSize image_size = to_image->getSize();
 
 		// Sane defaults
-		vk::BufferImageCopy region(
-			{},
-			{},
-			{},
-			{vk::ImageAspectFlagBits::eColor, 0, 0, 1},
-			{0, 0, 0},
-			Utility::convertToExtent<vk::Extent3D>(image_size, 1)
-		);
+		vk::BufferImageCopy region{
+			.bufferOffset	   = {},
+			.bufferRowLength   = {},
+			.bufferImageHeight = {},
+			.imageSubresource  = {vk::ImageAspectFlagBits::eColor, 0, 0, 1},
+			.imageOffset	   = {0, 0, 0},
+			.imageExtent	   = Utility::convertToExtent<vk::Extent3D>(image_size, 1)
+		};
 
 		recordCmds([&](vk::raii::CommandBuffer* with_buf) {
 			with_buf->copyBufferToImage(

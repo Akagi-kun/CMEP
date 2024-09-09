@@ -23,7 +23,11 @@
 
 namespace Engine::Rendering
 {
-	IRenderer::IRenderer(Engine* with_engine, IMeshBuilder* with_builder, std::string_view with_pipeline_program)
+	IRenderer::IRenderer(
+		Engine*			 with_engine,
+		IMeshBuilder*	 with_builder,
+		std::string_view with_pipeline_program
+	)
 		: InternalEngineObject(with_engine), pipeline_name(with_pipeline_program),
 		  pipeline_manager(with_engine->getVulkanPipelineManager()),
 		  mesh_builder(with_builder)
@@ -106,22 +110,20 @@ namespace Engine::Rendering
 			auto* image	  = texture->getImage();
 			auto* sampler = texture->getSampler();
 
-			vk::DescriptorImageInfo descriptor_image_info(
-				*sampler,
-				*image->getNativeViewHandle(),
-				vk::ImageLayout::eShaderReadOnlyOptimal
-			);
+			vk::DescriptorImageInfo descriptor_image_info{
+				.sampler	 = *sampler,
+				.imageView	 = *image->getNativeViewHandle(),
+				.imageLayout = vk::ImageLayout::eShaderReadOnlyOptimal
+			};
 
-			vk::WriteDescriptorSet descriptor_write(
-				{},
-				1,
-				0,
-				1,
-				vk::DescriptorType::eCombinedImageSampler,
-				&descriptor_image_info,
-				{},
-				{}
-			);
+			vk::WriteDescriptorSet descriptor_write{
+				.dstSet			 = {},
+				.dstBinding		 = 1,
+				.dstArrayElement = 0,
+				.descriptorCount = 1,
+				.descriptorType	 = vk::DescriptorType::eCombinedImageSampler,
+				.pImageInfo		 = &descriptor_image_info
+			};
 
 			pipeline->updateDescriptorSetsAll(descriptor_write);
 		}
@@ -129,21 +131,12 @@ namespace Engine::Rendering
 
 	void IRenderer::render(Vulkan::CommandBuffer* command_buffer, uint32_t current_frame)
 	{
-		if (!has_updated_matrices)
-		{
-			updateMatrices();
-		}
+		if (!has_updated_matrices) { updateMatrices(); }
 
-		if (!has_updated_descriptors)
-		{
-			updateDescriptorSets();
-		}
+		if (!has_updated_descriptors) { updateDescriptorSets(); }
 
 		// If builder requests a rebuild, do it
-		if (mesh_builder->needsRebuild())
-		{
-			mesh_builder->build();
-		}
+		if (mesh_builder->needsRebuild()) { mesh_builder->build(); }
 		mesh_context = mesh_builder->getContext();
 
 		// Render only if VBO non-empty
@@ -152,13 +145,11 @@ namespace Engine::Rendering
 			pipeline->getUniformBuffer(current_frame)
 				->memoryCopy(&matrix_data, sizeof(RendererMatrixData));
 
-			pipeline->bindPipeline(*command_buffer->getHandle(), current_frame);
+			pipeline->bindPipeline(*command_buffer, current_frame);
 
-			command_buffer->getHandle()
-				.bindVertexBuffers(0, {*mesh_context.vbo->getHandle()}, {0});
+			command_buffer->bindVertexBuffers(0, {*mesh_context.vbo->getHandle()}, {0});
 
-			command_buffer->getHandle()
-				.draw(static_cast<uint32_t>(mesh_context.vbo_vert_count), 1, 0, 0);
+			command_buffer->draw(static_cast<uint32_t>(mesh_context.vbo_vert_count), 1, 0, 0);
 		}
 	}
 

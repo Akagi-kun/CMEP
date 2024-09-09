@@ -42,7 +42,10 @@ namespace Engine::Rendering::Vulkan
 
 #pragma region Public
 
-	Instance::Instance(SupportsLogging::logger_t with_logger, const WindowParams&& with_window_parameters)
+	Instance::Instance(
+		SupportsLogging::logger_t with_logger,
+		const WindowParams&&	  with_window_parameters
+	)
 		: SupportsLogging(std::move(with_logger))
 	{
 		if (glfwInit() == GLFW_FALSE)
@@ -58,7 +61,10 @@ namespace Engine::Rendering::Vulkan
 
 		initInstance();
 
-		this->logger->simpleLog<decltype(this)>(Logging::LogLevel::Info, "Instance initialized");
+		this->logger->simpleLog<decltype(this)>(
+			Logging::LogLevel::Info,
+			"Instance initialized"
+		);
 
 		window = new Window(
 			this,
@@ -105,7 +111,13 @@ namespace Engine::Rendering::Vulkan
 	void Instance::initInstance()
 	{
 		// Application information
-		vk::ApplicationInfo app_info("A CMEP application", 1, "CMEP", 1, vk::ApiVersion12);
+		vk::ApplicationInfo app_info{
+			.pApplicationName	= "A CMEP application",
+			.applicationVersion = 1,
+			.pEngineName		= "CMEP",
+			.engineVersion		= 1,
+			.apiVersion			= vk::ApiVersion12
+		};
 
 		// Check validation layer support
 		if (enable_vk_validation_layers && !checkVulkanValidationLayers())
@@ -114,8 +126,9 @@ namespace Engine::Rendering::Vulkan
 		}
 
 		// Get extensions required by GLFW
-		uint32_t glfw_extension_count = 0;
-		const char** glfw_extensions = glfwGetRequiredInstanceExtensions(&glfw_extension_count);
+		uint32_t	 glfw_extension_count = 0;
+		const char** glfw_extensions =
+			glfwGetRequiredInstanceExtensions(&glfw_extension_count);
 
 		// Get our required extensions
 		std::vector<const char*> instance_extensions(
@@ -133,16 +146,20 @@ namespace Engine::Rendering::Vulkan
 		}
 
 		native_handle = context.createInstance(vk::InstanceCreateInfo{
-			{},
-			&app_info,
-			instance_layers,
-			instance_extensions,
+			.pApplicationInfo		 = &app_info,
+			.enabledLayerCount		 = static_cast<uint32_t>(instance_layers.size()),
+			.ppEnabledLayerNames	 = instance_layers.data(),
+			.enabledExtensionCount	 = static_cast<uint32_t>(instance_extensions.size()),
+			.ppEnabledExtensionNames = instance_extensions.data(),
 		});
 
 		// Load instance functions in dispatcher
 		VULKAN_HPP_DEFAULT_DISPATCHER.init(*native_handle);
 
-		this->logger->simpleLog<decltype(this)>(Logging::LogLevel::Info, "Created a Vulkan instance");
+		this->logger->simpleLog<decltype(this)>(
+			Logging::LogLevel::Info,
+			"Created a Vulkan instance"
+		);
 
 		// If it's a debug build, add a debug callback to Vulkan
 		if (enable_vk_validation_layers)
@@ -152,19 +169,19 @@ namespace Engine::Rendering::Vulkan
 				"Creating debug messenger"
 			);
 
-			vk::DebugUtilsMessengerCreateInfoEXT messenger_create_info(
-				{},
-				vk::DebugUtilsMessageSeverityFlagBitsEXT::eVerbose |
-					vk::DebugUtilsMessageSeverityFlagBitsEXT::eWarning |
-					vk::DebugUtilsMessageSeverityFlagBitsEXT::eError,
-				vk::DebugUtilsMessageTypeFlagBitsEXT::eGeneral |
-					vk::DebugUtilsMessageTypeFlagBitsEXT::eValidation |
-					vk::DebugUtilsMessageTypeFlagBitsEXT::ePerformance,
-				debug_callback,
-				this
-			);
+			vk::DebugUtilsMessengerCreateInfoEXT messenger_create_info{
+				.messageSeverity = vk::DebugUtilsMessageSeverityFlagBitsEXT::eVerbose |
+								   vk::DebugUtilsMessageSeverityFlagBitsEXT::eWarning |
+								   vk::DebugUtilsMessageSeverityFlagBitsEXT::eError,
+				.messageType = vk::DebugUtilsMessageTypeFlagBitsEXT::eGeneral |
+							   vk::DebugUtilsMessageTypeFlagBitsEXT::eValidation |
+							   vk::DebugUtilsMessageTypeFlagBitsEXT::ePerformance,
+				.pfnUserCallback = debug_callback,
+				.pUserData		 = this
+			};
 
-			debug_messenger = native_handle.createDebugUtilsMessengerEXT(messenger_create_info);
+			debug_messenger =
+				native_handle.createDebugUtilsMessengerEXT(messenger_create_info);
 
 			this->logger->simpleLog<decltype(this)>(
 				Logging::LogLevel::VerboseDebug,
@@ -193,10 +210,7 @@ namespace Engine::Rendering::Vulkan
 			}
 
 			// If none of those we want are supported, return false
-			if (!layer_found)
-			{
-				return false;
-			}
+			if (!layer_found) { return false; }
 		}
 
 		return true;
@@ -229,16 +243,10 @@ namespace Engine::Rendering::Vulkan
 				score ? "" : score.unsupported_reason.data()
 			);
 
-			if (score)
-			{
-				candidates.emplace_back(score);
-			}
+			if (score) { candidates.emplace_back(score); }
 		}
 
-		if (candidates.empty())
-		{
-			throw std::runtime_error("No physical device found!");
-		}
+		if (candidates.empty()) { throw std::runtime_error("No physical device found!"); }
 
 		std::sort(candidates.begin(), candidates.end());
 

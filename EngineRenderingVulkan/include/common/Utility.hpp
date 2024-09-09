@@ -46,7 +46,8 @@ namespace Engine::Rendering::Vulkan::Utility
 		return available_formats[0];
 	}
 
-	inline vk::PresentModeKHR chooseSwapPresentMode(const std::vector<vk::PresentModeKHR>& available_present_modes
+	inline vk::PresentModeKHR chooseSwapPresentMode(
+		const std::vector<vk::PresentModeKHR>& available_present_modes
 	)
 	{
 		(void)(available_present_modes);
@@ -65,17 +66,14 @@ namespace Engine::Rendering::Vulkan::Utility
 		// return vk::PresentModeKHR::eFifoRelaxed;
 	}
 
-	inline std::vector<char> readShaderFile(const std::filesystem::path& path)
+	inline std::vector<uint8_t> readShaderFile(const std::filesystem::path& path)
 	{
-		std::ifstream file(path, std::ios::ate | std::ios::binary);
+		std::basic_ifstream<uint8_t> file(path, std::ios::ate | std::ios::binary);
 
-		if (!file.is_open())
-		{
-			throw std::runtime_error("failed to open shader file!");
-		}
+		if (!file.is_open()) { throw std::runtime_error("failed to open shader file!"); }
 
-		size_t			  file_size = static_cast<size_t>(file.tellg());
-		std::vector<char> buffer(file_size);
+		size_t				 file_size = static_cast<size_t>(file.tellg());
+		std::vector<uint8_t> buffer(file_size);
 
 		file.seekg(0);
 		file.read(buffer.data(), static_cast<std::streamsize>(file_size));
@@ -85,20 +83,19 @@ namespace Engine::Rendering::Vulkan::Utility
 		return buffer;
 	}
 
-	inline vk::SampleCountFlagBits getMaxFramebufferSampleCount(const vk::raii::PhysicalDevice& device
+	inline vk::SampleCountFlagBits getMaxFramebufferSampleCount(
+		const vk::raii::PhysicalDevice& device
 	)
 	{
-		const vk::PhysicalDeviceProperties physical_device_properties = device.getProperties();
+		const vk::PhysicalDeviceProperties physical_device_properties =
+			device.getProperties();
 
 		// Check which sample counts are supported by the framebuffers
 		vk::SampleCountFlags counts =
 			physical_device_properties.limits.framebufferColorSampleCounts &
 			physical_device_properties.limits.framebufferDepthSampleCounts;
 
-		if (!counts)
-		{
-			return vk::SampleCountFlagBits::e1;
-		}
+		if (!counts) { return vk::SampleCountFlagBits::e1; }
 
 		if (counts & vk::SampleCountFlagBits::e64)
 		{
@@ -112,18 +109,9 @@ namespace Engine::Rendering::Vulkan::Utility
 		{
 			return vk::SampleCountFlagBits::e16;
 		}
-		if (counts & vk::SampleCountFlagBits::e8)
-		{
-			return vk::SampleCountFlagBits::e8;
-		}
-		if (counts & vk::SampleCountFlagBits::e4)
-		{
-			return vk::SampleCountFlagBits::e4;
-		}
-		if (counts & vk::SampleCountFlagBits::e2)
-		{
-			return vk::SampleCountFlagBits::e2;
-		}
+		if (counts & vk::SampleCountFlagBits::e8) { return vk::SampleCountFlagBits::e8; }
+		if (counts & vk::SampleCountFlagBits::e4) { return vk::SampleCountFlagBits::e4; }
+		if (counts & vk::SampleCountFlagBits::e2) { return vk::SampleCountFlagBits::e2; }
 
 		return vk::SampleCountFlagBits::e1;
 	}

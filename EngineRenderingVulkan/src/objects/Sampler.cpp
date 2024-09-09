@@ -13,23 +13,21 @@ namespace Engine::Rendering::Vulkan
 		)
 		{
 			const vk::SamplerCreateInfo create_info = {
-				{},
-				use_filter,
-				use_filter,
-				vk::SamplerMipmapMode::eLinear,
-				use_address_mode,
-				use_address_mode,
-				use_address_mode,
-				{},
-				vk::True,
-				max_anisotropy,
-				vk::False,
-				{},
-				0.f,
-				0.f,
-				vk::BorderColor::eIntOpaqueBlack,
-				vk::False,
-				{},
+				.magFilter				 = use_filter,
+				.minFilter				 = use_filter,
+				.mipmapMode				 = vk::SamplerMipmapMode::eLinear,
+				.addressModeU			 = use_address_mode,
+				.addressModeV			 = use_address_mode,
+				.addressModeW			 = use_address_mode,
+				.mipLodBias				 = {},
+				.anisotropyEnable		 = vk::True,
+				.maxAnisotropy			 = max_anisotropy,
+				.compareEnable			 = vk::False,
+				.compareOp				 = {},
+				.minLod					 = 0.f,
+				.maxLod					 = 0.f,
+				.borderColor			 = vk::BorderColor::eIntOpaqueBlack,
+				.unnormalizedCoordinates = vk::False
 			};
 
 			return create_info;

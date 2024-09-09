@@ -30,16 +30,18 @@ BraceWrapping:
   AfterCaseLabel: true
   AfterControlStatement: Always
 BreakBeforeBraces: Custom
-PenaltyBreakAssignment: 100
+PenaltyBreakAssignment: 30
 PenaltyBreakComment: 2000000
-PenaltyExcessCharacter: 5
+PenaltyExcessCharacter: 10
+PenaltyBreakBeforeFirstCallParameter: 5
 # Indent
 IndentCaseLabels: true
 NamespaceIndentation: All
 IndentPPDirectives: AfterHash
 AccessModifierOffset: -4
-# Compact if statements
-AllowShortIfStatementsOnASingleLine: true
+# Compact code
+AllowShortIfStatementsOnASingleLine: WithoutElse
+AllowShortBlocksOnASingleLine: Always
 # Fixes
 FixNamespaceComments: true
 BitFieldColonSpacing: Both

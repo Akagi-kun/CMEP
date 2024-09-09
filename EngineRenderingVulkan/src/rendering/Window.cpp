@@ -83,14 +83,8 @@ namespace Engine::Rendering::Vulkan
 	// NOLINTNEXTLINE(readability-make-member-function-const)
 	void Window::setVisibility(bool visible)
 	{
-		if (visible)
-		{
-			glfwShowWindow(native_handle);
-		}
-		else
-		{
-			glfwHideWindow(native_handle);
-		}
+		if (visible) { glfwShowWindow(native_handle); }
+		else { glfwHideWindow(native_handle); }
 	}
 
 	// This function modifies external state
@@ -108,9 +102,8 @@ namespace Engine::Rendering::Vulkan
 	void Window::createSwapchain()
 	{
 		// Get device and surface Swap Chain capabilities
-		SwapChainSupportDetails swap_chain_support = surface.querySwapChainSupport(
-			*instance->getPhysicalDevice()
-		);
+		SwapChainSupportDetails swap_chain_support =
+			surface.querySwapChainSupport(*instance->getPhysicalDevice());
 
 		vk::Extent2D extent = chooseVulkanSwapExtent(this, swap_chain_support.capabilities);
 
@@ -183,34 +176,56 @@ namespace Engine::Rendering::Vulkan
 			}
 		}
 
-		// Reset command buffer to initial state´
-		render_target.command_buffer->getHandle().reset();
+		// Reset command buffer to initial state
+		render_target.command_buffer->reset();
 
 		// Records render into command buffer
-		swapchain->renderFrame(render_target.command_buffer, image_index, render_callback, user_data);
+		swapchain->renderFrame(
+			render_target.command_buffer,
+			image_index,
+			render_callback,
+			user_data
+		);
 
-		std::array<vk::CommandBuffer, 1> command_buffers = {
-			*render_target.command_buffer->getHandle()
+		vk::CommandBuffer command_buffers[] = {*render_target.command_buffer};
+
+		vk::Semaphore wait_semaphores[] = {*render_target.sync_objects.image_available};
+		vk::PipelineStageFlags wait_stages[] = {
+			vk::PipelineStageFlagBits::eColorAttachmentOutput
+		};
+		std::array<vk::Semaphore, 1> signal_semaphores = {
+			*render_target.sync_objects.present_ready
 		};
 
-		vk::Semaphore wait_semaphores[] = {*(render_target.sync_objects.image_available)};
-		vk::PipelineStageFlags wait_stages[] =
-			{vk::PipelineStageFlagBits::eColorAttachmentOutput /* VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT */};
-		vk::Semaphore signal_semaphores[] = {*(render_target.sync_objects.present_ready)};
-
-		vk::SubmitInfo
-			submit_info(wait_semaphores, wait_stages, command_buffers, signal_semaphores, {});
+		vk::SubmitInfo submit_info{
+			.waitSemaphoreCount	  = 1,
+			.pWaitSemaphores	  = wait_semaphores,
+			.pWaitDstStageMask	  = wait_stages,
+			.commandBufferCount	  = 1,
+			.pCommandBuffers	  = command_buffers,
+			.signalSemaphoreCount = static_cast<uint32_t>(signal_semaphores.size()),
+			.pSignalSemaphores	  = signal_semaphores.data()
+		};
 
 		// Submit to queue
 		// passed fence will be signaled when command buffer execution is finished
-		logical_device->getGraphicsQueue().submit(submit_info, *render_target.sync_objects.in_flight);
+		logical_device->getGraphicsQueue().submit(
+			submit_info,
+			*render_target.sync_objects.in_flight
+		);
 
 		// Increment current frame
 		current_frame = (current_frame + 1) % max_frames_in_flight;
 
 		vk::SwapchainKHR swap_chains[] = {*swapchain->getHandle()};
 
-		vk::PresentInfoKHR present_info(signal_semaphores, swap_chains, image_index, {}, {});
+		vk::PresentInfoKHR present_info{
+			.waitSemaphoreCount = static_cast<uint32_t>(signal_semaphores.size()),
+			.pWaitSemaphores	= signal_semaphores.data(),
+			.swapchainCount		= 1,
+			.pSwapchains		= swap_chains,
+			.pImageIndices		= &image_index
+		};
 
 		// Present current image to the screen
 		{
@@ -253,7 +268,11 @@ namespace Engine::Rendering::Vulkan
 		if (self->status.is_focus)
 		{
 			self->status.is_content = b_entered;
-			glfwSetInputMode(window, GLFW_CURSOR, b_entered ? GLFW_CURSOR_DISABLED : GLFW_CURSOR_NORMAL);
+			glfwSetInputMode(
+				window,
+				GLFW_CURSOR,
+				b_entered ? GLFW_CURSOR_DISABLED : GLFW_CURSOR_NORMAL
+			);
 		}
 		else
 		{
@@ -266,14 +285,8 @@ namespace Engine::Rendering::Vulkan
 	{
 		auto* self = Window::getWindowPtrFromGlfw(window);
 
-		if (self->status.is_focus)
-		{
-			self->cursor_position = {xpos, ypos};
-		}
-		else
-		{
-			self->cursor_position = {0.0, 0.0};
-		}
+		if (self->status.is_focus) { self->cursor_position = {xpos, ypos}; }
+		else { self->cursor_position = {0.0, 0.0}; }
 	}
 
 	void Window::callbackOnKeyEvent(GLFWwindow* window, int key, int scancode, int action, int mods)

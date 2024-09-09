@@ -6,6 +6,7 @@
 #include "objects/CommandBuffer.hpp"
 #include "objects/CommandPool.hpp"
 #include "objects/Image.hpp"
+#include "rendering/PipelineSettings.hpp"
 #include "rendering/RenderPass.hpp"
 
 #include <array>
@@ -30,14 +31,13 @@ namespace Engine::Rendering::Vulkan
 		LogicalDevice* logical_device = instance->getLogicalDevice();
 
 		// Query details for support of swapchains
-		SwapChainSupportDetails swap_chain_support = with_surface->querySwapChainSupport(
-			*instance->getPhysicalDevice()
-		);
-		surface_format = Vulkan::Utility::chooseSwapSurfaceFormat(swap_chain_support.formats);
+		SwapChainSupportDetails swap_chain_support =
+			with_surface->querySwapChainSupport(*instance->getPhysicalDevice());
+		surface_format =
+			Vulkan::Utility::chooseSwapSurfaceFormat(swap_chain_support.formats);
 
-		vk::PresentModeKHR present_mode = Vulkan::Utility::chooseSwapPresentMode(
-			swap_chain_support.present_modes
-		);
+		vk::PresentModeKHR present_mode =
+			Vulkan::Utility::chooseSwapPresentMode(swap_chain_support.present_modes);
 
 		QueueFamilyIndices queue_indices = logical_device->getQueueFamilies();
 
@@ -49,23 +49,23 @@ namespace Engine::Rendering::Vulkan
 		bool queue_families_same = queue_indices.graphics_family !=
 								   queue_indices.present_family;
 
-		vk::SwapchainCreateInfoKHR create_info(
-			{},
-			with_surface->native_handle,
-			with_count,
-			surface_format.format,
-			surface_format.colorSpace,
-			with_extent,
-			1,
-			vk::ImageUsageFlagBits::eColorAttachment,
-			queue_families_same ? vk::SharingMode::eConcurrent : vk::SharingMode::eExclusive,
-			queue_families_same ? 2 : uint32_t{},
-			queue_families_same ? queue_family_indices : nullptr,
-			swap_chain_support.capabilities.currentTransform,
-			vk::CompositeAlphaFlagBitsKHR::eOpaque,
-			present_mode,
-			vk::True
-		);
+		vk::SwapchainCreateInfoKHR create_info{
+			.surface			   = with_surface->native_handle,
+			.minImageCount		   = with_count,
+			.imageFormat		   = surface_format.format,
+			.imageColorSpace	   = surface_format.colorSpace,
+			.imageExtent		   = with_extent,
+			.imageArrayLayers	   = 1,
+			.imageUsage			   = vk::ImageUsageFlagBits::eColorAttachment,
+			.imageSharingMode	   = queue_families_same ? vk::SharingMode::eConcurrent
+														 : vk::SharingMode::eExclusive,
+			.queueFamilyIndexCount = queue_families_same ? 2 : uint32_t{},
+			.pQueueFamilyIndices   = queue_families_same ? queue_family_indices : nullptr,
+			.preTransform		   = swap_chain_support.capabilities.currentTransform,
+			.compositeAlpha		   = vk::CompositeAlphaFlagBitsKHR::eOpaque,
+			.presentMode		   = present_mode,
+			.clipped			   = vk::True
+		};
 
 		native_handle = logical_device->createSwapchainKHR(create_info);
 
@@ -74,14 +74,17 @@ namespace Engine::Rendering::Vulkan
 		// Create image views
 		for (auto image_handle : image_handles)
 		{
-			vk::ImageViewCreateInfo view_create_info(
-				{},
-				image_handle,
-				vk::ImageViewType::e2D,
-				surface_format.format,
-				{},
-				{vk::ImageAspectFlagBits::eColor, 0, 1, 0, 1}
-			);
+			vk::ImageViewCreateInfo view_create_info{
+				.image	  = image_handle,
+				.viewType = vk::ImageViewType::e2D,
+				.format	  = surface_format.format,
+				.subresourceRange =
+					{.aspectMask	 = vk::ImageAspectFlagBits::eColor,
+					 .baseMipLevel	 = 0,
+					 .levelCount	 = 1,
+					 .baseArrayLayer = 0,
+					 .layerCount	 = 1}
+			};
 
 			image_view_handles.push_back(logical_device->createImageView(view_create_info));
 		}
@@ -144,19 +147,22 @@ namespace Engine::Rendering::Vulkan
 
 	void Swapchain::beginRenderPass(CommandBuffer* with_buffer, size_t image_index)
 	{
+		// TODO: configurable
+		std::array<float, 4> color_clear = {0.0f, 0.0f, 0.0f, 1.0f};
+
 		std::array<vk::ClearValue, 2> clear_values{};
-		clear_values[0].setColor({0.0f, 0.0f, 0.0f, 1.0f}); // TODO: configurable
+		clear_values[0].setColor({color_clear});
 		clear_values[1].setDepthStencil({1.f, 0});
 
-		vk::RenderPassBeginInfo render_pass_info(
-			*render_pass->native_handle,
-			**render_targets[image_index]->framebuffer,
-			{{0, 0}, extent},
-			clear_values,
-			{}
-		);
+		vk::RenderPassBeginInfo render_pass_info{
+			.renderPass		 = *render_pass->native_handle,
+			.framebuffer	 = **render_targets[image_index]->framebuffer,
+			.renderArea		 = {{0, 0}, extent},
+			.clearValueCount = static_cast<uint32_t>(clear_values.size()),
+			.pClearValues	 = clear_values.data()
+		};
 
-		with_buffer->getHandle().beginRenderPass(render_pass_info, vk::SubpassContents::eInline);
+		with_buffer->beginRenderPass(render_pass_info, vk::SubpassContents::eInline);
 	}
 
 	void Swapchain::renderFrame(
@@ -166,22 +172,16 @@ namespace Engine::Rendering::Vulkan
 		void*																user_data
 	)
 	{
-		command_buffer->getHandle().begin({});
+		command_buffer->begin({});
 
 		beginRenderPass(command_buffer, image_index);
 
-		vk::Viewport viewport(
-			0.f,
-			0.f,
-			static_cast<float>(extent.width),
-			static_cast<float>(extent.height),
-			0.f,
-			1.f
-		);
-		command_buffer->getHandle().setViewport(0, viewport);
+		vk::Viewport viewport = PipelineSettings::getViewportSettings(extent);
 
-		vk::Rect2D scissor({0, 0}, extent);
-		command_buffer->getHandle().setScissor(0, scissor);
+		command_buffer->setViewport(0, viewport);
+
+		vk::Rect2D scissor{.offset = {0, 0}, .extent = extent};
+		command_buffer->setScissor(0, scissor);
 
 		// Perform actual render
 		if (!callback)
@@ -194,17 +194,16 @@ namespace Engine::Rendering::Vulkan
 		assert(callback);
 		callback(command_buffer, image_index, user_data);
 
-		command_buffer->getHandle().endRenderPass();
-		command_buffer->getHandle().end();
+		command_buffer->endRenderPass();
+		command_buffer->end();
 	}
 
 	SyncObjects::SyncObjects(vk::raii::Device& with_device)
 	{
-		static constexpr vk::SemaphoreCreateInfo semaphore_create_info({}, {});
-		static constexpr vk::FenceCreateInfo	 fence_create_info(
-			vk::FenceCreateFlagBits::eSignaled,
-			{}
-		);
+		static constexpr vk::SemaphoreCreateInfo semaphore_create_info{};
+		static constexpr vk::FenceCreateInfo	 fence_create_info{
+				.flags = vk::FenceCreateFlagBits::eSignaled
+		};
 
 		image_available = with_device.createSemaphore(semaphore_create_info);
 		present_ready	= with_device.createSemaphore(semaphore_create_info);
@@ -227,14 +226,14 @@ namespace Engine::Rendering::Vulkan
 			*with_fb_data.color_resolve // resolve color (post-multisample)
 		};
 
-		vk::FramebufferCreateInfo framebuffer_create_info(
-			{},
-			*with_render_pass,
-			attachments,
-			with_extent.width,
-			with_extent.height,
-			1
-		);
+		vk::FramebufferCreateInfo framebuffer_create_info{
+			.renderPass		 = *with_render_pass,
+			.attachmentCount = static_cast<uint32_t>(attachments.size()),
+			.pAttachments	 = attachments.data(),
+			.width			 = with_extent.width,
+			.height			 = with_extent.height,
+			.layers			 = 1
+		};
 
 		framebuffer = new vk::raii::Framebuffer(
 			with_device.createFramebuffer(framebuffer_create_info)

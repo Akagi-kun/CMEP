@@ -6,6 +6,7 @@
 #include "vulkan/vulkan_raii.hpp"
 
 #include <array>
+#include <cstdint>
 
 namespace Engine::Rendering::Vulkan
 {
@@ -16,77 +17,83 @@ namespace Engine::Rendering::Vulkan
 
 		const auto msaa_samples = physical_device->getMSAASamples();
 
-		vk::AttachmentDescription color_attachment(
-			{},
-			with_format,
-			msaa_samples,
-			vk::AttachmentLoadOp::eClear,
-			vk::AttachmentStoreOp::eDontCare,
-			vk::AttachmentLoadOp::eDontCare,
-			vk::AttachmentStoreOp::eDontCare,
-			vk::ImageLayout::eUndefined,
-			vk::ImageLayout::eColorAttachmentOptimal
-		);
+		vk::AttachmentDescription color_attachment{
+			.format			= with_format,
+			.samples		= msaa_samples,
+			.loadOp			= vk::AttachmentLoadOp::eClear,
+			.storeOp		= vk::AttachmentStoreOp::eDontCare,
+			.stencilLoadOp	= vk::AttachmentLoadOp::eDontCare,
+			.stencilStoreOp = vk::AttachmentStoreOp::eDontCare,
+			.initialLayout	= vk::ImageLayout::eUndefined,
+			.finalLayout	= vk::ImageLayout::eColorAttachmentOptimal
+		};
 
-		vk::AttachmentDescription depth_attachment(
-			{},
-			physical_device->findSupportedDepthFormat(),
-			msaa_samples,
-			vk::AttachmentLoadOp::eClear,
-			vk::AttachmentStoreOp::eDontCare,
-			vk::AttachmentLoadOp::eDontCare,
-			vk::AttachmentStoreOp::eDontCare,
-			vk::ImageLayout::eUndefined,
-			vk::ImageLayout::eDepthStencilAttachmentOptimal
-		);
+		vk::AttachmentDescription depth_attachment{
+			.format			= physical_device->findSupportedDepthFormat(),
+			.samples		= msaa_samples,
+			.loadOp			= vk::AttachmentLoadOp::eClear,
+			.storeOp		= vk::AttachmentStoreOp::eDontCare,
+			.stencilLoadOp	= vk::AttachmentLoadOp::eDontCare,
+			.stencilStoreOp = vk::AttachmentStoreOp::eDontCare,
+			.initialLayout	= vk::ImageLayout::eUndefined,
+			.finalLayout	= vk::ImageLayout::eDepthStencilAttachmentOptimal
+		};
 
-		vk::AttachmentDescription color_attachment_resolve(
-			{},
-			with_format,
-			vk::SampleCountFlagBits::e1,
-			vk::AttachmentLoadOp::eDontCare,
-			vk::AttachmentStoreOp::eStore,
-			vk::AttachmentLoadOp::eDontCare,
-			vk::AttachmentStoreOp::eDontCare,
-			vk::ImageLayout::eUndefined,
-			vk::ImageLayout::ePresentSrcKHR
-		);
+		vk::AttachmentDescription color_attachment_resolve{
+			.format			= with_format,
+			.samples		= vk::SampleCountFlagBits::e1,
+			.loadOp			= vk::AttachmentLoadOp::eDontCare,
+			.storeOp		= vk::AttachmentStoreOp::eStore,
+			.stencilLoadOp	= vk::AttachmentLoadOp::eDontCare,
+			.stencilStoreOp = vk::AttachmentStoreOp::eDontCare,
+			.initialLayout	= vk::ImageLayout::eUndefined,
+			.finalLayout	= vk::ImageLayout::ePresentSrcKHR
+		};
 
-		vk::AttachmentReference color_attachment_ref(0, vk::ImageLayout::eColorAttachmentOptimal);
-		vk::AttachmentReference depth_attachment_ref(
-			1,
-			vk::ImageLayout::eDepthStencilAttachmentOptimal
-		);
-		vk::AttachmentReference color_resolve_attachment_ref(
-			2,
-			vk::ImageLayout::eColorAttachmentOptimal
-		);
+		vk::AttachmentReference color_attachment_ref{
+			.attachment = 0,
+			.layout		= vk::ImageLayout::eColorAttachmentOptimal
+		};
+		vk::AttachmentReference depth_attachment_ref{
+			.attachment = 1,
+			.layout		= vk::ImageLayout::eDepthStencilAttachmentOptimal
+		};
+		vk::AttachmentReference color_resolve_attachment_ref{
+			.attachment = 2,
+			.layout		= vk::ImageLayout::eColorAttachmentOptimal
+		};
 
-		vk::SubpassDescription subpass(
-			{},
-			vk::PipelineBindPoint::eGraphics,
-			{},
-			color_attachment_ref,
-			color_resolve_attachment_ref,
-			&depth_attachment_ref,
-			{}
-		);
+		vk::SubpassDescription subpass{
+			.flags					 = {},
+			.pipelineBindPoint		 = vk::PipelineBindPoint::eGraphics,
+			.colorAttachmentCount	 = 1,
+			.pColorAttachments		 = &color_attachment_ref,
+			.pResolveAttachments	 = &color_resolve_attachment_ref,
+			.pDepthStencilAttachment = &depth_attachment_ref
+		};
 		std::array<vk::AttachmentDescription, 3> attachments =
 			{color_attachment, depth_attachment, color_attachment_resolve};
 
-		vk::SubpassDependency dependency(
-			vk::SubpassExternal,
-			{},
-			vk::PipelineStageFlagBits::eColorAttachmentOutput |
-				vk::PipelineStageFlagBits::eEarlyFragmentTests,
-			vk::PipelineStageFlagBits::eColorAttachmentOutput |
-				vk::PipelineStageFlagBits::eEarlyFragmentTests,
-			{},
-			vk::AccessFlagBits::eColorAttachmentWrite |
-				vk::AccessFlagBits::eDepthStencilAttachmentWrite
-		);
+		vk::SubpassDependency dependency{
+			.srcSubpass	  = vk::SubpassExternal,
+			.dstSubpass	  = {},
+			.srcStageMask = vk::PipelineStageFlagBits::eColorAttachmentOutput |
+							vk::PipelineStageFlagBits::eEarlyFragmentTests,
+			.dstStageMask = vk::PipelineStageFlagBits::eColorAttachmentOutput |
+							vk::PipelineStageFlagBits::eEarlyFragmentTests,
+			.srcAccessMask = {},
+			.dstAccessMask = vk::AccessFlagBits::eColorAttachmentWrite |
+							 vk::AccessFlagBits::eDepthStencilAttachmentWrite
+		};
 
-		vk::RenderPassCreateInfo create_info({}, attachments, subpass, dependency, {});
+		vk::RenderPassCreateInfo create_info{
+			.attachmentCount = static_cast<uint32_t>(attachments.size()),
+			.pAttachments	 = attachments.data(),
+			.subpassCount	 = 1,
+			.pSubpasses		 = &subpass,
+			.dependencyCount = 1,
+			.pDependencies	 = &dependency
+		};
 
 		LogicalDevice* logical_device = instance->getLogicalDevice();
 

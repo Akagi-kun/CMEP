@@ -29,22 +29,18 @@ namespace Engine::Rendering::Vulkan
 	{
 		LogicalDevice* logical_device = instance->getLogicalDevice();
 
-		vk::ImageCreateInfo create_info(
-			{},
-			vk::ImageType::e2D,
-			image_format,
-			Utility::convertToExtent<vk::Extent3D>(size, 1),
-			1,
-			1,
-			num_samples,
-			tiling,
-			usage,
-			vk::SharingMode::eExclusive,
-			{},
-			{},
-			vk::ImageLayout::eUndefined,
-			{}
-		);
+		vk::ImageCreateInfo create_info{
+			.imageType	   = vk::ImageType::e2D,
+			.format		   = image_format,
+			.extent		   = Utility::convertToExtent<vk::Extent3D>(size, 1),
+			.mipLevels	   = 1,
+			.arrayLayers   = 1,
+			.samples	   = num_samples,
+			.tiling		   = tiling,
+			.usage		   = usage,
+			.sharingMode   = vk::SharingMode::eExclusive,
+			.initialLayout = vk::ImageLayout::eUndefined,
+		};
 
 		VmaAllocationCreateInfo vma_alloc_info{};
 		vma_alloc_info.usage		 = VMA_MEMORY_USAGE_UNKNOWN;
@@ -82,17 +78,14 @@ namespace Engine::Rendering::Vulkan
 
 	void Image::transitionImageLayout(vk::ImageLayout new_layout)
 	{
-		vk::ImageMemoryBarrier barrier(
-			{},
-			{},
-			current_layout,
-			new_layout,
-			vk::QueueFamilyIgnored,
-			vk::QueueFamilyIgnored,
-			*native_handle,
-			{vk::ImageAspectFlagBits::eColor, 0, 1, 0, 1},
-			{}
-		);
+		vk::ImageMemoryBarrier barrier{
+			.oldLayout			 = current_layout,
+			.newLayout			 = new_layout,
+			.srcQueueFamilyIndex = vk::QueueFamilyIgnored,
+			.dstQueueFamilyIndex = vk::QueueFamilyIgnored,
+			.image				 = native_handle,
+			.subresourceRange	 = {vk::ImageAspectFlagBits::eColor, 0, 1, 0, 1},
+		};
 
 		vk::PipelineStageFlags src_stage;
 		vk::PipelineStageFlags dst_stage;
@@ -115,10 +108,7 @@ namespace Engine::Rendering::Vulkan
 			src_stage = vk::PipelineStageFlagBits::eTransfer;
 			dst_stage = vk::PipelineStageFlagBits::eFragmentShader;
 		}
-		else
-		{
-			throw std::invalid_argument("Unsupported layout transition!");
-		}
+		else { throw std::invalid_argument("Unsupported layout transition!"); }
 
 		auto command_buffer = instance->getCommandPool()->constructCommandBuffer();
 
@@ -143,16 +133,19 @@ namespace Engine::Rendering::Vulkan
 	{
 		LogicalDevice* logical_device = instance->getLogicalDevice();
 
-		vk::ImageViewCreateInfo view_create_info(
-			{},
-			*native_handle,
-			vk::ImageViewType::e2D,
-			image_format,
-			{},
-			{with_aspect_flags, 0, 1, 0, 1}
-		);
+		vk::ImageViewCreateInfo create_info{
+			.image	  = native_handle,
+			.viewType = vk::ImageViewType::e2D,
+			.format	  = image_format,
+			.subresourceRange =
+				{.aspectMask	 = with_aspect_flags,
+				 .baseMipLevel	 = 0,
+				 .levelCount	 = 1,
+				 .baseArrayLayer = 0,
+				 .layerCount	 = 1}
+		};
 
-		view_handle = logical_device->createImageView(view_create_info);
+		view_handle = logical_device->createImageView(create_info);
 	}
 
 } // namespace Engine::Rendering::Vulkan

@@ -10,7 +10,7 @@
 
 namespace Engine::Rendering::Vulkan
 {
-	class CommandBuffer final : public HandleWrapper<vk::raii::CommandBuffer>
+	class CommandBuffer final : public vk::raii::CommandBuffer
 	{
 	public:
 		CommandBuffer(LogicalDevice* with_device, vk::raii::CommandPool& from_pool);
