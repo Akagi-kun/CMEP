@@ -1,8 +1,10 @@
 #include "Scripting/LuaValue.hpp"
 
-#include "C:/Users/sla-t/source/repos/CMEP/EngineCore/include/Exception.hpp"
-#include "C:/Users/sla-t/source/repos/CMEP/EngineCore/include/Factories/ObjectFactory.hpp"
-#include "C:/Users/sla-t/source/repos/CMEP/EngineCore/include/Scripting/Utility.hpp"
+#include "Scripting/Utility.hpp"
+
+#include "Factories/ObjectFactory.hpp"
+
+#include "Exception.hpp"
 
 #include <cstddef>
 #include <cstdint>
