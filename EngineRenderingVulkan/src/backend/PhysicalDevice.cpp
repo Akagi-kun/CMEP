@@ -57,13 +57,15 @@ namespace Engine::Rendering::Vulkan
 	vk::Format PhysicalDevice::findSupportedDepthFormat() const
 	{
 		return findSupportedFormat(
-			{vk::Format::eD32Sfloat, vk::Format::eD32SfloatS8Uint, vk::Format::eD24UnormS8Uint},
+			{vk::Format::eD32Sfloat, vk::Format::eD32SfloatS8Uint, vk::Format::eD24UnormS8Uint
+			},
 			vk::ImageTiling::eOptimal,
 			vk::FormatFeatureFlagBits::eDepthStencilAttachment
 		);
 	}
 
-	std::optional<QueueFamilyIndices> PhysicalDevice::findVulkanQueueFamilies(const Surface* with_surface
+	std::optional<QueueFamilyIndices> PhysicalDevice::findVulkanQueueFamilies(
+		const Surface* with_surface
 	) const
 	{
 		QueueFamilyIndices indices;
@@ -92,10 +94,7 @@ namespace Engine::Rendering::Vulkan
 			indice++;
 		}
 
-		if (graphics_found && present_found)
-		{
-			return indices;
-		}
+		if (graphics_found && present_found) { return indices; }
 
 		return std::nullopt;
 	}

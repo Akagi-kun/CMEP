@@ -16,15 +16,18 @@ namespace Engine::Rendering::Vulkan
 	const std::vector<const char*> device_validation_layers = {
 		"VK_LAYER_KHRONOS_validation",
 	};
-#	pragma message("Validation layers enabled")
+#	pragma message("-- Validation layers enabled")
 #else
 	const std::vector<const char*> device_validation_layers = {};
-#	pragma message("Validation layers disabled")
+#	pragma message("-- Validation layers disabled")
 #endif
 
 #pragma region Public
 
-	LogicalDevice::LogicalDevice(InstanceOwned::value_t with_instance, const Surface* with_surface)
+	LogicalDevice::LogicalDevice(
+		InstanceOwned::value_t with_instance,
+		const Surface*		   with_surface
+	)
 		: InstanceOwned(with_instance),
 		  vk::raii::Device(createDevice(with_instance, with_surface))
 	{
@@ -37,7 +40,10 @@ namespace Engine::Rendering::Vulkan
 
 #pragma region Private
 
-	vk::raii::Device LogicalDevice::createDevice(Instance* with_instance, const Surface* with_surface)
+	vk::raii::Device LogicalDevice::createDevice(
+		Instance*	   with_instance,
+		const Surface* with_surface
+	)
 	{
 		auto* physical_device = with_instance->getPhysicalDevice();
 

@@ -76,5 +76,9 @@ return {
 	block_type_count = 11,
 	block_textures = 2,
 
-	texture_pixels = { x = 10, y = 10 }
+	texture_pixels = { x = 10, y = 10 },
+	
+	-- Bits set if a block is on the chunk boundary
+	boundary_bit_z = 128,
+	boundary_bit_x = 256
 }

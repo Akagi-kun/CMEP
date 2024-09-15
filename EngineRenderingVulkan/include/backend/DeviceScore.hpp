@@ -13,7 +13,7 @@
 
 namespace Engine::Rendering::Vulkan
 {
-#ifndef _DEBUG
+#ifdef NDEBUG
 	static constexpr bool enable_vk_validation_layers = false;
 #else
 	static constexpr bool enable_vk_validation_layers = true;
@@ -25,8 +25,8 @@ namespace Engine::Rendering::Vulkan
 		PhysicalDevice device_scored;
 
 		// Reason why the device is not supported, if any
-		// Guaranteed to be null when supported and zero-terminated if unsupported and a reason is
-		// specified
+		// Guaranteed to be null when supported and zero-terminated if unsupported and a
+		// reason is specified
 		std::string_view unsupported_reason;
 
 		int	 preference_score = 0;	   // Higher better
@@ -45,7 +45,8 @@ namespace Engine::Rendering::Vulkan
 		bool operator<(const DeviceScore& other) const
 		{
 			assert(
-				supported && "Tried to call operator< on an unsupported device, possibly a bug?"
+				supported &&
+				"Tried to call operator< on an unsupported device, possibly a bug?"
 			);
 
 			return std::less<>{}(preference_score, other.preference_score);

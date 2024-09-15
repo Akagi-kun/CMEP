@@ -99,7 +99,8 @@ namespace Engine
 			if ((window_data->cursor_position.x - last_pos.x) != 0.0 ||
 				(window_data->cursor_position.y - last_pos.y) != 0.0)
 			{
-				auto event = EventHandling::Event(this, EventHandling::EventType::ON_MOUSEMOVED);
+				auto event =
+					EventHandling::Event(this, EventHandling::EventType::ON_MOUSEMOVED);
 
 				event.mouse.x = std::clamp(
 					window_data->cursor_position.x - last_pos.x,
@@ -133,7 +134,8 @@ namespace Engine
 				case Rendering::Vulkan::InputEvent::KEY_PRESS:
 				case Rendering::Vulkan::InputEvent::KEY_REPEAT:
 				{
-					auto event = EventHandling::Event(this, EventHandling::EventType::ON_KEYDOWN);
+					auto event =
+						EventHandling::Event(this, EventHandling::EventType::ON_KEYDOWN);
 					event.keycode	 = static_cast<uint16_t>(input_event.key);
 					event.delta_time = getLastDeltaTime();
 					event_return	 = fireEvent(event);
@@ -142,7 +144,8 @@ namespace Engine
 				case Rendering::Vulkan::InputEvent::KEY_RELEASE:
 				{
 
-					auto event = EventHandling::Event(this, EventHandling::EventType::ON_KEYUP);
+					auto event =
+						EventHandling::Event(this, EventHandling::EventType::ON_KEYUP);
 					event.keycode	 = static_cast<uint16_t>(input_event.key);
 					event.delta_time = getLastDeltaTime();
 					event_return	 = fireEvent(event);
@@ -154,10 +157,7 @@ namespace Engine
 				}
 			}
 
-			if (event_return != 0)
-			{
-				stop();
-			}
+			if (event_return != 0) { stop(); }
 
 			// end
 			window_data->input_events.pop();
@@ -237,7 +237,8 @@ namespace Engine
 		}
 
 		// Pre-make ON_UPDATE event so we don't have to create it over and over again in hot loop
-		auto on_update_event = EventHandling::Event(this, EventHandling::EventType::ON_UPDATE);
+		auto on_update_event =
+			EventHandling::Event(this, EventHandling::EventType::ON_UPDATE);
 
 		this->logger->simpleLog<decltype(this)>(
 			Logging::LogLevel::VerboseDebug,
@@ -248,7 +249,10 @@ namespace Engine
 
 		auto build_clock = std::chrono::steady_clock::now();
 
-		this->logger->simpleLog<decltype(this)>(Logging::LogLevel::Info, "Starting scene build");
+		this->logger->simpleLog<decltype(this)>(
+			Logging::LogLevel::Info,
+			"Starting scene build"
+		);
 		for (const auto& [name, object] : scene->getAllObjects())
 		{
 			this->logger->simpleLog<decltype(this)>(
@@ -259,10 +263,9 @@ namespace Engine
 			object->getMeshBuilder()->build();
 		}
 
-		auto scene_build_time = static_cast<double>(
-									(std::chrono::steady_clock::now() - build_clock).count()
-								) /
-								nano_to_msec;
+		auto scene_build_time =
+			static_cast<double>((std::chrono::steady_clock::now() - build_clock).count()) /
+			nano_to_msec;
 
 		this->logger->simpleLog<decltype(this)>(
 			Logging::LogLevel::Info,
@@ -324,12 +327,12 @@ namespace Engine
 
 			const auto poll_clock = std::chrono::steady_clock::now();
 
-			const double event_time = static_cast<double>((event_clock - next_clock).count()) /
-									  nano_to_msec;
-			const double draw_time = static_cast<double>((draw_clock - event_clock).count()) /
-									 nano_to_msec;
-			const double poll_time = static_cast<double>((poll_clock - draw_clock).count()) /
-									 nano_to_msec;
+			const double event_time =
+				static_cast<double>((event_clock - next_clock).count()) / nano_to_msec;
+			const double draw_time =
+				static_cast<double>((draw_clock - event_clock).count()) / nano_to_msec;
+			const double poll_time =
+				static_cast<double>((poll_clock - draw_clock).count()) / nano_to_msec;
 
 			const auto time_sum = event_time + draw_time + poll_time;
 
@@ -352,9 +355,9 @@ namespace Engine
 			}
 
 			const auto	 frame_clock = std::chrono::steady_clock::now();
-			const double sleep_secs	 = 1.0 / config->framerate_target -
-									  static_cast<double>((frame_clock - next_clock).count()
-									  ) / nano_to_sec;
+			const double sleep_secs =
+				1.0 / config->framerate_target -
+				static_cast<double>((frame_clock - next_clock).count()) / nano_to_sec;
 			// spin sleep if sleep necessary and VSYNC disabled
 			if (sleep_secs > 0 && config->framerate_target != 0)
 			{
@@ -376,8 +379,8 @@ namespace Engine
 		int sum = 0;
 
 		auto current_scene = scene_manager->getSceneCurrent();
-		auto lua_handler_range = current_scene->lua_event_handlers.equal_range(event.event_type
-		);
+		auto lua_handler_range =
+			current_scene->lua_event_handlers.equal_range(event.event_type);
 		for (auto handler = lua_handler_range.first; handler != lua_handler_range.second;
 			 ++handler)
 		{
@@ -426,7 +429,7 @@ namespace Engine
 		// Engine info printout
 		this->logger->simpleLog<decltype(this)>(
 			Logging::LogLevel::Info,
-			"build info:\n////\nRunning %s\nCompiled by %s\n////\n",
+			"build info:\n////\nRunning %s\nCompiled by %s\n////",
 			buildinfo_build,
 			buildinfo_compiledby
 		);
@@ -480,7 +483,8 @@ namespace Engine
 		// Measure and log ON_INIT time
 		static constexpr double nano_to_msec = 1.e6;
 		double init_total = static_cast<double>((end - init_start).count()) / nano_to_msec;
-		double oninit_total = static_cast<double>((end - oninit_start).count()) / nano_to_msec;
+		double oninit_total = static_cast<double>((end - oninit_start).count()) /
+							  nano_to_msec;
 
 		this->logger->simpleLog<decltype(this)>(
 			Logging::LogLevel::Info,

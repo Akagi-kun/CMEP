@@ -20,11 +20,15 @@ AlignConsecutiveDeclarations: true
 AlignConsecutiveAssignments:
   Enabled: true
   AcrossComments: true
+AlignConsecutiveShortCaseStatements:
+  Enabled: true
+  AcrossEmptyLines: true
+  AcrossComments: true
 # Breaks
 BraceWrapping:
   AfterEnum: true
   AfterStruct: true
-  SplitEmptyFunction: true
+  SplitEmptyFunction: false
   AfterClass: true
   AfterFunction: true
   AfterCaseLabel: true
@@ -32,8 +36,8 @@ BraceWrapping:
 BreakBeforeBraces: Custom
 PenaltyBreakAssignment: 30
 PenaltyBreakComment: 2000000
-PenaltyExcessCharacter: 10
-PenaltyBreakBeforeFirstCallParameter: 5
+PenaltyExcessCharacter: 20
+PenaltyBreakBeforeFirstCallParameter: 1
 # Indent
 IndentCaseLabels: true
 NamespaceIndentation: All
@@ -41,6 +45,7 @@ IndentPPDirectives: AfterHash
 AccessModifierOffset: -4
 # Compact code
 AllowShortIfStatementsOnASingleLine: WithoutElse
+AllowShortCaseLabelsOnASingleLine: true
 AllowShortBlocksOnASingleLine: Always
 # Fixes
 FixNamespaceComments: true

@@ -28,40 +28,43 @@
 // MSVC compiler
 #if defined(_MSC_VER)
 #	pragma clang diagnostic ignored "-W#pragma-messages"
-#	pragma message("Compiler MSVC detected")
+#	pragma message("-- Compiler MSVC detected")
 #	define SEMANTICS_COMPILER_MSVC
-#	define BUILDINFO_COMPILED_BY "MSVC " MACRO_STR(_MSC_FULL_VER) "." MACRO_STR(_MSC_BUILD)
+#	define BUILDINFO_COMPILED_BY                                                        \
+		"MSVC " MACRO_STR(_MSC_FULL_VER) "." MACRO_STR(_MSC_BUILD)
 // Any GNU-like compiler
 #elif defined(__GNUC__)
 #	define SEMANTICS_COMPILER_ANY_GNU
 //	Compilers that use LLVM as backend
 #	if defined(__llvm__)
-#		pragma message("Compiler LLVM detected")
+#		pragma message("-- Compiler LLVM detected")
 #		define SEMANTICS_COMPILER_ANY_LLVM
 //		Clang with LLVM backend
 #		if defined(__clang__)
-#			pragma message("Compiler LLVM-clang detected")
+#			pragma message("-- Compiler LLVM-clang detected")
 #			define SEMANTICS_COMPILER_LLVM_CLANG
-#			define BUILDINFO_COMPILED_BY                                                                              \
-				"LLVM-clang " MACRO_STR(__clang_major__) "." MACRO_STR(__clang_minor__                                 \
+#			define BUILDINFO_COMPILED_BY                                                \
+				"LLVM-clang " MACRO_STR(__clang_major__) "." MACRO_STR(__clang_minor__   \
 				) "." MACRO_STR(__clang_patchlevel__);
 //		An GNU-like compiler with LLVM that is not clang is likely to be LLVM GCC
 #		else
-#			pragma message("Compiler LLVM-GCC detected")
+#			pragma message("-- Compiler LLVM-GCC detected")
 #			define SEMANTICS_COMPILER_LLVM_GCC
-#			define BUILDINFO_COMPILED_BY                                                                              \
-				"LLVM-GCC " MACRO_STR(__GNUC__) "." MACRO_STR(__GNUC_MINOR__) "." MACRO_STR(__GNUC_PATCHLEVEL__)
+#			define BUILDINFO_COMPILED_BY                                                \
+				"LLVM-GCC " MACRO_STR(__GNUC__) "." MACRO_STR(__GNUC_MINOR__             \
+				) "." MACRO_STR(__GNUC_PATCHLEVEL__)
 #		endif
 //	An GNU-like compiler that is not using LLVM is likely to be pure GCC
 #	else
-#		pragma message("Compiler GCC detected")
+#		pragma message("-- Compiler GCC detected")
 #		define SEMANTICS_COMPILER_GCC
-#		define BUILDINFO_COMPILED_BY                                                                                  \
-			"GCC " MACRO_STR(__GNUC__) "." MACRO_STR(__GNUC_MINOR__) "." MACRO_STR(__GNUC_PATCHLEVEL__);
+#		define BUILDINFO_COMPILED_BY                                                    \
+			"GCC " MACRO_STR(__GNUC__) "." MACRO_STR(__GNUC_MINOR__                      \
+			) "." MACRO_STR(__GNUC_PATCHLEVEL__);
 #	endif
 // Any other compiler will simply be Unknown
 #else
-#	pragma warning "Compiler could not be identified"
+#	pragma warning "-- Compiler could not be identified"
 #	define SEMANTICS_COMPILER_UNKNOWN
 #	define BUILDINFO_COMPILED_BY "Unknown"
 #endif
@@ -69,7 +72,8 @@
 namespace Engine
 {
 	// Build string
-	const char* const buildinfo_build = "CMEP EngineCore " __TIME__ " " __DATE__ " build, configured " BUILDCONFIG
+	const char* const buildinfo_build = "CMEP EngineCore " __TIME__ " " __DATE__
+										" build, configured " BUILDCONFIG
 										" " MACRO_STR(IS_DEBUG);
 
 	// Name and version of compiler

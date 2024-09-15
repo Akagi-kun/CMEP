@@ -38,6 +38,8 @@ set(SRC_FILES
 	src/Scripting/GeneratorLuaScript.cpp
 	
 	src/Scripting/Utility.cpp
+	src/Scripting/LuaValue.cpp
+
 	src/Scripting/API/Global_API.cpp
 	src/Scripting/API/LuaFactories.cpp
 	src/Scripting/API/Engine_API.cpp

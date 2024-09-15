@@ -16,8 +16,7 @@ namespace Engine
 			std::source_location location = std::source_location::current()
 		)
 			: message(generateWhat(with_message, location))
-		{
-		}
+		{}
 
 		[[nodiscard]] CMEP_EXPORT const char* what() const noexcept override
 		{
@@ -37,11 +36,20 @@ namespace Engine
 } // namespace Engine
 
 // NOLINTBEGIN(*unused-macros)
+//
+// Use as `throw ENGINE_EXCEPTION(message)`
 #define ENGINE_EXCEPTION(message) ::Engine::Exception(message)
-#define ENGINE_EXCEPTION_ON_ASSERT(true_expr, message)                                             \
-	if ((true_expr) == false)                                                                      \
-	{                                                                                              \
-		throw ENGINE_EXCEPTION(std::string("Failed assertion '" #true_expr "' ") + (message));     \
+//
+// Runtime assert, use in places where a regular <cassert> assert() may be necessary
+// i.e. when true_expr depends on external inputs that are not a part of the engine itself
+#define ENGINE_EXCEPTION_ON_ASSERT(true_expr, message)                                   \
+	if ((true_expr) == false)                                                            \
+	{                                                                                    \
+		throw ENGINE_EXCEPTION(                                                          \
+			std::string("Failed assertion '" #true_expr "' ") + (message)                \
+		);                                                                               \
 	}
-#define ENGINE_EXCEPTION_ON_ASSERT_NOMSG(true_expr) ENGINE_EXCEPTION_ON_ASSERT((true_expr), "")
+#define ENGINE_EXCEPTION_ON_ASSERT_NOMSG(true_expr)                                      \
+	ENGINE_EXCEPTION_ON_ASSERT((true_expr), "")
+//
 // NOLINTEND(*unused-macros)

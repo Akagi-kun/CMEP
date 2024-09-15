@@ -8,8 +8,6 @@
 #include "Scripting/API/SceneManager_API.hpp"
 #include "Scripting/API/Scene_API.hpp"
 
-#include "Logging/Logging.hpp"
-
 #include "Engine.hpp"
 #include "Object.hpp"
 #include "Scene.hpp"
@@ -148,16 +146,5 @@ namespace Engine::Scripting::API::LuaFactories
 		// Add Engine pointer
 		lua_pushlightuserdata(state, engine_ptr);
 		lua_setfield(state, -2, "_ptr");
-	}
-
-	std::weak_ptr<Logging::Logger> loggerObjectFactory(lua_State* state)
-	{
-		lua_getglobal(state, "engine");
-		lua_getfield(state, -1, "logger");
-		lua_getfield(state, -1, "_smart_ptr");
-		std::weak_ptr<Logging::Logger> logger =
-			*static_cast<std::weak_ptr<Logging::Logger>*>(lua_touserdata(state, -1));
-
-		return logger;
 	}
 } // namespace Engine::Scripting::API::LuaFactories

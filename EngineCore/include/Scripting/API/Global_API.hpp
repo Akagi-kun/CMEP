@@ -7,6 +7,11 @@
 
 namespace Engine::Scripting::API
 {
+	/**
+	 * @brief Function to replace the default Lua print() function
+	 *
+	 * Expects upvalue at index 1 to point to a Logger instance
+	 */
 	int printReplace(lua_State* state);
 
 	extern std::unordered_map<std::string, const lua_CFunction> global_mappings;

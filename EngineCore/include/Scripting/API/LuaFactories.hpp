@@ -2,12 +2,16 @@
 
 #include "Assets/AssetManager.hpp"
 
-#include "Logging/Logging.hpp"
-
+#include "EventHandling.hpp"
+#include "Object.hpp"
+#include "Scene.hpp"
 #include "SceneManager.hpp"
 
 #include <memory>
 
+/**
+ * @brief Provides functions that construct a proper table for the specified object
+ */
 namespace Engine::Scripting::API::LuaFactories
 {
 	void assetManagerFactory(lua_State* state, std::weak_ptr<AssetManager> asset_manager_ptr);
@@ -15,6 +19,4 @@ namespace Engine::Scripting::API::LuaFactories
 	void sceneFactory(lua_State* state, Scene* scene_ptr);
 	void objectFactory(lua_State* state, Object* object_ptr);
 	void engineFactory(lua_State* state, Engine* engine_ptr);
-
-	std::weak_ptr<Logging::Logger> loggerObjectFactory(lua_State* state);
 } // namespace Engine::Scripting::API::LuaFactories

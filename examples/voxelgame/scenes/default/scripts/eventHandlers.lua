@@ -29,14 +29,81 @@ local generateTree = function(map_data, x, y, z)
 			for z_off = -2, 2 do
 				local value = game_defs.tree_def[y_layer][x_off + 3 + (z_off + 2) * 5]
 
-				if not util.validateX(x + x_off) then break end
-				if not util.validateY(y + y_layer) then break end
-				if not util.validateZ(z + z_off) then break end
+				-- if any coordinate is not valid (outside of chunk) break out of the loop
+				-- causes trees on chunk edges to be potentially cut off
+				-- without this the code may crash
+				if not util.validateX(x + x_off)	then break end
+				if not util.validateY(y + y_layer)	then break end
+				if not util.validateZ(z + z_off)	then break end
 
+				-- value of 0 in tree_def essentially means "ignore"
 				if value ~= 0 then
 					local offset = util.calculateMapOffset(x + x_off, y + y_layer, z + z_off)
 					map_data[offset] = value
 				end
+			end
+		end
+	end
+end
+
+local getChunk = function(x, z)
+	if chunks[x] == nil or chunks[x][z] == nil then
+		return nil
+	else
+		return chunks[x][z]
+	end
+end
+
+-- Generate boundary info for a specific direction
+--
+-- target_chunk	 = the neighbor chunk of current_chunk
+-- current_chunk = the chunk to create boundary info in
+-- direction	 = the direction in which target_chunk is, TRUE = X, FALSE = Z
+-- chunk_off	 = the direction along the axis (either -1 or 1)
+--
+local generate_boundary_info_dir = function(target_chunk, current_chunk, direction, chunk_off)
+	-- Select boundary bit for Z or X depending on direction
+	local selected_boundbit = direction and game_defs.boundary_bit_x or game_defs.boundary_bit_z
+
+	local block_check = function(offset1, offset2)
+		-- Store values locally
+		local target = target_chunk[offset2]
+		local current = current_chunk[offset1]
+
+		-- If target is opaque AND
+		-- this block is opaque AND
+		-- this block doesn't have the boundary bit set
+		if target ~= 0 and current ~= 0 and current < selected_boundbit then
+			-- set the boundary bit and write result back into current_chunk
+			current_chunk[offset1] = current + selected_boundbit
+		end
+	end
+
+	local swap1, swap2
+
+	if not direction then
+		-- Swap offsets by swapping their Z values
+		-- generalizes this function for when target_chunk is in the negative Z direction
+		-- or the positive Z direction
+		swap1, swap2 = (chunk_off > 0 and config.chunk_size_z or 1), (chunk_off > 0 and 1 or config.chunk_size_z)
+		for x = 1, config.chunk_size_x do
+			for y = 1, config.chunk_size_y do
+				-- Calculate offsets for the blocks in the current and next chunk
+				local offset1 = util.calculateMapOffset(x, y, swap1)
+				local offset2 = util.calculateMapOffset(x, y, swap2)
+
+				block_check(offset1, offset2)
+			end
+		end
+	else
+		-- Do the same as above but for the X direction
+		swap1, swap2 = (chunk_off > 0 and config.chunk_size_x or 1), (chunk_off > 0 and 1 or config.chunk_size_x)
+		for z = 1, config.chunk_size_z do
+			for y = 1, config.chunk_size_y do
+				local offset1 = util.calculateMapOffset(swap1, y, z)
+				local offset2 = util.calculateMapOffset(swap2, y, z)
+			
+				block_check(offset1, offset2)
 			end
 		end
 	end
@@ -51,90 +118,47 @@ end
 -- making huge meshes that are mostly invisible
 --
 local generate_boundary_info = function(chunk_x, chunk_z)
-	assert(chunks[chunk_x] ~= nil and chunks[chunk_x][chunk_z] ~= nil and chunks[chunk_x][chunk_z].data ~= nil)
-	local this_chunk = chunks[chunk_x][chunk_z].data
+	
+	local this_chunk = assert(getChunk(chunk_x, chunk_z).data)
 
-	local bounds_check = chunk_z >= -chunks_z and chunk_z <= chunks_z and chunk_x >= -chunks_x and chunk_x <= chunks_x
+	local check_bounds = function(x, z)
+		return 	z >= -chunks_z and
+				z <= chunks_z  and
+				x >= -chunks_x and
+				x <= chunks_x
+	end
 
-	::before_check1::
-	if chunks[chunk_x][chunk_z - 1] ~= nil and chunks[chunk_x][chunk_z - 1].data ~= nil then
-		local prev_chunk = chunks[chunk_x][chunk_z - 1].data
+	-- Check neighboring chunk in the dir_x/dir_z direction
+	-- if one exists there, generate boundary data for the edge that it neighbors
+	local check_direction = function(dir_x, dir_z)
+		::check_start::
 
-		for x = 1, config.chunk_size_x do
-			for y = 1, config.chunk_size_y do
-				local offset1 = util.calculateMapOffset(x, y, 1)
-				local offset2 = util.calculateMapOffset(x, y, config.chunk_size_z)
-				if prev_chunk[offset2] ~= 0 and this_chunk[offset1] < 128 and this_chunk[offset1] ~= 0 then
-					this_chunk[offset1] = this_chunk[offset1] + 128
-				end
+		local target = getChunk(chunk_x + dir_x, chunk_z + dir_z)
+		if target and target.data then
+			local target_chunk = target.data
+
+			-- Direction X
+			if dir_x ~= 0 and dir_z == 0 then
+				generate_boundary_info_dir(target_chunk, this_chunk, true, dir_x)
+			-- Direction Z
+			elseif dir_x == 0 and dir_z ~= 0 then
+				generate_boundary_info_dir(target_chunk, this_chunk, false, dir_z)
 			end
-		end
-	else
-		if bounds_check then
-			generate_chunk(chunk_x, chunk_z - 1)
-			goto before_check1
+
+		else
+			-- If target in render distance
+			if check_bounds(chunk_x + dir_x, chunk_z + dir_z) then
+				-- Generate it
+				generate_chunk(chunk_x + dir_x, chunk_z + dir_z)
+				goto check_start
+			end
 		end
 	end
 
-	::before_check2::
-	if chunks[chunk_x][chunk_z + 1] ~= nil and chunks[chunk_x][chunk_z + 1].data ~= nil then
-		local next_chunk = chunks[chunk_x][chunk_z + 1].data
-
-		for x = 1, config.chunk_size_x do
-			for y = 1, config.chunk_size_y do
-				local offset1 = util.calculateMapOffset(x, y, config.chunk_size_z)
-				local offset2 = util.calculateMapOffset(x, y, 1)
-				if next_chunk[offset2] ~= 0 and this_chunk[offset1] < 128 and this_chunk[offset1] ~= 0 then
-					this_chunk[offset1] = this_chunk[offset1] + 128
-				end
-			end
-		end
-	else
-		if bounds_check then
-			generate_chunk(chunk_x, chunk_z + 1)
-			goto before_check2
-		end
-	end
-
-	::before_check3::
-	if chunks[chunk_x - 1] ~= nil and chunks[chunk_x - 1][chunk_z] ~= nil and chunks[chunk_x - 1][chunk_z].data ~= nil then
-		local prev_chunk = chunks[chunk_x - 1][chunk_z].data
-
-		for z = 1, config.chunk_size_z do
-			for y = 1, config.chunk_size_y do
-				local offset1 = util.calculateMapOffset(1, y, z)
-				local offset2 = util.calculateMapOffset(config.chunk_size_x, y, z)
-				if prev_chunk[offset2] ~= 0 and this_chunk[offset1] < 256 and this_chunk[offset1] ~= 0 then
-					this_chunk[offset1] = this_chunk[offset1] + 256
-				end
-			end
-		end
-	else
-		if bounds_check then
-			generate_chunk(chunk_x - 1, chunk_z)
-			goto before_check3
-		end
-	end
-
-	::before_check4::
-	if chunks[chunk_x + 1] ~= nil and chunks[chunk_x + 1][chunk_z] ~= nil and chunks[chunk_x + 1][chunk_z].data ~= nil then
-		local next_chunk = chunks[chunk_x + 1][chunk_z].data
-
-		for z = 1, config.chunk_size_z do
-			for y = 1, config.chunk_size_y do
-				local offset1 = util.calculateMapOffset(config.chunk_size_x, y, z)
-				local offset2 = util.calculateMapOffset(1, y, z)
-				if next_chunk[offset2] ~= 0 and this_chunk[offset1] < 256 and this_chunk[offset1] ~= 0 then
-					this_chunk[offset1] = this_chunk[offset1] + 256
-				end
-			end
-		end
-	else
-		if bounds_check then
-			generate_chunk(chunk_x + 1, chunk_z)
-			goto before_check4
-		end
-	end
+	check_direction(0, -1)
+	check_direction(0, 1)
+	check_direction(-1, 0)
+	check_direction(1, 0)
 end
 
 generate_chunk = function(chunk_x, chunk_z)
@@ -155,8 +179,6 @@ generate_chunk = function(chunk_x, chunk_z)
 			local noise_raw = perlin:noise((x + xpos) / config.chunk_size_x / 2, config.noise_layer, (z + zpos) / config.chunk_size_z / 2)
 			local noise_raw2 = perlin:noise((x + xpos) / config.chunk_size_x / 6, config.noise_layer + 0.4, (z + zpos) / config.chunk_size_z / 6)
 			local noise_raw3 = perlin:noise((x + xpos) / config.chunk_size_x / 10, config.noise_layer + 0.6, (z + zpos) / config.chunk_size_z / 10)
-
-			--print(noise_raw, noise_raw2)
 
 			local noise_adjusted1 = (noise_raw + 1) * (config.noise_intensity / 2)
 			local noise_adjusted2 = (noise_raw2 + 1) * (config.noise_intensity / 1.2)
@@ -210,7 +232,6 @@ generate_chunk = function(chunk_x, chunk_z)
 
 	-- Flower generator step
 --	for flower_k, flower_v in ipairs(flower_placement_data) do
---		print(flower_k)
 --		local offset = util.calculateMapOffset(flower_v[1], flower_v[2] + 1, flower_v[3])
 --		cast_map_data[offset] = game_defs.block_types.FLOWER
 --	end

@@ -61,6 +61,10 @@ cmake --build . --target <examplename>
 To start the engine use the `rungame` executable. This is located under the `./build/` subdirectory if the build is successful. A `./build/game/` directory with valid content is necessary for startup, this can be created by building an example.
 
 ---
+#### Building documentation
+HTML documentation can be generated using doxygen, the `build_docs` cmake target is provided for this purpose, output is by default generated in the `./docs/output` directory.
+
+---
 ### Dependencies
 This project depends on:
 - LuaJIT and the Lua programming language
