@@ -68,7 +68,7 @@ namespace Engine::Rendering::Vulkan::Utility
 
 	inline std::vector<uint8_t> readShaderFile(const std::filesystem::path& path)
 	{
-		std::basic_ifstream<uint8_t> file(path, std::ios::ate | std::ios::binary);
+		std::ifstream file(path, std::ios::ate | std::ios::binary);
 
 		if (!file.is_open()) { throw std::runtime_error("failed to open shader file!"); }
 
@@ -76,7 +76,10 @@ namespace Engine::Rendering::Vulkan::Utility
 		std::vector<uint8_t> buffer(file_size);
 
 		file.seekg(0);
-		file.read(buffer.data(), static_cast<std::streamsize>(file_size));
+		file.read(
+			reinterpret_cast<char*>(buffer.data()),
+			static_cast<std::streamsize>(file_size)
+		);
 
 		file.close();
 
