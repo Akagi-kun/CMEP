@@ -16,9 +16,8 @@ namespace Engine::Rendering::Vulkan
 		const Instance* created_by;
 		vk::SurfaceKHR	native_handle;
 
-		[[nodiscard]] SwapChainSupportDetails querySwapChainSupport(
-			const vk::raii::PhysicalDevice& device
-		) const;
+		[[nodiscard]] SwapChainSupportDetails
+		querySwapChainSupport(const vk::raii::PhysicalDevice& device) const;
 
 		[[nodiscard]] bool queryQueueSupport(
 			const vk::raii::PhysicalDevice& physical_device,

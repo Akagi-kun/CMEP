@@ -45,12 +45,22 @@ namespace Engine::Rendering
 		~Font();
 
 		// Use FontChar::page, will throw exception if page isn't found
-		[[nodiscard]] std::shared_ptr<Texture>		 getPageTexture(int page);
+		/**
+		 * @brief Get the texture representing a fonts page
+		 *
+		 * @param page The index of page, should be some @ref FontChar::page value
+		 * @return A smart pointer to the texture
+		 */
+		[[nodiscard]] std::shared_ptr<Texture> getPageTexture(int page);
+		/**
+		 * @note const version
+		 * @copydoc getPageTexture(int)
+		 */
 		[[nodiscard]] std::shared_ptr<const Texture> getPageTexture(int page) const;
 
 		[[nodiscard]] std::optional<const FontChar*> getChar(char character) const;
-		[[nodiscard]] std::optional<std::string>	 getFontInfoParameter(const std::string& name
-			) const;
+		[[nodiscard]] std::optional<std::string>
+		getFontInfoParameter(const std::string& name) const;
 
 	private:
 		std::unique_ptr<FontData> data;

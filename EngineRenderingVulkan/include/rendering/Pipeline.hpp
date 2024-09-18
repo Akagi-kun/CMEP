@@ -18,14 +18,22 @@ namespace Engine::Rendering::Vulkan
 	class Pipeline : public InstanceOwned, public HoldsVMA
 	{
 	public:
+		/**
+		 * @brief Represents a set of data related to a singular user of this pipeline
+		 *
+		 * Using this method similar pipelines can be shared
+		 *
+		 * @note User does not denote the user of the application, but an internal class
+		 *       that uses this struct to store its data
+		 */
 		struct UserData
 		{
-			per_frame_array<Buffer*> uniform_buffers;
+			per_frame_array<UniformBuffer*> uniform_buffers;
 
 			vk::raii::DescriptorPool descriptor_pool = nullptr;
 			vk::raii::DescriptorSets descriptor_sets = nullptr;
 
-			[[nodiscard]] Buffer* getUniformBuffer(uint32_t current_frame)
+			[[nodiscard]] UniformBuffer* getUniformBuffer(uint32_t current_frame)
 			{
 				return uniform_buffers[current_frame];
 			}
@@ -44,9 +52,13 @@ namespace Engine::Rendering::Vulkan
 		);
 		~Pipeline() = default;
 
-		UserData* allocateNewUserData();
+		[[nodiscard]] UserData* allocateNewUserData();
 
-		void bindPipeline(UserData& from, vk::CommandBuffer with_command_buffer, uint32_t current_frame);
+		void bindPipeline(
+			UserData&		  userdata_ref,
+			vk::CommandBuffer with_command_buffer,
+			uint32_t		  current_frame
+		);
 
 		static void updateDescriptorSets(
 			const vk::raii::Device&					logical_device,

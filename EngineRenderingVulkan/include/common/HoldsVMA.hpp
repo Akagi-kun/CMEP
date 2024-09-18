@@ -9,8 +9,7 @@ namespace Engine::Rendering::Vulkan
 	public:
 		HoldsVMA() = default;
 		HoldsVMA(MemoryAllocator* with_allocator) : allocator(with_allocator)
-		{
-		}
+		{}
 
 	protected:
 		MemoryAllocator* allocator = nullptr;

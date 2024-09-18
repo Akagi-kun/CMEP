@@ -14,7 +14,6 @@
 #include <cstddef>
 #include <cstdint>
 #include <functional>
-#include <stdexcept>
 
 namespace Engine::Rendering::Vulkan
 {
@@ -28,11 +27,12 @@ namespace Engine::Rendering::Vulkan
 	)
 		: InstanceOwned(with_instance), extent(with_extent)
 	{
-		LogicalDevice* logical_device = instance->getLogicalDevice();
+		const PhysicalDevice* physical_device = instance->getPhysicalDevice();
+		LogicalDevice*		  logical_device  = instance->getLogicalDevice();
 
 		// Query details for support of swapchains
 		SwapChainSupportDetails swap_chain_support =
-			with_surface->querySwapChainSupport(*instance->getPhysicalDevice());
+			with_surface->querySwapChainSupport(*physical_device);
 		surface_format =
 			Vulkan::Utility::chooseSwapSurfaceFormat(swap_chain_support.formats);
 
@@ -72,6 +72,7 @@ namespace Engine::Rendering::Vulkan
 		image_handles = native_handle.getImages();
 
 		// Create image views
+		// these will serve as the color resolve attachment
 		for (auto image_handle : image_handles)
 		{
 			vk::ImageViewCreateInfo view_create_info{
@@ -86,31 +87,35 @@ namespace Engine::Rendering::Vulkan
 					 .layerCount	 = 1}
 			};
 
-			image_view_handles.push_back(logical_device->createImageView(view_create_info));
+			image_view_handles.push_back(logical_device->createImageView(view_create_info)
+			);
 		}
 
-		vk::Format depth_format = instance->getPhysicalDevice()->findSupportedDepthFormat();
+		vk::Format depth_format = physical_device->findSupportedDepthFormat();
 
+		// Create depth buffer
 		depth_image = new ViewedImage(
 			instance,
 			{extent.width, extent.height},
-			instance->getPhysicalDevice()->getMSAASamples(),
+			physical_device->getMSAASamples(),
 			depth_format,
 			vk::ImageUsageFlagBits::eDepthStencilAttachment,
 			vk::ImageAspectFlagBits::eDepth
 		);
 
+		// Pre-resolve color buffer
 		color_image = new ViewedImage(
 			instance,
 			{extent.width, extent.height},
-			instance->getPhysicalDevice()->getMSAASamples(),
+			physical_device->getMSAASamples(),
 			surface_format.format,
 			vk::ImageUsageFlagBits::eTransientAttachment |
 				vk::ImageUsageFlagBits::eColorAttachment,
 			vk::ImageAspectFlagBits::eColor
 		);
 
-		render_pass = new RenderPass(instance, surface_format.format);
+		render_pass =
+			new RenderPass(physical_device, logical_device, surface_format.format);
 
 		size_t view_idx = 0;
 		for (auto& target : render_targets)
@@ -123,7 +128,7 @@ namespace Engine::Rendering::Vulkan
 			++view_idx;
 
 			target = new RenderTarget(
-				render_pass->native_handle,
+				render_pass->getHandle(),
 				extent,
 				fb_data,
 				instance->getCommandPool(),
@@ -147,7 +152,9 @@ namespace Engine::Rendering::Vulkan
 
 	void Swapchain::beginRenderPass(CommandBuffer* with_buffer, size_t image_index)
 	{
-		// TODO: configurable
+		/**
+		 * @todo configurable
+		 */
 		std::array<float, 4> color_clear = {0.0f, 0.0f, 0.0f, 1.0f};
 
 		std::array<vk::ClearValue, 2> clear_values{};
@@ -155,7 +162,7 @@ namespace Engine::Rendering::Vulkan
 		clear_values[1].setDepthStencil({1.f, 0});
 
 		vk::RenderPassBeginInfo render_pass_info{
-			.renderPass		 = *render_pass->native_handle,
+			.renderPass		 = *render_pass->getHandle(),
 			.framebuffer	 = **render_targets[image_index]->framebuffer,
 			.renderArea		 = {{0, 0}, extent},
 			.clearValueCount = static_cast<uint32_t>(clear_values.size()),
@@ -183,15 +190,8 @@ namespace Engine::Rendering::Vulkan
 		vk::Rect2D scissor{.offset = {0, 0}, .extent = extent};
 		command_buffer->setScissor(0, scissor);
 
-		// Perform actual render
-		if (!callback)
-		{
-			throw std::invalid_argument(
-				"Tried to perform frame render without a callback!"
-			);
-		}
-
-		assert(callback);
+		// Call render callback, this does the actual render
+		assert(callback && "Tried to perform frame render without a callback!");
 		callback(command_buffer, image_index, user_data);
 
 		command_buffer->endRenderPass();

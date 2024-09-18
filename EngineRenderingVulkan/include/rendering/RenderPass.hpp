@@ -3,17 +3,19 @@
 
 #include "fwd.hpp"
 
-#include "common/InstanceOwned.hpp"
+#include "common/HandleWrapper.hpp"
 #include "vulkan/vulkan_raii.hpp"
 
 namespace Engine::Rendering::Vulkan
 {
-	class RenderPass final : public InstanceOwned
+	class RenderPass final : public HandleWrapper<vk::raii::RenderPass, false>
 	{
 	public:
-		vk::raii::RenderPass native_handle = nullptr;
-
-		RenderPass(InstanceOwned::value_t with_instance, vk::Format with_format);
+		RenderPass(
+			const PhysicalDevice* with_physical_device,
+			LogicalDevice*		  with_logical_device,
+			vk::Format			  with_format
+		);
 		~RenderPass() = default;
 	};
 } // namespace Engine::Rendering::Vulkan

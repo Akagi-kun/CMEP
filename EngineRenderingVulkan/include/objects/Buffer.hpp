@@ -13,7 +13,9 @@
 
 namespace Engine::Rendering::Vulkan
 {
-	class Buffer : public InstanceOwned, public HoldsVMA, public HandleWrapper<vk::raii::Buffer>
+	class Buffer : public InstanceOwned,
+				   public HoldsVMA,
+				   public HandleWrapper<vk::raii::Buffer>
 	{
 	public:
 		void* mapped_data = nullptr;

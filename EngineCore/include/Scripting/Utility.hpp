@@ -31,13 +31,22 @@ namespace Engine::Scripting::Utility
 	 */
 	std::string stackContentToString(lua_State* state, int start_at = 0);
 
-	// Use rarely
-	// TODO: Better Lua/C and FFI API separation
+	/**
+	 * @brief Gets cdata from the stack
+	 *
+	 * @tparam value_t Type of the cdata value
+	 * @warning The type of the cdata is not verified
+	 *
+	 * @todo Better Lua/C and FFI API separation
+	 * @note Avoid using cdata in the Lua/C API
+	 */
 	template <typename value_t = void*>
 	value_t getCData(lua_State* state, int idx)
 		requires(std::is_pointer_v<value_t>)
 	{
-		return const_cast<value_t>(
+		// lua_topointer provides access to a pointer
+		// that when dereferenced points to the cdata itself
+		return static_cast<value_t>(
 			*reinterpret_cast<void* const*>(lua_topointer(state, idx))
 		);
 	}
@@ -45,7 +54,7 @@ namespace Engine::Scripting::Utility
 	/**
 	 * @brief Gets the name of a function from a function pointer
 	 *
-	 * @param lookup_function a valid pointer to a Lua/C API function
+	 * @param lookup_function A valid pointer to a Lua/C API function
 	 * @return std::string_view name of the function (guaranteed null-terminated) or undetermined invalid
 	 */
 	std::string_view mappingReverseLookup(lua_CFunction lookup_function);
@@ -57,8 +66,8 @@ namespace Engine::Scripting::Utility
 	 * use this to avoid that
 	 *
 	 * @param state Lua context the index is referring to
-	 * @param relative a stack index (may be either positive or negative)
-	 * @return an absolute stack index (positive)
+	 * @param relative A stack index (may be either positive or negative)
+	 * @return An absolute stack index (positive)
 	 */
 	int relativeToAbsoluteIndex(lua_State* state, int relative);
 

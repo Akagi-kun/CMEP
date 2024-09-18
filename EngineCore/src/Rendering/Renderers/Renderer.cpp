@@ -69,12 +69,16 @@ namespace Engine::Rendering
 				assert(!payload_ref.expired() && "Cannot lock expired payload!");
 
 				auto font_cast = std::static_pointer_cast<Font>(payload_ref.lock());
-				// TODO: Support multiple-page fonts?
+				/**
+				 * @todo Support multiple-page fonts?
+				 */
 				//       page 0 may not be guaranteed to be present
 				texture		   = font_cast->getPageTexture(0);
 				has_updated_descriptors = false;
 
-				// TODO: Remove
+				/**
+				 * @todo Remove
+				 */
 				mesh_builder->supplyData({MeshBuilderSupplyData::Type::FONT, font_cast});
 				break;
 			}

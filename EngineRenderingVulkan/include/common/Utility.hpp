@@ -8,6 +8,7 @@
 #include <cstdint>
 #include <cstring>
 #include <filesystem>
+#include <format>
 #include <fstream>
 #include <ios>
 #include <stdexcept>
@@ -29,9 +30,8 @@ namespace Engine::Rendering::Vulkan::Utility
 		return {static_cast<uint32_t>(size.x), static_cast<uint32_t>(size.y), depth};
 	}
 
-	inline vk::SurfaceFormatKHR chooseSwapSurfaceFormat(
-		const std::vector<vk::SurfaceFormatKHR>& available_formats
-	)
+	inline vk::SurfaceFormatKHR
+	chooseSwapSurfaceFormat(const std::vector<vk::SurfaceFormatKHR>& available_formats)
 	{
 		for (const auto& available_format : available_formats)
 		{
@@ -46,9 +46,8 @@ namespace Engine::Rendering::Vulkan::Utility
 		return available_formats[0];
 	}
 
-	inline vk::PresentModeKHR chooseSwapPresentMode(
-		const std::vector<vk::PresentModeKHR>& available_present_modes
-	)
+	inline vk::PresentModeKHR
+	chooseSwapPresentMode(const std::vector<vk::PresentModeKHR>& available_present_modes)
 	{
 		(void)(available_present_modes);
 		// Mailbox potentially worse?
@@ -70,7 +69,12 @@ namespace Engine::Rendering::Vulkan::Utility
 	{
 		std::ifstream file(path, std::ios::ate | std::ios::binary);
 
-		if (!file.is_open()) { throw std::runtime_error("failed to open shader file!"); }
+		if (!file.is_open())
+		{
+			throw std::runtime_error(
+				std::format("failed to open shader file! File: {}", path.string())
+			);
+		}
 
 		size_t				 file_size = static_cast<size_t>(file.tellg());
 		std::vector<uint8_t> buffer(file_size);
@@ -86,9 +90,8 @@ namespace Engine::Rendering::Vulkan::Utility
 		return buffer;
 	}
 
-	inline vk::SampleCountFlagBits getMaxFramebufferSampleCount(
-		const vk::raii::PhysicalDevice& device
-	)
+	inline vk::SampleCountFlagBits
+	getMaxFramebufferSampleCount(const vk::raii::PhysicalDevice& device)
 	{
 		const vk::PhysicalDeviceProperties physical_device_properties =
 			device.getProperties();

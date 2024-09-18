@@ -28,3 +28,5 @@ CheckOptions:
     value: 'lower_case'
   - key: readability-magic-numbers.IgnorePowersOf2IntegerValues
     value: true
+  - key: readability-magic-numbers.IgnoredIntegerValues
+    value: "1;2;3;4;5;6;7;8;9"

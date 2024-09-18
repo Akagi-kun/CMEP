@@ -55,7 +55,8 @@ namespace Engine::Rendering::Vulkan
 	static_assert(!std::is_copy_constructible_v<RenderTarget> && !std::is_copy_assignable_v<RenderTarget>);
 	static_assert(std::is_move_constructible_v<RenderTarget> && std::is_move_assignable_v<RenderTarget>);
 
-	class Swapchain final : public InstanceOwned, public HandleWrapper<vk::raii::SwapchainKHR>
+	class Swapchain final : public InstanceOwned,
+							public HandleWrapper<vk::raii::SwapchainKHR>
 	{
 	public:
 		Swapchain(

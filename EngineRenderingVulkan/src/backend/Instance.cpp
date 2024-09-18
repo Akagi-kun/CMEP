@@ -1,9 +1,9 @@
+#include <functional>
 #define ENGINERENDERINGVULKAN_LIBRARY_IMPLEMENTATION
-#include "backend/Instance.hpp"
-
 #include "Logging/Logging.hpp"
 
 #include "backend/DeviceScore.hpp"
+#include "backend/Instance.hpp"
 #include "backend/LogicalDevice.hpp"
 #include "backend/MemoryAllocator.hpp"
 #include "backend/PhysicalDevice.hpp"
@@ -248,11 +248,11 @@ namespace Engine::Rendering::Vulkan
 
 		if (candidates.empty()) { throw std::runtime_error("No physical device found!"); }
 
-		std::sort(candidates.begin(), candidates.end());
+		// Sort devices, using std::greater to achieve the descending order
+		std::sort(candidates.begin(), candidates.end(), std::greater<>());
 
-		// First device has to be the "best" after sorting
+		// First device is assumed to be the best after sort
 		physical_device = new PhysicalDevice(candidates[0].device_scored);
-		// msaa_samples	= Utility::GetMaxFramebufferSampleCount(*physical_device);
 
 		this->logger->simpleLog<decltype(this)>(
 			Logging::LogLevel::Info,

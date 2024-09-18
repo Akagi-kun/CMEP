@@ -48,8 +48,7 @@ namespace Engine::Rendering::Vulkan
 			: type(static_cast<InputEventType>(with_action)),
 			  key(static_cast<key_value_t>(with_key)),
 			  mods(static_cast<mods_value_t>(with_mods))
-		{
-		}
+		{}
 	};
 
 	class Window final : public InstanceOwned, public HandleWrapper<GLFWwindow*>
@@ -122,7 +121,8 @@ namespace Engine::Rendering::Vulkan
 		static void callbackOnFramebufferResize(GLFWwindow* window, int width, int height);
 		static void callbackOnCursorEnterLeave(GLFWwindow* window, int entered);
 		static void callbackOnCursorPosition(GLFWwindow* window, double xpos, double ypos);
-		static void callbackOnKeyEvent(GLFWwindow* window, int key, int scancode, int action, int mods);
+		static void
+		callbackOnKeyEvent(GLFWwindow* window, int key, int scancode, int action, int mods);
 
 		static vk::Extent2D chooseVulkanSwapExtent(
 			const Window*					  with_window,

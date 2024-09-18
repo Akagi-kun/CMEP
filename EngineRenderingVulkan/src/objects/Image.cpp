@@ -110,11 +110,23 @@ namespace Engine::Rendering::Vulkan
 		}
 		else { throw std::invalid_argument("Unsupported layout transition!"); }
 
-		auto command_buffer = instance->getCommandPool()->constructCommandBuffer();
+		// Create the barrier that performs this action
+		{
+			auto command_buffer = instance->getCommandPool()->constructCommandBuffer();
 
-		command_buffer.recordCmds([&](vk::raii::CommandBuffer* with_buffer) {
-			with_buffer->pipelineBarrier(src_stage, dst_stage, {}, {}, {}, barrier);
-		});
+			command_buffer.begin(
+				CommandBuffer::getBeginInfo(vk::CommandBufferUsageFlagBits::eOneTimeSubmit)
+			);
+			command_buffer.pipelineBarrier(src_stage, dst_stage, {}, {}, {}, barrier);
+			command_buffer.end();
+
+			auto queue = instance->getLogicalDevice()->getGraphicsQueue();
+
+			queue.submit(
+				vk::SubmitInfo{.commandBufferCount = 1, .pCommandBuffers = &*command_buffer}
+			);
+			queue.waitIdle();
+		}
 
 		current_layout = new_layout;
 	}

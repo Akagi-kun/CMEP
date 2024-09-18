@@ -12,7 +12,8 @@ namespace Engine::Rendering
 		Vulkan::Buffer* vbo;
 		size_t			vbo_vert_count;
 
-		void rebuildVBO(Vulkan::Instance* with_instance, const std::vector<RenderingVertex>& mesh)
+		void
+		rebuildVBO(Vulkan::Instance* with_instance, const std::vector<RenderingVertex>& mesh)
 		{
 			delete vbo;
 			vbo			   = new Vulkan::VertexBuffer(with_instance, mesh);

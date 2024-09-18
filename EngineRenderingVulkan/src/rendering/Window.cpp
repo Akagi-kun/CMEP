@@ -56,7 +56,9 @@ namespace Engine::Rendering::Vulkan
 		// Surface ops
 		surface.created_by = with_instance;
 
-		// TODO: Make a constructor for Surface
+		/**
+		 * @todo Make a constructor for Surface
+		 */
 		if (glfwCreateWindowSurface(
 				*instance->getHandle(),
 				native_handle,
@@ -289,7 +291,8 @@ namespace Engine::Rendering::Vulkan
 		else { self->cursor_position = {0.0, 0.0}; }
 	}
 
-	void Window::callbackOnKeyEvent(GLFWwindow* window, int key, int scancode, int action, int mods)
+	void
+	Window::callbackOnKeyEvent(GLFWwindow* window, int key, int scancode, int action, int mods)
 	{
 		auto* self = Window::getWindowPtrFromGlfw(window);
 

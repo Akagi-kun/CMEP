@@ -25,7 +25,9 @@ namespace Engine::Scripting
 
 				switch (idx_type)
 				{
-					// TODO: Consider adding support for userdata or tables
+					/**
+					 * @todo Consider adding support for userdata or tables
+					 */
 					case LUA_TNUMBER:
 						lua_pushnumber(target, lua_tonumber(origin, arg_vals));
 						break;
@@ -35,18 +37,16 @@ namespace Engine::Scripting
 					case LUA_TBOOLEAN:
 						lua_pushboolean(target, lua_toboolean(origin, arg_vals));
 						break;
-					case LUA_TNIL:
-						lua_pushnil(target);
-						break;
+					case LUA_TNIL: lua_pushnil(target); break;
 					case cdata_type_id:
 						// Beware! cross-state dependency!
 						// Pushing managed memory will result in bugs when that memory is garbage
 						// collected ( use ffi.C.malloc or similar explicit allocation )
 						lua_pushinteger(
 							target,
-							*const_cast<int64_t*>(
-								static_cast<const int64_t*>(lua_topointer(origin, arg_vals))
-							)
+							*const_cast<int64_t*>(static_cast<const int64_t*>(
+								lua_topointer(origin, arg_vals)
+							))
 						);
 						break;
 					default:
@@ -68,7 +68,8 @@ namespace Engine::Scripting
 			lua_State* callee_state = *static_cast<lua_State**>(
 				lua_touserdata(caller_state, lua_upvalueindex(1))
 			);
-			const char* callee_function_name = lua_tostring(caller_state, lua_upvalueindex(2));
+			const char* callee_function_name =
+				lua_tostring(caller_state, lua_upvalueindex(2));
 
 			lua_settop(callee_state, 0);
 			lua_getglobal(callee_state, callee_function_name);
@@ -81,7 +82,8 @@ namespace Engine::Scripting
 			if (ret != LUA_OK)
 			{
 				throw ENGINE_EXCEPTION(std::format(
-					"Exception executing a cross-state function call! lua_pcall error: {}\n{}",
+					"Exception executing a cross-state function call! lua_pcall error: "
+					"{}\n{}",
 					ret,
 					Utility::unwindStack(callee_state)
 				));
@@ -95,7 +97,8 @@ namespace Engine::Scripting
 		}
 	} // namespace
 
-	void createCrossStateCallBridge(lua_State** from, const std::string& from_fn, lua_State* into)
+	void
+	createCrossStateCallBridge(lua_State** from, const std::string& from_fn, lua_State* into)
 	{
 		lua_pushlightuserdata(into, reinterpret_cast<void*>(from));
 		lua_pushstring(into, from_fn.c_str());

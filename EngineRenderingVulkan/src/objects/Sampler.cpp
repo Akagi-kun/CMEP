@@ -44,6 +44,5 @@ namespace Engine::Rendering::Vulkan
 			  getSamplerCreateInfo(with_filter, with_address_mode, with_max_anisotropy)
 		  )),
 		  filter(with_filter), address_mode(with_address_mode)
-	{
-	}
+	{}
 } // namespace Engine::Rendering::Vulkan

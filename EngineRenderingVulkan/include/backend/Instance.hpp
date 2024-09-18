@@ -24,7 +24,8 @@ namespace Engine::Rendering::Vulkan
 	extern PFN_vkDebugUtilsMessengerCallbackEXT debug_callback;
 #endif
 
-	class Instance final : public Logging::SupportsLogging, public HandleWrapper<vk::raii::Instance>
+	class Instance final : public Logging::SupportsLogging,
+						   public HandleWrapper<vk::raii::Instance>
 	{
 	public:
 		struct WindowParams
@@ -45,7 +46,7 @@ namespace Engine::Rendering::Vulkan
 			return window;
 		}
 
-		[[nodiscard]] PhysicalDevice* getPhysicalDevice()
+		[[nodiscard]] const PhysicalDevice* getPhysicalDevice()
 		{
 			return physical_device;
 		}

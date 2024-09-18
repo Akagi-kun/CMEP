@@ -27,7 +27,9 @@ namespace Engine::Rendering
 			(void)(data);
 		}
 
-		// TODO: Remove
+		/**
+		 * @todo Remove
+		 */
 		void supplyWorldPosition(const glm::vec3& with_world_position)
 		{
 			world_pos = with_world_position;
@@ -35,7 +37,8 @@ namespace Engine::Rendering
 
 		virtual void build() = 0;
 
-		[[nodiscard]] virtual vk::PrimitiveTopology getSupportedTopology() const noexcept = 0;
+		[[nodiscard]] virtual vk::PrimitiveTopology
+		getSupportedTopology() const noexcept = 0;
 
 		[[nodiscard]] const MeshBuildContext& getContext() const
 		{

@@ -4,6 +4,9 @@
 #include "Logging.hpp"
 
 #if defined(__GNUC__) || defined(__llvm__)
+/**
+ * @brief For compatibility with clang, use on functions taking vprintf-like arguments
+ */
 #	define ATTRIBUTE_PRINTF_COMPAT(string_idx, arg_check)                               \
 		__attribute__((__format__(__printf__, string_idx, arg_check)))
 #else
@@ -47,7 +50,11 @@ namespace Logging
 			(sizeof(level_to_string_table) / sizeof(level_t))
 		);
 
-		constexpr size_t getMaxLevelLength()
+		/**
+		 * @brief Get the maximum length of level string
+		 *        or the minimum length necessary to contain every possible level
+		 */
+		consteval size_t getMaxLevelLength()
 		{
 			size_t accum = 0;
 
@@ -59,6 +66,9 @@ namespace Logging
 			return accum;
 		}
 
+		/**
+		 * @brief Get a 64bit unsigned hash of the current thread ID
+		 */
 		uint64_t getCurrentThreadId()
 		{
 			return std::hash<std::thread::id>{}(std::this_thread::get_id());
@@ -83,10 +93,7 @@ namespace Logging
 								   : std::format("{:X}", current_thread);
 
 			// Limit size to 8 characters
-			if (output.length() > 8)
-			{
-				return output.substr(output.length() - 8, 8);
-			}
+			if (output.length() > 8) { return output.substr(output.length() - 8, 8); }
 
 			return output;
 		}
@@ -102,21 +109,16 @@ namespace Logging
 		// Close all handles
 		for (auto& output : state->outputs)
 		{
-			if (output.handle != stdout)
-			{
-				fclose(output.handle);
-			}
+			if (output.handle != stdout) { fclose(output.handle); }
 		}
 
 		delete state;
 	}
 
-	void Logger::addOutputHandle(Logging::LogLevel min_level, FILE* handle, bool use_colors)
+	void
+	Logger::addOutputHandle(Logging::LogLevel min_level, FILE* handle, bool use_colors)
 	{
-		if (!isValid(min_level))
-		{
-			return;
-		}
+		if (!isValid(min_level)) { return; }
 
 		// Create new mapping
 		LoggerInternalMapping new_map = LoggerInternalMapping();
@@ -145,10 +147,7 @@ namespace Logging
 
 	void Logger::internalStartLog(Logging::LogLevel level, const char* log_prefix)
 	{
-		if (!isValid(level))
-		{
-			return;
-		}
+		if (!isValid(level)) { return; }
 
 		// Protect IO and member access
 		state->thread_mutex.lock();
@@ -223,10 +222,7 @@ namespace Logging
 	{
 		for (auto& output : state->outputs)
 		{
-			if (output.has_started_logging)
-			{
-				vfprintf(output.handle, format, args);
-			}
+			if (output.has_started_logging) { vfprintf(output.handle, format, args); }
 		}
 	}
 } // namespace Logging

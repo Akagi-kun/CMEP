@@ -8,7 +8,6 @@
 #include "objects/Image.hpp"
 #include "vulkan/vulkan_raii.hpp"
 
-#include <functional>
 #include <utility>
 #include <vector>
 
@@ -21,43 +20,37 @@ namespace Engine::Rendering::Vulkan
 			   .commandBufferCount = 1}
 		  )[0])),
 		  device(with_device)
-	{
-	}
+	{}
 
-	vk::CommandBufferBeginInfo CommandBuffer::getBeginInfo(vk::CommandBufferUsageFlags usage_flags
+	vk::CommandBufferBeginInfo CommandBuffer::getBeginInfo(
+		vk::CommandBufferUsageFlags usage_flags
 	)
 	{
 		return {.flags = usage_flags};
 	}
 
-	void CommandBuffer::recordCmds(std::function<void(vk::raii::CommandBuffer*)> const& lambda)
-	{
-		// Pass VK_ONE_TIME_SUBMIT here
-		// allows driver to optimize in the case where the buffer is not resubmitted after recording
-		begin(getBeginInfo(vk::CommandBufferUsageFlagBits::eOneTimeSubmit));
-
-		lambda(this);
-
-		end();
-		device->getGraphicsQueue().submit(
-			vk::SubmitInfo{.commandBufferCount = 1, .pCommandBuffers = &**this}
-		);
-
-		device->getGraphicsQueue().waitIdle();
-	}
-
 	void CommandBuffer::copyBufferBuffer(
-		Buffer*						from_buffer,
-		Buffer*						to_buffer,
-		std::vector<vk::BufferCopy> regions
+		const vk::raii::Queue&			   in_queue,
+		Buffer*							   from_buffer,
+		Buffer*							   to_buffer,
+		const std::vector<vk::BufferCopy>& regions
 	)
 	{
-		recordCmds([&](vk::raii::CommandBuffer* handle) {
-			handle->copyBuffer(*from_buffer->getHandle(), *to_buffer->getHandle(), regions);
-		});
+		begin(getBeginInfo(vk::CommandBufferUsageFlagBits::eOneTimeSubmit));
+
+		copyBuffer(*from_buffer->getHandle(), *to_buffer->getHandle(), regions);
+
+		end();
+		in_queue.submit(vk::SubmitInfo{.commandBufferCount = 1, .pCommandBuffers = &**this}
+		);
+		in_queue.waitIdle();
 	}
 
-	void CommandBuffer::copyBufferImage(Buffer* from_buffer, Image* to_image)
+	void CommandBuffer::copyBufferImage(
+		const vk::raii::Queue& in_queue,
+		Buffer*				   from_buffer,
+		Image*				   to_image
+	)
 	{
 		ImageSize image_size = to_image->getSize();
 
@@ -71,14 +64,18 @@ namespace Engine::Rendering::Vulkan
 			.imageExtent	   = Utility::convertToExtent<vk::Extent3D>(image_size, 1)
 		};
 
-		recordCmds([&](vk::raii::CommandBuffer* with_buf) {
-			with_buf->copyBufferToImage(
-				*from_buffer->getHandle(),
-				*to_image->getHandle(),
-				vk::ImageLayout::eTransferDstOptimal,
-				region
-			);
-		});
+		begin(getBeginInfo(vk::CommandBufferUsageFlagBits::eOneTimeSubmit));
+		copyBufferToImage(
+			*from_buffer->getHandle(),
+			*to_image->getHandle(),
+			vk::ImageLayout::eTransferDstOptimal,
+			region
+		);
+		end();
+
+		in_queue.submit(vk::SubmitInfo{.commandBufferCount = 1, .pCommandBuffers = &**this}
+		);
+		in_queue.waitIdle();
 	}
 
 } // namespace Engine::Rendering::Vulkan

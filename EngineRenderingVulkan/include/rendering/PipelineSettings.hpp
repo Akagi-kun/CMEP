@@ -53,8 +53,7 @@ namespace Engine::Rendering::Vulkan
 		)
 			: input_topology(with_topology), extent(with_extent), shader(with_shader),
 			  scissor(vk::Rect2D{{0, 0}, with_extent})
-		{
-		}
+		{}
 
 		bool operator==(const PipelineSettings& other) const
 		{
@@ -80,7 +79,8 @@ namespace Engine::Rendering::Vulkan
 			{
 				// Check every value of other for a match of value in this
 				bool tmp_bool = false;
-				for (const auto& [other_binding, other_setting] : other.descriptor_settings)
+				for (const auto& [other_binding, other_setting] :
+					 other.descriptor_settings)
 				{
 					if (binding == other_binding && setting == other_setting)
 					{
@@ -146,9 +146,8 @@ namespace Engine::Rendering::Vulkan
 			return &rasterizer;
 		}
 
-		static const vk::PipelineMultisampleStateCreateInfo* getMultisamplingSettings(
-			vk::SampleCountFlagBits msaa_samples
-		)
+		static const vk::PipelineMultisampleStateCreateInfo*
+		getMultisamplingSettings(vk::SampleCountFlagBits msaa_samples)
 		{
 			static vk::PipelineMultisampleStateCreateInfo multisampling{
 				.rasterizationSamples  = msaa_samples,
@@ -162,7 +161,8 @@ namespace Engine::Rendering::Vulkan
 			return &multisampling;
 		}
 
-		static const vk::PipelineColorBlendAttachmentState* getColorBlendAttachmentSettings()
+		static const vk::PipelineColorBlendAttachmentState*
+		getColorBlendAttachmentSettings()
 		{
 			static vk::PipelineColorBlendAttachmentState color_blend_attachment{
 				.blendEnable		 = vk::True,

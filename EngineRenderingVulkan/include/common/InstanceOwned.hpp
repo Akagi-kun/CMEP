@@ -12,8 +12,7 @@ namespace Engine::Rendering::Vulkan
 
 		InstanceOwned() = default;
 		InstanceOwned(value_t with_instance) : instance(with_instance)
-		{
-		}
+		{}
 
 	protected:
 		value_t instance = nullptr;

@@ -105,13 +105,12 @@ namespace Engine::Rendering
 				const Rendering::FontChar* char_data = nullptr;
 
 				auto char_data_opt = font->getChar(character);
-				if (char_data_opt.has_value())
-				{
-					char_data = char_data_opt.value();
-				}
+				if (char_data_opt.has_value()) { char_data = char_data_opt.value(); }
 				else
 				{
-					// TODO: Handle characters not in the font
+					/**
+					 * @todo Handle characters not in the font
+					 */
 					throw ENGINE_EXCEPTION(std::format(
 						"Tried to access font character outside of range (invalid "
 						"character "
@@ -143,23 +142,21 @@ namespace Engine::Rendering
 				const auto char_height = static_cast<float>(char_data->height);
 
 				// Offset origin by xoffset (specified in .fnt file) of this char
-				const float position_x = char_origin_x +
-										 ((static_cast<float>(char_data->xoffset) *
-										   font_size_ratio) /
-										  static_cast<float>(screen_size.x));
+				const float position_x =
+					char_origin_x +
+					((static_cast<float>(char_data->xoffset) * font_size_ratio) /
+					 static_cast<float>(screen_size.x));
 				const float position_y = char_origin_y;
 				const float position_z = 0.0f;
 
 				// position_x is already set so we can
 				// move origin to the next character using xadvance from font
-				char_origin_x += (static_cast<float>(char_data->xadvance) * font_size_ratio) /
-								 static_cast<float>(screen_size.x);
+				char_origin_x +=
+					(static_cast<float>(char_data->xadvance) * font_size_ratio) /
+					static_cast<float>(screen_size.x);
 
-				// If current character is space we can skip generating a mesh for it
-				if (character == ' ')
-				{
-					continue;
-				}
+				// If current character is space we can skip generating a quad for it
+				if (character == ' ') { continue; }
 
 				// Convert character size to screen-space coordinates
 				// in renderer, multiply with selected size
@@ -168,9 +165,11 @@ namespace Engine::Rendering
 				// screen_width_ss) * selected_size_px
 				//
 				const float char_width_ratio = (char_width / static_cast<float>(font_size));
-				const float char_height_ratio = (char_height / static_cast<float>(font_size));
+				const float char_height_ratio =
+					(char_height / static_cast<float>(font_size));
 				const float size_x = (char_width_ratio / static_cast<float>(screen_size.x));
-				const float size_y = (char_height_ratio / static_cast<float>(screen_size.y));
+				const float size_y =
+					(char_height_ratio / static_cast<float>(screen_size.y));
 
 				// Color data
 				const float color_r = 1.0f;
@@ -228,7 +227,8 @@ namespace Engine::Rendering
 					}
 				};
 
-				generated_mesh.insert(generated_mesh.end(), vertices.begin(), vertices.end());
+				generated_mesh
+					.insert(generated_mesh.end(), vertices.begin(), vertices.end());
 			}
 		}
 

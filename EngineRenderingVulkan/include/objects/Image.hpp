@@ -25,9 +25,8 @@ namespace Engine::Rendering::Vulkan
 			vk::SampleCountFlagBits num_samples,
 			vk::Format				format,
 			vk::ImageUsageFlags		usage,
-			vk::MemoryPropertyFlags properties =
-				vk::MemoryPropertyFlagBits::eDeviceLocal,
-			vk::ImageTiling with_tiling = vk::ImageTiling::eOptimal
+			vk::MemoryPropertyFlags properties = vk::MemoryPropertyFlagBits::eDeviceLocal,
+			vk::ImageTiling			with_tiling = vk::ImageTiling::eOptimal
 		);
 		~Image();
 
@@ -59,9 +58,8 @@ namespace Engine::Rendering::Vulkan
 			vk::Format				format,
 			vk::ImageUsageFlags		usage,
 			vk::ImageAspectFlags	with_aspect_flags,
-			vk::MemoryPropertyFlags properties =
-				vk::MemoryPropertyFlagBits::eDeviceLocal,
-			vk::ImageTiling with_tiling = vk::ImageTiling::eOptimal
+			vk::MemoryPropertyFlags properties = vk::MemoryPropertyFlagBits::eDeviceLocal,
+			vk::ImageTiling			with_tiling = vk::ImageTiling::eOptimal
 		);
 
 		[[nodiscard]] vk::raii::ImageView& getNativeViewHandle()

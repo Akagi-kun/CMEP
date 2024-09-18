@@ -13,7 +13,9 @@
 
 namespace Engine::Rendering
 {
-	// TODO: Consider removing? Separate out texture loading
+	/**
+	 * @todo Consider removing? Separate out texture loading
+	 */
 	typedef enum class Texture_InitFiletypeEnum : uint8_t
 	{
 		MIN_ENUM = 0x00,

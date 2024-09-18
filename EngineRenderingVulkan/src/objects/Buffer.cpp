@@ -114,7 +114,8 @@ namespace Engine::Rendering::Vulkan
 		: Buffer(
 			  with_instance,
 			  sizeof(vertices[0]) * vertices.size(),
-			  vk::BufferUsageFlagBits::eTransferDst | vk::BufferUsageFlagBits::eVertexBuffer,
+			  vk::BufferUsageFlagBits::eTransferDst |
+				  vk::BufferUsageFlagBits::eVertexBuffer,
 			  vk::MemoryPropertyFlagBits::eDeviceLocal
 		  )
 	{
@@ -124,8 +125,12 @@ namespace Engine::Rendering::Vulkan
 		auto staging_buffer = StagingBuffer(with_instance, vertices.data(), buffer_size);
 
 		// Copy into final buffer
-		command_buffer
-			->copyBufferBuffer(&staging_buffer, this, {vk::BufferCopy{0, 0, buffer_size}});
+		command_buffer->copyBufferBuffer(
+			with_instance->getLogicalDevice()->getGraphicsQueue(),
+			&staging_buffer,
+			this,
+			{vk::BufferCopy{0, 0, buffer_size}}
+		);
 
 		delete command_buffer;
 	}
@@ -138,8 +143,7 @@ namespace Engine::Rendering::Vulkan
 			  vk::MemoryPropertyFlagBits::eHostVisible |
 				  vk::MemoryPropertyFlagBits::eHostCoherent
 		  )
-	{
-	}
+	{}
 
 #pragma endregion
 } // namespace Engine::Rendering::Vulkan

@@ -69,7 +69,9 @@ namespace Engine
 					{
 						return {type, value};
 					}
-					// TODO: Generator?
+					/**
+					 * @todo Generator?
+					 */
 					default:
 					{
 						throw ENGINE_EXCEPTION("Invalid supply data type!");
@@ -86,7 +88,10 @@ namespace Engine
 
 	SceneLoader::~SceneLoader()
 	{
-		this->logger->simpleLog<decltype(this)>(Logging::LogLevel::VerboseDebug, "Destructor called");
+		this->logger->simpleLog<decltype(this)>(
+			Logging::LogLevel::VerboseDebug,
+			"Destructor called"
+		);
 	}
 
 	std::shared_ptr<Scene> SceneLoader::loadScene(std::string scene_name)
@@ -108,7 +113,8 @@ namespace Engine
 
 #pragma region Protected
 
-	void SceneLoader::loadSceneInternal(std::shared_ptr<Scene>& scene, std::string& scene_name)
+	void
+	SceneLoader::loadSceneInternal(std::shared_ptr<Scene>& scene, std::string& scene_name)
 	{
 		std::string scene_path = scene_prefix + scene_name + "/";
 
@@ -156,7 +162,8 @@ namespace Engine
 		}
 	}
 
-	void SceneLoader::loadSceneEventHandlers(nlohmann::json& data, std::shared_ptr<Scene>& scene)
+	void
+	SceneLoader::loadSceneEventHandlers(nlohmann::json& data, std::shared_ptr<Scene>& scene)
 	{
 		std::weak_ptr<AssetManager> asset_manager = owner_engine->getAssetManager();
 		if (auto locked_asset_manager = asset_manager.lock())
@@ -164,9 +171,11 @@ namespace Engine
 			// Load scene event handlers
 			for (const auto& event_handler_entry : data["event_handlers"])
 			{
-				std::string event_handler_type = event_handler_entry["type"].get<std::string>();
+				std::string event_handler_type =
+					event_handler_entry["type"].get<std::string>();
 				std::string script_name = event_handler_entry["file"].get<std::string>();
-				std::string script_function = event_handler_entry["function"].get<std::string>();
+				std::string script_function =
+					event_handler_entry["function"].get<std::string>();
 
 				EventHandling::EventType event_type =
 					EnumStringConvertor<EventHandling::EventType>(event_handler_type);
@@ -195,7 +204,8 @@ namespace Engine
 		}
 	}
 
-	void SceneLoader::loadSceneTemplates(nlohmann::json& data, std::shared_ptr<Scene>& scene)
+	void
+	SceneLoader::loadSceneTemplates(nlohmann::json& data, std::shared_ptr<Scene>& scene)
 	{
 		std::weak_ptr<AssetManager> asset_manager = owner_engine->getAssetManager();
 		if (auto locked_asset_manager = asset_manager.lock())
@@ -205,10 +215,12 @@ namespace Engine
 			{
 				Factories::ObjectFactory::ObjectTemplate object_template{};
 
-				object_template.with_renderer = template_entry["renderer"].get<std::string>();
+				object_template.with_renderer =
+					template_entry["renderer"].get<std::string>();
 				object_template.with_mesh_builder =
 					template_entry["mesh_builder"].get<std::string>();
-				object_template.with_shader = template_entry["shader_name"].get<std::string>();
+				object_template.with_shader =
+					template_entry["shader_name"].get<std::string>();
 
 				for (auto& supply_entry : template_entry["renderer_supply_data"])
 				{
@@ -377,7 +389,10 @@ namespace Engine
 				}
 			}
 
-			this->logger->simpleLog<decltype(this)>(Logging::LogLevel::Debug, "Done stage: Assets");
+			this->logger->simpleLog<decltype(this)>(
+				Logging::LogLevel::Debug,
+				"Done stage: Assets"
+			);
 		}
 	}
 

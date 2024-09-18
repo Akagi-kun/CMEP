@@ -91,7 +91,14 @@ namespace Engine::Factories
 					filtering
 				);
 
-				initRaw(texture_data, std::move(data), 4, filtering, sampler_address_mode, size);
+				initRaw(
+					texture_data,
+					std::move(data),
+					4,
+					filtering,
+					sampler_address_mode,
+					size
+				);
 				break;
 			}
 			default:
@@ -128,7 +135,11 @@ namespace Engine::Factories
 		Rendering::Vulkan::Instance* vk_instance = owner_engine->getVulkanInstance();
 		assert(vk_instance);
 
-		Rendering::Vulkan::StagingBuffer staging_buffer(vk_instance, raw_data.data(), memory_size);
+		Rendering::Vulkan::StagingBuffer staging_buffer(
+			vk_instance,
+			raw_data.data(),
+			memory_size
+		);
 
 		texture_data->image = new Rendering::Vulkan::ViewedImage(
 			vk_instance,
@@ -151,10 +162,15 @@ namespace Engine::Factories
 
 		auto command_buffer = vk_instance->getCommandPool()->constructCommandBuffer();
 
-		command_buffer.copyBufferImage(&staging_buffer, texture_data->image);
+		command_buffer.copyBufferImage(
+			vk_instance->getLogicalDevice()->getGraphicsQueue(),
+			&staging_buffer,
+			texture_data->image
+		);
 
 		// Transfer image layout to compatible with rendering
-		texture_data->image->transitionImageLayout(vk::ImageLayout::eShaderReadOnlyOptimal);
+		texture_data->image->transitionImageLayout(vk::ImageLayout::eShaderReadOnlyOptimal
+		);
 
 		return 0;
 	}

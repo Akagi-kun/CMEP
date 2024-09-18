@@ -10,8 +10,7 @@
 
 namespace Engine::Rendering::Vulkan
 {
-	class CommandPool : public InstanceOwned,
-						public HandleWrapper<vk::raii::CommandPool>
+	class CommandPool : public InstanceOwned, public HandleWrapper<vk::raii::CommandPool>
 	{
 	public:
 		CommandPool(InstanceOwned::value_t with_instance);

@@ -22,7 +22,9 @@ namespace Engine
 
 		void screenSizeInform(Rendering::ScreenSize with_screen_size);
 
-		// TODO: relative functions?
+		/**
+		 * @todo relative functions?
+		 */
 		void setPosition(glm::vec3 with_pos);
 		void setSize(glm::vec3 with_size);
 		void setRotation(glm::vec3 with_rotation);
@@ -49,7 +51,11 @@ namespace Engine
 	private:
 		Rendering::Transform transform;
 		// Initialize parent transform so that the object renders without parent properly
-		Rendering::Transform  parent_transform = {glm::vec3(0), glm::vec3(1, 1, 1), glm::vec3(0)};
+		Rendering::Transform parent_transform = {
+			glm::vec3(0),
+			glm::vec3(1, 1, 1),
+			glm::vec3(0)
+		};
 		Rendering::ScreenSize screen;
 
 		Object* parent;

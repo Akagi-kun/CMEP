@@ -6,8 +6,8 @@ namespace Engine::Rendering::Vulkan
 {
 #pragma region Public
 
-	SwapChainSupportDetails Surface::querySwapChainSupport(const vk::raii::PhysicalDevice& device
-	) const
+	SwapChainSupportDetails
+	Surface::querySwapChainSupport(const vk::raii::PhysicalDevice& device) const
 	{
 		SwapChainSupportDetails details;
 		details.capabilities  = device.getSurfaceCapabilitiesKHR(native_handle);
@@ -22,7 +22,8 @@ namespace Engine::Rendering::Vulkan
 		uint32_t						queue_family
 	) const
 	{
-		vk::Bool32 support = physical_device.getSurfaceSupportKHR(queue_family, native_handle);
+		vk::Bool32 support =
+			physical_device.getSurfaceSupportKHR(queue_family, native_handle);
 
 		return support != 0u;
 	}

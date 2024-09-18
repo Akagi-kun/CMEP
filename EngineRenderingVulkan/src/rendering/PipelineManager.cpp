@@ -28,8 +28,7 @@ namespace Engine::Rendering::Vulkan
 	)
 		: SupportsLogging(std::move(with_logger)), InstanceOwned(with_instance),
 		  shader_path(std::move(with_shader_path))
-	{
-	}
+	{}
 
 	PipelineManager::~PipelineManager()
 	{
@@ -104,9 +103,15 @@ namespace Engine::Rendering::Vulkan
 		delete user_data;
 	}
 
-	void PipelineUserRef::updateDescriptorSets(per_frame_array<vk::WriteDescriptorSet> with_writes)
+	void
+	PipelineUserRef::updateDescriptorSets(per_frame_array<vk::WriteDescriptorSet> with_writes
+	)
 	{
-		Pipeline::updateDescriptorSets(*instance->getLogicalDevice(), *user_data, with_writes);
+		Pipeline::updateDescriptorSets(
+			*instance->getLogicalDevice(),
+			*user_data,
+			with_writes
+		);
 	}
 
 	void PipelineUserRef::updateDescriptorSetsAll(const vk::WriteDescriptorSet& with_write)
@@ -122,9 +127,8 @@ namespace Engine::Rendering::Vulkan
 #pragma region Private
 
 	// string_view is guaranteed to be null-terminated
-	std::pair<std::shared_ptr<Pipeline>, std::string_view> PipelineManager::findPipeline(
-		const PipelineSettings& with_settings
-	)
+	std::pair<std::shared_ptr<Pipeline>, std::string_view>
+	PipelineManager::findPipeline(const PipelineSettings& with_settings)
 	{
 		std::string_view reasons[]	   = {"no setting match"};
 		int				 reached_point = 0;
@@ -134,10 +138,7 @@ namespace Engine::Rendering::Vulkan
 		{
 			if (settings == with_settings)
 			{
-				if (auto locked_ptr = pipeline_ptr.lock())
-				{
-					return {locked_ptr, {}};
-				}
+				if (auto locked_ptr = pipeline_ptr.lock()) { return {locked_ptr, {}}; }
 
 				throw std::runtime_error("Failed locking pipeline");
 			}

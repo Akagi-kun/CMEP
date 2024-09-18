@@ -26,7 +26,9 @@ namespace Engine
 		void					setScene(const std::string& scene_name);
 		std::shared_ptr<Scene>& getSceneCurrent();
 
-		// TODO: Remove?
+		/**
+		 * @todo Remove?
+		 */
 		glm::vec3 getLightTransform();
 		void	  setLightTransform(glm::vec3 newpos);
 
@@ -34,7 +36,7 @@ namespace Engine
 		glm::vec2 getCameraRotation();
 		glm::mat4 getCameraViewMatrix();
 
-		[[nodiscard]] glm::mat4		   getProjectionMatrix(Rendering::ScreenSize screen) const;
+		[[nodiscard]] glm::mat4 getProjectionMatrix(Rendering::ScreenSize screen) const;
 		[[nodiscard]] static glm::mat4 getProjectionMatrixOrtho();
 
 		void setCameraTransform(glm::vec3 transform);
@@ -42,14 +44,16 @@ namespace Engine
 
 	private:
 		std::unordered_map<std::string, std::shared_ptr<Scene>> scenes;
-		std::string												current_scene_name = "_default";
+		std::string current_scene_name = "_default";
 
 		glm::vec3 camera_transform{};	// XYZ position
 		glm::vec2 camera_hv_rotation{}; // Horizontal and Vertical rotation
 
 		static constexpr float initial_fov = 45.0f;
 
-		// TODO: Remove?
+		/**
+		 * @todo Remove?
+		 */
 		glm::vec3 light_position{};
 
 		std::unique_ptr<SceneLoader> scene_loader;

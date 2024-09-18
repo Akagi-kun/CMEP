@@ -25,15 +25,15 @@ namespace Engine::Scripting
 		const std::filesystem::path& with_path
 	)
 		: ILuaScript(with_engine, with_path, false)
-	{
-	}
+	{}
 
 	int GeneratorLuaScript::internalCall(const std::string& function, void* data)
 	{
 		auto* generator_data = static_cast<std::array<void*, 3>*>(data);
 
-		auto* mesh = static_cast<std::vector<Rendering::RenderingVertex>*>(generator_data->at(0));
-		auto* supplier	= static_cast<Scripting::ScriptFunctionRef*>(generator_data->at(1));
+		auto* mesh =
+			static_cast<std::vector<Rendering::RenderingVertex>*>(generator_data->at(0));
+		auto* supplier = static_cast<Scripting::ScriptFunctionRef*>(generator_data->at(1));
 		auto* world_pos = static_cast<glm::vec3*>(generator_data->at(2));
 
 		lua_State* coroutine = lua_newthread(state);
@@ -79,7 +79,9 @@ namespace Engine::Scripting
 			vertex.z = static_cast<float>(lua_tonumber(coroutine, -1));
 			lua_pop(coroutine, 3);
 
-			// TODO: Use non-table values
+			/**
+			 * @todo Use non-table values
+			 */
 			lua_rawgeti(coroutine, -1, 1);
 			color.r = static_cast<float>(lua_tonumber(coroutine, -1));
 			lua_rawgeti(coroutine, -2, 2);
@@ -88,7 +90,9 @@ namespace Engine::Scripting
 			color.b = static_cast<float>(lua_tonumber(coroutine, -1));
 			lua_pop(coroutine, 4);
 
-			// TODO: Use non-table values
+			/**
+			 * @todo Use non-table values
+			 */
 			lua_rawgeti(coroutine, -1, 1);
 			normal.x = static_cast<float>(lua_tonumber(coroutine, -1));
 			lua_rawgeti(coroutine, -2, 2);

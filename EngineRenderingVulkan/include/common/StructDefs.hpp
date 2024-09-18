@@ -47,11 +47,12 @@ namespace Engine::Rendering
 			const glm::vec2 with_texcoord = {},
 			const glm::vec3 with_normal	  = {}
 		)
-			: pos(with_pos), color(with_color), texcoord(with_texcoord), normal(with_normal)
-		{
-		}
+			: pos(with_pos), color(with_color), texcoord(with_texcoord),
+			  normal(with_normal)
+		{}
 
-		static constexpr std::array<vk::VertexInputBindingDescription, 1> getBindingDescription()
+		static constexpr std::array<vk::VertexInputBindingDescription, 1>
+		getBindingDescription()
 		{
 			return {
 				vk::VertexInputBindingDescription{
@@ -62,7 +63,8 @@ namespace Engine::Rendering
 			};
 		}
 
-		static constexpr std::array<vk::VertexInputAttributeDescription, 4> getAttributeDescriptions()
+		static constexpr std::array<vk::VertexInputAttributeDescription, 4>
+		getAttributeDescriptions()
 		{
 			return {
 				vk::VertexInputAttributeDescription{

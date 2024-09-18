@@ -44,7 +44,9 @@ namespace Engine::Factories
 			const pageload_callback_t&	 pageload_cb
 		);
 
-		// TODO: Make library for these
+		/**
+		 * @todo Make library for these
+		 */
 		void parseBmfontLine(
 			const std::filesystem::path&		  font_path,
 			std::unique_ptr<Rendering::FontData>& font,

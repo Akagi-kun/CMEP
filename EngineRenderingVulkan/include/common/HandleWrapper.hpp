@@ -21,15 +21,11 @@ namespace Engine::Rendering::Vulkan
 		HandleWrapper(value_t from_handle)
 			requires(handle_constructible)
 			: native_handle(from_handle)
-		{
-		}
+		{}
 
 		[[nodiscard]] operator bool() const
 		{
-			if constexpr (is_pointer)
-			{
-				return native_handle != nullptr;
-			}
+			if constexpr (is_pointer) { return native_handle != nullptr; }
 			else if constexpr (!is_pointer && is_bool_convertible)
 			{
 				return static_cast<bool>(native_handle);
@@ -45,18 +41,13 @@ namespace Engine::Rendering::Vulkan
 		static constexpr bool is_pointer		  = std::is_pointer_v<value_t>;
 		static constexpr bool is_bool_convertible = std::is_convertible_v<value_t, bool>;
 		static constexpr bool default_ctor = std::is_default_constructible_v<value_t>;
-		static constexpr bool nullptr_ctor = std::is_constructible_v<value_t, std::nullptr_t>;
+		static constexpr bool nullptr_ctor =
+			std::is_constructible_v<value_t, std::nullptr_t>;
 
 		constexpr value_t defaultVal()
 		{
-			if constexpr (default_ctor)
-			{
-				return value_t();
-			}
-			else if constexpr (nullptr_ctor || is_pointer)
-			{
-				return nullptr;
-			}
+			if constexpr (default_ctor) { return value_t(); }
+			else if constexpr (nullptr_ctor || is_pointer) { return nullptr; }
 		}
 
 		value_t native_handle = defaultVal();

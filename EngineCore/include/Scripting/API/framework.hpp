@@ -15,8 +15,8 @@
  *
  * @warning Does not check whether the types and values of arguments are correct!
  *
- * @param stateL the state supplied to the caller
- * @param expect_args the number of arguments this function expects
+ * @param stateL The state supplied to the caller
+ * @param expect_args The number of arguments this function expects
  */
 #define CMEP_LUACHECK_FN_ARGC(stateL, expect_args)                                       \
 	{                                                                                    \
@@ -36,12 +36,11 @@
 /**
  * @brief Quickly get the "self" pointer for the Lua API
  *
- * @param stateL the state supplied to the caller
- * @param type the type of the "self" pointer
+ * @param stateL The state supplied to the caller
+ * @param type The type of the "self" pointer
  *
- * @return @code{.cpp}
- *         		type* self;
- *         @endcode
+ * @note This macro does not return the pointer instead it creates a new symbol
+ *       @code{.cpp} type* self; @endcode in the namespace it was called from
  */
 #define CMEP_LUAGET_PTR(stateL, type)                                                    \
 	lua_getfield(stateL, 1, "_ptr");                                                     \

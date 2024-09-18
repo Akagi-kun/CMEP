@@ -43,7 +43,10 @@ namespace Engine
 
 	SceneManager::~SceneManager()
 	{
-		this->logger->simpleLog<decltype(this)>(Logging::LogLevel::Info, "Destructor called");
+		this->logger->simpleLog<decltype(this)>(
+			Logging::LogLevel::Info,
+			"Destructor called"
+		);
 
 		scenes.clear();
 
@@ -70,7 +73,9 @@ namespace Engine
 		scene_loader->scene_prefix = scene_prefix;
 	}
 
-	// TODO: Pass Scene* here? maybe don't do any loading in the manager?
+	/**
+	 * @todo Pass Scene* here? maybe don't do any loading in the manager?
+	 */
 	void SceneManager::loadScene(const std::string& scene_name)
 	{
 		assert(owner_engine != nullptr);
@@ -151,7 +156,8 @@ namespace Engine
 		// Points up
 		glm::vec3 up_local = glm::normalize(glm::cross(right, forward));
 
-		glm::mat4 view_matrix = glm::lookAt(camera_transform, camera_transform + forward, up_local);
+		glm::mat4 view_matrix =
+			glm::lookAt(camera_transform, camera_transform + forward, up_local);
 
 		return view_matrix;
 	}
@@ -169,14 +175,8 @@ namespace Engine
 		static constexpr float y_max	= y_center + 89.9f;
 
 		// Account for rotation possibly being NaN
-		if (std::isnan(hvrotation.y))
-		{
-			hvrotation.y = y_center;
-		}
-		if (std::isnan(hvrotation.x))
-		{
-			hvrotation.x = 0;
-		}
+		if (std::isnan(hvrotation.y)) { hvrotation.y = y_center; }
+		if (std::isnan(hvrotation.x)) { hvrotation.x = 0; }
 
 		// Clamp Y so you cannot do a backflip
 		hvrotation.y = std::clamp(hvrotation.y, y_min, y_max);
@@ -185,14 +185,8 @@ namespace Engine
 		static constexpr float x_max = 360.f;
 
 		// Wrap X around (so we don't get awkwardly high or low X values)
-		if (hvrotation.x > x_max)
-		{
-			hvrotation.x = x_min;
-		}
-		else if (hvrotation.x < x_min)
-		{
-			hvrotation.x = x_max;
-		}
+		if (hvrotation.x > x_max) { hvrotation.x = x_min; }
+		else if (hvrotation.x < x_min) { hvrotation.x = x_max; }
 
 		camera_hv_rotation = hvrotation;
 		onCameraUpdated();

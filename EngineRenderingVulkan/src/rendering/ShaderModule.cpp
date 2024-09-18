@@ -5,17 +5,15 @@
 
 #include <cstdint>
 #include <filesystem>
-#include <string>
 
 namespace Engine::Rendering::Vulkan
 {
 	ShaderModule::ShaderModule(
-		LogicalDevice*		  with_device,
-		std::filesystem::path with_path,
-		const std::string&	  filename
+		LogicalDevice*				 with_device,
+		const std::filesystem::path& filepath
 	)
 	{
-		const auto shader_code = Vulkan::Utility::readShaderFile(with_path.append(filename));
+		const auto shader_code = Vulkan::Utility::readShaderFile(filepath);
 
 		vk::ShaderModuleCreateInfo create_info{
 			.codeSize = shader_code.size(),

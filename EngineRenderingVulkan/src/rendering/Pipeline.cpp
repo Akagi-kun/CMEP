@@ -16,7 +16,6 @@
 #include <cstddef>
 #include <cstdint>
 #include <filesystem>
-#include <string>
 #include <vector>
 
 namespace Engine::Rendering::Vulkan
@@ -40,11 +39,8 @@ namespace Engine::Rendering::Vulkan
 		// Create Shaders
 
 		// Vertex stage
-		auto vert_shader_module = ShaderModule(
-			logical_device,
-			shader_path,
-			std::string(settings.shader) + +"_vert.spv"
-		);
+		auto vert_shader_module =
+			ShaderModule(logical_device, shader_path / (settings.shader + "_vert.spv"));
 		vk::PipelineShaderStageCreateInfo vert_shader_stage_info{
 			.stage	= vk::ShaderStageFlagBits::eVertex,
 			.module = *vert_shader_module.getHandle(),
@@ -52,11 +48,8 @@ namespace Engine::Rendering::Vulkan
 		};
 
 		// Fragment stage
-		auto frag_shader_module = ShaderModule(
-			logical_device,
-			shader_path,
-			std::string(settings.shader) + "_frag.spv"
-		);
+		auto frag_shader_module =
+			ShaderModule(logical_device, shader_path / (settings.shader + "_frag.spv"));
 		vk::PipelineShaderStageCreateInfo frag_shader_stage_info{
 			.stage	= vk::ShaderStageFlagBits::eFragment,
 			.module = *frag_shader_module.getHandle(),
@@ -186,7 +179,7 @@ namespace Engine::Rendering::Vulkan
 			.pColorBlendState	= PipelineSettings::getColorBlendSettings(),
 			.pDynamicState		= &dynamic_state,
 			.layout				= *pipeline_layout,
-			.renderPass			= *with_render_pass->native_handle,
+			.renderPass			= *with_render_pass->getHandle(),
 			.subpass			= 0,
 		};
 
@@ -222,7 +215,7 @@ namespace Engine::Rendering::Vulkan
 	}
 
 	void Pipeline::bindPipeline(
-		UserData&		  from,
+		UserData&		  userdata_ref,
 		vk::CommandBuffer with_command_buffer,
 		uint32_t		  current_frame
 	)
@@ -231,7 +224,7 @@ namespace Engine::Rendering::Vulkan
 			vk::PipelineBindPoint::eGraphics,
 			*pipeline_layout,
 			0,
-			*from.getDescriptorSet(current_frame),
+			*userdata_ref.getDescriptorSet(current_frame),
 			{}
 		);
 

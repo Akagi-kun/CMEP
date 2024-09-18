@@ -92,7 +92,7 @@ namespace Engine::Scripting::API
 		{
 			std::vector<supply_data_t> supply_data;
 
-			assert(table.type != LuaValue::Type::NIL);
+			ENGINE_EXCEPTION_ON_ASSERT_NOMSG(table.type == LuaValue::Type::TABLE)
 
 			for (const auto& [key, val] : table.toTable())
 			{
@@ -132,51 +132,44 @@ namespace Engine::Scripting::API
 
 			std::string shader_name = LuaValue(state, 3);
 
-			constexpr int r_table_idx  = 4;
-			constexpr int mb_table_idx = 5;
-
-			// Check for table
-			if (lua_istable(state, r_table_idx) && lua_istable(state, mb_table_idx))
-			{
-				std::vector<Rendering::RendererSupplyData> renderer_supply_data =
-					interpretSupplyDataTable<Rendering::RendererSupplyData>(
-						LuaValue(state, r_table_idx)
-					);
-
-				std::vector<Rendering::MeshBuilderSupplyData> meshbuilder_supply_data =
-					interpretSupplyDataTable<Rendering::MeshBuilderSupplyData>(
-						LuaValue(state, mb_table_idx)
-					);
-
-				// Check if mesh builder type is valid, if so, get a factory for it
-				const auto factory = Factories::ObjectFactory::getSceneObjectFactory(
-					renderer_type,
-					mesh_builder_type
+			// Parse renderer supply data
+			std::vector<Rendering::RendererSupplyData> renderer_supply_data =
+				interpretSupplyDataTable<Rendering::RendererSupplyData>(LuaValue(state, 4)
 				);
 
-				if (factory)
+			// Parse mesh builder supply data
+			std::vector<Rendering::MeshBuilderSupplyData> meshbuilder_supply_data =
+				interpretSupplyDataTable<Rendering::MeshBuilderSupplyData>(
+					LuaValue(state, 5)
+				);
+
+			// Get a factory for the desired object
+			const auto factory = Factories::ObjectFactory::getSceneObjectFactory(
+				renderer_type,
+				mesh_builder_type
+			);
+
+			if (factory)
+			{
+				// Invoke the factory
+				Object* obj = factory(
+					owner_engine,
+					shader_name,
+					renderer_supply_data,
+					meshbuilder_supply_data
+				);
+
+				if (obj != nullptr)
 				{
-					Object* obj = factory(
-						owner_engine,
-						shader_name,
-						renderer_supply_data,
-						meshbuilder_supply_data
-					);
+					API::LuaFactories::objectFactory(state, obj);
 
-					if (obj != nullptr)
-					{
-						API::LuaFactories::objectFactory(state, obj);
-
-						return 1;
-					}
-
-					return luaL_error(state, "Object was nullptr!");
+					return 1;
 				}
 
-				return luaL_error(state, "No factory was found for this object!");
+				return luaL_error(state, "Object was nullptr!");
 			}
 
-			return luaL_error(state, "Invalid parameter type (expected 'table')");
+			return luaL_error(state, "No factory was found for this object!");
 		}
 
 #pragma endregion
@@ -222,25 +215,12 @@ namespace Engine::Scripting::API
 
 #pragma endregion
 
-		/* int testFn(lua_State* state)
-		{
-			CMEP_LUACHECK_FN_ARGC(state, 1)
-
-			auto val = Utility::LuaValue(state, 1);
-
-			printf("got: %s\n", Utility::LuaValue::toString(val).c_str());
-
-			return 0;
-		} */
-
 	} // namespace
 
 	std::unordered_map<std::string, const lua_CFunction> global_mappings = {
 		CMEP_LUAMAPPING_DEFINE(rendererSupplyData),
 		CMEP_LUAMAPPING_DEFINE(meshBuilderSupplyData),
 
-		CMEP_LUAMAPPING_DEFINE(createSceneObject),
-
-		// CMEP_LUAMAPPING_DEFINE(testFn)
+		CMEP_LUAMAPPING_DEFINE(createSceneObject)
 	};
 } // namespace Engine::Scripting::API

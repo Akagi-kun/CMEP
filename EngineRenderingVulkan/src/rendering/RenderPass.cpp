@@ -10,12 +10,13 @@
 
 namespace Engine::Rendering::Vulkan
 {
-	RenderPass::RenderPass(InstanceOwned::value_t with_instance, vk::Format with_format)
-		: InstanceOwned(with_instance)
+	RenderPass::RenderPass(
+		const PhysicalDevice* with_physical_device,
+		LogicalDevice*		  with_logical_device,
+		vk::Format			  with_format
+	)
 	{
-		const auto& physical_device = instance->getPhysicalDevice();
-
-		const auto msaa_samples = physical_device->getMSAASamples();
+		const auto msaa_samples = with_physical_device->getMSAASamples();
 
 		vk::AttachmentDescription color_attachment{
 			.format			= with_format,
@@ -29,7 +30,7 @@ namespace Engine::Rendering::Vulkan
 		};
 
 		vk::AttachmentDescription depth_attachment{
-			.format			= physical_device->findSupportedDepthFormat(),
+			.format			= with_physical_device->findSupportedDepthFormat(),
 			.samples		= msaa_samples,
 			.loadOp			= vk::AttachmentLoadOp::eClear,
 			.storeOp		= vk::AttachmentStoreOp::eDontCare,
@@ -71,8 +72,11 @@ namespace Engine::Rendering::Vulkan
 			.pResolveAttachments	 = &color_resolve_attachment_ref,
 			.pDepthStencilAttachment = &depth_attachment_ref
 		};
-		std::array<vk::AttachmentDescription, 3> attachments =
-			{color_attachment, depth_attachment, color_attachment_resolve};
+		std::array<vk::AttachmentDescription, 3> attachments = {
+			color_attachment,
+			depth_attachment,
+			color_attachment_resolve
+		};
 
 		vk::SubpassDependency dependency{
 			.srcSubpass	  = vk::SubpassExternal,
@@ -95,9 +99,7 @@ namespace Engine::Rendering::Vulkan
 			.pDependencies	 = &dependency
 		};
 
-		LogicalDevice* logical_device = instance->getLogicalDevice();
-
-		native_handle = logical_device->createRenderPass(create_info);
+		native_handle = with_logical_device->createRenderPass(create_info);
 	}
 
 } // namespace Engine::Rendering::Vulkan

@@ -77,8 +77,7 @@ namespace Engine
 			while (static_cast<double>((std::chrono::steady_clock::now() - start).count()
 				   ) / nano_to_sec <
 				   seconds)
-			{
-			}
+			{}
 		}
 	} // namespace
 
@@ -226,7 +225,9 @@ namespace Engine
 
 		auto& scene = scene_manager->getSceneCurrent();
 
-		// TODO: Remove this!
+		/**
+		 * @todo Remove this!
+		 */
 		// Create axis object
 		{
 			auto* object = Factories::ObjectFactory::createSceneObject<
@@ -386,7 +387,9 @@ namespace Engine
 		{
 			try
 			{
-				// TODO: Use structs instead of this weird ->second.first-> syntax
+				/**
+				 * @todo Use structs instead of this weird ->second.first-> syntax
+				 */
 				sum += handler->second.first->callFunction(handler->second.second, &event);
 			}
 			catch (std::runtime_error& e)
@@ -404,12 +407,14 @@ namespace Engine
 	}
 
 	Engine::Engine(std::shared_ptr<Logging::Logger>& with_logger) : logger(with_logger)
-	{
-	}
+	{}
 
 	Engine::~Engine()
 	{
-		this->logger->simpleLog<decltype(this)>(Logging::LogLevel::Info, "Destructor called");
+		this->logger->simpleLog<decltype(this)>(
+			Logging::LogLevel::Info,
+			"Destructor called"
+		);
 
 		scene_manager.reset();
 
@@ -473,7 +478,9 @@ namespace Engine
 
 		auto oninit_start = std::chrono::steady_clock::now();
 
-		// TODO: Fire ON_INIT on scene load!
+		/**
+		 * @todo Fire ON_INIT on scene load!
+		 */
 		// Fire ON_INIT event
 		auto on_init_event = EventHandling::Event(this, EventHandling::EventType::ON_INIT);
 		int on_init_event_ret = fireEvent(on_init_event);
