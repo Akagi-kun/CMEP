@@ -26,7 +26,7 @@
 
 namespace Engine::Rendering::Vulkan
 {
-	struct InputEvent final
+	struct KeyboardEvent final
 	{
 		static constexpr size_t mods_highest_bit = 6; // GLFW_MOD_NUM_LOCK;
 
@@ -44,7 +44,7 @@ namespace Engine::Rendering::Vulkan
 		key_value_t	   key;
 		mods_value_t   mods;
 
-		InputEvent(int with_action, int with_key, unsigned int with_mods)
+		KeyboardEvent(int with_action, int with_key, unsigned int with_mods)
 			: type(static_cast<InputEventType>(with_action)),
 			  key(static_cast<key_value_t>(with_key)),
 			  mods(static_cast<mods_value_t>(with_mods))
@@ -54,8 +54,8 @@ namespace Engine::Rendering::Vulkan
 	class Window final : public InstanceOwned, public HandleWrapper<GLFWwindow*>
 	{
 	public:
-		glm::vec<2, double>	   cursor_position;
-		std::queue<InputEvent> input_events;
+		glm::vec<2, double>		  cursor_position;
+		std::queue<KeyboardEvent> keyboard_events;
 
 		struct StatusBits
 		{
@@ -72,11 +72,33 @@ namespace Engine::Rendering::Vulkan
 		);
 		~Window();
 
+		/**
+		 * @brief Changes the visibility of the window
+		 *
+		 * Setting this to true shows the window, false hides it.
+		 * This does not necessarily mean the window will be in focus.
+		 *
+		 * @note Does nothing if the window is already in the requested state.
+		 *
+		 * @param visible True = show window; False = hide window
+		 */
 		void setVisibility(bool visible);
 
+		/**
+		 * @brief Set "should close" attribute of the window,
+		 *
+		 * Affects the return value of @ref getShouldClose()
+		 *
+		 * @warning This should never need to be set to false
+		 *
+		 * @param should_close Whether the window should or shouldn't be closed
+		 */
 		void			   setShouldClose(bool should_close);
 		[[nodiscard]] bool getShouldClose() const;
 
+		/**
+		 * @brief Get the size of the framebuffer associated with this window
+		 */
 		[[nodiscard]] const ScreenSize& getFramebufferSize() const
 		{
 			return size;
@@ -114,8 +136,6 @@ namespace Engine::Rendering::Vulkan
 		// Rendering related
 		std::function<void(Vulkan::CommandBuffer*, uint32_t, void*)> render_callback;
 		void*														 user_data = nullptr;
-
-		static Window* getWindowPtrFromGlfw(GLFWwindow* window);
 
 		static void callbackOnWindowFocus(GLFWwindow* window, int focused);
 		static void callbackOnFramebufferResize(GLFWwindow* window, int width, int height);

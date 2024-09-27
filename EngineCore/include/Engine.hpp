@@ -56,6 +56,12 @@ namespace Engine
 
 		void stop();
 
+		/**
+		 * @brief Function that throws an exception when called.
+		 *
+		 * Used to verify that exceptions thrown by the library
+		 * can be caught outside it.
+		 */
 		[[noreturn]] static void throwTest();
 
 		// Event return code should be checked
@@ -63,12 +69,12 @@ namespace Engine
 
 		void setFramerateTarget(uint_fast16_t framerate) noexcept
 		{
-			config->framerate_target = framerate;
+			config.framerate_target = framerate;
 		}
 
 		[[nodiscard]] const std::string& getShaderPath() const
 		{
-			return config->shader_path;
+			return config.shader_path;
 		}
 
 		[[nodiscard]] double getLastDeltaTime() const
@@ -84,7 +90,8 @@ namespace Engine
 		{
 			return asset_manager;
 		}
-		[[nodiscard]] std::shared_ptr<Rendering::Vulkan::PipelineManager> getVulkanPipelineManager()
+		[[nodiscard]] std::shared_ptr<Rendering::Vulkan::PipelineManager>
+		getVulkanPipelineManager()
 		{
 			return pipeline_manager;
 		}
@@ -102,7 +109,7 @@ namespace Engine
 
 		double last_delta_time = 0.0;
 
-		std::unique_ptr<EngineConfig> config;
+		EngineConfig config;
 
 		// Engine parts
 		std::shared_ptr<Logging::Logger> logger;

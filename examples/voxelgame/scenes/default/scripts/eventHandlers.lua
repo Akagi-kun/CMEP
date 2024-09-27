@@ -176,11 +176,11 @@ generate_chunk = function(chunk_x, chunk_z)
 
 	for z = 1, config.chunk_size_z do
 		for x = 1, config.chunk_size_x do
-			local noise_raw = perlin:noise((x + xpos) / config.chunk_size_x / 2, config.noise_layer, (z + zpos) / config.chunk_size_z / 2)
+			local noise_raw1 = perlin:noise((x + xpos) / config.chunk_size_x / 2, config.noise_layer, (z + zpos) / config.chunk_size_z / 2)
 			local noise_raw2 = perlin:noise((x + xpos) / config.chunk_size_x / 6, config.noise_layer + 0.4, (z + zpos) / config.chunk_size_z / 6)
 			local noise_raw3 = perlin:noise((x + xpos) / config.chunk_size_x / 10, config.noise_layer + 0.6, (z + zpos) / config.chunk_size_z / 10)
 
-			local noise_adjusted1 = (noise_raw + 1) * (config.noise_intensity / 2)
+			local noise_adjusted1 = (noise_raw1 + 1) * (config.noise_intensity / 2)
 			local noise_adjusted2 = (noise_raw2 + 1) * (config.noise_intensity / 1.2)
 			local noise_adjusted3 = (noise_raw3 + 1) * (config.noise_intensity)
 			local noise_adjusted = math.floor(noise_adjusted1 / 3 + noise_adjusted2 / 3 + noise_adjusted3 / 3)

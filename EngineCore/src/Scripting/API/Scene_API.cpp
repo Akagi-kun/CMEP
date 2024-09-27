@@ -41,18 +41,18 @@ namespace Engine::Scripting::API
 
 			Object* obj = scene->findObject(obj_name);
 
-			if (obj != nullptr)
+			if (obj == nullptr)
 			{
-				API::LuaFactories::objectFactory(state, obj);
-
-				return 1;
+				return luaL_error(
+					state,
+					"Object '%s' requested but returned nullptr!",
+					obj_name.c_str()
+				);
 			}
 
-			return luaL_error(
-				state,
-				"Object '%s' requested but returned nullptr!",
-				obj_name.c_str()
-			);
+			API::LuaFactories::objectFactory(state, obj);
+
+			return 1;
 		}
 
 		int removeObject(lua_State* state)
@@ -82,18 +82,18 @@ namespace Engine::Scripting::API
 			scene->addTemplatedObject(name, template_name);
 			Object* obj = scene->findObject(name);
 
-			if (obj != nullptr)
+			if (obj == nullptr)
 			{
-				API::LuaFactories::objectFactory(state, obj);
-
-				return 1;
+				return luaL_error(
+					state,
+					"Object could not be added (FindObject on '%s' returned nullptr!)",
+					name.c_str()
+				);
 			}
 
-			return luaL_error(
-				state,
-				"Object could not be added (FindObject on '%s' returned nullptr!)",
-				name.c_str()
-			);
+			API::LuaFactories::objectFactory(state, obj);
+
+			return 1;
 		}
 	} // namespace
 

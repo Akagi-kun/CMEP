@@ -2,6 +2,8 @@
 
 #include "Exception.hpp"
 
+#include <cstdint>
+#include <format>
 #include <optional>
 #include <string>
 #include <string_view>
@@ -21,11 +23,9 @@ namespace Engine
 
 		EnumStringConvertor() = default;
 		EnumStringConvertor(value_t from) : value(from)
-		{
-		}
+		{}
 		EnumStringConvertor(const std::string& from) : value(lookup(from))
-		{
-		}
+		{}
 
 		operator value_t() const
 		{
@@ -39,29 +39,30 @@ namespace Engine
 
 		static bool valid(const std::string& from)
 		{
-			const auto& found_type = self_t::type_map.find(from);
+			const auto& found_type = self_t::value_map.find(from);
 
-			return (found_type != self_t::type_map.end());
+			return (found_type != self_t::value_map.end());
 		}
 
 	private:
-		static map_t type_map;
+		static map_t value_map;
 
 		std::optional<value_t> value;
 
+		/**
+		 * @brief Returns the contained value, throws otherwise
+		 */
 		value_t checkedValueGetter() const
 		{
-			if (value.has_value())
-			{
-				return value.value();
-			}
+			if (value.has_value()) { return value.value(); }
 
-			throw ENGINE_EXCEPTION(
-				"Tried to get value from EnumStringConverter when value.has_value() is false!"
-			);
+			throw ENGINE_EXCEPTION("Tried to get value from EnumStringConverter when "
+								   "value.has_value() is false!");
 		}
 
-		// Finds type match from type_map
+		/**
+		 * @brief string to enum value
+		 */
 		auto lookup(const std::string& from) const -> value_t
 		{
 			if (from.empty())
@@ -69,28 +70,31 @@ namespace Engine
 				throw ENGINE_EXCEPTION("Cannot convert an empty string to enum");
 			}
 
-			const auto& found_type = self_t::type_map.find(from);
+			const auto& found_type = self_t::value_map.find(from);
 
-			if (found_type != self_t::type_map.end())
-			{
-				return found_type->second;
-			}
+			if (found_type != self_t::value_map.end()) { return found_type->second; }
 
-			throw ENGINE_EXCEPTION("Could not convert '" + from + "' (no match found)");
+			throw ENGINE_EXCEPTION(
+				std::format("Could not convert '{}' (no match found)", from)
+			);
 		}
 
-		// Slow linear lookup, use only on cold paths
+		/**
+		 * @brief enum to string value
+		 *
+		 * @warning This is a slow linear lookup, use only for debug purposes (i.e. exceptions)
+		 */
 		auto reverseLookup(value_t from) const -> std::string_view
 		{
-			for (auto [key, val] : type_map)
+			for (auto [key, val] : value_map)
 			{
-				if (val == from)
-				{
-					return key;
-				}
+				if (val == from) { return key; }
 			}
 
-			return "INVALID";
+			throw ENGINE_EXCEPTION(std::format(
+				"Could not convert '{}' (no match found)",
+				static_cast<uint32_t>(from)
+			));
 		}
 	};
 } // namespace Engine

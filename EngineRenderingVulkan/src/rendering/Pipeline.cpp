@@ -239,7 +239,11 @@ namespace Engine::Rendering::Vulkan
 		static constexpr vk::DeviceSize buffer_size = sizeof(RendererMatrixData);
 		for (size_t i = 0; i < max_frames_in_flight; i++)
 		{
-			into->uniform_buffers[i] = new UniformBuffer(instance, buffer_size);
+			into->uniform_buffers[i] = new UniformBuffer(
+				instance->getLogicalDevice(),
+				instance->getGraphicMemoryAllocator(),
+				buffer_size
+			);
 		}
 
 		allocateNewDescriptorPool(*into);

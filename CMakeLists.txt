@@ -59,6 +59,8 @@ configure_file(common_include/cmake_cfg.hpp.in common_include/cmake_cfg.hpp)
 
 add_subdirectory(external)
 
+add_subdirectory(EngineBase)
+
 add_subdirectory(EngineLogging)
 add_subdirectory(EngineRenderingVulkan)
 

@@ -3,7 +3,6 @@ set(SRC_FILES
 
 	src/Engine.cpp
 	src/dllmain.cpp
-	src/Exception.cpp
 	src/OpaqueEngine.cpp
 	src/InternalEngineObject.cpp
 	
@@ -78,6 +77,7 @@ target_precompile_headers(EngineCore PRIVATE [["vulkan/vulkan.hpp"]] [["glm/glm.
 
 target_link_directories(EngineCore PRIVATE ../build)
 target_include_directories(EngineCore PRIVATE include
+											 ../EngineBase/export_include
 											 ../EngineLogging/export_include
 											 ../EngineRenderingVulkan/export_include
 											 ../external/luajit/src
@@ -90,4 +90,4 @@ target_include_directories(EngineCore PRIVATE include
 											 ${Vulkan_INCLUDE_DIRS}
 											 )
 
-target_link_libraries(EngineCore EngineLogging EngineRenderingVulkan ${STATIC_LIBRARIES} Vulkan::Vulkan)
+target_link_libraries(EngineCore EngineBase EngineLogging EngineRenderingVulkan ${STATIC_LIBRARIES} Vulkan::Vulkan)

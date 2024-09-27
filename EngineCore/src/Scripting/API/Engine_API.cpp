@@ -23,14 +23,14 @@ namespace Engine::Scripting::API
 
 			std::weak_ptr<AssetManager> asset_manager = self->getAssetManager();
 
-			if (!asset_manager.expired())
+			if (asset_manager.expired())
 			{
-				API::LuaFactories::assetManagerFactory(state, asset_manager);
-
-				return 1;
+				return luaL_error(state, "AssetManager is expired");
 			}
 
-			return luaL_error(state, "AssetManager is expired");
+			API::LuaFactories::assetManagerFactory(state, asset_manager);
+
+			return 1;
 		}
 
 		int getSceneManager(lua_State* state)

@@ -84,7 +84,7 @@ namespace Engine::Scripting::API::LuaFactories
 	void sceneManagerFactory(lua_State* state, SceneManager* scene_manager_ptr)
 	{
 		// Generate SceneManager table
-		lua_createtable(state, 0, static_cast<int>(scene_manager_mappings.size() + 1));
+		lua_createtable(state, 0, 2);
 
 		CMEP_LUAFACTORY_PUSH_MAPPINGS(state, scene_manager_mappings)
 
@@ -100,6 +100,7 @@ namespace Engine::Scripting::API::LuaFactories
 
 		CMEP_LUAFACTORY_PUSH_MAPPINGS(state, scene_mappings)
 
+		// Scene pointer
 		lua_pushlightuserdata(state, scene_ptr);
 		lua_setfield(state, -2, "_ptr");
 	}
@@ -107,30 +108,32 @@ namespace Engine::Scripting::API::LuaFactories
 	void objectFactory(lua_State* state, Object* object_ptr)
 	{
 		// Generate Object table
-		lua_createtable(state, 0, static_cast<int>(object_mappings.size() + 2));
+		lua_createtable(state, 0, 3);
 
 		CMEP_LUAFACTORY_PUSH_MAPPINGS(state, object_mappings)
 
-		// Add Object pointer
+		// Object pointer
 		lua_pushlightuserdata(state, object_ptr);
 		lua_setfield(state, -2, "_ptr");
 
-		// Generate renderer table
+		// Renderer
 		lua_pushlightuserdata(state, object_ptr->getRenderer());
 		lua_setfield(state, -2, "renderer");
 
+		// MeshBuilder
 		lua_pushlightuserdata(state, object_ptr->getMeshBuilder());
 		lua_setfield(state, -2, "meshbuilder");
 	}
 
-	void assetManagerFactory(lua_State* state, std::weak_ptr<AssetManager> asset_manager_ptr)
+	void
+	assetManagerFactory(lua_State* state, std::weak_ptr<AssetManager> asset_manager_ptr)
 	{
 		// Generate AssetManager table
-		lua_createtable(state, 0, static_cast<int>(asset_manager_mappings.size() + 1));
+		lua_createtable(state, 0, 2);
 
 		CMEP_LUAFACTORY_PUSH_MAPPINGS(state, asset_manager_mappings)
 
-		// Add AssetManager pointer
+		// AssetManager pointer
 		void* ptr_obj = lua_newuserdata(state, sizeof(std::weak_ptr<AssetManager>));
 		new (ptr_obj) std::weak_ptr<AssetManager>(std::move(asset_manager_ptr));
 		lua_setfield(state, -2, "_smart_ptr");
@@ -139,11 +142,11 @@ namespace Engine::Scripting::API::LuaFactories
 	void engineFactory(lua_State* state, Engine* engine_ptr)
 	{
 		// Generate Engine table
-		lua_createtable(state, 0, static_cast<int>(engine_mappings.size() + 1));
+		lua_createtable(state, 0, 2);
 
 		CMEP_LUAFACTORY_PUSH_MAPPINGS(state, engine_mappings)
 
-		// Add Engine pointer
+		// Engine pointer
 		lua_pushlightuserdata(state, engine_ptr);
 		lua_setfield(state, -2, "_ptr");
 	}

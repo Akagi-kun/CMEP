@@ -15,16 +15,15 @@ namespace Engine::Rendering::Vulkan
 #pragma region Public
 
 	Buffer::Buffer(
-		InstanceOwned::value_t	with_instance,
+		const LogicalDevice*	with_device,
+		MemoryAllocator*		with_allocator,
 		vk::DeviceSize			with_size,
 		vk::BufferUsageFlags	with_usage,
 		vk::MemoryPropertyFlags with_properties
 	)
-		: InstanceOwned(with_instance),
-		  HoldsVMA(with_instance->getGraphicMemoryAllocator()), buffer_size(with_size)
+		: HoldsVMA(with_allocator), device(with_device), buffer_size(with_size),
+		  property_flags(with_properties)
 	{
-		LogicalDevice* logical_device = instance->getLogicalDevice();
-
 		vk::BufferCreateInfo create_info{
 			.size				   = buffer_size,
 			.usage				   = with_usage,
@@ -38,7 +37,7 @@ namespace Engine::Rendering::Vulkan
 		vma_alloc_info.flags				   = 0;
 		vma_alloc_info.requiredFlags = static_cast<VkMemoryPropertyFlags>(with_properties);
 
-		native_handle = logical_device->createBuffer(create_info);
+		native_handle = device->createBuffer(create_info);
 
 		if (vmaAllocateMemoryForBuffer(
 				allocator->getHandle(),
@@ -62,42 +61,37 @@ namespace Engine::Rendering::Vulkan
 
 	Buffer::~Buffer()
 	{
-		LogicalDevice* logical_device = instance->getLogicalDevice();
-
-		logical_device->waitIdle();
+		device->waitIdle();
 
 		vmaFreeMemory(allocator->getHandle(), allocation);
 	}
 
 	void Buffer::mapMemory()
 	{
-		LogicalDevice* logical_device = instance->getLogicalDevice();
-
-		mapped_data = (**logical_device)
-						  .mapMemory(
-							  allocation_info.deviceMemory,
-							  allocation_info.offset,
-							  allocation_info.size
-						  );
+		mapped_data = static_cast<vk::Device>(*device).mapMemory(
+			allocation_info.deviceMemory,
+			allocation_info.offset,
+			allocation_info.size
+		);
 	}
 
 	void Buffer::unmapMemory()
 	{
-		LogicalDevice* logical_device = instance->getLogicalDevice();
-
-		(**logical_device).unmapMemory(allocation_info.deviceMemory);
+		static_cast<vk::Device>(*device).unmapMemory(allocation_info.deviceMemory);
 
 		// ensure mapped_data is never non-null when not mapped
 		mapped_data = nullptr;
 	}
 
 	StagingBuffer::StagingBuffer(
-		InstanceOwned::value_t with_instance,
-		const void*			   with_data,
-		vk::DeviceSize		   with_size
+		LogicalDevice*	 with_device,
+		MemoryAllocator* with_allocator,
+		const void*		 with_data,
+		vk::DeviceSize	 with_size
 	)
 		: Buffer(
-			  with_instance,
+			  with_device,
+			  with_allocator,
 			  with_size,
 			  vk::BufferUsageFlagBits::eTransferSrc,
 			  vk::MemoryPropertyFlagBits::eHostVisible |
@@ -108,36 +102,40 @@ namespace Engine::Rendering::Vulkan
 	}
 
 	VertexBuffer::VertexBuffer(
-		InstanceOwned::value_t				with_instance,
+		LogicalDevice*						with_device,
+		MemoryAllocator*					with_allocator,
+		CommandBuffer&						with_commandbuffer,
 		const std::vector<RenderingVertex>& vertices
 	)
 		: Buffer(
-			  with_instance,
+			  with_device,
+			  with_allocator,
 			  sizeof(vertices[0]) * vertices.size(),
 			  vk::BufferUsageFlagBits::eTransferDst |
 				  vk::BufferUsageFlagBits::eVertexBuffer,
 			  vk::MemoryPropertyFlagBits::eDeviceLocal
 		  )
 	{
-		CommandBuffer* command_buffer =
-			with_instance->getCommandPool()->allocateCommandBuffer();
-
-		auto staging_buffer = StagingBuffer(with_instance, vertices.data(), buffer_size);
+		auto staging_buffer =
+			StagingBuffer(with_device, with_allocator, vertices.data(), buffer_size);
 
 		// Copy into final buffer
-		command_buffer->copyBufferBuffer(
-			with_instance->getLogicalDevice()->getGraphicsQueue(),
+		with_commandbuffer.copyBufferBuffer(
+			with_device->getGraphicsQueue(),
 			&staging_buffer,
 			this,
 			{vk::BufferCopy{0, 0, buffer_size}}
 		);
-
-		delete command_buffer;
 	}
 
-	UniformBuffer::UniformBuffer(InstanceOwned::value_t with_instance, vk::DeviceSize with_size)
+	UniformBuffer::UniformBuffer(
+		LogicalDevice*	 with_device,
+		MemoryAllocator* with_allocator,
+		vk::DeviceSize	 with_size
+	)
 		: Buffer(
-			  with_instance,
+			  with_device,
+			  with_allocator,
 			  with_size,
 			  vk::BufferUsageFlagBits::eUniformBuffer,
 			  vk::MemoryPropertyFlagBits::eHostVisible |

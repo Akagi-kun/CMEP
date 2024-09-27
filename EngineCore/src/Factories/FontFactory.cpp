@@ -20,7 +20,6 @@
 #include <fstream>
 #include <memory>
 #include <sstream>
-#include <stdexcept>
 #include <string>
 #include <tuple>
 #include <unordered_map>
@@ -37,7 +36,10 @@ namespace Engine::Factories
 			return Utility::SplitKVPair(Utility::StreamGetNextToken(from_stream), "=");
 		}
 
-		void parseBmfontEntryChar(std::unique_ptr<Rendering::FontData>& font, std::stringstream& line_stream)
+		void parseBmfontEntryChar(
+			std::unique_ptr<Rendering::FontData>& font,
+			std::stringstream&					  line_stream
+		)
 		{
 			// When reading the code in this function,
 			// take care to not die from pain as you see the horrible code I have written here.
@@ -80,10 +82,7 @@ namespace Engine::Factories
 					// Finally fill the member of the struct
 					(*fchar_entry_ptr) = std::stoi(value);
 				}
-				else if (key == "id")
-				{
-					fchar_id = std::stoi(value);
-				}
+				else if (key == "id") { fchar_id = std::stoi(value); }
 			}
 
 			font->chars.emplace(fchar_id, fchar);
@@ -170,7 +169,13 @@ namespace Engine::Factories
 					std::stringstream line_remainder;
 					line_data >> line_remainder.rdbuf();
 
-					parseBmfontLine(font_path, font, result->second, line_remainder, pageload_cb);
+					parseBmfontLine(
+						font_path,
+						font,
+						result->second,
+						line_remainder,
+						pageload_cb
+					);
 				}
 			}
 		}
@@ -203,10 +208,7 @@ namespace Engine::Factories
 
 				page_path = value;
 			}
-			else if (key == "id")
-			{
-				page_idx = std::stoi(value);
-			}
+			else if (key == "id") { page_idx = std::stoi(value); }
 		} while ((page_idx == -1) || page_path.empty());
 
 		this->logger->simpleLog<decltype(this)>(
@@ -220,9 +222,8 @@ namespace Engine::Factories
 
 		if (auto locked_asset_manager = asset_manager.lock())
 		{
-			std::shared_ptr<Rendering::Texture> texture = locked_asset_manager->getTexture(
-				page_path.string()
-			);
+			std::shared_ptr<Rendering::Texture> texture =
+				locked_asset_manager->getTexture(page_path.string());
 
 			// Try to load the page if asset manager doesnt have it loaded
 			if (texture == nullptr)
@@ -233,14 +234,15 @@ namespace Engine::Factories
 			}
 
 			// Add page and it's texture to map
-			font->pages.insert(
-				std::pair<int, std::shared_ptr<Rendering::Texture>>(page_idx, std::move(texture))
-			);
+			font->pages.insert(std::pair<int, std::shared_ptr<Rendering::Texture>>(
+				page_idx,
+				std::move(texture)
+			));
 
 			return;
 		}
 
-		throw std::runtime_error("AssetManager could not be locked!");
+		throw ENGINE_EXCEPTION("AssetManager could not be locked!");
 	}
 
 	void FontFactory::parseBmfontLine(

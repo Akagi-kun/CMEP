@@ -4,12 +4,12 @@
 #include "Rendering/SupplyData.hpp"
 
 #include "EnumStringConvertor.hpp"
+#include "Exception.hpp"
 #include "InternalEngineObject.hpp"
 #include "Object.hpp"
 
 #include <cstdint>
 #include <functional>
-#include <stdexcept>
 #include <string>
 #include <variant>
 #include <vector>
@@ -73,7 +73,7 @@ namespace Engine::Factories::ObjectFactory
 	{
 		if (with_pipeline_program.empty())
 		{
-			throw std::invalid_argument(
+			throw ENGINE_EXCEPTION(
 				"Cannot CreateSceneObject without a pipeline! (was empty)"
 			);
 		}

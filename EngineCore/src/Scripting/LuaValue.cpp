@@ -17,28 +17,12 @@ namespace Engine::Scripting
 {
 	namespace
 	{
-		LuaValue::Type luaTypeGetter(lua_State* state, int stack_index)
-		{
-			ENGINE_EXCEPTION_ON_ASSERT(
-				!lua_isnone(state, stack_index),
-				"Cannot construct LuaValue from LUA_TNONE"
-			)
-
-			return static_cast<LuaValue::Type>(lua_type(state, stack_index));
-		}
-
 		// Ensure type is Type::TABLE when calling
 		// recursive if table contains another table
 		LuaValue::value_t luaTableParser(lua_State* state, int stack_index)
 		{
 			LuaValue::table_t table;
 			auto abs_index = Utility::relativeToAbsoluteIndex(state, stack_index);
-
-			/* printf(
-				"\nStart table parse... \t%u %s\n",
-				lua_gettop(state),
-				lua_typename(state, lua_type(state, -1))
-			); */
 
 			// Push nil as the first key (iterates whole table)
 			lua_pushnil(state);
@@ -53,31 +37,44 @@ namespace Engine::Scripting
 					"PIL 2.5 - Tables states that 'nil' is not a valid key!"
 				)
 
-				/* printf(
-					"key: %s \t\t%u %s\n",
-					LuaValue::toString(key).c_str(),
-					lua_gettop(state),
-					lua_typename(state, lua_type(state, -1))
-				); */
-
 				table.emplace_back(key, value);
 
 				// Pop value, keep key on stack!
 				lua_pop(state, 1);
 			}
-			/* printf(
-				"End table parse \t%u %s\n\n",
-				lua_gettop(state),
-				lua_typename(state, lua_type(state, -1))
-			); */
-
-			// Pops the last key
-			// lua_pop(state, 1);
 
 			return table;
 		}
 
-		LuaValue::value_t luaValueGetter(lua_State* state, int stack_index, LuaValue::Type type)
+		/**
+		 * @brief Get the type of a value in the Lua stack
+		 *
+		 * @param state Lua state
+		 * @param stack_index Index in the stack
+		 * @return Type of the value
+		 */
+		LuaValue::Type luaTypeGetter(lua_State* state, int stack_index)
+		{
+			ENGINE_EXCEPTION_ON_ASSERT(
+				!lua_isnone(state, stack_index),
+				"Cannot construct LuaValue from LUA_TNONE"
+			)
+
+			return static_cast<LuaValue::Type>(lua_type(state, stack_index));
+		}
+
+		/**
+		 * @brief Get a value from the Lua stack
+		 *
+		 * @warning This function may fail if @p type is incorrect
+		 *
+		 * @param state Lua state
+		 * @param stack_index Index in the stack
+		 * @param type Type of the value
+		 * @return The value
+		 */
+		LuaValue::value_t
+		luaValueGetter(lua_State* state, int stack_index, LuaValue::Type type)
 		{
 			using Type = LuaValue::Type;
 

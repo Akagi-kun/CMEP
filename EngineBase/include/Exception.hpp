@@ -1,4 +1,5 @@
 #pragma once
+// IWYU pragma: private; include Base.hpp
 
 #include "PlatformSemantics.hpp"
 
@@ -26,22 +27,22 @@ namespace Engine
 	private:
 		std::string message;
 
-		static CMEP_EXPORT std::string generateWhat(
-			const std::string&	 with_message,
-			std::source_location location
-		);
+		static CMEP_EXPORT std::string
+		generateWhat(const std::string& with_message, std::source_location location);
 	};
 
 	CMEP_EXPORT std::string unrollExceptions(const std::exception& caught_exception);
 } // namespace Engine
 
 // NOLINTBEGIN(*unused-macros)
-//
-// Use as `throw ENGINE_EXCEPTION(message)`
+/**
+ * @brief Use as @code throw ENGINE_EXCEPTION(message) @endcode
+ */
 #define ENGINE_EXCEPTION(message) ::Engine::Exception(message)
-//
-// Runtime assert, use in places where a regular <cassert> assert() may be necessary
-// i.e. when true_expr depends on external inputs that are not a part of the engine itself
+
+/**
+ * @brief Runtime assert, use when true_expr depends on external inputs that are not part of the engine itself
+ */
 #define ENGINE_EXCEPTION_ON_ASSERT(true_expr, message)                                   \
 	if ((true_expr) == false)                                                            \
 	{                                                                                    \
@@ -51,5 +52,4 @@ namespace Engine
 	}
 #define ENGINE_EXCEPTION_ON_ASSERT_NOMSG(true_expr)                                      \
 	ENGINE_EXCEPTION_ON_ASSERT((true_expr), "")
-//
 // NOLINTEND(*unused-macros)

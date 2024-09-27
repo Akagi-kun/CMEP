@@ -47,7 +47,7 @@ target_compile_options(EngineRenderingVulkan PRIVATE ${ENGINE_COMPILE_OPTIONS})
 target_precompile_headers(EngineRenderingVulkan PRIVATE [["vulkan/vulkan.hpp"]] [["vulkan/vulkan_raii.hpp"]])
 
 target_link_directories(EngineRenderingVulkan PRIVATE ../build)
-target_include_directories(EngineRenderingVulkan PRIVATE include
+target_include_directories(EngineRenderingVulkan PRIVATE
 											 ../EngineLogging/export_include
 											 ../external/glfw/include
 											 ../external/VulkanMemoryAllocator/include

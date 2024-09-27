@@ -33,9 +33,11 @@ namespace Engine::Rendering::Vulkan
 			glfwWindowHint(hint, value);
 		}
 
-		// Default hint since we use Vulkan only
+		// Disable this hint since we use Vulkan only
+		// and don't need glfw to load any API for us
 		glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
 
+		// Reset all status bits to 0
 		memset(&status, 0, sizeof(StatusBits));
 
 		native_handle = glfwCreateWindow(
@@ -46,6 +48,7 @@ namespace Engine::Rendering::Vulkan
 			nullptr
 		);
 
+		// Set callbacks
 		glfwSetWindowUserPointer(native_handle, this);
 		glfwSetFramebufferSizeCallback(native_handle, Window::callbackOnFramebufferResize);
 		glfwSetWindowFocusCallback(native_handle, Window::callbackOnWindowFocus);
@@ -81,16 +84,14 @@ namespace Engine::Rendering::Vulkan
 		glfwDestroyWindow(native_handle);
 	}
 
-	// This function modifies external state
-	// NOLINTNEXTLINE(readability-make-member-function-const)
+	// NOLINTNEXTLINE(readability-make-member-function-const) This function modifies internal state
 	void Window::setVisibility(bool visible)
 	{
 		if (visible) { glfwShowWindow(native_handle); }
 		else { glfwHideWindow(native_handle); }
 	}
 
-	// This function modifies external state
-	// NOLINTNEXTLINE(readability-make-member-function-const)
+	// NOLINTNEXTLINE(readability-make-member-function-const) This function modifies internal state
 	void Window::setShouldClose(bool should_close)
 	{
 		glfwSetWindowShouldClose(native_handle, static_cast<int>(should_close));
@@ -221,16 +222,16 @@ namespace Engine::Rendering::Vulkan
 
 		vk::SwapchainKHR swap_chains[] = {*swapchain->getHandle()};
 
-		vk::PresentInfoKHR present_info{
-			.waitSemaphoreCount = static_cast<uint32_t>(signal_semaphores.size()),
-			.pWaitSemaphores	= signal_semaphores.data(),
-			.swapchainCount		= 1,
-			.pSwapchains		= swap_chains,
-			.pImageIndices		= &image_index
-		};
-
 		// Present current image to the screen
 		{
+			vk::PresentInfoKHR present_info{
+				.waitSemaphoreCount = static_cast<uint32_t>(signal_semaphores.size()),
+				.pWaitSemaphores	= signal_semaphores.data(),
+				.swapchainCount		= 1,
+				.pSwapchains		= swap_chains,
+				.pImageIndices		= &image_index
+			};
+
 			vk::Result result = logical_device->getPresentQueue().presentKHR(present_info);
 			if (result != vk::Result::eSuccess)
 			{
@@ -243,28 +244,31 @@ namespace Engine::Rendering::Vulkan
 
 #pragma region Private
 
-	Window* Window::getWindowPtrFromGlfw(GLFWwindow* window)
+	namespace
 	{
-		return reinterpret_cast<Window*>(glfwGetWindowUserPointer(window));
-	}
+		Window* getWindowPtrFromGlfw(GLFWwindow* window)
+		{
+			return reinterpret_cast<Window*>(glfwGetWindowUserPointer(window));
+		}
+	} // namespace
 
 	void Window::callbackOnFramebufferResize(GLFWwindow* window, int width, int height)
 	{
-		auto* self = Window::getWindowPtrFromGlfw(window);
+		auto* self = getWindowPtrFromGlfw(window);
 
 		self->resize({width, height});
 	}
 
 	void Window::callbackOnWindowFocus(GLFWwindow* window, int focused)
 	{
-		auto* self = Window::getWindowPtrFromGlfw(window);
+		auto* self = getWindowPtrFromGlfw(window);
 
 		self->status.is_focus = (focused > 0);
 	}
 
 	void Window::callbackOnCursorEnterLeave(GLFWwindow* window, int entered)
 	{
-		auto* self		= Window::getWindowPtrFromGlfw(window);
+		auto* self		= getWindowPtrFromGlfw(window);
 		bool  b_entered = (entered != 0);
 
 		if (self->status.is_focus)
@@ -285,7 +289,7 @@ namespace Engine::Rendering::Vulkan
 
 	void Window::callbackOnCursorPosition(GLFWwindow* window, double xpos, double ypos)
 	{
-		auto* self = Window::getWindowPtrFromGlfw(window);
+		auto* self = getWindowPtrFromGlfw(window);
 
 		if (self->status.is_focus) { self->cursor_position = {xpos, ypos}; }
 		else { self->cursor_position = {0.0, 0.0}; }
@@ -294,12 +298,12 @@ namespace Engine::Rendering::Vulkan
 	void
 	Window::callbackOnKeyEvent(GLFWwindow* window, int key, int scancode, int action, int mods)
 	{
-		auto* self = Window::getWindowPtrFromGlfw(window);
+		auto* self = getWindowPtrFromGlfw(window);
 
 		// Ignore scancode
 		(void)(scancode);
 
-		self->input_events.emplace(action, key, mods);
+		self->keyboard_events.emplace(action, key, mods);
 	}
 
 	vk::Extent2D Window::chooseVulkanSwapExtent(

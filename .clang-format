@@ -36,7 +36,7 @@ BraceWrapping:
 BreakBeforeBraces: Custom
 AlwaysBreakAfterReturnType: None
 PenaltyBreakAssignment: 30
-PenaltyBreakComment: 2000000
+PenaltyBreakComment: 200000
 PenaltyExcessCharacter: 20
 PenaltyReturnTypeOnItsOwnLine: 1
 PenaltyBreakBeforeFirstCallParameter: 1

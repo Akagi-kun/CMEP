@@ -7,10 +7,10 @@
 #include "Logging/Logging.hpp"
 
 #include "Engine.hpp"
+#include "Exception.hpp"
 #include "Object.hpp"
 
 #include <memory>
-#include <stdexcept>
 #include <string>
 #include <unordered_map>
 
@@ -18,7 +18,10 @@ namespace Engine
 {
 	Scene::~Scene()
 	{
-		this->logger->simpleLog<decltype(this)>(Logging::LogLevel::VerboseDebug, "Destructor called");
+		this->logger->simpleLog<decltype(this)>(
+			Logging::LogLevel::VerboseDebug,
+			"Destructor called"
+		);
 
 		templates.clear();
 
@@ -40,7 +43,8 @@ namespace Engine
 		return objects;
 	}
 
-	void Scene::addTemplatedObject(const std::string& name, const std::string& template_name)
+	void
+	Scene::addTemplatedObject(const std::string& name, const std::string& template_name)
 	{
 		auto templated_object = templates.find(template_name);
 
@@ -55,7 +59,7 @@ namespace Engine
 		}
 		else
 		{
-			throw std::invalid_argument(
+			throw ENGINE_EXCEPTION(
 				"Template with name '" + template_name + "' could not be found!"
 			);
 		}
@@ -78,19 +82,13 @@ namespace Engine
 
 			objects.emplace(name, ptr);
 		}
-		else
-		{
-			throw std::invalid_argument("Called AddObject with nullptr!");
-		}
+		else { throw ENGINE_EXCEPTION("Called AddObject with nullptr!"); }
 	}
 
 	Object* Scene::findObject(const std::string& name)
 	{
 		auto find_ret = objects.find(name);
-		if (find_ret != objects.end())
-		{
-			return find_ret->second;
-		}
+		if (find_ret != objects.end()) { return find_ret->second; }
 		return nullptr;
 	}
 
@@ -105,7 +103,7 @@ namespace Engine
 		}
 		else
 		{
-			throw std::invalid_argument("Could not remove non-existent object '" + name + "'!");
+			throw ENGINE_EXCEPTION("Could not remove non-existent object '" + name + "'!");
 		}
 	}
 

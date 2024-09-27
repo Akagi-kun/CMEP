@@ -27,7 +27,6 @@
 
 namespace Engine::Scripting::API
 {
-	// Replaces the default lua print() with a custom one that uses the logger
 	int printReplace(lua_State* state)
 	{
 		int argc = lua_gettop(state);
@@ -58,7 +57,6 @@ namespace Engine::Scripting::API
 
 	namespace
 	{
-
 #pragma region ObjectFactory
 
 		template <typename supply_data_t>
@@ -149,27 +147,24 @@ namespace Engine::Scripting::API
 				mesh_builder_type
 			);
 
-			if (factory)
+			if (!factory)
 			{
-				// Invoke the factory
-				Object* obj = factory(
-					owner_engine,
-					shader_name,
-					renderer_supply_data,
-					meshbuilder_supply_data
-				);
-
-				if (obj != nullptr)
-				{
-					API::LuaFactories::objectFactory(state, obj);
-
-					return 1;
-				}
-
-				return luaL_error(state, "Object was nullptr!");
+				return luaL_error(state, "No factory was found for this object!");
 			}
 
-			return luaL_error(state, "No factory was found for this object!");
+			// Invoke the factory
+			Object* obj = factory(
+				owner_engine,
+				shader_name,
+				renderer_supply_data,
+				meshbuilder_supply_data
+			);
+
+			if (obj == nullptr) { return luaL_error(state, "Object was nullptr!"); }
+
+			API::LuaFactories::objectFactory(state, obj);
+
+			return 1;
 		}
 
 #pragma endregion

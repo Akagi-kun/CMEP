@@ -136,7 +136,8 @@ namespace Engine::Factories
 		assert(vk_instance);
 
 		Rendering::Vulkan::StagingBuffer staging_buffer(
-			vk_instance,
+			vk_instance->getLogicalDevice(),
+			vk_instance->getGraphicMemoryAllocator(),
 			raw_data.data(),
 			memory_size
 		);

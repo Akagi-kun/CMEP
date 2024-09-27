@@ -25,6 +25,7 @@
 #include <exception>
 #include <fstream>
 #include <memory>
+#include <queue>
 #include <stdexcept>
 #include <string>
 #include <thread>
@@ -79,95 +80,121 @@ namespace Engine
 				   seconds)
 			{}
 		}
+
+		void handleMouseInput(
+			Engine*							 origin_engine,
+			double							 delta_time,
+			const Rendering::Vulkan::Window* window
+		)
+		{
+			const auto& screen_size = window->getFramebufferSize();
+
+			// Initial last position is the center of the window
+			static glm::vec<2, double> last_pos = {
+				static_cast<double>(screen_size.x) / 2,
+				static_cast<double>(screen_size.y) / 2
+			};
+
+			// Clamp the mouse event movement to some maximum
+			// reduces the chance that the window manager will mess with us
+			// (i.e. when gaining focus and the mouse is somewhere far outside the window)
+			constexpr double clamp_difference = 128;
+
+			// Check whether we have focus and the mouse is in the "content" area
+			if (window->status.is_focus && window->status.is_content)
+			{
+				if ((window->cursor_position.x - last_pos.x) != 0.0 ||
+					(window->cursor_position.y - last_pos.y) != 0.0)
+				{
+					auto event = EventHandling::Event(
+						origin_engine,
+						EventHandling::EventType::ON_MOUSEMOVED
+					);
+
+					event.mouse.x = std::clamp(
+						window->cursor_position.x - last_pos.x,
+						-clamp_difference,
+						clamp_difference
+					);
+					event.mouse.y = std::clamp(
+						window->cursor_position.y - last_pos.y,
+						-clamp_difference,
+						clamp_difference
+					);
+
+					event.delta_time = delta_time;
+
+					// Fire event, throw exception if return code is non-zero
+					int event_return = origin_engine->fireEvent(event);
+					ENGINE_EXCEPTION_ON_ASSERT_NOMSG(event_return == 0)
+
+					// Set last position to the current position
+					last_pos = window->cursor_position;
+				}
+			}
+		}
+
+		void handleKeyboardInput(
+			Engine*										  origin_engine,
+			double										  delta_time,
+			std::queue<Rendering::Vulkan::KeyboardEvent>& event_queue
+		)
+		{
+			// Handle every event in the queue
+			for (; !event_queue.empty(); event_queue.pop())
+			{
+				const auto& input_event = event_queue.front();
+
+				int event_return = 0;
+
+				switch (input_event.type)
+				{
+					case Rendering::Vulkan::KeyboardEvent::KEY_PRESS:
+					case Rendering::Vulkan::KeyboardEvent::KEY_REPEAT:
+					{
+						auto event = EventHandling::Event(
+							origin_engine,
+							EventHandling::EventType::ON_KEYDOWN
+						);
+						event.keycode	 = static_cast<uint16_t>(input_event.key);
+						event.delta_time = delta_time;
+						event_return	 = origin_engine->fireEvent(event);
+						break;
+					}
+					case Rendering::Vulkan::KeyboardEvent::KEY_RELEASE:
+					{
+						auto event = EventHandling::Event(
+							origin_engine,
+							EventHandling::EventType::ON_KEYUP
+						);
+						event.keycode	 = static_cast<uint16_t>(input_event.key);
+						event.delta_time = delta_time;
+						event_return	 = origin_engine->fireEvent(event);
+						break;
+					}
+					default:
+					{
+						throw ENGINE_EXCEPTION("Unknown input event!");
+					}
+				}
+
+				if (event_return != 0) { origin_engine->stop(); }
+			}
+		}
 	} // namespace
 
 	void Engine::handleInput(const double delta_time)
 	{
-		auto*		window_data = vk_instance->getWindow();
-		const auto& screen_size = window_data->getFramebufferSize();
+		auto* window_data = vk_instance->getWindow();
 
-		static glm::vec<2, double> last_pos = {
-			static_cast<double>(screen_size.x) / 2,
-			static_cast<double>(screen_size.y) / 2
-		};
+		handleMouseInput(this, delta_time, window_data);
 
-		static constexpr double clamp_difference = 128;
-
-		if (window_data->status.is_focus && window_data->status.is_content)
-		{
-			if ((window_data->cursor_position.x - last_pos.x) != 0.0 ||
-				(window_data->cursor_position.y - last_pos.y) != 0.0)
-			{
-				auto event =
-					EventHandling::Event(this, EventHandling::EventType::ON_MOUSEMOVED);
-
-				event.mouse.x = std::clamp(
-					window_data->cursor_position.x - last_pos.x,
-					-clamp_difference,
-					clamp_difference
-				);
-				event.mouse.y = std::clamp(
-					window_data->cursor_position.y - last_pos.y,
-					-clamp_difference,
-					clamp_difference
-				);
-
-				event.delta_time = delta_time;
-
-				int event_return = fireEvent(event);
-				ENGINE_EXCEPTION_ON_ASSERT_NOMSG(event_return == 0)
-
-				last_pos = window_data->cursor_position;
-			}
-		}
-
-		while (!window_data->input_events.empty())
-		{
-			auto& input_event = window_data->input_events.front();
-			// begin
-
-			int event_return = 0;
-
-			switch (input_event.type)
-			{
-				case Rendering::Vulkan::InputEvent::KEY_PRESS:
-				case Rendering::Vulkan::InputEvent::KEY_REPEAT:
-				{
-					auto event =
-						EventHandling::Event(this, EventHandling::EventType::ON_KEYDOWN);
-					event.keycode	 = static_cast<uint16_t>(input_event.key);
-					event.delta_time = getLastDeltaTime();
-					event_return	 = fireEvent(event);
-					break;
-				}
-				case Rendering::Vulkan::InputEvent::KEY_RELEASE:
-				{
-
-					auto event =
-						EventHandling::Event(this, EventHandling::EventType::ON_KEYUP);
-					event.keycode	 = static_cast<uint16_t>(input_event.key);
-					event.delta_time = getLastDeltaTime();
-					event_return	 = fireEvent(event);
-					break;
-				}
-				default:
-				{
-					throw std::invalid_argument("Unknown input event!");
-				}
-			}
-
-			if (event_return != 0) { stop(); }
-
-			// end
-			window_data->input_events.pop();
-		}
+		handleKeyboardInput(this, delta_time, window_data->keyboard_events);
 	}
 
 	void Engine::handleConfig()
 	{
 		std::ifstream file(config_path);
-
-		config = std::make_unique<EngineConfig>();
 
 		nlohmann::json data;
 		try
@@ -179,16 +206,22 @@ namespace Engine
 			std::throw_with_nested(ENGINE_EXCEPTION("Exception parsing config!"));
 		}
 
-		config->window.title  = data["window"]["title"].get<std::string>();
-		config->window.size.x = data["window"]["sizeX"].get<uint16_t>();
-		config->window.size.y = data["window"]["sizeY"].get<uint16_t>();
+		config = {
+			.window =
+				{
+					.size =
+						{data["window"]["sizeX"].get<uint16_t>(),
+						 data["window"]["sizeY"].get<uint16_t>()},
+					.title = data["window"]["title"].get<std::string>(),
+				},
+			.framerate_target = data["rendering"]["framerateTarget"].get<uint16_t>(),
 
-		config->framerate_target = data["rendering"]["framerateTarget"].get<uint16_t>();
+			.scene_path	 = data["scene_path"].get<std::string>(),
+			.shader_path = data["shader_path"].get<std::string>(),
 
-		config->scene_path	  = data["scene_path"].get<std::string>();
-		config->default_scene = data["default_scene"].get<std::string>();
+			.default_scene = data["default_scene"].get<std::string>(),
 
-		config->shader_path = data["shader_path"].get<std::string>();
+		};
 	}
 
 	void Engine::renderCallback(
@@ -244,35 +277,43 @@ namespace Engine
 		this->logger->simpleLog<decltype(this)>(
 			Logging::LogLevel::VerboseDebug,
 			"Locked to framerate %u%s",
-			config->framerate_target,
-			config->framerate_target == 0 ? " (VSYNC)" : ""
+			config.framerate_target,
+			config.framerate_target == 0 ? " (VSYNC)" : ""
 		);
 
 		auto build_clock = std::chrono::steady_clock::now();
 
-		this->logger->simpleLog<decltype(this)>(
-			Logging::LogLevel::Info,
-			"Starting scene build"
-		);
-		for (const auto& [name, object] : scene->getAllObjects())
+		// Build scene
 		{
+			const auto& objects = scene->getAllObjects();
+
 			this->logger->simpleLog<decltype(this)>(
-				Logging::LogLevel::Debug,
-				"Building object '%s'",
-				name.c_str()
+				Logging::LogLevel::Info,
+				"Starting scene build (%lu objects)",
+				objects.size()
 			);
-			object->getMeshBuilder()->build();
+			for (const auto& [name, object] : objects)
+			{
+				this->logger->simpleLog<decltype(this)>(
+					Logging::LogLevel::Debug,
+					"Building object '%s'",
+					name.c_str()
+				);
+				object->getMeshBuilder()->build();
+			}
+
+			auto scene_build_time =
+				static_cast<double>(
+					(std::chrono::steady_clock::now() - build_clock).count()
+				) /
+				nano_to_msec;
+
+			this->logger->simpleLog<decltype(this)>(
+				Logging::LogLevel::Info,
+				"Scene build finished in %lums",
+				static_cast<uint_fast32_t>(scene_build_time)
+			);
 		}
-
-		auto scene_build_time =
-			static_cast<double>((std::chrono::steady_clock::now() - build_clock).count()) /
-			nano_to_msec;
-
-		this->logger->simpleLog<decltype(this)>(
-			Logging::LogLevel::Info,
-			"Scene build finished in %lums",
-			static_cast<uint_fast32_t>(scene_build_time)
-		);
 
 		// Show window
 		auto* glfw_window = vk_instance->getWindow();
@@ -357,13 +398,10 @@ namespace Engine
 
 			const auto	 frame_clock = std::chrono::steady_clock::now();
 			const double sleep_secs =
-				1.0 / config->framerate_target -
+				1.0 / config.framerate_target -
 				static_cast<double>((frame_clock - next_clock).count()) / nano_to_sec;
 			// spin sleep if sleep necessary and VSYNC disabled
-			if (sleep_secs > 0 && config->framerate_target != 0)
-			{
-				spinSleep(sleep_secs);
-			}
+			if (sleep_secs > 0 && config.framerate_target != 0) { spinSleep(sleep_secs); }
 
 			prev_clock = next_clock;
 		}
@@ -455,8 +493,8 @@ namespace Engine
 		vk_instance = new Rendering::Vulkan::Instance(
 			this->logger,
 			{
-				config->window.size,
-				config->window.title,
+				config.window.size,
+				config.window.title,
 				{
 					{GLFW_VISIBLE, GLFW_FALSE},
 					{GLFW_RESIZABLE, GLFW_TRUE},
@@ -469,12 +507,12 @@ namespace Engine
 		pipeline_manager = std::make_shared<Rendering::Vulkan::PipelineManager>(
 			logger,
 			vk_instance,
-			config->game_path + config->shader_path
+			config.game_path + config.shader_path
 		);
 
-		scene_manager->setSceneLoadPrefix(config->game_path + config->scene_path);
-		scene_manager->loadScene(config->default_scene);
-		scene_manager->setScene(config->default_scene);
+		scene_manager->setSceneLoadPrefix(config.game_path + config.scene_path);
+		scene_manager->loadScene(config.default_scene);
+		scene_manager->setScene(config.default_scene);
 
 		auto oninit_start = std::chrono::steady_clock::now();
 
