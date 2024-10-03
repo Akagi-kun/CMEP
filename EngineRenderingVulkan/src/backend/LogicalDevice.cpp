@@ -1,5 +1,6 @@
 #include "backend/LogicalDevice.hpp"
 
+#include "Exception.hpp"
 #include "backend/DeviceScore.hpp"
 #include "backend/Instance.hpp"
 #include "common/InstanceOwned.hpp"
@@ -7,7 +8,6 @@
 
 #include <cstdint>
 #include <set>
-#include <stdexcept>
 #include <vector>
 
 namespace Engine::Rendering::Vulkan
@@ -40,18 +40,16 @@ namespace Engine::Rendering::Vulkan
 
 #pragma region Private
 
-	vk::raii::Device LogicalDevice::createDevice(
-		Instance*	   with_instance,
-		const Surface* with_surface
-	)
+	vk::raii::Device
+	LogicalDevice::createDevice(Instance* with_instance, const Surface* with_surface)
 	{
-		auto* physical_device = with_instance->getPhysicalDevice();
+		const auto* physical_device = with_instance->getPhysicalDevice();
 
 		auto families = physical_device->findVulkanQueueFamilies(with_surface);
 
 		if (!families.has_value())
 		{
-			throw std::runtime_error("Not all required queue families were present!");
+			throw ENGINE_EXCEPTION("Not all required queue families were present!");
 		}
 
 		queue_family_indices = families.value();
@@ -79,17 +77,17 @@ namespace Engine::Rendering::Vulkan
 		}
 
 		// Fill structs for required features and extensions
-		vk::PhysicalDeviceDescriptorIndexingFeatures device_descriptor_indexing_features{
+		vk::PhysicalDeviceDescriptorIndexingFeatures device_descriptor_indexing_features = {
 			.descriptorBindingPartiallyBound = vk::True
 		};
 
-		vk::PhysicalDeviceRobustness2FeaturesEXT device_robustness_features{
-			.pNext				 = &device_descriptor_indexing_features,
+		vk::PhysicalDeviceRobustness2FeaturesEXT device_robustness_features = {
 			.robustBufferAccess2 = vk::True,
 		};
+		device_robustness_features.pNext = &device_descriptor_indexing_features;
 
-		vk::PhysicalDeviceFeatures2 device_features2 =
-			physical_device->getFeatures2().setPNext(&device_robustness_features);
+		vk::PhysicalDeviceFeatures2 device_features2 = physical_device->getFeatures2();
+		device_features2.pNext						 = &device_robustness_features;
 
 		// Logical device creation information
 		vk::DeviceCreateInfo create_info{

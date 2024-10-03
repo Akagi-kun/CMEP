@@ -9,25 +9,22 @@
 #include "Object.hpp"
 
 #include <map>
-#include <memory>
 #include <string>
 #include <unordered_map>
-#include <utility>
 
 namespace Engine
 {
 	class Scene : public InternalEngineObject
 	{
 	public:
-		std::multimap<
-			EventHandling::EventType,
-			std::pair<std::shared_ptr<Scripting::ILuaScript>, std::string>>
+		std::multimap<EventHandling::EventType, Scripting::ScriptFunctionRef>
 			lua_event_handlers;
 
 		using InternalEngineObject::InternalEngineObject;
 		~Scene();
 
-		[[nodiscard]] const std::unordered_map<std::string, Object*>& getAllObjects() noexcept;
+		[[nodiscard]] const std::unordered_map<std::string, Object*>&
+		getAllObjects() noexcept;
 
 		void addObject(const std::string& name, Object* ptr);
 		void addTemplatedObject(const std::string& name, const std::string& template_name);
@@ -40,7 +37,7 @@ namespace Engine
 		);
 
 	private:
-		std::unordered_map<std::string, Object*>								  objects;
+		std::unordered_map<std::string, Object*> objects;
 		std::unordered_map<std::string, Factories::ObjectFactory::ObjectTemplate> templates;
 	};
 } // namespace Engine

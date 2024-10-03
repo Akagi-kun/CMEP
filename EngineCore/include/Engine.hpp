@@ -35,7 +35,7 @@ namespace Engine
 			std::string			  title = "unknown";
 		} window;
 
-		unsigned int framerate_target = 0;
+		uint_fast16_t framerate_target = 0;
 
 		std::string game_path	= "game/";
 		std::string scene_path	= "scenes/";
@@ -64,10 +64,15 @@ namespace Engine
 		 */
 		[[noreturn]] static void throwTest();
 
-		// Event return code should be checked
-		[[nodiscard]] int fireEvent(EventHandling::Event& event);
+		/**
+		 * @brief Fires an event, calling every handler registered for that type
+		 *
+		 * @param event The event object
+		 * @return Sum of all exit codes from each handler
+		 */
+		[[nodiscard]] int fireEvent(EventHandling::Event event);
 
-		void setFramerateTarget(uint_fast16_t framerate) noexcept
+		void setFramerateTarget(uint_fast16_t framerate)
 		{
 			config.framerate_target = framerate;
 		}
@@ -82,11 +87,11 @@ namespace Engine
 			return last_delta_time;
 		}
 
-		[[nodiscard]] std::shared_ptr<Logging::Logger> getLogger() const noexcept
+		[[nodiscard]] std::shared_ptr<Logging::Logger> getLogger() const
 		{
 			return logger;
 		}
-		[[nodiscard]] std::weak_ptr<AssetManager> getAssetManager() noexcept
+		[[nodiscard]] std::weak_ptr<AssetManager> getAssetManager()
 		{
 			return asset_manager;
 		}
@@ -99,7 +104,7 @@ namespace Engine
 		{
 			return vk_instance;
 		}
-		[[nodiscard]] std::weak_ptr<SceneManager> getSceneManager() noexcept
+		[[nodiscard]] std::weak_ptr<SceneManager> getSceneManager()
 		{
 			return scene_manager;
 		}

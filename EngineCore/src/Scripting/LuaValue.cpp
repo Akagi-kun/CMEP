@@ -73,8 +73,7 @@ namespace Engine::Scripting
 		 * @param type Type of the value
 		 * @return The value
 		 */
-		LuaValue::value_t
-		luaValueGetter(lua_State* state, int stack_index, LuaValue::Type type)
+		LuaValue::value_t luaValueGetter(lua_State* state, int stack_index, LuaValue::Type type)
 		{
 			using Type = LuaValue::Type;
 
@@ -175,14 +174,14 @@ namespace Engine::Scripting
 
 	namespace
 	{
-		template <typename T>
+		template <typename value_t>
 		inline bool castCmp(const LuaValue& lhs, const LuaValue& rhs)
-			requires(std::is_convertible_v<LuaValue, T>)
+			requires(std::is_convertible_v<LuaValue, value_t>)
 		{
 			// floating point comparisons are safe here
 			// because we need strict equality
 			// NOLINTNEXTLINE(*float-equal)
-			return static_cast<T>(lhs) == static_cast<T>(rhs);
+			return static_cast<value_t>(lhs) == static_cast<value_t>(rhs);
 		}
 	} // namespace
 
@@ -205,6 +204,8 @@ namespace Engine::Scripting
 			case Type::USERDATA:
 			case Type::CDATA:	  return castCmp<ptr_t>(*this, other);
 
+			// Table does not currently support comparisons
+			case Type::TABLE:
 			default:			  return false;
 		}
 	}

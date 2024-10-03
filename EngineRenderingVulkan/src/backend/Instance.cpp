@@ -1,4 +1,7 @@
+#include "Exception.hpp"
+
 #include <functional>
+
 #define ENGINERENDERINGVULKAN_LIBRARY_IMPLEMENTATION
 #include "Logging/Logging.hpp"
 
@@ -16,7 +19,6 @@
 #include <cstdint>
 #include <cstring>
 #include <format>
-#include <stdexcept>
 #include <string>
 #include <utility>
 #include <vector>
@@ -29,7 +31,7 @@ namespace Engine::Rendering::Vulkan
 	{
 		[[noreturn]] void glfwErrorCallback(int error, const char* description)
 		{
-			throw std::runtime_error(std::format(
+			throw ENGINE_EXCEPTION(std::format(
 				"GLFW error handler callback called! Code: '{}'; description: "
 				"'{}'",
 				error,
@@ -50,7 +52,7 @@ namespace Engine::Rendering::Vulkan
 	{
 		if (glfwInit() == GLFW_FALSE)
 		{
-			throw std::runtime_error("GLFW returned GLFW_FALSE on glfwInit!");
+			throw ENGINE_EXCEPTION("GLFW returned GLFW_FALSE on glfwInit!");
 		}
 		glfwSetErrorCallback(glfwErrorCallback);
 
@@ -122,7 +124,7 @@ namespace Engine::Rendering::Vulkan
 		// Check validation layer support
 		if (enable_vk_validation_layers && !checkVulkanValidationLayers())
 		{
-			throw std::runtime_error("Validation layers requested but unsupported!");
+			throw ENGINE_EXCEPTION("Validation layers requested but unsupported!");
 		}
 
 		// Get extensions required by GLFW
@@ -246,7 +248,7 @@ namespace Engine::Rendering::Vulkan
 			if (score) { candidates.emplace_back(score); }
 		}
 
-		if (candidates.empty()) { throw std::runtime_error("No physical device found!"); }
+		if (candidates.empty()) { throw ENGINE_EXCEPTION("No physical device found!"); }
 
 		// Sort devices, using std::greater to achieve the descending order
 		std::sort(candidates.begin(), candidates.end(), std::greater<>());

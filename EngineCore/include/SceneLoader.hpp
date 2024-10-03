@@ -18,7 +18,7 @@ namespace Engine
 	class SceneLoader : public InternalEngineObject
 	{
 	public:
-		std::string scene_prefix;
+		std::filesystem::path scene_prefix;
 
 		using InternalEngineObject::InternalEngineObject;
 		~SceneLoader();
@@ -29,13 +29,24 @@ namespace Engine
 		void loadSceneAsset(
 			std::shared_ptr<AssetManager>& asset_manager,
 			nlohmann::json&				   asset_entry,
-			const std::string&			   scene_path
+			const std::filesystem::path&   scene_path
 		);
-		void loadSceneAssets(nlohmann::json& data, const std::string& scene_path);
+		void loadSceneAssets(
+			std::shared_ptr<AssetManager>& asset_manager,
+			nlohmann::json&				   data,
+			const std::filesystem::path&   scene_path
+		);
 
-		void loadSceneTemplates(nlohmann::json& data, std::shared_ptr<Scene>& scene);
-		void loadSceneTree(nlohmann::json& data, std::shared_ptr<Scene>& scene);
-		void loadSceneEventHandlers(nlohmann::json& data, std::shared_ptr<Scene>& scene);
+		void loadSceneTemplates(
+			std::shared_ptr<AssetManager>& asset_manager,
+			nlohmann::json&				   data,
+			std::shared_ptr<Scene>&		   scene
+		);
+		void loadSceneEventHandlers(
+			std::shared_ptr<AssetManager>& asset_manager,
+			nlohmann::json&				   data,
+			std::shared_ptr<Scene>&		   scene
+		);
 
 		void loadSceneInternal(std::shared_ptr<Scene>& scene, std::string& scene_name);
 	};

@@ -36,7 +36,8 @@ cmake -DCMAKE_BUILD_TYPE=<CONFIG> .
 cmake --build . --target rungame --config <CONFIG>
 ```
 > [!TIP]
-> It is not necessary to specify *both* CMAKE_BUILD_TYPE (only used by Makefile generators) and --config (only used by multi-config generators), you may instead specify only the one your generator will use
+> It is not necessary to specify *both* CMAKE_BUILD_TYPE (only used by Makefile generators) and --config (only used by multi-config generators)
+> you may instead specify only the one your generator uses
 
 > [!WARNING]
 > By default most generators build the Debug configuration if none is specified, this may not be what you want 

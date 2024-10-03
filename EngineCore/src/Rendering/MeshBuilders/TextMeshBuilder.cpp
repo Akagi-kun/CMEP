@@ -11,8 +11,10 @@
 
 #include "Engine.hpp"
 #include "Exception.hpp"
-#include "backend/Instance.hpp"
 
+#include "glm/glm.hpp"
+
+#include <algorithm>
 #include <cassert>
 #include <format>
 #include <iterator>

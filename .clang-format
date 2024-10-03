@@ -38,7 +38,7 @@ AlwaysBreakAfterReturnType: None
 PenaltyBreakAssignment: 30
 PenaltyBreakComment: 200000
 PenaltyExcessCharacter: 20
-PenaltyReturnTypeOnItsOwnLine: 1
+PenaltyReturnTypeOnItsOwnLine: 300
 PenaltyBreakBeforeFirstCallParameter: 1
 # Indent
 IndentCaseLabels: true
@@ -66,15 +66,18 @@ IncludeCategories:
   - Regex:           '^"(Rendering)/'
     Priority:        4
     CaseSensitive:   true
-  - Regex:           '^"(Logging)/'
-    Priority:        10
+  - Regex:           '^"(Assets)/'
+    Priority:        4
     CaseSensitive:   true
   - Regex:           '^"(Factories)/'
     Priority:        8
     CaseSensitive:   true
-  - Regex:           '^"(Assets)/'
-    Priority:        4
+  - Regex:           '^"(Logging)/'
+    Priority:        10
     CaseSensitive:   true
+  - Regex:           '^"(glm)/'
+    Priority:        50
+    CaseSensitive:   false
   - Regex:           '^".*'
     Priority:        12
     CaseSensitive:   false

@@ -35,7 +35,8 @@ namespace Engine::Scripting
 
 			size_t						   dump_len = 0;
 			static constexpr uint_fast16_t depth	= 5;
-			const char* stack_dump = luaJIT_profile_dumpstack(state, "fZ;", depth, &dump_len);
+			const char*					   stack_dump =
+				luaJIT_profile_dumpstack(state, "fZ;", depth, &dump_len);
 
 			printf("Stack:\n'");
 
@@ -102,7 +103,11 @@ namespace Engine::Scripting
 			}
 			catch (const char* str)
 			{
-				return luaL_error(state, "Exception wrapper caught exception! e.what():\n%s", str);
+				return luaL_error(
+					state,
+					"Exception wrapper caught exception! e.what():\n%s",
+					str
+				);
 			}
 			catch (const std::exception& e)
 			{
@@ -123,7 +128,10 @@ namespace Engine::Scripting
 		void registerRequirePath(lua_State* state, ILuaScript* with_script)
 		{
 			lua_getglobal(state, LUA_LOADLIBNAME);
-			ENGINE_EXCEPTION_ON_ASSERT(lua_istable(state, -1), "Lua Module 'package' is not loaded!")
+			ENGINE_EXCEPTION_ON_ASSERT(
+				lua_istable(state, -1),
+				"Lua Module 'package' is not loaded!"
+			)
 
 			std::filesystem::path require_origin = with_script->getPath();
 			std::string			  require_origin_str =
@@ -185,7 +193,10 @@ namespace Engine::Scripting
 	void ILuaScript::performPreloadSteps()
 	{
 		lua_getglobal(state, LUA_LOADLIBNAME);
-		ENGINE_EXCEPTION_ON_ASSERT(lua_istable(state, -1), "Lua Module 'package' is not loaded!")
+		ENGINE_EXCEPTION_ON_ASSERT(
+			lua_istable(state, -1),
+			"Lua Module 'package' is not loaded!"
+		)
 
 		lua_getfield(state, -1, "preload");
 		assert(lua_istable(state, -1));
@@ -235,13 +246,17 @@ namespace Engine::Scripting
 		this->logger->simpleLog<decltype(this)>(
 			Logging::LogLevel::Debug,
 			"Loaded and compiled Lua script: '%s'",
-			script_path.string().c_str()
+			script_path.lexically_normal().string().c_str()
 		);
 	}
 
 #pragma region Public functions
 
-	ILuaScript::ILuaScript(Engine* with_engine, std::filesystem::path with_path, bool with_enable_profiling)
+	ILuaScript::ILuaScript(
+		Engine*				  with_engine,
+		std::filesystem::path with_path,
+		bool				  with_enable_profiling
+	)
 		: InternalEngineObject(with_engine), path(std::move(with_path)),
 		  enable_profiling(with_enable_profiling)
 	{
@@ -287,7 +302,7 @@ namespace Engine::Scripting
 			throw ENGINE_EXCEPTION(std::format(
 				"Error {} occured calling script '{}' (fn: '{}')\n{}",
 				errcall,
-				path.string(),
+				path.lexically_normal().string(),
 				function,
 				errormsg
 			));
@@ -301,11 +316,9 @@ namespace Engine::Scripting
 	// NOLINTNEXTLINE(readability-make-member-function-const)
 	int ScriptFunctionRef::operator()(void* data)
 	{
-		if (auto locked_script = script.lock())
-		{
-			return locked_script->callFunction(function, data);
-		}
+		auto locked_script = script.lock();
+		ENGINE_EXCEPTION_ON_ASSERT(locked_script, "Could not lock script!")
 
-		throw ENGINE_EXCEPTION("Could not lock script!");
+		return locked_script->callFunction(function, data);
 	}
 } // namespace Engine::Scripting

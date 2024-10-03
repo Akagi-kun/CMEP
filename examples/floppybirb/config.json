@@ -9,5 +9,5 @@
     },
     "scene_path": "scenes/",
     "shader_path": "shaders/",
-    "default_scene": "floppygame"
+    "default_scene": "default"
 }

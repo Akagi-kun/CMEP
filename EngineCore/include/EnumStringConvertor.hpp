@@ -97,4 +97,9 @@ namespace Engine
 			));
 		}
 	};
+
+	/**
+	 * @brief Deduction guide for value-constructed @ref EnumStringConvertor.
+	 */
+	template <typename T> EnumStringConvertor(T val) -> EnumStringConvertor<T>;
 } // namespace Engine

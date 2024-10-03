@@ -6,18 +6,22 @@
 #include "Logging/Logging.hpp"
 
 #include "Engine.hpp"
+#include "EventHandling.hpp"
 #include "Exception.hpp"
 #include "InternalEngineObject.hpp"
 #include "Scene.hpp"
 #include "SceneLoader.hpp"
+
 #include "glm/ext/matrix_clip_space.hpp"
 #include "glm/ext/matrix_transform.hpp"
 #include "glm/glm.hpp"
 
 #include <algorithm>
 #include <cassert>
+#include <chrono>
 #include <cmath>
 #include <exception>
+#include <format>
 #include <memory>
 #include <string>
 
@@ -92,12 +96,48 @@ namespace Engine
 
 	void SceneManager::setScene(const std::string& scene_name)
 	{
+		// Try loading the scene if it isn't loaded
+		if (!scenes.contains(scene_name)) { loadScene(scene_name); }
+
+		logger->simpleLog<decltype(this)>(
+			Logging::LogLevel::Info,
+			"Switching to scene '%s' (currently '%s')",
+			scene_name.c_str(),
+			current_scene_name.c_str()
+		);
+
 		current_scene_name = scene_name;
+
+		// Measure init event time
+		const auto start = std::chrono::steady_clock::now();
+
+		// Fire init event
+		auto event = EventHandling::Event(owner_engine, EventHandling::EventType::ON_INIT);
+		int init_ret = owner_engine->fireEvent(event);
+
+		ENGINE_EXCEPTION_ON_ASSERT_NOMSG(init_ret == 0)
+
+		const auto		 end		  = std::chrono::steady_clock::now();
+		constexpr double nano_to_msec = 1.e6;
+		double oninit_total = static_cast<double>((end - start).count()) / nano_to_msec;
+
+		logger->simpleLog<decltype(this)>(
+			Logging::LogLevel::Debug,
+			"ON_INIT took %.3lfms",
+			oninit_total
+		);
 	}
 
 	std::shared_ptr<Scene>& SceneManager::getSceneCurrent()
 	{
-		return scenes.at(current_scene_name);
+		if (!scenes.contains(current_scene_name))
+		{
+			throw ENGINE_EXCEPTION(
+				std::format("No such scene loaded: '{}'", current_scene_name)
+			);
+		}
+
+		return scenes[current_scene_name];
 	}
 
 	glm::vec3 SceneManager::getLightTransform()
@@ -178,7 +218,7 @@ namespace Engine
 		if (std::isnan(hvrotation.y)) { hvrotation.y = y_center; }
 		if (std::isnan(hvrotation.x)) { hvrotation.x = 0; }
 
-		// Clamp Y so you cannot do a backflip
+		// Clamp Y so you can't do a backflip
 		hvrotation.y = std::clamp(hvrotation.y, y_min, y_max);
 
 		static constexpr float x_min = 0.f;

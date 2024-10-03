@@ -1,0 +1,49 @@
+{
+    "event_handlers": [
+        {
+            "type": "on_init",
+            "file": "script0",
+            "function": "onInit"
+        },
+        {
+            "type": "on_update",
+            "file": "script0",
+            "function": "onUpdate"
+        },
+        {
+            "type": "on_key_down",
+            "file": "script0",
+            "function": "onKeyDown"
+        },
+        {
+            "type": "on_key_up",
+            "file": "script0",
+            "function": "onKeyUp"
+        },
+        {
+            "type": "on_mouse_moved",
+            "file": "script0",
+            "function": "onMouseMoved"
+        }
+    ],
+    "templates": [
+    ],
+    "assets": [
+        {
+            "type": "font",
+            "name": "myfont",
+            "location": "fonts/myfont/myfont.fnt",
+            "textures": [
+                {
+                    "name": "myfont_0.png",
+                    "location": "fonts/myfont/myfont_0.png"
+                }
+            ]
+        },
+        {
+            "type": "script",
+            "name": "script0",
+            "location": "scripts/eventHandlers.lua"
+        }
+    ]
+}

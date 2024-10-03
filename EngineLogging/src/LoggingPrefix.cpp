@@ -39,7 +39,7 @@ namespace Engine
 } // namespace Engine
 
 // Use PREFIX_DECL(typename without ptr) = prefix_value;
-#define PREFIX_DECL(class) template <> const char* prefix_internal<class>::value
+#define PREFIX_DECL(class) template <> const char* logpfx_generator_internal<class>::value
 
 namespace Logging
 {

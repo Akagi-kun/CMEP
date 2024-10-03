@@ -22,39 +22,26 @@ namespace Engine::Rendering::Vulkan
 		  device(with_device)
 	{}
 
-	vk::CommandBufferBeginInfo CommandBuffer::getBeginInfo(
-		vk::CommandBufferUsageFlags usage_flags
-	)
+	vk::CommandBufferBeginInfo
+	CommandBuffer::getBeginInfo(vk::CommandBufferUsageFlags usage_flags)
 	{
 		return {.flags = usage_flags};
 	}
 
 	void CommandBuffer::copyBufferBuffer(
-		const vk::raii::Queue&			   in_queue,
 		Buffer*							   from_buffer,
 		Buffer*							   to_buffer,
 		const std::vector<vk::BufferCopy>& regions
 	)
 	{
-		begin(getBeginInfo(vk::CommandBufferUsageFlagBits::eOneTimeSubmit));
-
 		copyBuffer(*from_buffer->getHandle(), *to_buffer->getHandle(), regions);
-
-		end();
-		in_queue.submit(vk::SubmitInfo{.commandBufferCount = 1, .pCommandBuffers = &**this}
-		);
-		in_queue.waitIdle();
 	}
 
-	void CommandBuffer::copyBufferImage(
-		const vk::raii::Queue& in_queue,
-		Buffer*				   from_buffer,
-		Image*				   to_image
-	)
+	void CommandBuffer::copyBufferImage(Buffer* from_buffer, Image* to_image)
 	{
 		ImageSize image_size = to_image->getSize();
 
-		// Sane defaults
+		// Sane defaults that should "just work"
 		vk::BufferImageCopy region{
 			.bufferOffset	   = {},
 			.bufferRowLength   = {},
@@ -64,18 +51,23 @@ namespace Engine::Rendering::Vulkan
 			.imageExtent	   = Utility::convertToExtent<vk::Extent3D>(image_size, 1)
 		};
 
-		begin(getBeginInfo(vk::CommandBufferUsageFlagBits::eOneTimeSubmit));
 		copyBufferToImage(
 			*from_buffer->getHandle(),
 			*to_image->getHandle(),
 			vk::ImageLayout::eTransferDstOptimal,
 			region
 		);
-		end();
+	}
 
-		in_queue.submit(vk::SubmitInfo{.commandBufferCount = 1, .pCommandBuffers = &**this}
-		);
-		in_queue.waitIdle();
+	void CommandBuffer::queueSubmit(vk::raii::Queue& to_queue)
+	{
+		to_queue.submit(vk::SubmitInfo{
+			.commandBufferCount = 1,
+			.pCommandBuffers	= &**this,
+		});
+
+		// Synchronize
+		to_queue.waitIdle();
 	}
 
 } // namespace Engine::Rendering::Vulkan

@@ -8,6 +8,7 @@
 #include "InternalEngineObject.hpp"
 
 #include <cassert>
+#include <exception>
 #include <filesystem>
 #include <memory>
 #include <utility>
@@ -41,15 +42,15 @@ namespace Engine::Factories
 		if (!std::filesystem::exists(path))
 		{
 			throw ENGINE_EXCEPTION(std::format(
-				"Cannot initialize a texture from a nonexistent path! Path: {}",
-				path.string()
+				"Cannot initialize a texture from a nonexistent path! Path: '{}'",
+				path.lexically_normal().string()
 			));
 		}
 
 		this->logger->simpleLog<decltype(this)>(
 			Logging::LogLevel::VerboseDebug,
-			"Initializing texture from file %s",
-			path.string().c_str()
+			"Initializing texture from file '%s'",
+			path.lexically_normal().string().c_str()
 		);
 
 		std::vector<unsigned char>				data;
@@ -135,15 +136,18 @@ namespace Engine::Factories
 		Rendering::Vulkan::Instance* vk_instance = owner_engine->getVulkanInstance();
 		assert(vk_instance);
 
+		auto* logical_device = vk_instance->getLogicalDevice();
+
 		Rendering::Vulkan::StagingBuffer staging_buffer(
-			vk_instance->getLogicalDevice(),
+			logical_device,
 			vk_instance->getGraphicMemoryAllocator(),
 			raw_data.data(),
 			memory_size
 		);
 
 		texture_data->image = new Rendering::Vulkan::ViewedImage(
-			vk_instance,
+			logical_device,
+			vk_instance->getGraphicMemoryAllocator(),
 			{size.x, size.y},
 			vk::SampleCountFlagBits::e1,
 			vk::Format::eR8G8B8A8Srgb,
@@ -152,26 +156,42 @@ namespace Engine::Factories
 		);
 
 		texture_data->sampler = new Rendering::Vulkan::Sampler(
-			vk_instance->getLogicalDevice(),
+			logical_device,
 			filtering,
 			sampler_address_mode,
 			vk_instance->getPhysicalDevice()->getLimits().maxSamplerAnisotropy
 		);
 
-		// Transfer image layout to compatible with transfers
-		texture_data->image->transitionImageLayout(vk::ImageLayout::eTransferDstOptimal);
+		try
+		{
+			auto command_buffer = vk_instance->getCommandPool()->constructCommandBuffer();
 
-		auto command_buffer = vk_instance->getCommandPool()->constructCommandBuffer();
+			command_buffer.beginOneTime();
 
-		command_buffer.copyBufferImage(
-			vk_instance->getLogicalDevice()->getGraphicsQueue(),
-			&staging_buffer,
-			texture_data->image
-		);
+			// Transfer image layout to compatible with transfers
+			texture_data->image->transitionImageLayout(
+				command_buffer,
+				vk::ImageLayout::eTransferDstOptimal
+			);
 
-		// Transfer image layout to compatible with rendering
-		texture_data->image->transitionImageLayout(vk::ImageLayout::eShaderReadOnlyOptimal
-		);
+			command_buffer.copyBufferImage(&staging_buffer, texture_data->image);
+
+			// Transfer image layout to compatible with rendering
+			texture_data->image->transitionImageLayout(
+				command_buffer,
+				vk::ImageLayout::eShaderReadOnlyOptimal
+			);
+
+			command_buffer.end();
+
+			command_buffer.queueSubmit(logical_device->getGraphicsQueue());
+		}
+		catch (...)
+		{
+			std::throw_with_nested(
+				ENGINE_EXCEPTION("Exception caught trying to fill and transition texture")
+			);
+		}
 
 		return 0;
 	}

@@ -36,21 +36,20 @@ namespace Engine::Scripting::API
 				lua_touserdata(state, lua_upvalueindex(1))
 			);
 
-		if (auto locked_logger = logger.lock())
+		auto locked_logger = logger.lock();
+		ENGINE_EXCEPTION_ON_ASSERT(locked_logger, "Failed locking logger on Lua print() call")
+
+		locked_logger->startLog<void>(Logging::LogLevel::Info);
+
+		for (int arg = 1; arg <= argc; arg++)
 		{
-			locked_logger->startLog<void>(Logging::LogLevel::Info);
+			LuaValue	value(state, arg);
+			std::string string = LuaValue::toString(value);
 
-			for (int arg = 1; arg <= argc; arg++)
-			{
-				LuaValue	value(state, arg);
-				std::string string = LuaValue::toString(value);
-
-				locked_logger->log("%s\t", string.c_str());
-			}
-
-			locked_logger->stopLog();
+			locked_logger->log("%s\t", string.c_str());
 		}
-		else { return luaL_error(state, "Could not lock global meta logger"); }
+
+		locked_logger->stopLog();
 
 		return 0;
 	}

@@ -12,7 +12,10 @@
 
 namespace Engine
 {
-	std::string Exception::generateWhat(const std::string& with_message, std::source_location location)
+	std::string Exception::generateWhat(
+		const std::string&	 with_message,
+		std::source_location location
+	)
 	{
 		std::filesystem::path file = location.file_name();
 		file					   = file.lexically_relative(CMAKE_CONFIGURE_SOURCE_DIR);
@@ -36,7 +39,9 @@ namespace Engine
 			int						  level = 0
 		)
 		{
-			output.push_back(std::format("exception {}: {}", level, caught_exception.what()));
+			output.push_back(
+				std::format("exception {}: {}", level, caught_exception.what())
+			);
 
 			try
 			{
@@ -70,7 +75,6 @@ namespace Engine
 			std::istringstream what_stream(what);
 
 			// Tab out every line of output
-			// except the first line
 			std::string line;
 
 			bool first_line = true;
@@ -81,10 +85,8 @@ namespace Engine
 					output.append("   ");
 					first_line = false;
 				}
-				else
-				{
-					output.append("      ");
-				}
+				else { output.append("      "); }
+
 				output.append(std::format("{}\n", line));
 			}
 		}

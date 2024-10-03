@@ -2,6 +2,7 @@
 
 #include "Scripting/API/LuaFactories.hpp"
 #include "Scripting/API/framework.hpp"
+#include "Scripting/LuaValue.hpp"
 
 #include "SceneManager.hpp"
 #include "lua.hpp"
@@ -107,15 +108,31 @@ namespace Engine::Scripting::API
 			return 1;
 		}
 
+		int setScene(lua_State* state)
+		{
+			CMEP_LUACHECK_FN_ARGC(state, 2)
+			CMEP_LUAGET_PTR(state, SceneManager)
+
+			std::string name = LuaValue(state, 2);
+
+			self->setScene(name);
+
+			return 0;
+		}
+
 	} // namespace
 
 	std::unordered_map<std::string, const lua_CFunction> scene_manager_mappings = {
 		CMEP_LUAMAPPING_DEFINE(getCameraRotation),
 		CMEP_LUAMAPPING_DEFINE(setCameraRotation),
+
 		CMEP_LUAMAPPING_DEFINE(getCameraTransform),
 		CMEP_LUAMAPPING_DEFINE(setCameraTransform),
+
 		CMEP_LUAMAPPING_DEFINE(getLightTransform),
 		CMEP_LUAMAPPING_DEFINE(setLightTransform),
-		CMEP_LUAMAPPING_DEFINE(getSceneCurrent)
+
+		CMEP_LUAMAPPING_DEFINE(getSceneCurrent),
+		CMEP_LUAMAPPING_DEFINE(setScene)
 	};
 } // namespace Engine::Scripting::API

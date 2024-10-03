@@ -1,5 +1,26 @@
 CompileFlags:
-  Add: [-stdlib=libc++, -Wall, -Wextra, -Wpedantic, -Wno-covered-switch-default, -Wno-c++20-compat, -Wno-c++98-compat, -Wno-c++98-compat-pedantic, -Wno-switch-enum, -Wswitch, -Wno-date-time, -Wno-global-constructors, -Wno-exit-time-destructors, -Wno-documentation, -Wno-unsafe-buffer-usage, -Wno-cast-function-type-strict]
+  Add: 
+    - -stdlib=libc++
+    # Enable warnings
+    - -Wall
+    - -Wextra
+    - -Wpedantic
+    # Disable compatibility warnings
+    - -Wno-c++20-compat
+    - -Wno-c++98-compat
+    - -Wno-c++98-compat-pedantic
+    # Switches should have a default case
+    # even when all enum values are covered
+    - -Wno-covered-switch-default
+    # Disable static-value-related warnings
+    - -Wno-global-constructors
+    - -Wno-exit-time-destructors
+    # Clang emits odd warnings about doxygen even when correct
+    - -Wno-documentation
+    # Emits odd warnings about argv
+    - -Wno-unsafe-buffer-usage
+    # These casts are necessary for vulkan
+    - -Wno-cast-function-type-strict
 If:
   PathMatch: [.*\**.hpp, .*\**.cpp]
   PathExclude: external/.*
@@ -9,7 +30,21 @@ Diagnostics:
   ClangTidy:
     FastCheckFilter: None
   Includes:
-    IgnoreHeader: [glm\.hpp, lauxlib\.h, lua\.h, glm\/.+\.hpp, vulkan\/.+\.hpp, Windows\.h]
+    IgnoreHeader:
+      # glm (matches any glm/something.hpp)
+      - glm\/.+\.hpp
+      # Vulkan (matches any vulkan/something.h and vulkan/something.hpp)
+      - vulkan\/.+\.h(pp)?
+      # Lua related (include Lua.hpp instead in C++)
+      - lauxlib\.h
+      - lua\.h
+      # Windows specific:
+      - Windows\.h
+      - minwindef\.h
+      - consoleapi\.h
+      - processenv\.h
+      - winnt\.h
+      - winbase\.h
 ---
 Completion:
   AllScopes: No

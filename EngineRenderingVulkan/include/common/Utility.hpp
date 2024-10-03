@@ -3,6 +3,7 @@
 
 #include "Rendering/Transform.hpp"
 
+#include "Exception.hpp"
 #include "vulkan/vulkan_raii.hpp"
 
 #include <cstdint>
@@ -11,21 +12,27 @@
 #include <format>
 #include <fstream>
 #include <ios>
-#include <stdexcept>
 #include <vector>
 
 namespace Engine::Rendering::Vulkan::Utility
 {
-	template <typename T>
-	[[nodiscard]] constexpr auto convertToExtent(ImageSize& size) -> T
-		requires(std::is_same_v<T, vk::Extent2D>)
+	/**
+	 * @brief Converts @ref ImageSize to a @ref vk::Extent2D
+	 */
+	template <typename target_t>
+	[[nodiscard]] constexpr auto convertToExtent(const ImageSize& size) -> target_t
+		requires(std::is_same_v<target_t, vk::Extent2D>)
 	{
 		return {static_cast<uint32_t>(size.x), static_cast<uint32_t>(size.y)};
 	}
 
-	template <typename T>
-	[[nodiscard]] constexpr auto convertToExtent(ImageSize& size, uint32_t depth) -> T
-		requires(std::is_same_v<T, vk::Extent3D>)
+	/**
+	 * @brief Converts @ref ImageSize to a @ref vk::Extent3D
+	 */
+	template <typename target_t>
+	[[nodiscard]] constexpr auto
+	convertToExtent(const ImageSize& size, uint32_t depth) -> target_t
+		requires(std::is_same_v<target_t, vk::Extent3D>)
 	{
 		return {static_cast<uint32_t>(size.x), static_cast<uint32_t>(size.y), depth};
 	}
@@ -67,19 +74,25 @@ namespace Engine::Rendering::Vulkan::Utility
 
 	inline std::vector<uint8_t> readShaderFile(const std::filesystem::path& path)
 	{
+		// Open file in binary mode
+		// using "ate" mode, file is seeked to end of file
 		std::ifstream file(path, std::ios::ate | std::ios::binary);
 
 		if (!file.is_open())
 		{
-			throw std::runtime_error(
+			throw ENGINE_EXCEPTION(
 				std::format("failed to open shader file! File: {}", path.string())
 			);
 		}
 
-		size_t				 file_size = static_cast<size_t>(file.tellg());
+		// Get file size
+		size_t file_size = static_cast<size_t>(file.tellg());
+		file.seekg(0);
+
 		std::vector<uint8_t> buffer(file_size);
 
-		file.seekg(0);
+		// Read whole file into buffer
+		// reinterpret_cast into char* because read can only accept "char", even in binary mode
 		file.read(
 			reinterpret_cast<char*>(buffer.data()),
 			static_cast<std::streamsize>(file_size)

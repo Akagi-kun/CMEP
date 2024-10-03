@@ -10,6 +10,7 @@
 
 #include "Logging/Logging.hpp"
 
+#include "EnumStringConvertor.hpp"
 #include "EventHandling.hpp"
 #include "Exception.hpp"
 #include "GLFW/glfw3.h"
@@ -28,6 +29,7 @@
 #include <queue>
 #include <stdexcept>
 #include <string>
+#include <string_view>
 #include <thread>
 #include <utility>
 
@@ -413,30 +415,33 @@ namespace Engine
 		);
 	}
 
-	int Engine::fireEvent(EventHandling::Event& event)
+	int Engine::fireEvent(EventHandling::Event event)
 	{
 		int sum = 0;
 
-		auto current_scene = scene_manager->getSceneCurrent();
-		auto lua_handler_range =
+		const auto& current_scene = scene_manager->getSceneCurrent();
+
+		// Get all handlers that match this type
+		auto [handlers_begin, handlers_end] =
 			current_scene->lua_event_handlers.equal_range(event.event_type);
-		for (auto handler = lua_handler_range.first; handler != lua_handler_range.second;
-			 ++handler)
+
+		for (auto handler = handlers_begin; handler != handlers_end; ++handler)
 		{
 			try
 			{
-				/**
-				 * @todo Use structs instead of this weird ->second.first-> syntax
-				 */
-				sum += handler->second.first->callFunction(handler->second.second, &event);
+				// Call the handler
+				sum += handler->second(&event);
 			}
-			catch (std::runtime_error& e)
+			catch (const std::exception& e)
 			{
+				// Get the EventType as a string
+				std::string_view event_type_str = EnumStringConvertor(event.event_type);
+
 				this->logger->simpleLog<decltype(this)>(
 					Logging::LogLevel::Exception,
-					"Caught exception trying to fire event '%u'! e.what(): %s",
-					event.event_type,
-					e.what()
+					"Caught exception trying to fire event '%s'! e.what(): %s",
+					event_type_str.data(),
+					unrollExceptions(e).c_str()
 				);
 			}
 		}
@@ -465,7 +470,7 @@ namespace Engine
 
 	void Engine::run()
 	{
-		auto init_start = std::chrono::steady_clock::now();
+		const auto init_start = std::chrono::steady_clock::now();
 
 		this->logger->mapCurrentThreadToName("engine");
 
@@ -514,31 +519,31 @@ namespace Engine
 		scene_manager->loadScene(config.default_scene);
 		scene_manager->setScene(config.default_scene);
 
-		auto oninit_start = std::chrono::steady_clock::now();
+		// auto oninit_start = std::chrono::steady_clock::now();
 
 		/**
 		 * @todo Fire ON_INIT on scene load!
 		 */
 		// Fire ON_INIT event
-		auto on_init_event = EventHandling::Event(this, EventHandling::EventType::ON_INIT);
-		int on_init_event_ret = fireEvent(on_init_event);
+		// auto on_init_event = EventHandling::Event(this, EventHandling::EventType::ON_INIT);
+		// int on_init_event_ret = fireEvent(on_init_event);
 
 		const auto end = std::chrono::steady_clock::now();
 
 		// Measure and log ON_INIT time
 		static constexpr double nano_to_msec = 1.e6;
 		double init_total = static_cast<double>((end - init_start).count()) / nano_to_msec;
-		double oninit_total = static_cast<double>((end - oninit_start).count()) /
-							  nano_to_msec;
+		/* double oninit_total = static_cast<double>((end - oninit_start).count()) /
+							  nano_to_msec; */
 
 		this->logger->simpleLog<decltype(this)>(
 			Logging::LogLevel::Info,
-			"Initialized in %.3lfms (of that %.3lfms ON_INIT)",
-			init_total,
-			oninit_total
+			"Initialized in %.3lfms", // "Initialized in %.3lfms (of that %.3lfms ON_INIT)",
+			init_total				  //,
+									  // oninit_total
 		);
 
-		if (on_init_event_ret != 0)
+		/* if (on_init_event_ret != 0)
 		{
 			this->logger->simpleLog<decltype(this)>(
 				Logging::LogLevel::VerboseDebug,
@@ -546,7 +551,7 @@ namespace Engine
 				on_init_event_ret
 			);
 			return;
-		}
+		} */
 
 		engineLoop();
 	}

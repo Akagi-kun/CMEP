@@ -16,16 +16,30 @@ namespace Engine::Rendering::Vulkan
 		~CommandBuffer() = default;
 
 		void copyBufferBuffer(
-			const vk::raii::Queue&			   in_queue,
 			Buffer*							   from_buffer,
 			Buffer*							   to_buffer,
 			const std::vector<vk::BufferCopy>& regions
 		);
-		void
-		copyBufferImage(const vk::raii::Queue& in_queue, Buffer* from_buffer, Image* to_image);
+
+		void copyBufferImage(Buffer* from_buffer, Image* to_image);
 
 		static vk::CommandBufferBeginInfo
 		getBeginInfo(vk::CommandBufferUsageFlags usage_flags);
+
+		/**
+		 * @brief Submit this command buffer to a queue.
+		 *
+		 * @param to_queue The queue to submit to
+		 */
+		void queueSubmit(vk::raii::Queue& to_queue);
+
+		/**
+		 * @brief Shortcut to calling begin with eOneTimeSubmit
+		 */
+		void beginOneTime()
+		{
+			begin(getBeginInfo(vk::CommandBufferUsageFlagBits::eOneTimeSubmit));
+		}
 
 	private:
 		LogicalDevice* device;

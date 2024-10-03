@@ -4,18 +4,18 @@
 
 #include "Rendering/Transform.hpp"
 
+#include "Exception.hpp"
 #include "backend/Instance.hpp"
 #include "common/Utility.hpp"
 #include "objects/CommandBuffer.hpp"
 #include "objects/CommandPool.hpp"
 #include "vulkan/vulkan_raii.hpp"
 
-#include <stdexcept>
-
 namespace Engine::Rendering::Vulkan
 {
 	Image::Image(
-		InstanceOwned::value_t	with_instance,
+		LogicalDevice*			with_device,
+		MemoryAllocator*		with_allocator,
 		ImageSize				with_size,
 		vk::SampleCountFlagBits num_samples,
 		vk::Format				format,
@@ -23,12 +23,9 @@ namespace Engine::Rendering::Vulkan
 		vk::MemoryPropertyFlags properties,
 		vk::ImageTiling			tiling
 	)
-		: InstanceOwned(with_instance),
-		  HoldsVMA(with_instance->getGraphicMemoryAllocator()), image_format(format),
+		: HoldsVMA(with_allocator), device(with_device), image_format(format),
 		  size(with_size)
 	{
-		LogicalDevice* logical_device = instance->getLogicalDevice();
-
 		vk::ImageCreateInfo create_info{
 			.imageType	   = vk::ImageType::e2D,
 			.format		   = image_format,
@@ -47,7 +44,7 @@ namespace Engine::Rendering::Vulkan
 		vma_alloc_info.flags		 = 0;
 		vma_alloc_info.requiredFlags = static_cast<VkMemoryPropertyFlags>(properties);
 
-		native_handle = logical_device->createImage(create_info);
+		native_handle = device->createImage(create_info);
 
 		if (vmaAllocateMemoryForImage(
 				allocator->getHandle(),
@@ -57,13 +54,13 @@ namespace Engine::Rendering::Vulkan
 				&allocation_info
 			) != VK_SUCCESS)
 		{
-			throw std::runtime_error("Could not allocate image memory!");
+			throw ENGINE_EXCEPTION("Could not allocate image memory!");
 		}
 
 		if (vmaBindImageMemory(allocator->getHandle(), allocation, *native_handle) !=
 			VK_SUCCESS)
 		{
-			throw std::runtime_error("Could not bind image memory!");
+			throw ENGINE_EXCEPTION("Could not bind image memory!");
 		}
 
 		vmaSetAllocationName(allocator->getHandle(), allocation, "Image");
@@ -76,7 +73,10 @@ namespace Engine::Rendering::Vulkan
 		vmaFreeMemory(allocator->getHandle(), allocation);
 	}
 
-	void Image::transitionImageLayout(vk::ImageLayout new_layout)
+	void Image::transitionImageLayout(
+		CommandBuffer&	with_command_buffer,
+		vk::ImageLayout new_layout
+	)
 	{
 		vk::ImageMemoryBarrier barrier{
 			.oldLayout			 = current_layout,
@@ -108,31 +108,19 @@ namespace Engine::Rendering::Vulkan
 			src_stage = vk::PipelineStageFlagBits::eTransfer;
 			dst_stage = vk::PipelineStageFlagBits::eFragmentShader;
 		}
-		else { throw std::invalid_argument("Unsupported layout transition!"); }
+		else { throw ENGINE_EXCEPTION("Unsupported layout transition!"); }
 
 		// Create the barrier that performs this action
 		{
-			auto command_buffer = instance->getCommandPool()->constructCommandBuffer();
-
-			command_buffer.begin(
-				CommandBuffer::getBeginInfo(vk::CommandBufferUsageFlagBits::eOneTimeSubmit)
-			);
-			command_buffer.pipelineBarrier(src_stage, dst_stage, {}, {}, {}, barrier);
-			command_buffer.end();
-
-			auto queue = instance->getLogicalDevice()->getGraphicsQueue();
-
-			queue.submit(
-				vk::SubmitInfo{.commandBufferCount = 1, .pCommandBuffers = &*command_buffer}
-			);
-			queue.waitIdle();
+			with_command_buffer.pipelineBarrier(src_stage, dst_stage, {}, {}, {}, barrier);
 		}
 
 		current_layout = new_layout;
 	}
 
 	ViewedImage::ViewedImage(
-		InstanceOwned::value_t	with_instance,
+		LogicalDevice*			with_device,
+		MemoryAllocator*		with_allocator,
 		ImageSize				with_size,
 		vk::SampleCountFlagBits num_samples,
 		vk::Format				format,
@@ -141,10 +129,17 @@ namespace Engine::Rendering::Vulkan
 		vk::MemoryPropertyFlags properties,
 		vk::ImageTiling			with_tiling
 	)
-		: Image(with_instance, with_size, num_samples, format, usage, properties, with_tiling)
+		: Image(
+			  with_device,
+			  with_allocator,
+			  with_size,
+			  num_samples,
+			  format,
+			  usage,
+			  properties,
+			  with_tiling
+		  )
 	{
-		LogicalDevice* logical_device = instance->getLogicalDevice();
-
 		vk::ImageViewCreateInfo create_info{
 			.image	  = native_handle,
 			.viewType = vk::ImageViewType::e2D,
@@ -157,7 +152,7 @@ namespace Engine::Rendering::Vulkan
 				 .layerCount	 = 1}
 		};
 
-		view_handle = logical_device->createImageView(create_info);
+		view_handle = device->createImageView(create_info);
 	}
 
 } // namespace Engine::Rendering::Vulkan

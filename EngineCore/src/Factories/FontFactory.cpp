@@ -102,13 +102,16 @@ namespace Engine::Factories
 
 		ENGINE_EXCEPTION_ON_ASSERT(
 			font_file.is_open(),
-			std::format("font file {} could not be opened", font_path.string())
+			std::format(
+				"font file '{}' could not be opened",
+				font_path.lexically_normal().string()
+			)
 		)
 
 		this->logger->simpleLog<decltype(this)>(
 			Logging::LogLevel::VerboseDebug,
-			"Loading file %s",
-			font_path.string().c_str()
+			"Loading file '%s'",
+			font_path.lexically_normal().string().c_str()
 		);
 
 		std::unique_ptr<Rendering::FontData> font_data =
@@ -116,8 +119,8 @@ namespace Engine::Factories
 
 		this->logger->simpleLog<decltype(this)>(
 			Logging::LogLevel::Debug,
-			"File %s loaded successfully",
-			font_path.string().c_str()
+			"File '%s' loaded successfully",
+			font_path.lexically_normal().string().c_str()
 		);
 
 		font_file.close();
@@ -215,34 +218,38 @@ namespace Engine::Factories
 			Logging::LogLevel::VerboseDebug,
 			"Font page index %u is '%s'",
 			page_idx,
-			page_path.string().c_str()
+			page_path.lexically_normal().string().c_str()
 		);
 
-		auto asset_manager = owner_engine->getAssetManager();
+		auto asset_manager = owner_engine->getAssetManager().lock();
+		assert(asset_manager);
 
-		if (auto locked_asset_manager = asset_manager.lock())
+		std::shared_ptr<Rendering::Texture> texture =
+			asset_manager->getTexture(page_path.string());
+
+		// Try to load the page if asset manager doesnt have it loaded
+		if (texture == nullptr)
 		{
-			std::shared_ptr<Rendering::Texture> texture =
-				locked_asset_manager->getTexture(page_path.string());
+			std::filesystem::path asset_path = font_path.remove_filename() / page_path;
 
-			// Try to load the page if asset manager doesnt have it loaded
-			if (texture == nullptr)
+			try
 			{
-				std::filesystem::path asset_path = font_path.remove_filename();
-				asset_path /= page_path;
 				texture = pageload_cb(asset_path);
 			}
-
-			// Add page and it's texture to map
-			font->pages.insert(std::pair<int, std::shared_ptr<Rendering::Texture>>(
-				page_idx,
-				std::move(texture)
-			));
-
-			return;
+			catch (...)
+			{
+				std::throw_with_nested(ENGINE_EXCEPTION(std::format(
+					"Exception trying to load font page '{}'",
+					asset_path.string()
+				)));
+			}
 		}
 
-		throw ENGINE_EXCEPTION("AssetManager could not be locked!");
+		// Add page and it's texture to map
+		font->pages.insert(std::pair<int, std::shared_ptr<Rendering::Texture>>(
+			page_idx,
+			std::move(texture)
+		));
 	}
 
 	void FontFactory::parseBmfontLine(

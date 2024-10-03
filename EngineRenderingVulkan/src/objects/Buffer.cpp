@@ -1,5 +1,6 @@
 #include "objects/Buffer.hpp"
 
+#include "Exception.hpp"
 #include "backend/Instance.hpp"
 #include "backend/LogicalDevice.hpp"
 #include "common/InstanceOwned.hpp"
@@ -7,7 +8,6 @@
 #include "objects/CommandPool.hpp"
 #include "vulkan/vulkan_raii.hpp"
 
-#include <stdexcept>
 #include <vector>
 
 namespace Engine::Rendering::Vulkan
@@ -47,13 +47,13 @@ namespace Engine::Rendering::Vulkan
 				&allocation_info
 			) != VK_SUCCESS)
 		{
-			throw std::runtime_error("Could not allocate buffer memory!");
+			throw ENGINE_EXCEPTION("Could not allocate buffer memory!");
 		}
 
 		if (vmaBindBufferMemory(allocator->getHandle(), allocation, *native_handle) !=
 			VK_SUCCESS)
 		{
-			throw std::runtime_error("Could not bind buffer memory!");
+			throw ENGINE_EXCEPTION("Could not bind buffer memory!");
 		}
 
 		vmaSetAllocationName(allocator->getHandle(), allocation, "Buffer");
@@ -119,13 +119,14 @@ namespace Engine::Rendering::Vulkan
 		auto staging_buffer =
 			StagingBuffer(with_device, with_allocator, vertices.data(), buffer_size);
 
+		with_commandbuffer.beginOneTime();
+
 		// Copy into final buffer
-		with_commandbuffer.copyBufferBuffer(
-			with_device->getGraphicsQueue(),
-			&staging_buffer,
-			this,
-			{vk::BufferCopy{0, 0, buffer_size}}
-		);
+		with_commandbuffer
+			.copyBufferBuffer(&staging_buffer, this, {vk::BufferCopy{0, 0, buffer_size}});
+
+		with_commandbuffer.end();
+		with_commandbuffer.queueSubmit(with_device->getGraphicsQueue());
 	}
 
 	UniformBuffer::UniformBuffer(

@@ -14,13 +14,12 @@
 
 namespace Engine::Rendering::Vulkan
 {
-	class Image : public InstanceOwned,
-				  public HoldsVMA,
-				  public HandleWrapper<vk::raii::Image>
+	class Image : public HoldsVMA, public HandleWrapper<vk::raii::Image>
 	{
 	public:
 		Image(
-			InstanceOwned::value_t	with_instance,
+			LogicalDevice*			with_device,
+			MemoryAllocator*		with_allocator,
 			ImageSize				with_size,
 			vk::SampleCountFlagBits num_samples,
 			vk::Format				format,
@@ -30,14 +29,29 @@ namespace Engine::Rendering::Vulkan
 		);
 		~Image();
 
-		void transitionImageLayout(vk::ImageLayout new_layout);
+		/**
+		 * @brief Record the commands that would transition this image
+		 *        from the current to a different layout.
+		 *
+		 * @param with_command_buffer Command buffer to record to
+		 * @param new_layout Target layout
+		 */
+		void
+		transitionImageLayout(CommandBuffer& with_command_buffer, vk::ImageLayout new_layout);
 
+		/**
+		 * @brief Get the size of this image
+		 *
+		 * @return Size in pixels
+		 */
 		[[nodiscard]] ImageSize getSize() const
 		{
 			return size;
 		}
 
 	protected:
+		const LogicalDevice* device;
+
 		vk::ImageLayout current_layout = vk::ImageLayout::eUndefined;
 		vk::Format		image_format   = vk::Format::eUndefined;
 
@@ -52,7 +66,8 @@ namespace Engine::Rendering::Vulkan
 	{
 	public:
 		ViewedImage(
-			InstanceOwned::value_t	with_instance,
+			LogicalDevice*			with_device,
+			MemoryAllocator*		with_allocator,
 			ImageSize				with_size,
 			vk::SampleCountFlagBits num_samples,
 			vk::Format				format,

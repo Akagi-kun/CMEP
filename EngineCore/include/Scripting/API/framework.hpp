@@ -44,7 +44,7 @@
  */
 #define CMEP_LUAGET_PTR(stateL, type)                                                    \
 	lua_getfield(stateL, 1, "_ptr");                                                     \
-	type* self = static_cast<type*>(lua_touserdata(stateL, -1));                         \
+	auto* self = static_cast<type*>(lua_touserdata(stateL, -1));                         \
 	if (self == nullptr)                                                                 \
 	{                                                                                    \
 		return luaL_error(                                                               \

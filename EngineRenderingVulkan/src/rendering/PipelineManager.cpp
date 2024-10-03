@@ -2,6 +2,7 @@
 
 #include "Logging/Logging.hpp"
 
+#include "Exception.hpp"
 #include "backend/Instance.hpp"
 #include "objects/Buffer.hpp"
 #include "rendering/Pipeline.hpp"
@@ -11,7 +12,6 @@
 #include <cassert>
 #include <filesystem>
 #include <memory>
-#include <stdexcept>
 #include <string_view>
 #include <tuple>
 #include <utility>
@@ -138,9 +138,11 @@ namespace Engine::Rendering::Vulkan
 		{
 			if (settings == with_settings)
 			{
-				if (auto locked_ptr = pipeline_ptr.lock()) { return {locked_ptr, {}}; }
+				auto locked_pipeline = pipeline_ptr.lock();
 
-				throw std::runtime_error("Failed locking pipeline");
+				ENGINE_EXCEPTION_ON_ASSERT(locked_pipeline, "Failed locking pipeline")
+
+				return {locked_pipeline, {}};
 			}
 		}
 

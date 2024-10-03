@@ -69,19 +69,31 @@ namespace Logging
 
 namespace Logging
 {
-	template <typename noptr_class_t> struct CMEP_EXPORT_CLASS prefix_internal
+	/**
+	 * @brief The type internally responsible for storage of logging prefixes
+	 */
+	template <typename noptr_class_t> struct CMEP_EXPORT_CLASS logpfx_generator_internal
 	{
 		CMEP_EXPORT static const char* value;
 	};
 
-	template <typename class_t> struct CMEP_EXPORT_CLASS logpfx_generator
+	/**
+	 * @brief Utility struct that generates a logging prefix
+	 *
+	 * @tparam class_t Type representing the caller (i.e. a method's class),
+	 *                 generates an empty string if this is void.
+	 */
+	template <typename class_t> struct logpfx_generator
 	{
 		using remptr_t = std::remove_pointer_t<class_t>;
-		using prefix_t = decltype(prefix_internal<remptr_t>::value);
+		using prefix_t = decltype(logpfx_generator_internal<remptr_t>::value);
 
-		CMEP_EXPORT operator prefix_t() const
+		/**
+		 * @return The prefix as a string
+		 */
+		operator prefix_t() const
 		{
-			return prefix_internal<remptr_t>::value;
+			return logpfx_generator_internal<remptr_t>::value;
 		}
 	};
 
@@ -101,7 +113,8 @@ namespace Logging
 		void log(const char* format, ...);
 		void stopLog();
 
-		template <typename class_t> void simpleLog(LogLevel level, const char* format, ...)
+		template <typename class_t>
+		void simpleLog(LogLevel level, const char* format, ...)
 		{
 			startLog<class_t>(level);
 
@@ -128,8 +141,7 @@ namespace Logging
 
 		SupportsLogging() = delete;
 		CMEP_EXPORT SupportsLogging(logger_t with_logger) : logger(std::move(with_logger))
-		{
-		}
+		{}
 
 		[[nodiscard]] CMEP_EXPORT logger_t getLogger()
 		{

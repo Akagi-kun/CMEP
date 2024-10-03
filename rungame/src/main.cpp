@@ -1,3 +1,5 @@
+#include "EngineCore.hpp"
+
 #include <cassert>
 #include <cstdio>
 #include <cstdlib>
@@ -5,17 +7,15 @@
 #include <exception>
 #include <memory>
 
-#if defined(_MSC_VER)
+#if defined(SEMANTICS_MSVC)
 #	include <Windows.h>
 #endif
 
 #include "Logging/Logging.hpp"
 
-#include "EngineCore.hpp"
-
 namespace
 {
-#if defined(_MSC_VER)
+#if defined(SEMANTICS_MSVC)
 	void initConsoleWin32()
 	{
 		HANDLE my_console = GetStdHandle(STD_OUTPUT_HANDLE);
@@ -36,64 +36,77 @@ namespace
 #	define VERBOSE_LOG_LEVEL Logging::LogLevel::Debug
 #endif
 
-	int runEngine(bool verbose)
+	/**
+	 * @brief Checks whether exceptions can be caught when thrown by the engine
+	 *
+	 * This likely isn't necessary now, but used to be a problem in the past on Windows
+	 * when exceptions weren't logged because they couldn't be caught
+	 * across the shared-library/executable ABI
+	 */
+	bool checkExceptions(std::unique_ptr<Engine::OpaqueEngine>& engine)
 	{
-		std::shared_ptr<Logging::Logger> my_logger = std::make_shared<Logging::Logger>();
-
-		const Logging::LogLevel stdout_loglevel = verbose ? VERBOSE_LOG_LEVEL : DEFAULT_LOG_LEVEL;
-
-		my_logger->addOutputHandle(stdout_loglevel, stdout, true);
-
-		constexpr const char* logfile_name = "latest.log";
-
-		FILE* logfile = nullptr;
-#if defined(_MSC_VER)
-		fopen_s(&logfile, logfile_name, "w");
-#else
-		logfile = fopen(logfile_name, "w");
-#endif
-		if (logfile != nullptr)
-		{
-			my_logger->addOutputHandle(VERBOSE_LOG_LEVEL, logfile, false);
-		}
-		else
-		{
-			my_logger->simpleLog<void>(
-				Logging::LogLevel::Warning,
-				"Failed opening logfile '%s', will log only to stdout",
-				logfile_name
-			);
-		}
-
-		my_logger->simpleLog<void>(Logging::LogLevel::Info, "Logger initialized");
-
-		// Initialize engine
-		std::unique_ptr<Engine::OpaqueEngine> engine = std::make_unique<Engine::OpaqueEngine>(
-			my_logger
-		);
-
-		// This tests whether exceptions thrown inside EngineCore
-		// can be successfully caught in rungame
 		try
 		{
 			engine->throwTest();
 		}
 		catch (std::exception& e)
 		{
-			if (strcmp(e.what(), "BEBEACAC") == 0)
-			{
-				my_logger->simpleLog<void>(
-					Logging::LogLevel::Info,
-					"ABI exception check successful"
-				);
-			}
-			else
-			{
-				// The exception was caught but is different from expected?
-				assert(false && "ABI exception check failed");
-				std::abort();
-			}
+			if (strcmp(e.what(), "BEBEACAC") == 0) { return true; }
+
+			// The exception was caught but is different from expected?
+			assert(false && "exception check failed");
+			return false;
 		}
+	}
+
+	int runEngine(bool verbose)
+	{
+		std::shared_ptr<Logging::Logger> logger = std::make_shared<Logging::Logger>();
+
+		const Logging::LogLevel stdout_loglevel = verbose ? VERBOSE_LOG_LEVEL
+														  : DEFAULT_LOG_LEVEL;
+
+		logger->addOutputHandle(stdout_loglevel, stdout, true);
+
+		constexpr const char* logfile_name = "latest.log";
+
+		FILE* logfile = nullptr;
+#if defined(SEMANTICS_MSVC)
+		fopen_s(&logfile, logfile_name, "w");
+#else
+		logfile = fopen(logfile_name, "w");
+#endif
+		if (logfile != nullptr)
+		{
+			logger->addOutputHandle(VERBOSE_LOG_LEVEL, logfile, false);
+		}
+		else
+		{
+			logger->simpleLog<void>(
+				Logging::LogLevel::Warning,
+				"Failed opening logfile '%s', will log only to stdout",
+				logfile_name
+			);
+		}
+
+		logger->simpleLog<void>(Logging::LogLevel::Info, "Logger initialized");
+
+		// Initialize engine
+		std::unique_ptr<Engine::OpaqueEngine> engine =
+			std::make_unique<Engine::OpaqueEngine>(logger);
+
+		// This tests whether exceptions thrown inside EngineCore
+		// can be successfully caught in rungame
+		if (!checkExceptions(engine))
+		{
+			logger->simpleLog<void>(
+				Logging::LogLevel::Error,
+				"checkABI returned false! aborting"
+			);
+			std::abort();
+		}
+
+		logger->simpleLog<void>(Logging::LogLevel::Info, "exception check successful");
 
 		// Initialize engine, load config
 		try
@@ -102,7 +115,7 @@ namespace
 		}
 		catch (std::exception& e)
 		{
-			my_logger->simpleLog<void>(
+			logger->simpleLog<void>(
 				Logging::LogLevel::Exception,
 				"Caught exception loading config!\n%s",
 				Engine::unrollExceptions(e).c_str()
@@ -118,7 +131,7 @@ namespace
 		}
 		catch (std::exception& e)
 		{
-			my_logger->simpleLog<void>(
+			logger->simpleLog<void>(
 				Logging::LogLevel::Exception,
 				"Caught exception running engine!\n%s",
 				Engine::unrollExceptions(e).c_str()
@@ -127,7 +140,7 @@ namespace
 		}
 
 		engine.reset();
-		my_logger->simpleLog<void>(Logging::LogLevel::Info, "Bye!");
+		logger->simpleLog<void>(Logging::LogLevel::Info, "Bye!");
 
 		return 0;
 	}
@@ -139,13 +152,10 @@ int main(int argc, char** argv)
 
 	if (argc > 1)
 	{
-		if (strcmp(argv[1], "-v") == 0)
-		{
-			verbose = true;
-		}
+		if (strcmp(argv[1], "-v") == 0) { verbose = true; }
 	}
 
-#if defined(_MSC_VER)
+#if defined(SEMANTICS_MSVC)
 	// Enable colored output on Win32
 	initConsoleWin32();
 #endif

@@ -21,6 +21,9 @@
 namespace Engine::Rendering::Vulkan
 {
 #if defined(ENGINERENDERINGVULKAN_LIBRARY_IMPLEMENTATION)
+	/**
+	 * @brief Vulkan callback for logging
+	 */
 	extern PFN_vkDebugUtilsMessengerCallbackEXT debug_callback;
 #endif
 
@@ -78,8 +81,6 @@ namespace Engine::Rendering::Vulkan
 		MemoryAllocator* memory_allocator = nullptr;
 
 		CommandPool* command_pool = nullptr;
-
-		// vk::SampleCountFlagBits msaa_samples = vk::SampleCountFlagBits::e1;
 
 		static const std::vector<const char*> validation_layers;
 

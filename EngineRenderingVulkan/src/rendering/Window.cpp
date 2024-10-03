@@ -2,6 +2,7 @@
 
 #include "Rendering/Transform.hpp"
 
+#include "Exception.hpp"
 #include "backend/Instance.hpp"
 #include "rendering/Swapchain.hpp"
 
@@ -10,7 +11,6 @@
 #include <cstdint>
 #include <cstring>
 #include <limits>
-#include <stdexcept>
 #include <string>
 #include <tuple>
 #include <utility>
@@ -69,10 +69,8 @@ namespace Engine::Rendering::Vulkan
 				reinterpret_cast<VkSurfaceKHR*>(&surface.native_handle)
 			) != VK_SUCCESS)
 		{
-			throw std::runtime_error("glfw failed to create window surface!");
+			throw ENGINE_EXCEPTION("glfw failed to create window surface!");
 		}
-
-		// CreateSwapchain();
 	}
 
 	Window::~Window()
@@ -146,7 +144,7 @@ namespace Engine::Rendering::Vulkan
 			);
 			if (result != vk::Result::eSuccess)
 			{
-				throw std::runtime_error("Failed waiting for fences in DrawFrame!");
+				throw ENGINE_EXCEPTION("Failed waiting for fences in DrawFrame!");
 			}
 		}
 
@@ -175,7 +173,7 @@ namespace Engine::Rendering::Vulkan
 
 			if (result != vk::Result::eSuccess)
 			{
-				throw std::runtime_error("Failed to acquire swap chain image!");
+				throw ENGINE_EXCEPTION("Failed to acquire swap chain image!");
 			}
 		}
 
@@ -235,7 +233,7 @@ namespace Engine::Rendering::Vulkan
 			vk::Result result = logical_device->getPresentQueue().presentKHR(present_info);
 			if (result != vk::Result::eSuccess)
 			{
-				throw std::runtime_error("Failed presenting swapchain!");
+				throw ENGINE_EXCEPTION("Failed presenting swapchain!");
 			}
 		}
 	}

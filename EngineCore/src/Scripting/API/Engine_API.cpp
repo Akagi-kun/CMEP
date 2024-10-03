@@ -7,6 +7,7 @@
 #include "SceneManager.hpp"
 #include "lua.hpp"
 
+#include <cassert>
 #include <cstdint>
 #include <memory>
 #include <string>
@@ -40,14 +41,12 @@ namespace Engine::Scripting::API
 
 			std::weak_ptr<SceneManager> scene_manager = self->getSceneManager();
 
-			if (auto locked_scene_manager = scene_manager.lock())
-			{
-				API::LuaFactories::sceneManagerFactory(state, locked_scene_manager.get());
+			auto locked_scene_manager = scene_manager.lock();
+			assert(locked_scene_manager);
 
-				return 1;
-			}
+			API::LuaFactories::sceneManagerFactory(state, locked_scene_manager.get());
 
-			return luaL_error(state, "SceneManager is expired");
+			return 1;
 		}
 
 		int setFramerateTarget(lua_State* state)

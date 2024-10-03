@@ -95,25 +95,10 @@ namespace Engine
 			"Destructor called"
 		);
 
-		repository->fonts.clear();
-
-		for (auto& texture : repository->textures)
-		{
-			this->logger->simpleLog<decltype(this)>(
-				Logging::LogLevel::VerboseDebug,
-				"Texture '%s' use_count: %u",
-				texture.first.c_str(),
-				texture.second.use_count()
-			);
-			texture.second.reset();
-		}
-
-		repository->textures.clear();
+		cleanRepository();
 
 		delete repository;
 	}
-
-#pragma region Adding Assets
 
 	void AssetManager::addTexture(
 		const std::string&						   name,
@@ -141,10 +126,6 @@ namespace Engine
 		asset->assignUID(repository->last_uid.script++);
 		repository->luascripts.emplace(name, asset);
 	}
-
-#pragma endregion
-
-#pragma region Getting Assets
 
 	std::shared_ptr<Rendering::Texture> AssetManager::getTexture(const std::string& name)
 	{
@@ -186,7 +167,30 @@ namespace Engine
 		}
 	}
 
-#pragma endregion
+	void AssetManager::cleanRepository()
+	{
+		this->logger->simpleLog<decltype(this)>(
+			Logging::LogLevel::Debug,
+			"Cleaned Asset repository"
+		);
+
+		repository->luascripts.clear();
+
+		repository->fonts.clear();
+
+		for (auto& texture : repository->textures)
+		{
+			this->logger->simpleLog<decltype(this)>(
+				Logging::LogLevel::VerboseDebug,
+				"Texture '%s' use_count: %u",
+				texture.first.c_str(),
+				texture.second.use_count()
+			);
+			texture.second.reset();
+		}
+
+		repository->textures.clear();
+	}
 
 #pragma endregion
 

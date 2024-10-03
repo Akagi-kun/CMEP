@@ -10,6 +10,7 @@
 #include "Exception.hpp"
 #include "Object.hpp"
 
+#include <format>
 #include <memory>
 #include <string>
 #include <unordered_map>
@@ -43,8 +44,7 @@ namespace Engine
 		return objects;
 	}
 
-	void
-	Scene::addTemplatedObject(const std::string& name, const std::string& template_name)
+	void Scene::addTemplatedObject(const std::string& name, const std::string& template_name)
 	{
 		auto templated_object = templates.find(template_name);
 
@@ -60,7 +60,7 @@ namespace Engine
 		else
 		{
 			throw ENGINE_EXCEPTION(
-				"Template with name '" + template_name + "' could not be found!"
+				std::format("Template with name '{}' could not be found!", template_name)
 			);
 		}
 	}
@@ -103,7 +103,9 @@ namespace Engine
 		}
 		else
 		{
-			throw ENGINE_EXCEPTION("Could not remove non-existent object '" + name + "'!");
+			throw ENGINE_EXCEPTION(
+				std::format("Could not remove non-existent object '{}'!", name)
+			);
 		}
 	}
 

@@ -1,11 +1,11 @@
 #include "backend/PhysicalDevice.hpp"
 
+#include "Exception.hpp"
 #include "common/Utility.hpp"
 #include "rendering/Surface.hpp"
 
 #include <cstdint>
 #include <optional>
-#include <stdexcept>
 #include <string>
 #include <vector>
 
@@ -51,13 +51,16 @@ namespace Engine::Rendering::Vulkan
 			}
 		}
 
-		throw std::runtime_error("failed to find supported format!");
+		throw ENGINE_EXCEPTION("failed to find supported format!");
 	}
 
 	vk::Format PhysicalDevice::findSupportedDepthFormat() const
 	{
 		return findSupportedFormat(
-			{vk::Format::eD32Sfloat, vk::Format::eD32SfloatS8Uint, vk::Format::eD24UnormS8Uint
+			{
+				vk::Format::eD32Sfloat,
+				vk::Format::eD32SfloatS8Uint,
+				vk::Format::eD24UnormS8Uint,
 			},
 			vk::ImageTiling::eOptimal,
 			vk::FormatFeatureFlagBits::eDepthStencilAttachment

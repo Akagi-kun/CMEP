@@ -31,7 +31,8 @@ namespace Engine
 		generateWhat(const std::string& with_message, std::source_location location);
 	};
 
-	CMEP_EXPORT std::string unrollExceptions(const std::exception& caught_exception);
+	[[nodiscard]] CMEP_EXPORT std::string
+							  unrollExceptions(const std::exception& caught_exception);
 } // namespace Engine
 
 // NOLINTBEGIN(*unused-macros)
@@ -44,7 +45,7 @@ namespace Engine
  * @brief Runtime assert, use when true_expr depends on external inputs that are not part of the engine itself
  */
 #define ENGINE_EXCEPTION_ON_ASSERT(true_expr, message)                                   \
-	if ((true_expr) == false)                                                            \
+	if (static_cast<bool>(true_expr) == false)                                           \
 	{                                                                                    \
 		throw ENGINE_EXCEPTION(                                                          \
 			std::string("Failed assertion '" #true_expr "' ") + (message)                \

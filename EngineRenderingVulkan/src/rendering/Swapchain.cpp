@@ -95,7 +95,8 @@ namespace Engine::Rendering::Vulkan
 
 		// Create depth buffer
 		depth_image = new ViewedImage(
-			instance,
+			logical_device,
+			instance->getGraphicMemoryAllocator(),
 			{extent.width, extent.height},
 			physical_device->getMSAASamples(),
 			depth_format,
@@ -105,7 +106,8 @@ namespace Engine::Rendering::Vulkan
 
 		// Pre-resolve color buffer
 		color_image = new ViewedImage(
-			instance,
+			logical_device,
+			instance->getGraphicMemoryAllocator(),
 			{extent.width, extent.height},
 			physical_device->getMSAASamples(),
 			surface_format.format,

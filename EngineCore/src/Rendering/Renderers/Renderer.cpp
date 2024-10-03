@@ -160,10 +160,11 @@ namespace Engine::Rendering
 	void Renderer2D::updateMatrices()
 	{
 		glm::mat4 projection{};
-		if (auto locked_scene_manager = this->owner_engine->getSceneManager().lock())
-		{
-			projection = locked_scene_manager->getProjectionMatrixOrtho();
-		}
+
+		auto scene_manager = this->owner_engine->getSceneManager().lock();
+		assert(scene_manager);
+
+		projection = scene_manager->getProjectionMatrixOrtho();
 
 		matrix_data.mat_model = calculateModelMatrix(transform, parent_transform);
 		matrix_data.mat_vp	  = projection;
@@ -175,11 +176,12 @@ namespace Engine::Rendering
 	{
 		glm::mat4 view;
 		glm::mat4 projection;
-		if (auto locked_scene_manager = this->owner_engine->getSceneManager().lock())
-		{
-			view	   = locked_scene_manager->getCameraViewMatrix();
-			projection = locked_scene_manager->getProjectionMatrix(screen);
-		}
+
+		auto scene_manager = this->owner_engine->getSceneManager().lock();
+		assert(scene_manager);
+
+		view	   = scene_manager->getCameraViewMatrix();
+		projection = scene_manager->getProjectionMatrix(screen);
 		projection[1][1] *= -1;
 
 		matrix_data.mat_model = calculateModelMatrix(transform, parent_transform);

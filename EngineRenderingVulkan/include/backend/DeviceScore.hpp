@@ -17,7 +17,8 @@ namespace Engine::Rendering::Vulkan
 	static constexpr bool enable_vk_validation_layers = false;
 #else
 	static constexpr bool enable_vk_validation_layers = true;
-#	define DS_VALIDATION_LAYERS_ENABLED // NOLINT this can be used to #ifdef
+	// This can be used to #ifdef
+#	define DS_VALIDATION_LAYERS_ENABLED
 #endif
 
 	struct DeviceScore final

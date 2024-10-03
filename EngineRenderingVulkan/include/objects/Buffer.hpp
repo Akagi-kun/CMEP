@@ -76,6 +76,7 @@ namespace Engine::Rendering::Vulkan
 
 		const vk::MemoryPropertyFlags property_flags;
 
+	private:
 		VmaAllocation	  allocation;
 		VmaAllocationInfo allocation_info;
 	};
