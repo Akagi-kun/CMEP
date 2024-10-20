@@ -9,7 +9,6 @@
 
 #include "Exception.hpp"
 #include "InternalEngineObject.hpp"
-#include "glm/glm.hpp"
 #include "lua.hpp"
 
 #include <array>
@@ -20,10 +19,7 @@
 
 namespace Engine::Scripting
 {
-	GeneratorLuaScript::GeneratorLuaScript(
-		Engine*						 with_engine,
-		const std::filesystem::path& with_path
-	)
+	GeneratorLuaScript::GeneratorLuaScript(Engine* with_engine, const std::filesystem::path& with_path)
 		: ILuaScript(with_engine, with_path, false)
 	{}
 
@@ -31,9 +27,8 @@ namespace Engine::Scripting
 	{
 		auto* generator_data = static_cast<std::array<void*, 3>*>(data);
 
-		auto* mesh =
-			static_cast<std::vector<Rendering::RenderingVertex>*>(generator_data->at(0));
-		auto* supplier = static_cast<Scripting::ScriptFunctionRef*>(generator_data->at(1));
+		auto* mesh = static_cast<std::vector<Rendering::RenderingVertex>*>(generator_data->at(0));
+		auto* supplier	= static_cast<Scripting::ScriptFunctionRef*>(generator_data->at(1));
 		auto* world_pos = static_cast<glm::vec3*>(generator_data->at(2));
 
 		lua_State* coroutine = lua_newthread(state);

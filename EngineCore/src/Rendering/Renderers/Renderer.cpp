@@ -5,15 +5,17 @@
 #include "Assets/Texture.hpp"
 #include "Rendering/MeshBuilders/IMeshBuilder.hpp"
 #include "Rendering/SupplyData.hpp"
+#include "Rendering/Transform.hpp"
 #include "Rendering/Vulkan/backend.hpp"
 #include "Rendering/Vulkan/common.hpp"
 #include "Rendering/Vulkan/rendering.hpp"
-#include "Rendering/framework.hpp"
 
 #include "Engine.hpp"
 #include "InternalEngineObject.hpp"
 #include "objects/CommandBuffer.hpp"
 #include "vulkan/vulkan.hpp"
+
+#include "glm/gtc/quaternion.hpp"
 
 #include <cassert>
 #include <cstdint>
@@ -29,10 +31,9 @@ namespace Engine::Rendering
 		std::string_view with_pipeline_program
 	)
 		: InternalEngineObject(with_engine), pipeline_name(with_pipeline_program),
-		  pipeline_manager(with_engine->getVulkanPipelineManager()),
-		  mesh_builder(with_builder)
+		  pipeline_manager(with_engine->getVulkanPipelineManager()), mesh_builder(with_builder)
 	{
-		Vulkan::Instance* instance = this->owner_engine->getVulkanInstance();
+		Vulkan::Instance* instance = owner_engine->getVulkanInstance();
 
 		settings = {
 			instance->getWindow()->getSwapchain()->getExtent(),
@@ -54,9 +55,7 @@ namespace Engine::Rendering
 	IRenderer::~IRenderer()
 	{
 		delete pipeline;
-
 		delete mesh_builder;
-		mesh_builder = nullptr;
 	}
 
 	void IRenderer::supplyData(const RendererSupplyData& data)
@@ -68,12 +67,12 @@ namespace Engine::Rendering
 				const auto& payload_ref = std::get<std::weak_ptr<void>>(data.payload);
 				assert(!payload_ref.expired() && "Cannot lock expired payload!");
 
-				auto font_cast = std::static_pointer_cast<Font>(payload_ref.lock());
+				auto font_cast			= std::static_pointer_cast<Font>(payload_ref.lock());
 				/**
 				 * @todo Support multiple-page fonts?
 				 */
 				//       page 0 may not be guaranteed to be present
-				texture		   = font_cast->getPageTexture(0);
+				texture					= font_cast->getPageTexture(0);
 				has_updated_descriptors = false;
 
 				/**
@@ -87,7 +86,7 @@ namespace Engine::Rendering
 				const auto& payload_ref = std::get<std::weak_ptr<void>>(data.payload);
 				assert(!payload_ref.expired() && "Cannot lock expired payload!");
 
-				texture = std::static_pointer_cast<Texture>(payload_ref.lock());
+				texture					= std::static_pointer_cast<Texture>(payload_ref.lock());
 				has_updated_descriptors = false;
 				break;
 			}
@@ -135,12 +134,21 @@ namespace Engine::Rendering
 
 	void IRenderer::render(Vulkan::CommandBuffer* command_buffer, uint32_t current_frame)
 	{
-		if (!has_updated_matrices) { updateMatrices(); }
+		if (!has_updated_matrices)
+		{
+			updateMatrices();
+		}
 
-		if (!has_updated_descriptors) { updateDescriptorSets(); }
+		if (!has_updated_descriptors)
+		{
+			updateDescriptorSets();
+		}
 
 		// If builder requests a rebuild, do it
-		if (mesh_builder->needsRebuild()) { mesh_builder->build(); }
+		if (mesh_builder->needsRebuild())
+		{
+			mesh_builder->build();
+		}
 		mesh_context = mesh_builder->getContext();
 
 		// Render only if VBO non-empty
@@ -157,11 +165,51 @@ namespace Engine::Rendering
 		}
 	}
 
+	namespace
+	{
+		/**
+		 * Apply a single transform onto a matrix.
+		 *
+		 * @param[in] transform Transform to apply.
+		 * @param[in] apply_to Matrix to apply to or an identity matrix if omitted.
+		 * @return The resulting matrix.
+		 */
+		[[nodiscard]] glm::mat4 applyTransformToMatrix(
+			const Transform& transform,
+			const glm::mat4& apply_to = glm::identity<glm::mat4>()
+		)
+		{
+			const glm::quat quat_rotation = glm::quat(glm::radians(transform.rotation));
+
+			// model = position * rotation * scale
+			auto translated = glm::translate(apply_to, transform.pos);
+			auto rotated	= translated * glm::mat4_cast(quat_rotation);
+			auto scaled		= glm::scale(rotated, transform.size);
+
+			return scaled;
+		}
+
+		/**
+		 * Calculate model matrix of an object.
+		 *
+		 * @param[in] local Transform of the current object.
+		 * @param[in] parent Transform of the parent object.
+		 * @return The resulting matrix.
+		 */
+		[[nodiscard]] glm::mat4 calculateModelMatrix(const Transform& local, const Transform& parent)
+		{
+			glm::mat4 model_parent = applyTransformToMatrix(parent);
+			glm::mat4 model		   = applyTransformToMatrix(local, model_parent);
+
+			return model;
+		}
+	} // namespace
+
 	void Renderer2D::updateMatrices()
 	{
 		glm::mat4 projection{};
 
-		auto scene_manager = this->owner_engine->getSceneManager().lock();
+		auto scene_manager = owner_engine->getSceneManager().lock();
 		assert(scene_manager);
 
 		projection = scene_manager->getProjectionMatrixOrtho();
@@ -177,12 +225,11 @@ namespace Engine::Rendering
 		glm::mat4 view;
 		glm::mat4 projection;
 
-		auto scene_manager = this->owner_engine->getSceneManager().lock();
+		auto scene_manager = owner_engine->getSceneManager().lock();
 		assert(scene_manager);
 
 		view	   = scene_manager->getCameraViewMatrix();
-		projection = scene_manager->getProjectionMatrix(screen);
-		projection[1][1] *= -1;
+		projection = scene_manager->getProjectionMatrix();
 
 		matrix_data.mat_model = calculateModelMatrix(transform, parent_transform);
 		matrix_data.mat_vp	  = projection * view;

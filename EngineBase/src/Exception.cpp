@@ -2,6 +2,7 @@
 
 #include "cmake_cfg.hpp"
 
+#include <cassert>
 #include <exception>
 #include <filesystem>
 #include <format>
@@ -10,12 +11,9 @@
 #include <string>
 #include <vector>
 
-namespace Engine
+namespace Engine::Base
 {
-	std::string Exception::generateWhat(
-		const std::string&	 with_message,
-		std::source_location location
-	)
+	std::string Exception::generateWhat(const std::string& with_message, std::source_location location)
 	{
 		std::filesystem::path file = location.file_name();
 		file					   = file.lexically_relative(CMAKE_CONFIGURE_SOURCE_DIR);
@@ -39,9 +37,7 @@ namespace Engine
 			int						  level = 0
 		)
 		{
-			output.push_back(
-				std::format("exception {}: {}", level, caught_exception.what())
-			);
+			output.push_back(std::format("exception {}: {}", level, caught_exception.what()));
 
 			try
 			{
@@ -66,7 +62,7 @@ namespace Engine
 
 		printException(whats, caught_exception);
 
-		ENGINE_EXCEPTION_ON_ASSERT_NOMSG(!whats.empty())
+		assert(!whats.empty());
 
 		// Concatenate the description string for every exception
 		// into a final string
@@ -93,4 +89,4 @@ namespace Engine
 
 		return output;
 	}
-} // namespace Engine
+} // namespace Engine::Base

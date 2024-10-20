@@ -384,8 +384,6 @@ Testing
 **/DartConfiguration.tcl
 cov-int
 *.lzma
-/external/lua-5.4.6
-/external/lua-5.4.6.tar.gz
 *.o
 
 # COVERITY
@@ -401,6 +399,16 @@ cov-int
 /compile_commands.json
 /source_files.txt
 /CMakeDoxyfile.in
+
+/include
+
+external/glslang*
+
+external/SPIRV-Tools*
+external/spirv-tools*
+
+external/SPIRV-Headers*
+external/spirv-headers*
 
 util/*.png
 util/*.csv

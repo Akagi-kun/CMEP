@@ -28,14 +28,14 @@ namespace Engine::Rendering::Vulkan
 {
 	struct KeyboardEvent final
 	{
-		static constexpr size_t mods_highest_bit = 6; // GLFW_MOD_NUM_LOCK;
-
 		enum InputEventType : uint_least8_t
 		{
 			KEY_PRESS	= GLFW_PRESS,
 			KEY_RELEASE = GLFW_RELEASE,
 			KEY_REPEAT	= GLFW_REPEAT
 		};
+
+		static constexpr size_t mods_highest_bit = 6; // GLFW_MOD_NUM_LOCK;
 
 		using key_value_t  = uint_least16_t;
 		using mods_value_t = std::bitset<mods_highest_bit>;
@@ -46,8 +46,7 @@ namespace Engine::Rendering::Vulkan
 
 		KeyboardEvent(int with_action, int with_key, unsigned int with_mods)
 			: type(static_cast<InputEventType>(with_action)),
-			  key(static_cast<key_value_t>(with_key)),
-			  mods(static_cast<mods_value_t>(with_mods))
+			  key(static_cast<key_value_t>(with_key)), mods(static_cast<mods_value_t>(with_mods))
 		{}
 	};
 
@@ -73,19 +72,17 @@ namespace Engine::Rendering::Vulkan
 		~Window();
 
 		/**
-		 * @brief Changes the visibility of the window
+		 * Changes the visibility of the window
+		 * Does nothing if the window is already in the requested state.
 		 *
-		 * Setting this to true shows the window, false hides it.
-		 * This does not necessarily mean the window will be in focus.
-		 *
-		 * @note Does nothing if the window is already in the requested state.
+		 * Does not affect focus.
 		 *
 		 * @param visible True = show window; False = hide window
 		 */
 		void setVisibility(bool visible);
 
 		/**
-		 * @brief Set "should close" attribute of the window,
+		 * Set "should close" attribute of the window,
 		 *
 		 * Affects the return value of @ref getShouldClose()
 		 *
@@ -97,7 +94,7 @@ namespace Engine::Rendering::Vulkan
 		[[nodiscard]] bool getShouldClose() const;
 
 		/**
-		 * @brief Get the size of the framebuffer associated with this window
+		 * Get the size of the framebuffer associated with this window
 		 */
 		[[nodiscard]] const ScreenSize& getFramebufferSize() const
 		{
@@ -109,9 +106,9 @@ namespace Engine::Rendering::Vulkan
 			return swapchain;
 		}
 
-		[[nodiscard]] const Surface* getSurface() const
+		[[nodiscard]] const Surface& getSurface() const
 		{
-			return &surface;
+			return surface;
 		}
 
 		void createSwapchain();

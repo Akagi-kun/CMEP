@@ -4,7 +4,7 @@ namespace Engine
 {
 	class Engine;
 
-	class Object;
+	class SceneObject;
 
 	class Scene;
 	class SceneLoader;
@@ -33,6 +33,7 @@ namespace Engine
 		namespace Vulkan
 		{
 			class PipelineManager;
+			class ShaderCompiler;
 			class Instance;
 		} // namespace Vulkan
 	} // namespace Rendering
@@ -52,10 +53,11 @@ namespace Logging
 	PREFIX_DECL(Engine::Rendering::Vulkan::PipelineManager) = "VPIPE_M";
 	PREFIX_DECL(Engine::Rendering::Vulkan::Instance)		= "VINSTNC";
 	PREFIX_DECL(Engine::Factories::TextureFactory)			= "TXTR_F ";
-	PREFIX_DECL(Engine::Object)								= "OBJECT ";
+	PREFIX_DECL(Engine::SceneObject)						= "OBJECT ";
 	PREFIX_DECL(Engine::Rendering::Font)					= "FONT   ";
 	PREFIX_DECL(Engine::AssetManager)						= "ASSET_M";
 	PREFIX_DECL(Engine::Rendering::Texture)					= "TXTR   ";
+	PREFIX_DECL(Engine::Rendering::Vulkan::ShaderCompiler)	= "SHADERC";
 	// no-prefix
 	PREFIX_DECL(void)										= "       ";
 

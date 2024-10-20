@@ -6,10 +6,12 @@
 
 #include "Exception.hpp"
 
-#include <cstddef>
+#include <cassert>
 #include <cstdint>
 #include <format>
+#include <optional>
 #include <string>
+#include <string_view>
 #include <type_traits>
 #include <variant>
 
@@ -22,7 +24,7 @@ namespace Engine::Scripting
 		LuaValue::value_t luaTableParser(lua_State* state, int stack_index)
 		{
 			LuaValue::table_t table;
-			auto abs_index = Utility::relativeToAbsoluteIndex(state, stack_index);
+			auto			  abs_index = Utility::relativeToAbsoluteIndex(state, stack_index);
 
 			// Push nil as the first key (iterates whole table)
 			lua_pushnil(state);
@@ -32,10 +34,10 @@ namespace Engine::Scripting
 				auto value = LuaValue(state, -1);
 
 				// Keys can be any value except nil per PIL 2.5 - Tables
-				ENGINE_EXCEPTION_ON_ASSERT(
+				EXCEPTION_ASSERT(
 					key.type != LuaValue::Type::NIL,
 					"PIL 2.5 - Tables states that 'nil' is not a valid key!"
-				)
+				);
 
 				table.emplace_back(key, value);
 
@@ -47,7 +49,7 @@ namespace Engine::Scripting
 		}
 
 		/**
-		 * @brief Get the type of a value in the Lua stack
+		 * Get the type of a value in the Lua stack
 		 *
 		 * @param state Lua state
 		 * @param stack_index Index in the stack
@@ -55,16 +57,16 @@ namespace Engine::Scripting
 		 */
 		LuaValue::Type luaTypeGetter(lua_State* state, int stack_index)
 		{
-			ENGINE_EXCEPTION_ON_ASSERT(
+			EXCEPTION_ASSERT(
 				!lua_isnone(state, stack_index),
 				"Cannot construct LuaValue from LUA_TNONE"
-			)
+			);
 
 			return static_cast<LuaValue::Type>(lua_type(state, stack_index));
 		}
 
 		/**
-		 * @brief Get a value from the Lua stack
+		 * Get a value from the Lua stack
 		 *
 		 * @warning This function may fail if @p type is incorrect
 		 *
@@ -92,8 +94,7 @@ namespace Engine::Scripting
 
 				case Type::STRING:	  return std::string(lua_tostring(state, stack_index));
 
-				case Type::BOOL:
-					return static_cast<bool>(lua_toboolean(state, stack_index));
+				case Type::BOOL:	  return static_cast<bool>(lua_toboolean(state, stack_index));
 
 				default:
 				{
@@ -101,44 +102,53 @@ namespace Engine::Scripting
 				}
 			}
 		}
+
+		template <typename value_t>
+		bool compareCast(const LuaValue& lhs, const LuaValue& rhs)
+			requires(std::is_convertible_v<LuaValue, value_t>)
+		{
+			// floating point comparisons are safe here
+			// because we need strict equality
+			// NOLINTNEXTLINE(*float-equal)
+			return static_cast<value_t>(lhs) == static_cast<value_t>(rhs);
+		}
 	} // namespace
 
-	LuaValue::LuaValue(std::nullptr_t) : type(Type::NIL), value(nullptr)
-	{}
-	LuaValue::LuaValue(string_t val) : type(Type::STRING), value(val)
-	{}
-	LuaValue::LuaValue(number_t val) : type(Type::NUMBER), value(val)
+	LuaValue::LuaValue(lua_State* state, int stack_index)
+		: type(luaTypeGetter(state, stack_index)), value(luaValueGetter(state, stack_index, type))
 	{}
 
-	LuaValue::LuaValue(lua_State* state, int stack_index)
-		: type(luaTypeGetter(state, stack_index)),
-		  value(luaValueGetter(state, stack_index, type))
-	{}
+	/**
+	 * Error message returned when calling a conversion operator or getter function of @ref LuaValue
+	 * with @ref LuaValue::type being incompatible with the type the getter expects
+	 */
+	constexpr std::string_view getter_err = "Called getter with invalid type!";
 
 	// Base getters
 	LuaValue::operator string_t() const
 	{
-		ENGINE_EXCEPTION_ON_ASSERT_NOMSG(type == Type::STRING)
+		EXCEPTION_ASSERT(type == Type::STRING, getter_err);
 		return std::get<string_t>(value);
 	}
 
 	LuaValue::operator number_t() const
 	{
-		ENGINE_EXCEPTION_ON_ASSERT_NOMSG(type == Type::NUMBER)
+		EXCEPTION_ASSERT(type == Type::NUMBER, getter_err);
 		return std::get<number_t>(value);
 	}
 
 	LuaValue::operator ptr_t() const
 	{
-		ENGINE_EXCEPTION_ON_ASSERT_NOMSG(
-			type == Type::USERDATA || type == Type::LUSERDATA || type == Type::CDATA
-		)
+		EXCEPTION_ASSERT(
+			type == Type::USERDATA || type == Type::LUSERDATA || type == Type::CDATA,
+			getter_err
+		);
 		return std::get<ptr_t>(value);
 	}
 
 	LuaValue::operator bool() const
 	{
-		ENGINE_EXCEPTION_ON_ASSERT_NOMSG(type == Type::BOOL)
+		EXCEPTION_ASSERT(type == Type::BOOL, getter_err);
 		return std::get<bool>(value);
 	}
 
@@ -158,7 +168,10 @@ namespace Engine::Scripting
 			{
 				return static_cast<void*>(val);
 			}
-			else { return {}; }
+			else
+			{
+				return {};
+			}
 		};
 
 		return std::visit(supply_data_visitor, value);
@@ -166,43 +179,35 @@ namespace Engine::Scripting
 
 	LuaValue::operator uintptr_t() const
 	{
-		ENGINE_EXCEPTION_ON_ASSERT_NOMSG(
-			type == Type::USERDATA || type == Type::LUSERDATA || type == Type::CDATA
-		)
+		EXCEPTION_ASSERT(
+			type == Type::USERDATA || type == Type::LUSERDATA || type == Type::CDATA,
+			getter_err
+		);
 		return reinterpret_cast<uintptr_t>(std::get<void*>(value));
 	}
-
-	namespace
-	{
-		template <typename value_t>
-		inline bool castCmp(const LuaValue& lhs, const LuaValue& rhs)
-			requires(std::is_convertible_v<LuaValue, value_t>)
-		{
-			// floating point comparisons are safe here
-			// because we need strict equality
-			// NOLINTNEXTLINE(*float-equal)
-			return static_cast<value_t>(lhs) == static_cast<value_t>(rhs);
-		}
-	} // namespace
 
 	// Utility operators
 	bool LuaValue::operator==(const LuaValue& other) const
 	{
-		if (type != other.type) { return false; }
+		// If types don't match, the values can't either
+		if (type != other.type)
+		{
+			return false;
+		}
 
 		// Here type == other.type
 		switch (type)
 		{
-			case Type::NUMBER:	  return castCmp<number_t>(*this, other);
+			case Type::NUMBER:	  return compareCast<number_t>(*this, other);
 
-			case Type::BOOL:	  return castCmp<bool>(*this, other);
+			case Type::BOOL:	  return compareCast<bool>(*this, other);
 
 			case Type::NIL:		  return true; /* nil = single value */
-			case Type::STRING:	  return castCmp<std::string>(*this, other);
+			case Type::STRING:	  return compareCast<std::string>(*this, other);
 
 			case Type::LUSERDATA:
 			case Type::USERDATA:
-			case Type::CDATA:	  return castCmp<ptr_t>(*this, other);
+			case Type::CDATA:	  return compareCast<ptr_t>(*this, other);
 
 			// Table does not currently support comparisons
 			case Type::TABLE:
@@ -210,9 +215,14 @@ namespace Engine::Scripting
 		}
 	}
 
+	bool LuaValue::operator!=(const LuaValue& other) const
+	{
+		return !(*this == other);
+	}
+
 	auto LuaValue::toTable() const -> table_t
 	{
-		ENGINE_EXCEPTION_ON_ASSERT_NOMSG(type == Type::TABLE)
+		EXCEPTION_ASSERT(type == Type::TABLE, getter_err);
 
 		return std::get<table_t>(value);
 	}
@@ -256,7 +266,10 @@ namespace Engine::Scripting
 				bool first = true;
 				for (const auto& [tbl_key, tbl_val] : value.toTable())
 				{
-					if (!first) { output += ", "; }
+					if (!first)
+					{
+						output += ", ";
+					}
 					first = false;
 
 					output += std::format(
@@ -271,30 +284,32 @@ namespace Engine::Scripting
 			}
 			default:
 			{
-				throw ENGINE_EXCEPTION(std::format(
-					"Cannot convert type '{}' to string!",
-					static_cast<int>(value.type)
-				));
+				throw ENGINE_EXCEPTION(
+					std::format("Cannot convert type '{}' to string!", static_cast<int>(value.type))
+				);
 			}
 		}
 	}
 
-	LuaValue LuaValue::getTableValue(const LuaValue& key) const
+	std::optional<LuaValue> LuaValue::getTableValue(const LuaValue& key) const
 	{
-		ENGINE_EXCEPTION_ON_ASSERT_NOMSG(type == Type::TABLE)
-		ENGINE_EXCEPTION_ON_ASSERT(
+		assert(type == Type::TABLE && "Tried accessing non-table value as table!");
+		EXCEPTION_ASSERT(
 			key.type != Type::NIL,
-			"PIL 2.5 - Tables states that 'nil' is not a valid key!"
-		)
+			"'PIL 2.5 - Tables' states that 'nil' is not a valid key!"
+		);
 
 		const auto& as_table = std::get<table_t>(value);
 		// O(N) comparisons worst case
 		for (const auto& [k, v] : as_table)
 		{
-			if (key == k) { return v; }
+			if (key == k)
+			{
+				return v;
+			}
 		}
 
 		// Return nil
-		return {nullptr};
+		return {};
 	}
 } // namespace Engine::Scripting

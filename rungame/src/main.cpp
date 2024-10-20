@@ -1,31 +1,25 @@
-#include "EngineCore.hpp"
+#include "Logging/Logging.hpp"
 
+#include "EngineCore.hpp"
+#include "win32_console.hpp"
+
+#include <algorithm>
 #include <cassert>
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
 #include <exception>
 #include <memory>
-
-#if defined(SEMANTICS_MSVC)
-#	include <Windows.h>
-#endif
-
-#include "Logging/Logging.hpp"
+#include <string>
 
 namespace
 {
-#if defined(SEMANTICS_MSVC)
-	void initConsoleWin32()
+	struct StartupConfig
 	{
-		HANDLE my_console = GetStdHandle(STD_OUTPUT_HANDLE);
-		DWORD  dw_mode	  = 0;
-		GetConsoleMode(my_console, &dw_mode);
-		dw_mode |= ENABLE_VIRTUAL_TERMINAL_PROCESSING;
-		SetConsoleMode(my_console, dw_mode);
-	}
-#endif
+		int verbosity_level = 0;
+	};
 
+// Debug builds should by default log more than release builds
 #if _DEBUG == 1 || defined(DEBUG)
 // Debug
 #	define DEFAULT_LOG_LEVEL Logging::LogLevel::Debug
@@ -39,7 +33,7 @@ namespace
 	/**
 	 * @brief Checks whether exceptions can be caught when thrown by the engine
 	 *
-	 * This likely isn't necessary now, but used to be a problem in the past on Windows
+	 * This likely isn't necessary now, but used to be a problem on Windows in the past
 	 * when exceptions weren't logged because they couldn't be caught
 	 * across the shared-library/executable ABI
 	 */
@@ -54,21 +48,35 @@ namespace
 			if (strcmp(e.what(), "BEBEACAC") == 0) { return true; }
 
 			// The exception was caught but is different from expected?
-			assert(false && "exception check failed");
+			assert(false && "Exception check failed");
 			return false;
 		}
 	}
 
-	int runEngine(bool verbose)
+	void onEngineExcept(
+		const std::shared_ptr<Logging::Logger>& logger,
+		const std::exception&					exception,
+		const std::string&						message
+	)
+	{
+		logger->simpleLog<void>(
+			Logging::LogLevel::Exception,
+			"%s\n%s",
+			message.c_str(),
+			Engine::Base::unrollExceptions(exception).c_str()
+		);
+	}
+
+	int runEngine(const StartupConfig& config)
 	{
 		std::shared_ptr<Logging::Logger> logger = std::make_shared<Logging::Logger>();
 
-		const Logging::LogLevel stdout_loglevel = verbose ? VERBOSE_LOG_LEVEL
-														  : DEFAULT_LOG_LEVEL;
+		const Logging::LogLevel stdout_loglevel =
+			Logging::makeValid(DEFAULT_LOG_LEVEL - config.verbosity_level);
 
 		logger->addOutputHandle(stdout_loglevel, stdout, true);
 
-		constexpr const char* logfile_name = "latest.log";
+		const char* logfile_name = "latest.log";
 
 		FILE* logfile = nullptr;
 #if defined(SEMANTICS_MSVC)
@@ -78,7 +86,7 @@ namespace
 #endif
 		if (logfile != nullptr)
 		{
-			logger->addOutputHandle(VERBOSE_LOG_LEVEL, logfile, false);
+			logger->addOutputHandle(std::min(VERBOSE_LOG_LEVEL, stdout_loglevel), logfile);
 		}
 		else
 		{
@@ -89,7 +97,11 @@ namespace
 			);
 		}
 
-		logger->simpleLog<void>(Logging::LogLevel::Info, "Logger initialized");
+		logger->simpleLog<void>(
+			Logging::LogLevel::Info,
+			"Logger initialized (stdout loglevel is %u)",
+			stdout_loglevel
+		);
 
 		// Initialize engine
 		std::unique_ptr<Engine::OpaqueEngine> engine =
@@ -106,20 +118,16 @@ namespace
 			std::abort();
 		}
 
-		logger->simpleLog<void>(Logging::LogLevel::Info, "exception check successful");
+		logger->simpleLog<void>(Logging::LogLevel::Info, "Exception check successful");
 
 		// Initialize engine, load config
 		try
 		{
 			engine->configFile("game/config.json");
 		}
-		catch (std::exception& e)
+		catch (const std::exception& e)
 		{
-			logger->simpleLog<void>(
-				Logging::LogLevel::Exception,
-				"Caught exception loading config!\n%s",
-				Engine::unrollExceptions(e).c_str()
-			);
+			onEngineExcept(logger, e, "Caught exception loading config!");
 
 			return 1;
 		}
@@ -129,13 +137,10 @@ namespace
 		{
 			engine->run();
 		}
-		catch (std::exception& e)
+		catch (const std::exception& e)
 		{
-			logger->simpleLog<void>(
-				Logging::LogLevel::Exception,
-				"Caught exception running engine!\n%s",
-				Engine::unrollExceptions(e).c_str()
-			);
+			onEngineExcept(logger, e, "Caught exception running engine!");
+
 			return 2;
 		}
 
@@ -144,21 +149,33 @@ namespace
 
 		return 0;
 	}
+
+	/**
+	 * @brief Parses a single argument string
+	 *
+	 * @param[out] config Config to alter using the arguments
+	 * @param[in] arg_str Argument received from @p argv
+	 */
+	void parseArg(StartupConfig& config, char* arg_str)
+	{
+		if (strcmp(arg_str, "-v") == 0) { config.verbosity_level = 1; }
+		else if (strcmp(arg_str, "-vv") == 0) { config.verbosity_level = 2; }
+	}
 } // namespace
 
 int main(int argc, char** argv)
 {
-	bool verbose = false;
-
-	if (argc > 1)
-	{
-		if (strcmp(argv[1], "-v") == 0) { verbose = true; }
-	}
-
 #if defined(SEMANTICS_MSVC)
 	// Enable colored output on Win32
 	initConsoleWin32();
 #endif
 
-	return runEngine(verbose);
+	StartupConfig config;
+
+	for (int arg_idx = 1; arg_idx < argc; arg_idx++)
+	{
+		parseArg(config, argv[arg_idx]);
+	}
+
+	return runEngine(config);
 }

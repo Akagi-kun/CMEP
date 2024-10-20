@@ -22,13 +22,12 @@ namespace Engine::Rendering::Vulkan
 {
 #if defined(ENGINERENDERINGVULKAN_LIBRARY_IMPLEMENTATION)
 	/**
-	 * @brief Vulkan callback for logging
+	 * Vulkan callback for logging
 	 */
-	extern PFN_vkDebugUtilsMessengerCallbackEXT debug_callback;
+	extern const PFN_vkDebugUtilsMessengerCallbackEXT debug_callback;
 #endif
 
-	class Instance final : public Logging::SupportsLogging,
-						   public HandleWrapper<vk::raii::Instance>
+	class Instance final : public Logging::SupportsLogging, public HandleWrapper<vk::raii::Instance>
 	{
 	public:
 		struct WindowParams
@@ -38,10 +37,7 @@ namespace Engine::Rendering::Vulkan
 			const std::vector<std::pair<int, int>>& hints;
 		};
 
-		Instance(
-			SupportsLogging::logger_t with_logger,
-			const WindowParams&&	  with_window_parameters
-		);
+		Instance(SupportsLogging::logger_t with_logger, const WindowParams&& with_window_parameters);
 		~Instance();
 
 		[[nodiscard]] Window* getWindow()
@@ -74,15 +70,12 @@ namespace Engine::Rendering::Vulkan
 
 		vk::raii::Context context;
 
-		PhysicalDevice* physical_device = nullptr;
-		LogicalDevice*	logical_device	= nullptr;
-		Window*			window			= nullptr;
-
+		PhysicalDevice*	 physical_device  = nullptr;
+		LogicalDevice*	 logical_device	  = nullptr;
 		MemoryAllocator* memory_allocator = nullptr;
 
+		Window*		 window		  = nullptr;
 		CommandPool* command_pool = nullptr;
-
-		static const std::vector<const char*> validation_layers;
 
 		void initInstance();
 		void initDevice();

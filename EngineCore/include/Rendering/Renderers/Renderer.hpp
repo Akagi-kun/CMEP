@@ -28,41 +28,29 @@ namespace Engine::Rendering
 		);
 		virtual ~IRenderer();
 
-		void
-		supplyData(const RendererSupplyData& data);
+		void supplyData(const RendererSupplyData& data);
 
 		// Renderers shall implement this to update their matrix_data
-		virtual void
-		updateMatrices() = 0;
+		virtual void updateMatrices() = 0;
 
-		void
-		updateTransform(
-			const Transform&  with_transform,
-			const Transform&  with_parent_transform,
-			const ScreenSize& with_screen
-		)
+		void updateTransform(const Transform& with_transform, const Transform& with_parent_transform)
 		{
 			transform		 = with_transform;
 			parent_transform = with_parent_transform;
-			screen			 = with_screen;
 
 			has_updated_matrices = false;
 
 			/**
 			 * @todo Remove
 			 */
-			mesh_builder->supplyWorldPosition(
-				with_transform.pos + with_parent_transform.pos
-			);
+			mesh_builder->supplyWorldPosition(with_transform.pos + with_parent_transform.pos);
 		}
 
-		void
-		render(Vulkan::CommandBuffer* command_buffer, uint32_t current_frame);
+		void render(Vulkan::CommandBuffer* command_buffer, uint32_t current_frame);
 
 	protected:
-		Transform  transform;
-		Transform  parent_transform;
-		ScreenSize screen;
+		Transform transform;
+		Transform parent_transform;
 
 		// Renderer configuration
 		std::string_view pipeline_name;
@@ -78,8 +66,7 @@ namespace Engine::Rendering
 
 		// When false, UpdateDescriptorSets shall be internally called on next Render
 		bool has_updated_descriptors = false;
-		void
-		updateDescriptorSets();
+		void updateDescriptorSets();
 
 		// When false, UpdateMatrices will be called
 		// Note that UpdateMatrices is also manually called from SceneManager
@@ -94,8 +81,7 @@ namespace Engine::Rendering
 	public:
 		using IRenderer::IRenderer;
 
-		void
-		updateMatrices() override;
+		void updateMatrices() override;
 	};
 
 	class Renderer2D final : public IRenderer
@@ -103,7 +89,6 @@ namespace Engine::Rendering
 	public:
 		using IRenderer::IRenderer;
 
-		void
-		updateMatrices() override;
+		void updateMatrices() override;
 	};
 } // namespace Engine::Rendering

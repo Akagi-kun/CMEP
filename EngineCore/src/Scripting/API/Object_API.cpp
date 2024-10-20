@@ -2,7 +2,7 @@
 
 #include "Scripting/API/framework.hpp"
 
-#include "Object.hpp"
+#include "SceneObject.hpp"
 #include "lua.hpp"
 
 #include <string>
@@ -10,15 +10,16 @@
 
 namespace Engine::Scripting::API
 {
+	/// @cond LUA_API
 	namespace
 	{
 		int addChild(lua_State* state)
 		{
 			CMEP_LUACHECK_FN_ARGC(state, 2)
-			CMEP_LUAGET_PTR(state, Object)
+			CMEP_LUAGET_PTR(state, SceneObject)
 
 			lua_getfield(state, 2, "_ptr");
-			auto* ptr_child = static_cast<Object*>(lua_touserdata(state, -1));
+			auto* ptr_child = static_cast<SceneObject*>(lua_touserdata(state, -1));
 
 			self->addChild(ptr_child);
 
@@ -28,7 +29,7 @@ namespace Engine::Scripting::API
 		int getRotation(lua_State* state)
 		{
 			CMEP_LUACHECK_FN_ARGC(state, 1)
-			CMEP_LUAGET_PTR(state, Object)
+			CMEP_LUAGET_PTR(state, SceneObject)
 
 			glm::vec3 rotation = self->getRotation();
 
@@ -42,7 +43,7 @@ namespace Engine::Scripting::API
 		int setRotation(lua_State* state)
 		{
 			CMEP_LUACHECK_FN_ARGC(state, 4)
-			CMEP_LUAGET_PTR(state, Object)
+			CMEP_LUAGET_PTR(state, SceneObject)
 
 			glm::vec3 rotation;
 			rotation.x = static_cast<float>(lua_tonumber(state, 2));
@@ -57,7 +58,7 @@ namespace Engine::Scripting::API
 		int getSize(lua_State* state)
 		{
 			CMEP_LUACHECK_FN_ARGC(state, 1)
-			CMEP_LUAGET_PTR(state, Object)
+			CMEP_LUAGET_PTR(state, SceneObject)
 
 			glm::vec3 size = self->getSize();
 
@@ -71,7 +72,7 @@ namespace Engine::Scripting::API
 		int setSize(lua_State* state)
 		{
 			CMEP_LUACHECK_FN_ARGC(state, 4)
-			CMEP_LUAGET_PTR(state, Object)
+			CMEP_LUAGET_PTR(state, SceneObject)
 
 			glm::vec3 size;
 			size.x = static_cast<float>(lua_tonumber(state, 2));
@@ -86,7 +87,7 @@ namespace Engine::Scripting::API
 		int getPosition(lua_State* state)
 		{
 			CMEP_LUACHECK_FN_ARGC(state, 1)
-			CMEP_LUAGET_PTR(state, Object)
+			CMEP_LUAGET_PTR(state, SceneObject)
 
 			auto rotation = self->getPosition();
 
@@ -100,7 +101,7 @@ namespace Engine::Scripting::API
 		int setPosition(lua_State* state)
 		{
 			CMEP_LUACHECK_FN_ARGC(state, 4)
-			CMEP_LUAGET_PTR(state, Object)
+			CMEP_LUAGET_PTR(state, SceneObject)
 
 			glm::vec3 position;
 			position.x = static_cast<float>(lua_tonumber(state, 2));
@@ -111,7 +112,9 @@ namespace Engine::Scripting::API
 
 			return 0;
 		}
+
 	} // namespace
+	/// @endcond
 
 	std::unordered_map<std::string, const lua_CFunction> object_mappings = {
 		CMEP_LUAMAPPING_DEFINE(addChild),

@@ -4,6 +4,7 @@
 
 #include "Logging/Logging.hpp"
 
+#include "backend/ShaderCompiler.hpp"
 #include "common/InstanceOwned.hpp"
 #include "common/StructDefs.hpp"
 #include "rendering/Pipeline.hpp"
@@ -25,22 +26,27 @@ namespace Engine::Rendering::Vulkan
 	{
 	public:
 		PipelineManager(
-			SupportsLogging::logger_t with_logger,
-			InstanceOwned::value_t	  with_instance,
-			std::filesystem::path	  with_shader_path
+			const SupportsLogging::logger_t& with_logger,
+			InstanceOwned::value_t			 with_instance,
+			std::filesystem::path			 with_shader_path
 		);
 		~PipelineManager();
 
 		PipelineUserRef* getPipeline(const PipelineSettings& with_settings);
 
 	private:
-		std::filesystem::path											   shader_path;
+		std::filesystem::path			shader_path;
+		std::unique_ptr<ShaderCompiler> compiler;
+
 		std::vector<std::tuple<PipelineSettings, std::weak_ptr<Pipeline>>> pipelines;
 
 		std::pair<std::shared_ptr<Pipeline>, std::string_view> findPipeline(
 			const PipelineSettings& with_settings
 		);
 
+		/**
+		 * Called when a Pipeline is deallocated, removes it from @ref pipelines
+		 */
 		void pipelineDeallocCallback();
 	};
 

@@ -3,14 +3,15 @@
 #include "Scripting/API/LuaFactories.hpp"
 #include "Scripting/API/framework.hpp"
 
-#include "Object.hpp"
 #include "Scene.hpp"
+#include "SceneObject.hpp"
 
 #include <string>
 #include <unordered_map>
 
 namespace Engine::Scripting::API
 {
+	/// @cond LUA_API
 	namespace
 	{
 		int addObject(lua_State* state)
@@ -23,7 +24,7 @@ namespace Engine::Scripting::API
 			std::string name = lua_tostring(state, 2);
 
 			lua_getfield(state, 3, "_ptr");
-			auto* ptr_obj = static_cast<Object*>(lua_touserdata(state, -1));
+			auto* ptr_obj = static_cast<SceneObject*>(lua_touserdata(state, -1));
 
 			scene->addObject(name, ptr_obj);
 
@@ -39,7 +40,7 @@ namespace Engine::Scripting::API
 
 			std::string obj_name = lua_tostring(state, 2);
 
-			Object* obj = scene->findObject(obj_name);
+			SceneObject* obj = scene->findObject(obj_name);
 
 			if (obj == nullptr)
 			{
@@ -80,7 +81,7 @@ namespace Engine::Scripting::API
 			std::string template_name = lua_tostring(state, 3);
 
 			scene->addTemplatedObject(name, template_name);
-			Object* obj = scene->findObject(name);
+			SceneObject* obj = scene->findObject(name);
 
 			if (obj == nullptr)
 			{
@@ -96,6 +97,7 @@ namespace Engine::Scripting::API
 			return 1;
 		}
 	} // namespace
+	/// @endcond
 
 	std::unordered_map<std::string, const lua_CFunction> scene_mappings = {
 		CMEP_LUAMAPPING_DEFINE(addObject),

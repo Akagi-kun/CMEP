@@ -1,8 +1,11 @@
 #pragma once
 // IWYU pragma: private; include Rendering/Vulkan/common.hpp
 
-#include "glm/glm.hpp"
 #include "vulkan/vulkan_raii.hpp"
+
+#include "glm/mat4x4.hpp"
+#include "glm/vec2.hpp"
+#include "glm/vec3.hpp"
 
 #include <array>
 #include <cstddef>
@@ -47,12 +50,10 @@ namespace Engine::Rendering
 			const glm::vec2 with_texcoord = {},
 			const glm::vec3 with_normal	  = {}
 		)
-			: pos(with_pos), color(with_color), texcoord(with_texcoord),
-			  normal(with_normal)
+			: pos(with_pos), color(with_color), texcoord(with_texcoord), normal(with_normal)
 		{}
 
-		static constexpr std::array<vk::VertexInputBindingDescription, 1>
-		getBindingDescription()
+		static constexpr std::array<vk::VertexInputBindingDescription, 1> getBindingDescription()
 		{
 			return {
 				vk::VertexInputBindingDescription{
@@ -63,8 +64,7 @@ namespace Engine::Rendering
 			};
 		}
 
-		static constexpr std::array<vk::VertexInputAttributeDescription, 4>
-		getAttributeDescriptions()
+		static constexpr std::array<vk::VertexInputAttributeDescription, 4> getAttributeDescriptions()
 		{
 			return {
 				vk::VertexInputAttributeDescription{

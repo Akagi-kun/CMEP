@@ -26,6 +26,8 @@ CheckOptions:
     value: 'lower_case'
   - key: readability-identifier-naming.ParameterCase
     value: 'lower_case'
+  - key: readability-redundant-inline-specifier.StrictMode
+    value: true
   - key: readability-magic-numbers.IgnorePowersOf2IntegerValues
     value: true
   - key: readability-magic-numbers.IgnoredIntegerValues

@@ -13,18 +13,6 @@
 
 namespace Engine::Rendering
 {
-	/**
-	 * @todo Consider removing? Separate out texture loading
-	 */
-	typedef enum class Texture_InitFiletypeEnum : uint8_t
-	{
-		MIN_ENUM = 0x00,
-
-		FILE_PNG = 3,
-
-		MAX_ENUM = 0xFF
-	} Texture_InitFiletype;
-
 	struct TextureData
 	{
 		ImageSize				   size;

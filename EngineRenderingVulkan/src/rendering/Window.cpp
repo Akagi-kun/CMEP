@@ -5,14 +5,18 @@
 #include "Exception.hpp"
 #include "backend/Instance.hpp"
 #include "rendering/Swapchain.hpp"
+#include "vulkan/vulkan_enums.hpp"
 
 #include <algorithm>
 #include <array>
+#include <cassert>
 #include <cstdint>
 #include <cstring>
+#include <format>
 #include <limits>
 #include <string>
 #include <tuple>
+#include <type_traits>
 #include <utility>
 #include <vector>
 
@@ -92,6 +96,7 @@ namespace Engine::Rendering::Vulkan
 	// NOLINTNEXTLINE(readability-make-member-function-const) This function modifies internal state
 	void Window::setShouldClose(bool should_close)
 	{
+		assert(should_close == true);
 		glfwSetWindowShouldClose(native_handle, static_cast<int>(should_close));
 	}
 
@@ -108,9 +113,6 @@ namespace Engine::Rendering::Vulkan
 
 		vk::Extent2D extent = chooseVulkanSwapExtent(this, swap_chain_support.capabilities);
 
-		// Request one image more than is the required minimum
-		// uint32_t swapchain_image_count = swap_chain_support.capabilities.minImageCount
-		// + 1; Temporary fix for screen lag uint32_t swapchain_image_count = 1;
 		uint32_t swapchain_image_count = max_frames_in_flight;
 
 		// Check if there is a defined maximum (maxImageCount > 0)
@@ -129,6 +131,18 @@ namespace Engine::Rendering::Vulkan
 		swapchain = new Swapchain(instance, &surface, extent, swapchain_image_count);
 	}
 
+#define CHECK_VKRESULT(op_result)                                                                  \
+	do                                                                                             \
+	{                                                                                              \
+		if ((op_result) != vk::Result::eSuccess)                                                   \
+		{                                                                                          \
+			throw ENGINE_EXCEPTION(std::format(                                                    \
+				"Vulkan call returned '{}' (expected 'eSuccess')",                                 \
+				static_cast<std::underlying_type_t<vk::Result>>(op_result)                         \
+			));                                                                                    \
+		}                                                                                          \
+	} while (0)
+
 	void Window::drawFrame()
 	{
 		LogicalDevice* logical_device = instance->getLogicalDevice();
@@ -136,17 +150,9 @@ namespace Engine::Rendering::Vulkan
 		auto& render_target = swapchain->getRenderTarget(current_frame);
 
 		// Wait for fence
-		{
-			vk::Result result = logical_device->waitForFences(
-				*render_target.sync_objects.in_flight,
-				vk::True,
-				UINT64_MAX
-			);
-			if (result != vk::Result::eSuccess)
-			{
-				throw ENGINE_EXCEPTION("Failed waiting for fences in DrawFrame!");
-			}
-		}
+		CHECK_VKRESULT(
+			logical_device->waitForFences(*render_target.sync_objects.in_flight, vk::True, UINT64_MAX)
+		);
 
 		// Reset fence after wait is over
 		// (fence has to be reset before being used again)
@@ -165,38 +171,25 @@ namespace Engine::Rendering::Vulkan
 			);
 
 			// Framebuffer is being resized
-			if (result == vk::Result::eErrorOutOfDateKHR ||
-				result == vk::Result::eSuboptimalKHR)
+			if (result == vk::Result::eErrorOutOfDateKHR || result == vk::Result::eSuboptimalKHR)
 			{
 				return;
 			}
 
-			if (result != vk::Result::eSuccess)
-			{
-				throw ENGINE_EXCEPTION("Failed to acquire swap chain image!");
-			}
+			CHECK_VKRESULT(result);
 		}
 
 		// Reset command buffer to initial state
 		render_target.command_buffer->reset();
 
 		// Records render into command buffer
-		swapchain->renderFrame(
-			render_target.command_buffer,
-			image_index,
-			render_callback,
-			user_data
-		);
+		swapchain->renderFrame(render_target.command_buffer, image_index, render_callback, user_data);
 
 		vk::CommandBuffer command_buffers[] = {*render_target.command_buffer};
 
-		vk::Semaphore wait_semaphores[] = {*render_target.sync_objects.image_available};
-		vk::PipelineStageFlags wait_stages[] = {
-			vk::PipelineStageFlagBits::eColorAttachmentOutput
-		};
-		std::array<vk::Semaphore, 1> signal_semaphores = {
-			*render_target.sync_objects.present_ready
-		};
+		vk::Semaphore		   wait_semaphores[] = {*render_target.sync_objects.image_available};
+		vk::PipelineStageFlags wait_stages[] = {vk::PipelineStageFlagBits::eColorAttachmentOutput};
+		std::array<vk::Semaphore, 1> signal_semaphores = {*render_target.sync_objects.present_ready};
 
 		vk::SubmitInfo submit_info{
 			.waitSemaphoreCount	  = 1,
@@ -210,10 +203,7 @@ namespace Engine::Rendering::Vulkan
 
 		// Submit to queue
 		// passed fence will be signaled when command buffer execution is finished
-		logical_device->getGraphicsQueue().submit(
-			submit_info,
-			*render_target.sync_objects.in_flight
-		);
+		logical_device->getGraphicsQueue().submit(submit_info, *render_target.sync_objects.in_flight);
 
 		// Increment current frame
 		current_frame = (current_frame + 1) % max_frames_in_flight;
@@ -221,21 +211,16 @@ namespace Engine::Rendering::Vulkan
 		vk::SwapchainKHR swap_chains[] = {*swapchain->getHandle()};
 
 		// Present current image to the screen
-		{
-			vk::PresentInfoKHR present_info{
-				.waitSemaphoreCount = static_cast<uint32_t>(signal_semaphores.size()),
-				.pWaitSemaphores	= signal_semaphores.data(),
-				.swapchainCount		= 1,
-				.pSwapchains		= swap_chains,
-				.pImageIndices		= &image_index
-			};
 
-			vk::Result result = logical_device->getPresentQueue().presentKHR(present_info);
-			if (result != vk::Result::eSuccess)
-			{
-				throw ENGINE_EXCEPTION("Failed presenting swapchain!");
-			}
-		}
+		vk::PresentInfoKHR present_info{
+			.waitSemaphoreCount = static_cast<uint32_t>(signal_semaphores.size()),
+			.pWaitSemaphores	= signal_semaphores.data(),
+			.swapchainCount		= 1,
+			.pSwapchains		= swap_chains,
+			.pImageIndices		= &image_index
+		};
+
+		CHECK_VKRESULT(logical_device->getPresentQueue().presentKHR(present_info));
 	}
 
 #pragma endregion
@@ -293,8 +278,7 @@ namespace Engine::Rendering::Vulkan
 		else { self->cursor_position = {0.0, 0.0}; }
 	}
 
-	void
-	Window::callbackOnKeyEvent(GLFWwindow* window, int key, int scancode, int action, int mods)
+	void Window::callbackOnKeyEvent(GLFWwindow* window, int key, int scancode, int action, int mods)
 	{
 		auto* self = getWindowPtrFromGlfw(window);
 

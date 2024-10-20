@@ -18,14 +18,14 @@ namespace Engine::Rendering::Vulkan
 		~CommandPool() = default;
 
 		/**
-		 * @brief Allocate and construct a @ref CommandBuffer in memory
+		 * Allocate and construct a @ref CommandBuffer in memory
 		 *
 		 * @return A pointer to the allocated command buffer
 		 */
 		[[nodiscard]] CommandBuffer* allocateCommandBuffer();
 
 		/**
-		 * @brief Construct a @ref CommandBuffer and return it by value
+		 * Construct a @ref CommandBuffer and return it by value
 		 *
 		 * @return The command buffer
 		 */

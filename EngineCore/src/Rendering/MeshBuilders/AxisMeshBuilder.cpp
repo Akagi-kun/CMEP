@@ -3,8 +3,6 @@
 #include "Rendering/MeshBuilders/MeshBuildContext.hpp"
 #include "Rendering/Vulkan/common.hpp"
 
-#include "glm/glm.hpp"
-
 #include <algorithm>
 #include <iterator>
 #include <vector>
@@ -17,12 +15,12 @@ namespace Engine::Rendering
 		{
 			// Simple quad mesh
 			const std::vector<RenderingVertex> generated_mesh = {
-				RenderingVertex{glm::vec3{0.0, 0.0, 0.0}, glm::vec3{0.0f, 1.0f, 0.0f}},
-				RenderingVertex{glm::vec3{1.0, 0.0, 0.0}, glm::vec3{0.0f, 1.0f, 0.0f}},
-				RenderingVertex{glm::vec3{0.0, 0.0, 0.0}, glm::vec3{0.0f, 0.0f, 1.0f}},
-				RenderingVertex{glm::vec3{0.0, 1.0, 0.0}, glm::vec3{0.0f, 0.0f, 1.0f}},
-				RenderingVertex{glm::vec3{0.0, 0.0, 0.0}, glm::vec3{1.0f, 0.0f, 0.0f}},
-				RenderingVertex{glm::vec3{0.0, 0.0, 1.0}, glm::vec3{1.0f, 0.0f, 0.0f}}
+				RenderingVertex{{0.0, 0.0, 0.0}, {0.0f, 1.0f, 0.0f}},
+				RenderingVertex{{1.0, 0.0, 0.0}, {0.0f, 1.0f, 0.0f}},
+				RenderingVertex{{0.0, 0.0, 0.0}, {0.0f, 0.0f, 1.0f}},
+				RenderingVertex{{0.0, 1.0, 0.0}, {0.0f, 0.0f, 1.0f}},
+				RenderingVertex{{0.0, 0.0, 0.0}, {1.0f, 0.0f, 0.0f}},
+				RenderingVertex{{0.0, 0.0, 1.0}, {1.0f, 0.0f, 0.0f}}
 			};
 
 			// Create context

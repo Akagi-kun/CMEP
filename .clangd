@@ -12,6 +12,7 @@ CompileFlags:
     # Switches should have a default case
     # even when all enum values are covered
     - -Wno-covered-switch-default
+    - -Wno-switch-enum
     # Disable static-value-related warnings
     - -Wno-global-constructors
     - -Wno-exit-time-destructors
@@ -45,6 +46,8 @@ Diagnostics:
       - processenv\.h
       - winnt\.h
       - winbase\.h
+      # Internal MSVC:
+      - __msvc_.+
 ---
 Completion:
   AllScopes: No

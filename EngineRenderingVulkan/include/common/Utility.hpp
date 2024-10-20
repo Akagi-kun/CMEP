@@ -17,7 +17,7 @@
 namespace Engine::Rendering::Vulkan::Utility
 {
 	/**
-	 * @brief Converts @ref ImageSize to a @ref vk::Extent2D
+	 * Converts @ref ImageSize to a @c vk::Extent2D
 	 */
 	template <typename target_t>
 	[[nodiscard]] constexpr auto convertToExtent(const ImageSize& size) -> target_t
@@ -27,18 +27,18 @@ namespace Engine::Rendering::Vulkan::Utility
 	}
 
 	/**
-	 * @brief Converts @ref ImageSize to a @ref vk::Extent3D
+	 * Converts @ref ImageSize to a @c vk::Extent3D
 	 */
 	template <typename target_t>
-	[[nodiscard]] constexpr auto
-	convertToExtent(const ImageSize& size, uint32_t depth) -> target_t
+	[[nodiscard]] constexpr auto convertToExtent(const ImageSize& size, uint32_t depth) -> target_t
 		requires(std::is_same_v<target_t, vk::Extent3D>)
 	{
 		return {static_cast<uint32_t>(size.x), static_cast<uint32_t>(size.y), depth};
 	}
 
-	inline vk::SurfaceFormatKHR
-	chooseSwapSurfaceFormat(const std::vector<vk::SurfaceFormatKHR>& available_formats)
+	inline vk::SurfaceFormatKHR chooseSwapSurfaceFormat(
+		const std::vector<vk::SurfaceFormatKHR>& available_formats
+	)
 	{
 		for (const auto& available_format : available_formats)
 		{
@@ -53,8 +53,9 @@ namespace Engine::Rendering::Vulkan::Utility
 		return available_formats[0];
 	}
 
-	inline vk::PresentModeKHR
-	chooseSwapPresentMode(const std::vector<vk::PresentModeKHR>& available_present_modes)
+	inline vk::PresentModeKHR chooseSwapPresentMode(
+		const std::vector<vk::PresentModeKHR>& available_present_modes
+	)
 	{
 		(void)(available_present_modes);
 		// Mailbox potentially worse?
@@ -69,10 +70,10 @@ namespace Engine::Rendering::Vulkan::Utility
 
 		// FIFO is guaranteed to be available by the spec
 		return vk::PresentModeKHR::eFifo;
-		// return vk::PresentModeKHR::eFifoRelaxed;
 	}
 
-	inline std::vector<uint8_t> readShaderFile(const std::filesystem::path& path)
+	template <typename val_t = char>
+	std::vector<val_t> readShaderFile(const std::filesystem::path& path)
 	{
 		// Open file in binary mode
 		// using "ate" mode, file is seeked to end of file
@@ -80,8 +81,7 @@ namespace Engine::Rendering::Vulkan::Utility
 
 		if (!file.is_open())
 		{
-			throw ENGINE_EXCEPTION(
-				std::format("failed to open shader file! File: {}", path.string())
+			throw ENGINE_EXCEPTION(std::format("failed to open shader file! File: {}", path.string())
 			);
 		}
 
@@ -89,32 +89,31 @@ namespace Engine::Rendering::Vulkan::Utility
 		size_t file_size = static_cast<size_t>(file.tellg());
 		file.seekg(0);
 
-		std::vector<uint8_t> buffer(file_size);
+		std::vector<val_t> buffer(file_size);
 
 		// Read whole file into buffer
 		// reinterpret_cast into char* because read can only accept "char", even in binary mode
-		file.read(
-			reinterpret_cast<char*>(buffer.data()),
-			static_cast<std::streamsize>(file_size)
-		);
+		file.read(reinterpret_cast<char*>(buffer.data()), static_cast<std::streamsize>(file_size));
 
 		file.close();
 
 		return buffer;
 	}
 
-	inline vk::SampleCountFlagBits
-	getMaxFramebufferSampleCount(const vk::raii::PhysicalDevice& device)
+	inline vk::SampleCountFlagBits getMaxFramebufferSampleCount(const vk::raii::PhysicalDevice& device
+	)
 	{
-		const vk::PhysicalDeviceProperties physical_device_properties =
-			device.getProperties();
+		const vk::PhysicalDeviceProperties physical_device_properties = device.getProperties();
 
 		// Check which sample counts are supported by the framebuffers
 		vk::SampleCountFlags counts =
 			physical_device_properties.limits.framebufferColorSampleCounts &
 			physical_device_properties.limits.framebufferDepthSampleCounts;
 
-		if (!counts) { return vk::SampleCountFlagBits::e1; }
+		if (!counts)
+		{
+			return vk::SampleCountFlagBits::e1;
+		}
 
 		if (counts & vk::SampleCountFlagBits::e64)
 		{
@@ -128,9 +127,18 @@ namespace Engine::Rendering::Vulkan::Utility
 		{
 			return vk::SampleCountFlagBits::e16;
 		}
-		if (counts & vk::SampleCountFlagBits::e8) { return vk::SampleCountFlagBits::e8; }
-		if (counts & vk::SampleCountFlagBits::e4) { return vk::SampleCountFlagBits::e4; }
-		if (counts & vk::SampleCountFlagBits::e2) { return vk::SampleCountFlagBits::e2; }
+		if (counts & vk::SampleCountFlagBits::e8)
+		{
+			return vk::SampleCountFlagBits::e8;
+		}
+		if (counts & vk::SampleCountFlagBits::e4)
+		{
+			return vk::SampleCountFlagBits::e4;
+		}
+		if (counts & vk::SampleCountFlagBits::e2)
+		{
+			return vk::SampleCountFlagBits::e2;
+		}
 
 		return vk::SampleCountFlagBits::e1;
 	}

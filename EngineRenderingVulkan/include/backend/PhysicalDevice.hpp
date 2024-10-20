@@ -17,8 +17,7 @@ namespace Engine::Rendering::Vulkan
 	public:
 		PhysicalDevice(vk::raii::PhysicalDevice from_device)
 			: vk::raii::PhysicalDevice(std::move(from_device))
-		{
-		}
+		{}
 
 		[[nodiscard]] vk::PhysicalDeviceLimits getLimits() const;
 		[[nodiscard]] vk::SampleCountFlagBits  getMSAASamples() const;
@@ -33,7 +32,8 @@ namespace Engine::Rendering::Vulkan
 
 		[[nodiscard]] vk::Format findSupportedDepthFormat() const;
 
-		[[nodiscard]] std::optional<QueueFamilyIndices> findVulkanQueueFamilies(const Surface* with_surface
+		[[nodiscard]] std::optional<QueueFamilyIndices> findVulkanQueueFamilies(
+			const Surface& with_surface
 		) const;
 	};
 

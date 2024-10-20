@@ -1,11 +1,14 @@
 #pragma once
 
+#include <cstddef>
 #include <sstream>
 #include <string>
+#include <string_view>
+#include <utility>
 
 namespace Engine::Utility
 {
-	inline std::string StreamGetNextToken(std::stringstream& from_sstream)
+	inline std::string streamGetNextToken(std::stringstream& from_sstream)
 	{
 		std::string entry;
 
@@ -14,7 +17,10 @@ namespace Engine::Utility
 		return entry;
 	}
 
-	inline std::pair<std::string, std::string> SplitKVPair(const std::string& from_string, std::string_view delimiter)
+	inline std::pair<std::string, std::string> splitKVPair(
+		const std::string& from_string,
+		std::string_view   delimiter
+	)
 	{
 		// Get position of delimiter in entry
 		const size_t delimiter_begin = from_string.find(delimiter);
@@ -23,8 +29,9 @@ namespace Engine::Utility
 		if (delimiter_begin != std::string::npos)
 		{
 			// Get the key and value
-			std::string key	  = from_string.substr(0, delimiter_begin);
-			std::string value = from_string.substr(delimiter_end, from_string.size() - delimiter_end);
+			std::string key = from_string.substr(0, delimiter_begin);
+			std::string value =
+				from_string.substr(delimiter_end, from_string.size() - delimiter_end);
 
 			return {key, value};
 		}

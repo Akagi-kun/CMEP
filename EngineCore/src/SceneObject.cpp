@@ -1,4 +1,4 @@
-#include "Object.hpp"
+#include "SceneObject.hpp"
 
 #include "Rendering/MeshBuilders/IMeshBuilder.hpp"
 #include "Rendering/Renderers/Renderer.hpp"
@@ -8,43 +8,37 @@
 
 #include "InternalEngineObject.hpp"
 
+#include <cassert>
+
 namespace Engine
 {
 	using Rendering::IMeshBuilder;
 	using Rendering::IRenderer;
 
-	Object::Object(Engine* with_engine, IRenderer* with_renderer, IMeshBuilder* with_mesh_builder)
+	SceneObject::SceneObject(
+		Engine*		  with_engine,
+		IRenderer*	  with_renderer,
+		IMeshBuilder* with_mesh_builder
+	)
 		: InternalEngineObject(with_engine), renderer(with_renderer),
 		  mesh_builder(with_mesh_builder)
-	{
-	}
+	{}
 
-	Object::~Object() noexcept
+	SceneObject::~SceneObject() noexcept
 	{
-		this->logger->simpleLog<decltype(this)>(
-			Logging::LogLevel::VerboseDebug,
-			"Destructor called"
-		);
+		this->logger->simpleLog<decltype(this)>(Logging::LogLevel::VerboseDebug, "Destructor called");
 
 		delete renderer;
 	}
 
-	void Object::updateRenderer()
+	void SceneObject::updateRenderer()
 	{
-		if (renderer != nullptr)
-		{
-			renderer->updateTransform(transform, parent_transform, screen);
-		}
+		assert(renderer);
+
+		renderer->updateTransform(transform, parent_transform);
 	}
 
-	void Object::screenSizeInform(Rendering::ScreenSize with_screen_size)
-	{
-		screen = with_screen_size;
-
-		updateRenderer();
-	}
-
-	void Object::setPosition(const glm::vec3 with_pos)
+	void SceneObject::setPosition(const glm::vec3& with_pos)
 	{
 		transform.pos = with_pos;
 		updateRenderer();
@@ -56,7 +50,7 @@ namespace Engine
 		}
 	}
 
-	void Object::setSize(const glm::vec3 with_size)
+	void SceneObject::setSize(const glm::vec3& with_size)
 	{
 		transform.size = with_size;
 		updateRenderer();
@@ -68,7 +62,7 @@ namespace Engine
 		}
 	}
 
-	void Object::setRotation(const glm::vec3 with_rotation)
+	void SceneObject::setRotation(const glm::vec3& with_rotation)
 	{
 		transform.rotation = with_rotation;
 
@@ -81,38 +75,39 @@ namespace Engine
 		}
 	}
 
-	glm::vec3 Object::getPosition() const noexcept
+	glm::vec3 SceneObject::getPosition() const noexcept
 	{
 		return transform.pos;
 	}
-	glm::vec3 Object::getSize() const noexcept
+	glm::vec3 SceneObject::getSize() const noexcept
 	{
 		return transform.size;
 	}
-	glm::vec3 Object::getRotation() const noexcept
+	glm::vec3 SceneObject::getRotation() const noexcept
 	{
 		return transform.rotation;
 	}
 
-	void Object::setParentTransform(Rendering::Transform with_parent_transform)
+	void SceneObject::setParentTransform(const Rendering::Transform& with_parent_transform)
 	{
 		parent_transform = with_parent_transform;
 	}
 
-	void Object::addChild(Object* with_child)
+	void SceneObject::addChild(SceneObject* with_child)
 	{
 		with_child->setParent(this);
 		with_child->setParentTransform(transform);
 		with_child->updateRenderer();
+
 		children.push_back(with_child);
 	}
 
-	void Object::removeChildren()
+	void SceneObject::removeChildren()
 	{
 		children.clear();
 	}
 
-	void Object::setParent(Object* with_parent)
+	void SceneObject::setParent(SceneObject* with_parent)
 	{
 		parent = with_parent;
 	}

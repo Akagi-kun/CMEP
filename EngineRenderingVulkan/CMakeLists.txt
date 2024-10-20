@@ -1,4 +1,6 @@
-set(SRC_FILES
+add_library(EngineRenderingVulkan STATIC)
+
+target_sources(EngineRenderingVulkan PRIVATE
 	src/lib_impl.cpp
 	src/backend/DebugCallback.cpp
 
@@ -7,7 +9,8 @@ set(SRC_FILES
 	src/backend/LogicalDevice.cpp
 	src/backend/PhysicalDevice.cpp
 	src/backend/MemoryAllocator.cpp
-	
+	src/backend/ShaderCompiler.cpp
+
 	src/rendering/Window.cpp
 	src/rendering/Surface.cpp
 	src/rendering/Pipeline.cpp
@@ -23,28 +26,12 @@ set(SRC_FILES
 	src/objects/CommandBuffer.cpp
 	)
 
-if(WIN32)
-	set(STATIC_LIBRARIES
-		glfw3
-		)
-elseif(APPLE)
-	set(STATIC_LIBRARIES
-		glfw
-		)
-else()
-	set(STATIC_LIBRARIES
-		glfw
-		)
-endif()
-
-add_library(EngineRenderingVulkan STATIC ${SRC_FILES})
-
 target_compile_features(EngineRenderingVulkan PUBLIC cxx_std_20)
 set_target_properties(EngineRenderingVulkan PROPERTIES CXX_STANDARD_REQUIRED ON CXX_EXTENSIONS OFF POSITION_INDEPENDENT_CODE ON)
 target_compile_definitions(EngineRenderingVulkan PUBLIC VULKAN_HPP_DISPATCH_LOADER_DYNAMIC=1 VULKAN_HPP_NO_CONSTRUCTORS)
 target_compile_options(EngineRenderingVulkan PRIVATE ${ENGINE_COMPILE_OPTIONS})
 
-target_precompile_headers(EngineRenderingVulkan PRIVATE [["vulkan/vulkan.hpp"]] [["vulkan/vulkan_raii.hpp"]])
+target_precompile_headers(EngineRenderingVulkan PRIVATE [["vulkan/vulkan.hpp"]] [["vulkan/vulkan_raii.hpp"]] [["glslang/Public/ShaderLang.h"]])
 
 target_link_directories(EngineRenderingVulkan PRIVATE ../build)
 target_include_directories(EngineRenderingVulkan PRIVATE
@@ -59,4 +46,18 @@ target_include_directories(EngineRenderingVulkan PRIVATE
 											 )
 target_include_directories(EngineRenderingVulkan PUBLIC include)
 
-target_link_libraries(EngineRenderingVulkan EngineBase EngineLogging ${STATIC_LIBRARIES} Vulkan::Vulkan)
+if(WIN32)
+	set(STATIC_LIBRARIES
+		glfw3
+		)
+elseif(APPLE)
+	set(STATIC_LIBRARIES
+		glfw
+		)
+else()
+	set(STATIC_LIBRARIES
+		glfw
+		)
+endif()
+
+target_link_libraries(EngineRenderingVulkan EngineBase EngineLogging ${STATIC_LIBRARIES} Vulkan::Vulkan glslang glslang-default-resource-limits)

@@ -1,5 +1,6 @@
 #include "Scene.hpp"
 
+#include "Assets/AssetManager.hpp"
 #include "Rendering/Vulkan/backend.hpp"
 
 #include "Factories/ObjectFactory.hpp"
@@ -8,7 +9,8 @@
 
 #include "Engine.hpp"
 #include "Exception.hpp"
-#include "Object.hpp"
+#include "InternalEngineObject.hpp"
+#include "SceneObject.hpp"
 
 #include <format>
 #include <memory>
@@ -17,12 +19,13 @@
 
 namespace Engine
 {
+	Scene::Scene(Engine* with_engine)
+		: InternalEngineObject(with_engine), asset_repository(new AssetRepository())
+	{}
+
 	Scene::~Scene()
 	{
-		this->logger->simpleLog<decltype(this)>(
-			Logging::LogLevel::VerboseDebug,
-			"Destructor called"
-		);
+		this->logger->simpleLog<decltype(this)>(Logging::LogLevel::VerboseDebug, "Destructor called");
 
 		templates.clear();
 
@@ -39,7 +42,7 @@ namespace Engine
 		objects.clear();
 	}
 
-	const std::unordered_map<std::string, Object*>& Scene::getAllObjects() noexcept
+	const std::unordered_map<std::string, SceneObject*>& Scene::getAllObjects() noexcept
 	{
 		return objects;
 	}
@@ -50,7 +53,7 @@ namespace Engine
 
 		if (templated_object != templates.end())
 		{
-			Object* obj = Factories::ObjectFactory::instantiateObjectTemplate(
+			SceneObject* obj = Factories::ObjectFactory::instantiateObjectTemplate(
 				getOwnerEngine(),
 				templated_object->second
 			);
@@ -65,7 +68,7 @@ namespace Engine
 		}
 	}
 
-	void Scene::addObject(const std::string& name, Object* ptr)
+	void Scene::addObject(const std::string& name, SceneObject* ptr)
 	{
 		if (ptr != nullptr)
 		{
@@ -75,17 +78,12 @@ namespace Engine
 				name.c_str()
 			);
 
-			const auto* window_data = owner_engine->getVulkanInstance()->getWindow();
-			const auto& screen_size = window_data->getFramebufferSize();
-
-			ptr->screenSizeInform(screen_size);
-
 			objects.emplace(name, ptr);
 		}
 		else { throw ENGINE_EXCEPTION("Called AddObject with nullptr!"); }
 	}
 
-	Object* Scene::findObject(const std::string& name)
+	SceneObject* Scene::findObject(const std::string& name)
 	{
 		auto find_ret = objects.find(name);
 		if (find_ret != objects.end()) { return find_ret->second; }
@@ -94,7 +92,7 @@ namespace Engine
 
 	void Scene::removeObject(const std::string& name)
 	{
-		Object* object = findObject(name);
+		SceneObject* object = findObject(name);
 
 		if (object != nullptr)
 		{
@@ -103,9 +101,7 @@ namespace Engine
 		}
 		else
 		{
-			throw ENGINE_EXCEPTION(
-				std::format("Could not remove non-existent object '{}'!", name)
-			);
+			throw ENGINE_EXCEPTION(std::format("Could not remove non-existent object '{}'!", name));
 		}
 	}
 

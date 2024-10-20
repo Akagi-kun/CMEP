@@ -5,7 +5,7 @@ BasedOnStyle: Microsoft
 IndentWidth: 4
 TabWidth: 4
 UseTab: Always
-ColumnLimit: 90
+ColumnLimit: 100
 # Compact arguments
 BinPackArguments: false
 AllowAllArgumentsOnNextLine: false
@@ -36,10 +36,11 @@ BraceWrapping:
 BreakBeforeBraces: Custom
 AlwaysBreakAfterReturnType: None
 PenaltyBreakAssignment: 30
-PenaltyBreakComment: 200000
-PenaltyExcessCharacter: 20
+PenaltyBreakComment: 2000
+PenaltyExcessCharacter: 50
 PenaltyReturnTypeOnItsOwnLine: 300
-PenaltyBreakBeforeFirstCallParameter: 1
+PenaltyBreakBeforeFirstCallParameter: 0
+PenaltyBreakOpenParenthesis: 0
 # Indent
 IndentCaseLabels: true
 NamespaceIndentation: All
@@ -48,7 +49,7 @@ AccessModifierOffset: -4
 # Compact code
 AllowShortIfStatementsOnASingleLine: WithoutElse
 AllowShortCaseLabelsOnASingleLine: true
-AllowShortBlocksOnASingleLine: Always
+AllowShortFunctionsOnASingleLine: Empty
 # Fixes
 FixNamespaceComments: true
 BitFieldColonSpacing: Both

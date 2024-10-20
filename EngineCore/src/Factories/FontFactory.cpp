@@ -1,18 +1,17 @@
 #include "Factories/FontFactory.hpp"
 
-#include "Assets/AssetManager.hpp"
 #include "Assets/Font.hpp"
 #include "Assets/Texture.hpp"
 
 #include "Logging/Logging.hpp"
 
-#include "Engine.hpp"
 #include "Exception.hpp"
 #include "KVPairHelper.hpp"
 
 #include <array>
 #include <cassert>
 #include <cstddef>
+#include <cstdint>
 #include <cstring>
 #include <exception>
 #include <filesystem>
@@ -31,9 +30,9 @@ namespace Engine::Factories
 
 	namespace
 	{
-		std::tuple<std::string, std::string> getNextKvPair(std::stringstream& from_stream)
+		std::tuple<std::string, std::string> getNextKVPair(std::stringstream& from_stream)
 		{
-			return Utility::SplitKVPair(Utility::StreamGetNextToken(from_stream), "=");
+			return Utility::splitKVPair(Utility::streamGetNextToken(from_stream), "=");
 		}
 
 		void parseBmfontEntryChar(
@@ -64,11 +63,11 @@ namespace Engine::Factories
 			// because the struct may have padding
 			//
 			// Treat fchar as bytes in memory
-			auto* fchar_memory = reinterpret_cast<char*>(&fchar);
+			auto* fchar_memory = reinterpret_cast<uint8_t*>(&fchar);
 
 			while (!line_stream.eof())
 			{
-				auto [key, value] = getNextKvPair(line_stream);
+				auto [key, value] = getNextKVPair(line_stream);
 
 				// First try finding the key in the offset table
 				auto result_offset = struct_offsets.find(key);
@@ -82,7 +81,10 @@ namespace Engine::Factories
 					// Finally fill the member of the struct
 					(*fchar_entry_ptr) = std::stoi(value);
 				}
-				else if (key == "id") { fchar_id = std::stoi(value); }
+				else if (key == "id")
+				{
+					fchar_id = std::stoi(value);
+				}
 			}
 
 			font->chars.emplace(fchar_id, fchar);
@@ -100,13 +102,10 @@ namespace Engine::Factories
 	{
 		std::ifstream font_file(font_path);
 
-		ENGINE_EXCEPTION_ON_ASSERT(
+		EXCEPTION_ASSERT(
 			font_file.is_open(),
-			std::format(
-				"font file '{}' could not be opened",
-				font_path.lexically_normal().string()
-			)
-		)
+			std::format("font file '{}' could not be opened", font_path.lexically_normal().string())
+		);
 
 		this->logger->simpleLog<decltype(this)>(
 			Logging::LogLevel::VerboseDebug,
@@ -172,13 +171,7 @@ namespace Engine::Factories
 					std::stringstream line_remainder;
 					line_data >> line_remainder.rdbuf();
 
-					parseBmfontLine(
-						font_path,
-						font,
-						result->second,
-						line_remainder,
-						pageload_cb
-					);
+					parseBmfontLine(font_path, font, result->second, line_remainder, pageload_cb);
 				}
 			}
 		}
@@ -198,7 +191,7 @@ namespace Engine::Factories
 
 		do
 		{
-			auto [key, value] = getNextKvPair(line_stream);
+			auto [key, value] = getNextKVPair(line_stream);
 
 			if (key == "file")
 			{
@@ -211,7 +204,10 @@ namespace Engine::Factories
 
 				page_path = value;
 			}
-			else if (key == "id") { page_idx = std::stoi(value); }
+			else if (key == "id")
+			{
+				page_idx = std::stoi(value);
+			}
 		} while ((page_idx == -1) || page_path.empty());
 
 		this->logger->simpleLog<decltype(this)>(
@@ -221,35 +217,24 @@ namespace Engine::Factories
 			page_path.lexically_normal().string().c_str()
 		);
 
-		auto asset_manager = owner_engine->getAssetManager().lock();
-		assert(asset_manager);
+		std::filesystem::path asset_path = font_path.remove_filename() / page_path;
 
-		std::shared_ptr<Rendering::Texture> texture =
-			asset_manager->getTexture(page_path.string());
-
-		// Try to load the page if asset manager doesnt have it loaded
-		if (texture == nullptr)
+		std::shared_ptr<Rendering::Texture> texture;
+		try
 		{
-			std::filesystem::path asset_path = font_path.remove_filename() / page_path;
-
-			try
-			{
-				texture = pageload_cb(asset_path);
-			}
-			catch (...)
-			{
-				std::throw_with_nested(ENGINE_EXCEPTION(std::format(
-					"Exception trying to load font page '{}'",
-					asset_path.string()
-				)));
-			}
+			texture = pageload_cb(asset_path);
+		}
+		catch (...)
+		{
+			std::throw_with_nested(ENGINE_EXCEPTION(
+				std::format("Exception trying to load font page '{}'", asset_path.string())
+			));
 		}
 
 		// Add page and it's texture to map
-		font->pages.insert(std::pair<int, std::shared_ptr<Rendering::Texture>>(
-			page_idx,
-			std::move(texture)
-		));
+		font->pages.insert(
+			std::pair<int, std::shared_ptr<Rendering::Texture>>(page_idx, std::move(texture))
+		);
 	}
 
 	void FontFactory::parseBmfontLine(
@@ -260,9 +245,6 @@ namespace Engine::Factories
 		const pageload_callback_t&			  pageload_cb
 	)
 	{
-		std::string key;
-		std::string value;
-
 		switch (line_type)
 		{
 			case BmFontLineType::INFO:
@@ -271,8 +253,8 @@ namespace Engine::Factories
 				// Add every entry of the line
 				while (!line_stream.eof())
 				{
-					tie(key, value
-					) = Utility::SplitKVPair(Utility::StreamGetNextToken(line_stream), "=");
+					auto [key, value] =
+						Utility::splitKVPair(Utility::streamGetNextToken(line_stream), "=");
 					font->info.emplace(key, value);
 				}
 
@@ -281,8 +263,8 @@ namespace Engine::Factories
 			case BmFontLineType::CHARS:
 			{
 				// chars has only a single entry (the count of chars), no loop required
-				tie(key, value
-				) = Utility::SplitKVPair(Utility::StreamGetNextToken(line_stream), "=");
+				auto [key, value] =
+					Utility::splitKVPair(Utility::streamGetNextToken(line_stream), "=");
 				font->char_count = static_cast<unsigned int>(std::stoi(value));
 
 				break;
@@ -301,9 +283,7 @@ namespace Engine::Factories
 				}
 				catch (...)
 				{
-					std::throw_with_nested(
-						ENGINE_EXCEPTION("Could not initialize a Font page!")
-					);
+					std::throw_with_nested(ENGINE_EXCEPTION("Could not initialize a Font page!"));
 				}
 			}
 			default:

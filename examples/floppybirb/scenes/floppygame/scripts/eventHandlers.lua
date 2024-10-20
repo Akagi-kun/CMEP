@@ -89,7 +89,7 @@ local gameOnGameOver = function(engine, asset_manager, scene_manager)
 
 	local font = asset_manager:getFont("myfont")
 
-	local object = createSceneObject(engine, "renderer_2d/text", "text", {
+	local object = createSceneObject(engine, "renderer_2d", "text", "text", {
 		{"font", font}}, { {"text", "GAME OVER"} }
 	)
 	object:setPosition(0.34, 0.45, -0.01)
@@ -323,7 +323,7 @@ onInit = function(event)
 	-- uncomment this to set the desired framerate target
 	-- the engine will spinsleep until the target is reached
 	--
-	--event.engine:setFramerateTarget(30)
+	--event.engine:setFramerateTarget(24)
 
 	-- Get managers
 	local asset_manager = event.engine:getAssetManager()
@@ -333,7 +333,7 @@ onInit = function(event)
 	local font = asset_manager:getFont("myfont")
 
 	-- Create frametime counter and add it to scene
-	local object = createSceneObject(event.engine, "renderer_2d/text", "text",
+	local object = createSceneObject(event.engine, "renderer_2d", "text", "text",
 		{ {"font", font} }, { {"text", "avg: \nmin: \nmax: "} }
 	)
 	object:setPosition(0.0, 0.0, -0.01)
@@ -341,7 +341,7 @@ onInit = function(event)
 	scene:addObject("_debug_info", object)
 
 	-- Add score
-	local object = createSceneObject(event.engine, "renderer_2d/text", "text", {
+	local object = createSceneObject(event.engine, "renderer_2d", "text", "text", {
 		{"font", font}
 	}, {{"text", "0"}})
 	object:setPosition(0.5, 0.0, -0.01)
@@ -349,7 +349,7 @@ onInit = function(event)
 	scene:addObject("text_score", object)
 
 	-- Add background
-	local object = createSceneObject(event.engine, "renderer_2d/sprite", "sprite", {
+	local object = createSceneObject(event.engine, "renderer_2d", "sprite", "sprite", {
 		{"texture", asset_manager:getTexture("background")}
 	}, {})
 	object:setPosition(0.0, 0.0, -0.8)
@@ -357,7 +357,7 @@ onInit = function(event)
 	scene:addObject("background", object)
 
 	-- Add birb
-	local object = createSceneObject(event.engine, "renderer_2d/sprite", "sprite", {
+	local object = createSceneObject(event.engine, "renderer_2d", "sprite", "sprite", {
 		{"texture", asset_manager:getTexture("birb")}
 	}, {})
 	object:setPosition(0.2, util.pxToScreenY(360), 0.0)
@@ -366,14 +366,14 @@ onInit = function(event)
 
 	-- Add grounds
 	for i = 0, 2 do
-		local ground_top = createSceneObject(event.engine, "renderer_2d/sprite", "sprite", {
+		local ground_top = createSceneObject(event.engine, "renderer_2d", "sprite", "sprite", {
 			{"texture", asset_manager:getTexture("ground_top")}
 		}, {})
 		ground_top:setPosition(util.pxToScreenX(630) * i, 0.0, -0.1)
 		ground_top:setSize(util.pxToScreenX(630), util.pxToScreenY(60), 1)
 		scene:addObject("ground_top"..i, ground_top)
 
-		local ground_bottom = createSceneObject(event.engine, "renderer_2d/sprite", "sprite", {
+		local ground_bottom = createSceneObject(event.engine, "renderer_2d", "sprite", "sprite", {
 			{"texture", asset_manager:getTexture("ground_bottom")}
 	 	}, {})
 

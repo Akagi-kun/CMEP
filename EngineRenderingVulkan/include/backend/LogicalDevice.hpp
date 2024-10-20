@@ -7,6 +7,8 @@
 #include "common/StructDefs.hpp"
 #include "vulkan/vulkan_raii.hpp"
 
+#include <type_traits>
+
 namespace Engine::Rendering::Vulkan
 {
 	class LogicalDevice : public InstanceOwned, public vk::raii::Device
@@ -14,7 +16,7 @@ namespace Engine::Rendering::Vulkan
 	public:
 		LogicalDevice(LogicalDevice&) = delete;
 
-		LogicalDevice(InstanceOwned::value_t with_instance, const Surface* with_surface);
+		LogicalDevice(InstanceOwned::value_t with_instance, const Surface& with_surface);
 
 		[[nodiscard]] const QueueFamilyIndices& getQueueFamilies() const
 		{
@@ -36,6 +38,7 @@ namespace Engine::Rendering::Vulkan
 		vk::raii::Queue	   graphics_queue = nullptr;
 		vk::raii::Queue	   present_queue  = nullptr;
 
-		vk::raii::Device createDevice(Instance* with_instance, const Surface* with_surface);
+		vk::raii::Device createDevice(Instance* with_instance, const Surface& with_surface);
 	};
+	static_assert(!std::is_copy_constructible_v<LogicalDevice> && !std::is_copy_assignable_v<LogicalDevice>);
 } // namespace Engine::Rendering::Vulkan

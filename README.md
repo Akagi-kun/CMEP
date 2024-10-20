@@ -30,7 +30,7 @@ or
 > [!IMPORTANT]
 > Where `<CONFIG>` can be omitted (which builds Debug by default) and if provided is a valid configuration value (Either `Debug` or `Release`, case-sensitive)
 
-Optionally you can also build manually by directly invoking cmake (useful if the build scripts do not work for you):
+You can also build manually by directly invoking cmake (useful if the build scripts do not work for you):
 ```
 cmake -DCMAKE_BUILD_TYPE=<CONFIG> .
 cmake --build . --target rungame --config <CONFIG>
@@ -69,6 +69,7 @@ This project depends on:
 - tinyobjloader
 - nlohmann-json
 - Vulkan SDK
+- glslang, SPIRV-Tools and SPIRV-Headers
 
 All except the Vulkan SDK are prepackaged or built automatically once the build script is run.
 These projects are external to this one and are not affiliated with this project in any way, when using this project take care to follow licenses of the dependencies.

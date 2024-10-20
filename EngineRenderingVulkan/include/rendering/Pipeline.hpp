@@ -19,7 +19,7 @@ namespace Engine::Rendering::Vulkan
 	{
 	public:
 		/**
-		 * @brief Represents a set of data related to a singular user of this pipeline
+		 * Represents a set of data related to a singular user of this pipeline
 		 *
 		 * Using this method similar pipelines can be shared
 		 *
@@ -46,6 +46,7 @@ namespace Engine::Rendering::Vulkan
 
 		Pipeline(
 			InstanceOwned::value_t		 with_instance,
+			const ShaderCompiler&		 with_shader_compiler,
 			RenderPass*					 with_render_pass,
 			PipelineSettings			 settings,
 			const std::filesystem::path& shader_path

@@ -68,7 +68,7 @@ namespace Engine::Rendering::Vulkan
 	}
 
 	std::optional<QueueFamilyIndices> PhysicalDevice::findVulkanQueueFamilies(
-		const Surface* with_surface
+		const Surface& with_surface
 	) const
 	{
 		QueueFamilyIndices indices;
@@ -88,7 +88,7 @@ namespace Engine::Rendering::Vulkan
 			}
 
 			// check surface support
-			if (with_surface->queryQueueSupport(*this, indice))
+			if (with_surface.queryQueueSupport(*this, indice))
 			{
 				indices.present_family = indice;
 				present_found		   = true;
@@ -97,9 +97,12 @@ namespace Engine::Rendering::Vulkan
 			indice++;
 		}
 
-		if (graphics_found && present_found) { return indices; }
+		if (graphics_found && present_found)
+		{
+			return indices;
+		}
 
-		return std::nullopt;
+		return {};
 	}
 
 #pragma endregion

@@ -119,10 +119,8 @@ onInit = function(event)
 
 	local font = asset_manager:getFont("myfont")
 
-	print("Default scene ON_INIT")
-
 	-- Create frametime counter and add it to scene
-	local object = createSceneObject(event.engine, "renderer_2d/text", "text",
+	local object = createSceneObject(event.engine, "renderer_2d", "text", "text",
 		{ {"font", font} }, { {"text", "avg: \nmin: \nmax: "} }
 	)
 	object:setPosition(0.0, 0.0, -0.01)
@@ -130,7 +128,7 @@ onInit = function(event)
 	scene:addObject("_debug_info", object)
 
 	-- Add score
-	local object = createSceneObject(event.engine, "renderer_2d/text", "text", {
+	local object = createSceneObject(event.engine, "renderer_2d", "text", "text", {
 		{"font", font}
 	}, {{"text", "Press space to begin"}})
 	object:setPosition(0.3, 0.5, -0.01)

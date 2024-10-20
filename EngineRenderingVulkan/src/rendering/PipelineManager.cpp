@@ -22,12 +22,13 @@ namespace Engine::Rendering::Vulkan
 #pragma region Public
 
 	PipelineManager::PipelineManager(
-		SupportsLogging::logger_t with_logger,
-		InstanceOwned::value_t	  with_instance,
-		std::filesystem::path	  with_shader_path
+		const SupportsLogging::logger_t& with_logger,
+		InstanceOwned::value_t			 with_instance,
+		std::filesystem::path			 with_shader_path
 	)
-		: SupportsLogging(std::move(with_logger)), InstanceOwned(with_instance),
-		  shader_path(std::move(with_shader_path))
+		: SupportsLogging(with_logger), InstanceOwned(with_instance),
+		  shader_path(std::move(with_shader_path)),
+		  compiler(std::make_unique<ShaderCompiler>(with_logger))
 	{}
 
 	PipelineManager::~PipelineManager()
@@ -48,6 +49,7 @@ namespace Engine::Rendering::Vulkan
 
 		std::tie(pipeline, reason) = findPipeline(with_settings);
 
+		// If a pipeline was found
 		if (pipeline != nullptr)
 		{
 			auto* user_ref = new PipelineUserRef(instance, pipeline);
@@ -66,6 +68,7 @@ namespace Engine::Rendering::Vulkan
 		pipeline = std::shared_ptr<Pipeline>(
 			new Pipeline(
 				instance,
+				*compiler,
 				instance->getWindow()->getSwapchain()->getRenderPass(),
 				with_settings,
 				shader_path
@@ -103,15 +106,9 @@ namespace Engine::Rendering::Vulkan
 		delete user_data;
 	}
 
-	void
-	PipelineUserRef::updateDescriptorSets(per_frame_array<vk::WriteDescriptorSet> with_writes
-	)
+	void PipelineUserRef::updateDescriptorSets(per_frame_array<vk::WriteDescriptorSet> with_writes)
 	{
-		Pipeline::updateDescriptorSets(
-			*instance->getLogicalDevice(),
-			*user_data,
-			with_writes
-		);
+		Pipeline::updateDescriptorSets(*instance->getLogicalDevice(), *user_data, with_writes);
 	}
 
 	void PipelineUserRef::updateDescriptorSetsAll(const vk::WriteDescriptorSet& with_write)
@@ -127,8 +124,9 @@ namespace Engine::Rendering::Vulkan
 #pragma region Private
 
 	// string_view is guaranteed to be null-terminated
-	std::pair<std::shared_ptr<Pipeline>, std::string_view>
-	PipelineManager::findPipeline(const PipelineSettings& with_settings)
+	std::pair<std::shared_ptr<Pipeline>, std::string_view> PipelineManager::findPipeline(
+		const PipelineSettings& with_settings
+	)
 	{
 		std::string_view reasons[]	   = {"no setting match"};
 		int				 reached_point = 0;
@@ -139,8 +137,7 @@ namespace Engine::Rendering::Vulkan
 			if (settings == with_settings)
 			{
 				auto locked_pipeline = pipeline_ptr.lock();
-
-				ENGINE_EXCEPTION_ON_ASSERT(locked_pipeline, "Failed locking pipeline")
+				EXCEPTION_ASSERT(locked_pipeline, "Failed locking pipeline");
 
 				return {locked_pipeline, {}};
 			}
@@ -149,13 +146,10 @@ namespace Engine::Rendering::Vulkan
 		return {nullptr, reasons[reached_point]};
 	}
 
-	// Called when a pipeline's ref counter reaches 0
 	void PipelineManager::pipelineDeallocCallback()
 	{
 		// Delete all entries that are expired
-		std::erase_if(pipelines, [](auto pred_val) {
-			return std::get<1>(pred_val).expired();
-		});
+		std::erase_if(pipelines, [](auto pred_val) { return std::get<1>(pred_val).expired(); });
 	}
 
 #pragma endregion

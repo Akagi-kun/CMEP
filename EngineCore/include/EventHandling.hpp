@@ -1,7 +1,6 @@
 #pragma once
 
-#include "EnumStringConvertor.hpp"
-#include "glm/glm.hpp"
+#include "glm/vec2.hpp"
 
 #include <cstdint>
 
@@ -14,19 +13,18 @@ namespace Engine::EventHandling
 {
 	enum class EventType : uint8_t
 	{
-		MIN_ENUM = 0x00,
+		onInit	 = 1,
+		onUnload = 2, // currently unused
 
-		ON_INIT	  = 1,
-		ON_UNLOAD = 2,
+		onUpdate = 8,
 
-		ON_UPDATE = 8,
+		onKeyDown = 16,
+		onKeyUp	  = 18,
 
-		ON_KEYDOWN = 16,
-		ON_KEYUP   = 18,
+		onMouseMoved = 24,
 
-		ON_MOUSEMOVED = 24,
-
-		MAX_ENUM = 0xFF,
+		minEnum = 0x00,
+		maxEnum = 0xFF,
 	};
 
 	struct Event final
@@ -36,15 +34,13 @@ namespace Engine::EventHandling
 
 		// delta time shall be specified for every event
 		double delta_time = 0.0;
-		union {								 // event specific data
-			uint16_t			keycode = 0; // ON_KEYDOWN/ON_KEYUP events
-			glm::vec<2, double> mouse;		 // ON_MOUSEMOVED event
+		union {						// event specific data
+			uint16_t   keycode = 0; // onKeyDown/onKeyUp events
+			glm::dvec2 mouse;		// onMouseMoved event
 		};
 
-		Event(Engine* const with_engine, const EnumStringConvertor<EventType> eventtype)
+		Event(Engine* const with_engine, EventType eventtype)
 			: event_type(eventtype), raised_from(with_engine)
-		{
-		}
-		~Event() = default;
+		{}
 	};
 } // namespace Engine::EventHandling

@@ -24,12 +24,8 @@ namespace Engine::Rendering::Vulkan
 
 #pragma region Public
 
-	LogicalDevice::LogicalDevice(
-		InstanceOwned::value_t with_instance,
-		const Surface*		   with_surface
-	)
-		: InstanceOwned(with_instance),
-		  vk::raii::Device(createDevice(with_instance, with_surface))
+	LogicalDevice::LogicalDevice(InstanceOwned::value_t with_instance, const Surface& with_surface)
+		: InstanceOwned(with_instance), vk::raii::Device(createDevice(with_instance, with_surface))
 	{
 		// Get queue handles
 		graphics_queue = getQueue(queue_family_indices.graphics_family, 0);
@@ -40,8 +36,7 @@ namespace Engine::Rendering::Vulkan
 
 #pragma region Private
 
-	vk::raii::Device
-	LogicalDevice::createDevice(Instance* with_instance, const Surface* with_surface)
+	vk::raii::Device LogicalDevice::createDevice(Instance* with_instance, const Surface& with_surface)
 	{
 		const auto* physical_device = with_instance->getPhysicalDevice();
 
@@ -91,13 +86,12 @@ namespace Engine::Rendering::Vulkan
 
 		// Logical device creation information
 		vk::DeviceCreateInfo create_info{
-			.pNext				  = &device_features2,
-			.queueCreateInfoCount = static_cast<uint32_t>(queue_create_infos.size()),
-			.pQueueCreateInfos	  = queue_create_infos.data(),
-			.enabledLayerCount	 = static_cast<uint32_t>(device_validation_layers.size()),
-			.ppEnabledLayerNames = device_validation_layers.data(),
-			.enabledExtensionCount =
-				static_cast<uint32_t>(DeviceScore::device_extensions.size()),
+			.pNext					 = &device_features2,
+			.queueCreateInfoCount	 = static_cast<uint32_t>(queue_create_infos.size()),
+			.pQueueCreateInfos		 = queue_create_infos.data(),
+			.enabledLayerCount		 = static_cast<uint32_t>(device_validation_layers.size()),
+			.ppEnabledLayerNames	 = device_validation_layers.data(),
+			.enabledExtensionCount	 = static_cast<uint32_t>(DeviceScore::device_extensions.size()),
 			.ppEnabledExtensionNames = DeviceScore::device_extensions.data(),
 			.pEnabledFeatures		 = nullptr,
 		};

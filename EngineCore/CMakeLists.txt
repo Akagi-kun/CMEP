@@ -1,4 +1,6 @@
-set(SRC_FILES
+add_library(EngineCore SHARED)
+
+target_sources(EngineCore PRIVATE
 	src/feature_test.cpp
 
 	src/Engine.cpp
@@ -9,7 +11,7 @@ set(SRC_FILES
 	src/EnumStringConvertor.cpp
 
 	src/Scene.cpp
-	src/Object.cpp
+	src/SceneObject.cpp
 	src/SceneLoader.cpp
 	src/SceneManager.cpp
 
@@ -50,25 +52,6 @@ set(SRC_FILES
 	../external/lodepng/lodepng.cpp
 	)
 
-if(WIN32)
-	set(STATIC_LIBRARIES
-		glfw3
-		lua51
-		)
-elseif(APPLE)
-	set(STATIC_LIBRARIES
-		glfw
-		luajit
-		)
-else()
-	set(STATIC_LIBRARIES
-		glfw
-		luajit
-		)
-endif()
-
-add_library(EngineCore SHARED ${SRC_FILES})
-
 target_compile_features(EngineCore PUBLIC cxx_std_20)
 set_target_properties(EngineCore PROPERTIES CXX_STANDARD_REQUIRED ON CXX_EXTENSIONS OFF)
 target_compile_options(EngineCore PRIVATE ${ENGINE_COMPILE_OPTIONS})
@@ -89,5 +72,22 @@ target_include_directories(EngineCore PRIVATE include
 											 ../common_include
 											 ${Vulkan_INCLUDE_DIRS}
 											 )
+
+if(WIN32)
+	set(STATIC_LIBRARIES
+		glfw3
+		lua51
+		)
+elseif(APPLE)
+	set(STATIC_LIBRARIES
+		glfw
+		luajit
+		)
+else()
+	set(STATIC_LIBRARIES
+		glfw
+		luajit
+		)
+endif()
 
 target_link_libraries(EngineCore EngineBase EngineLogging EngineRenderingVulkan ${STATIC_LIBRARIES} Vulkan::Vulkan)

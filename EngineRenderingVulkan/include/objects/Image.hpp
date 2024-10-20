@@ -24,23 +24,22 @@ namespace Engine::Rendering::Vulkan
 			vk::SampleCountFlagBits num_samples,
 			vk::Format				format,
 			vk::ImageUsageFlags		usage,
-			vk::MemoryPropertyFlags properties = vk::MemoryPropertyFlagBits::eDeviceLocal,
+			vk::MemoryPropertyFlags properties	= vk::MemoryPropertyFlagBits::eDeviceLocal,
 			vk::ImageTiling			with_tiling = vk::ImageTiling::eOptimal
 		);
 		~Image();
 
 		/**
-		 * @brief Record the commands that would transition this image
-		 *        from the current to a different layout.
+		 * Record the commands that would transition this image
+		 * from the current to a different layout.
 		 *
 		 * @param with_command_buffer Command buffer to record to
 		 * @param new_layout Target layout
 		 */
-		void
-		transitionImageLayout(CommandBuffer& with_command_buffer, vk::ImageLayout new_layout);
+		void transitionImageLayout(CommandBuffer& with_command_buffer, vk::ImageLayout new_layout);
 
 		/**
-		 * @brief Get the size of this image
+		 * Get the size of this image
 		 *
 		 * @return Size in pixels
 		 */
@@ -73,7 +72,7 @@ namespace Engine::Rendering::Vulkan
 			vk::Format				format,
 			vk::ImageUsageFlags		usage,
 			vk::ImageAspectFlags	with_aspect_flags,
-			vk::MemoryPropertyFlags properties = vk::MemoryPropertyFlagBits::eDeviceLocal,
+			vk::MemoryPropertyFlags properties	= vk::MemoryPropertyFlagBits::eDeviceLocal,
 			vk::ImageTiling			with_tiling = vk::ImageTiling::eOptimal
 		);
 

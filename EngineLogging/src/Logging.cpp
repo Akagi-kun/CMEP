@@ -5,9 +5,9 @@
 
 #if defined(__GNUC__) || defined(__llvm__)
 /**
- * @brief For compatibility with clang, use on functions taking vprintf-like arguments
+ * For compatibility with clang, use on functions taking vprintf-like arguments
  */
-#	define ATTRIBUTE_PRINTF_COMPAT(string_idx, arg_check)                               \
+#	define ATTRIBUTE_PRINTF_COMPAT(string_idx, arg_check)                                         \
 		__attribute__((__format__(__printf__, string_idx, arg_check)))
 #else
 #	define ATTRIBUTE_PRINTF_COMPAT(string_idx, arg_check)
@@ -51,8 +51,8 @@ namespace Logging
 		);
 
 		/**
-		 * @brief Get the maximum length of level string
-		 *        or the minimum length necessary to contain every possible level
+		 * Get the maximum length of level string
+		 * or the minimum length necessary to contain every possible level
 		 */
 		consteval size_t getMaxLevelLength()
 		{
@@ -67,58 +67,61 @@ namespace Logging
 		}
 
 		/**
-		 * @brief Get a 64bit unsigned hash of the current thread ID
+		 * Get a 64bit unsigned hash of the current thread ID
 		 */
 		uint64_t getCurrentThreadId()
 		{
 			return std::hash<std::thread::id>{}(std::this_thread::get_id());
 		}
 
-		constexpr bool isValid(Logging::LogLevel level)
+		std::string getThreadOutputName(LoggerInternalState& state)
 		{
-			return level >= LogLevel::VerboseDebug && level <= LogLevel::Exception;
-		}
+			const auto current_thread = getCurrentThreadId();
 
-		std::string getThreadOutputName(LoggerInternalState* state)
-		{
-			const uint64_t current_thread = getCurrentThreadId();
+			auto find_result = state.threadid_name_map.find(current_thread);
 
-			auto find_result = state->threadid_name_map.find(current_thread);
+			std::string output_name;
 
-			// If this ID is mapped to a name
-			bool use_name = (find_result != state->threadid_name_map.end());
-
-			// Use the name, else format the ID in hexadecimal
-			auto output = use_name ? find_result->second
-								   : std::format("{:X}", current_thread);
+			// If this thread has an associated name -> use it
+			// otherwise -> use the thread ID as a hexadecimal string
+			if (find_result != state.threadid_name_map.end())
+			{
+				output_name = find_result->second;
+			}
+			else
+			{
+				output_name = std::format("{:X}", current_thread);
+			}
 
 			// Limit size to 8 characters
-			if (output.length() > 8) { return output.substr(output.length() - 8, 8); }
+			if (output_name.length() > 8)
+			{
+				// Use last 8 characters
+				return output_name.substr(output_name.length() - 8, 8);
+			}
 
-			return output;
+			return output_name;
 		}
 	} // namespace
 
-	Logger::Logger()
-	{
-		state = new LoggerInternalState();
-	}
+	Logger::Logger() : state(new LoggerInternalState())
+	{}
 
 	Logger::~Logger()
 	{
 		// Close all handles
 		for (auto& output : state->outputs)
 		{
-			if (output.handle != stdout) { fclose(output.handle); }
+			if (output.handle != stdout)
+			{
+				fclose(output.handle);
+			}
 		}
-
-		delete state;
 	}
 
-	void
-	Logger::addOutputHandle(Logging::LogLevel min_level, FILE* handle, bool use_colors)
+	void Logger::addOutputHandle(Logging::LogLevel min_level, FILE* handle, bool use_colors)
 	{
-		if (!isValid(min_level)) { return; }
+		assert(isValid(min_level));
 
 		// Create new mapping
 		LoggerInternalMapping new_map = LoggerInternalMapping();
@@ -147,21 +150,21 @@ namespace Logging
 
 	void Logger::internalStartLog(Logging::LogLevel level, const char* log_prefix)
 	{
-		if (!isValid(level)) { return; }
+		assert(isValid(level));
 
 		// Protect IO and member access
 		state->thread_mutex.lock();
 
 		// Get color and string representation of LogLevel
-		auto color_str = level_to_color_table[static_cast<int>(level)];
-		auto level_str = level_to_string_table[static_cast<int>(level)];
+		auto level_color = level_to_color_table[static_cast<int>(level)];
+		auto level_str	 = level_to_string_table[static_cast<int>(level)];
 
-		// Get current time
-		const auto system_time = std::chrono::time_point_cast<std::chrono::milliseconds>(
-			std::chrono::system_clock::now()
-		);
+		// Get current system (wall clock) time and round to ms
+		const auto system_time =
+			std::chrono::round<std::chrono::milliseconds>(std::chrono::system_clock::now());
 
-		std::string thread_name = getThreadOutputName(state);
+		std::string thread_name = getThreadOutputName(*state);
+		assert(thread_name.length() <= 8);
 
 		// For all outputs
 		for (auto& output : state->outputs)
@@ -176,7 +179,7 @@ namespace Logging
 					output.use_colors ? Console::GRAY_FG : "",
 					system_time,
 					thread_name,
-					output.use_colors ? color_str : "",
+					output.use_colors ? level_color : "",
 					level_str,
 					getMaxLevelLength(),
 					log_prefix != nullptr ? log_prefix : logpfx_generator<void>{}
@@ -185,7 +188,6 @@ namespace Logging
 				fputs(out.c_str(), output.handle);
 			}
 		}
-		assert(thread_name.length() <= 8);
 	}
 
 	void Logger::log(const char* format, ...)
@@ -222,7 +224,10 @@ namespace Logging
 	{
 		for (auto& output : state->outputs)
 		{
-			if (output.has_started_logging) { vfprintf(output.handle, format, args); }
+			if (output.has_started_logging)
+			{
+				vfprintf(output.handle, format, args);
+			}
 		}
 	}
 } // namespace Logging

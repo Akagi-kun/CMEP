@@ -8,7 +8,7 @@
 namespace Engine::Scripting::API
 {
 	/**
-	 * @brief Function to replace the default Lua print() function
+	 * Function to replace the default Lua print() function
 	 *
 	 * Expects upvalue at index 1 to point to a Logger instance
 	 */

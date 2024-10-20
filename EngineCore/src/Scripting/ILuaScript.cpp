@@ -35,8 +35,7 @@ namespace Engine::Scripting
 
 			size_t						   dump_len = 0;
 			static constexpr uint_fast16_t depth	= 5;
-			const char*					   stack_dump =
-				luaJIT_profile_dumpstack(state, "fZ;", depth, &dump_len);
+			const char* stack_dump = luaJIT_profile_dumpstack(state, "fZ;", depth, &dump_len);
 
 			printf("Stack:\n'");
 
@@ -103,11 +102,7 @@ namespace Engine::Scripting
 			}
 			catch (const char* str)
 			{
-				return luaL_error(
-					state,
-					"Exception wrapper caught exception! e.what():\n%s",
-					str
-				);
+				return luaL_error(state, "Exception wrapper caught exception! e.what():\n%s", str);
 			}
 			catch (const std::exception& e)
 			{
@@ -116,7 +111,7 @@ namespace Engine::Scripting
 					"Exception wrapper caught exception!\n\tFunction: %s\n\tStacktrace: "
 					"%s",
 					Utility::mappingReverseLookup(function).data(),
-					unrollExceptions(e).c_str()
+					Base::unrollExceptions(e).c_str()
 				);
 			}
 			catch (...)
@@ -128,14 +123,10 @@ namespace Engine::Scripting
 		void registerRequirePath(lua_State* state, ILuaScript* with_script)
 		{
 			lua_getglobal(state, LUA_LOADLIBNAME);
-			ENGINE_EXCEPTION_ON_ASSERT(
-				lua_istable(state, -1),
-				"Lua Module 'package' is not loaded!"
-			)
+			EXCEPTION_ASSERT(lua_istable(state, -1), "Lua Module 'package' is not loaded!");
 
 			std::filesystem::path require_origin = with_script->getPath();
-			std::string			  require_origin_str =
-				require_origin.remove_filename().parent_path().string();
+			std::string require_origin_str = require_origin.remove_filename().parent_path().string();
 
 			std::string require_path_str = (require_origin_str + "/modules/?.lua");
 
@@ -152,17 +143,16 @@ namespace Engine::Scripting
 
 		int cdefLazyLoader(lua_State* state)
 		{
-			const char* preload_code =
-				"local ffi = require('ffi');"
-				"local lib = ffi.load('EngineCore', true)"
-				"ffi.cdef[[\n"
-				"void* CreateGeneratorData("
-				"void* generator_script,const char* generator_script_fn,"
-				"void* generator_supplier,const char* generator_supplier_fn"
-				");"
-				"]]\n"
-				"package.loaded['cdef'] = { CreateGeneratorData = "
-				"lib.CreateGeneratorData }";
+			const char* preload_code = "local ffi = require('ffi');"
+									   "local lib = ffi.load('EngineCore', true)"
+									   "ffi.cdef[[\n"
+									   "void* CreateGeneratorData("
+									   "void* generator_script,const char* generator_script_fn,"
+									   "void* generator_supplier,const char* generator_supplier_fn"
+									   ");"
+									   "]]\n"
+									   "package.loaded['cdef'] = { CreateGeneratorData = "
+									   "lib.CreateGeneratorData }";
 
 			int load_return = luaL_loadstring(state, preload_code);
 			if (load_return != LUA_OK)
@@ -193,10 +183,7 @@ namespace Engine::Scripting
 	void ILuaScript::performPreloadSteps()
 	{
 		lua_getglobal(state, LUA_LOADLIBNAME);
-		ENGINE_EXCEPTION_ON_ASSERT(
-			lua_istable(state, -1),
-			"Lua Module 'package' is not loaded!"
-		)
+		EXCEPTION_ASSERT(lua_istable(state, -1), "Lua Module 'package' is not loaded!");
 
 		lua_getfield(state, -1, "preload");
 		assert(lua_istable(state, -1));
@@ -317,7 +304,7 @@ namespace Engine::Scripting
 	int ScriptFunctionRef::operator()(void* data)
 	{
 		auto locked_script = script.lock();
-		ENGINE_EXCEPTION_ON_ASSERT(locked_script, "Could not lock script!")
+		EXCEPTION_ASSERT(locked_script, "Could not lock script!");
 
 		return locked_script->callFunction(function, data);
 	}

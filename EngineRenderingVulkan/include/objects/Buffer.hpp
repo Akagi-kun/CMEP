@@ -15,7 +15,7 @@
 namespace Engine::Rendering::Vulkan
 {
 	/**
-	 * @brief Class representing a %Vulkan buffer
+	 * Class representing a %Vulkan buffer
 	 */
 	class Buffer : public HoldsVMA, public HandleWrapper<vk::raii::Buffer>
 	{
@@ -23,7 +23,7 @@ namespace Engine::Rendering::Vulkan
 		void* mapped_data = nullptr;
 
 		/**
-		 * @brief Construct a Vulkan Buffer object
+		 * Construct a Vulkan Buffer object
 		 *
 		 * @param with_device Logical device to create the buffer on
 		 * @param with_allocator Graphic memory allocator to create the buffer's memory with
@@ -44,7 +44,7 @@ namespace Engine::Rendering::Vulkan
 		void unmapMemory();
 
 		/**
-		 * @brief Copy a region of memory into this buffer
+		 * Copy a region of memory into this buffer
 		 *
 		 * @param with_data Pointer to the region to copy
 		 * @param with_size Size of the region
@@ -84,13 +84,13 @@ namespace Engine::Rendering::Vulkan
 #pragma region Specializations
 
 	/**
-	 * @brief Specializes @ref Buffer for staging purposes
+	 * Specializes @ref Buffer for staging purposes
 	 */
 	class StagingBuffer final : public Buffer
 	{
 	public:
 		/**
-		 * @brief Construct in-place with data
+		 * Construct in-place with data
 		 *
 		 * @param with_device,with_allocator See Buffer for common parameters
 		 * @param with_data The data used to create this buffer
@@ -105,13 +105,13 @@ namespace Engine::Rendering::Vulkan
 	};
 
 	/**
-	 * @brief Specializes @ref Buffer to hold @ref RenderingVertex "vertices"
+	 * Specializes @ref Buffer to hold @ref RenderingVertex "vertices"
 	 */
 	class VertexBuffer final : public Buffer
 	{
 	public:
 		/**
-		 * @brief Construct in-place with data
+		 * Construct in-place with data
 		 *
 		 * @param with_device,with_allocator See Buffer for common parameters
 		 * @param with_commandbuffer The command buffer to use when copying data
@@ -126,13 +126,13 @@ namespace Engine::Rendering::Vulkan
 	};
 
 	/**
-	 * @brief Specializes @ref Buffer to hold uniform data
+	 * Specializes @ref Buffer to hold uniform data
 	 */
 	class UniformBuffer final : public Buffer
 	{
 	public:
 		/**
-		 * @brief Construct with size
+		 * Construct with size
 		 *
 		 * @param with_device,with_allocator See Buffer for common parameters
 		 * @param with_size Size of the buffer

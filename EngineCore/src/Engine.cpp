@@ -14,8 +14,9 @@
 #include "EventHandling.hpp"
 #include "Exception.hpp"
 #include "GLFW/glfw3.h"
-#include "Object.hpp"
 #include "SceneManager.hpp"
+#include "SceneObject.hpp"
+#include "TimeMeasure.hpp"
 #include "buildinfo.hpp"
 #include "nlohmann/json.hpp"
 
@@ -27,6 +28,7 @@
 #include <fstream>
 #include <memory>
 #include <queue>
+#include <ratio>
 #include <stdexcept>
 #include <string>
 #include <string_view>
@@ -41,8 +43,11 @@ namespace Engine
 		// algorithm I found somewhere on stackoverflow
 		void spinSleep(double seconds)
 		{
-			static constexpr double nano_to_sec = 1e9;
-			static constexpr double spin_init	= 5e-3;
+			// Return if under some small value
+			constexpr double bypass_limit = 0.001;
+			if (seconds < bypass_limit) { return; }
+
+			constexpr double spin_init = 5e-3;
 
 			double	estimate   = spin_init;
 			double	mean	   = spin_init;
@@ -52,13 +57,15 @@ namespace Engine
 			while (seconds > estimate)
 			{
 				// Perform measured sleep
-				const auto start = std::chrono::steady_clock::now();
+				const auto sleep_start = std::chrono::steady_clock::now();
 				std::this_thread::sleep_for(std::chrono::milliseconds(2));
-				const auto end = std::chrono::steady_clock::now();
+				const auto sleep_end = std::chrono::steady_clock::now();
 
-				// Observed passage of time (as was performed by sleep_for)
-				const double observed = static_cast<double>((end - start).count()) /
-										nano_to_sec;
+				// Observed passage of time in seconds
+				// should be roughly equal to time specified in sleep_fore
+				const double observed =
+					std::chrono::duration<double>(sleep_end - sleep_start).count();
+
 				// Substract observed passage of time
 				// from total needed amount of sleep
 				seconds -= observed;
@@ -76,10 +83,9 @@ namespace Engine
 			}
 
 			// spin lock
-			const auto start = std::chrono::steady_clock::now();
-			while (static_cast<double>((std::chrono::steady_clock::now() - start).count()
-				   ) / nano_to_sec <
-				   seconds)
+			const auto spin_start = std::chrono::steady_clock::now();
+			while (std::chrono::duration<double>(std::chrono::steady_clock::now() - spin_start)
+					   .count() < seconds)
 			{}
 		}
 
@@ -98,8 +104,7 @@ namespace Engine
 			};
 
 			// Clamp the mouse event movement to some maximum
-			// reduces the chance that the window manager will mess with us
-			// (i.e. when gaining focus and the mouse is somewhere far outside the window)
+			// mitigates fast mouse jumps (i.e. when gaining window focus)
 			constexpr double clamp_difference = 128;
 
 			// Check whether we have focus and the mouse is in the "content" area
@@ -108,10 +113,8 @@ namespace Engine
 				if ((window->cursor_position.x - last_pos.x) != 0.0 ||
 					(window->cursor_position.y - last_pos.y) != 0.0)
 				{
-					auto event = EventHandling::Event(
-						origin_engine,
-						EventHandling::EventType::ON_MOUSEMOVED
-					);
+					auto event =
+						EventHandling::Event(origin_engine, EventHandling::EventType::onMouseMoved);
 
 					event.mouse.x = std::clamp(
 						window->cursor_position.x - last_pos.x,
@@ -128,7 +131,7 @@ namespace Engine
 
 					// Fire event, throw exception if return code is non-zero
 					int event_return = origin_engine->fireEvent(event);
-					ENGINE_EXCEPTION_ON_ASSERT_NOMSG(event_return == 0)
+					EXCEPTION_ASSERT(event_return == 0, "Input Event returned non-zero!");
 
 					// Set last position to the current position
 					last_pos = window->cursor_position;
@@ -145,7 +148,7 @@ namespace Engine
 			// Handle every event in the queue
 			for (; !event_queue.empty(); event_queue.pop())
 			{
-				const auto& input_event = event_queue.front();
+				auto& input_event = event_queue.front();
 
 				int event_return = 0;
 
@@ -154,10 +157,8 @@ namespace Engine
 					case Rendering::Vulkan::KeyboardEvent::KEY_PRESS:
 					case Rendering::Vulkan::KeyboardEvent::KEY_REPEAT:
 					{
-						auto event = EventHandling::Event(
-							origin_engine,
-							EventHandling::EventType::ON_KEYDOWN
-						);
+						auto event =
+							EventHandling::Event(origin_engine, EventHandling::EventType::onKeyDown);
 						event.keycode	 = static_cast<uint16_t>(input_event.key);
 						event.delta_time = delta_time;
 						event_return	 = origin_engine->fireEvent(event);
@@ -165,10 +166,8 @@ namespace Engine
 					}
 					case Rendering::Vulkan::KeyboardEvent::KEY_RELEASE:
 					{
-						auto event = EventHandling::Event(
-							origin_engine,
-							EventHandling::EventType::ON_KEYUP
-						);
+						auto event =
+							EventHandling::Event(origin_engine, EventHandling::EventType::onKeyUp);
 						event.keycode	 = static_cast<uint16_t>(input_event.key);
 						event.delta_time = delta_time;
 						event_return	 = origin_engine->fireEvent(event);
@@ -180,7 +179,8 @@ namespace Engine
 					}
 				}
 
-				if (event_return != 0) { origin_engine->stop(); }
+				// Throw exception on non-zero event return code
+				EXCEPTION_ASSERT(event_return == 0, "Input Event returned non-zero!");
 			}
 		}
 	} // namespace
@@ -233,7 +233,7 @@ namespace Engine
 	)
 	{
 		auto* engine_cast	= static_cast<Engine*>(engine);
-		auto& current_scene = engine_cast->scene_manager->getSceneCurrent();
+		auto  current_scene = engine_cast->scene_manager->getSceneCurrent();
 
 		const auto& objects = current_scene->getAllObjects();
 
@@ -245,20 +245,18 @@ namespace Engine
 			}
 			catch (...)
 			{
-				std::throw_with_nested(
-					ENGINE_EXCEPTION("Caught exception rendering object!")
-				);
+				std::throw_with_nested(ENGINE_EXCEPTION("Caught exception rendering object!"));
 			}
 		}
 	}
 
 	void Engine::engineLoop()
 	{
-		static constexpr double nano_to_msec = 1e6;
-		static constexpr double nano_to_sec	 = 1e9;
-		static constexpr double sec_to_msec	 = 1e3;
+		using dur_second_t = std::chrono::duration<double>;
+		using dur_milli_t  = std::chrono::duration<double, std::milli>;
+		using namespace std::chrono_literals;
 
-		auto& scene = scene_manager->getSceneCurrent();
+		auto scene = scene_manager->getSceneCurrent();
 
 		/**
 		 * @todo Remove this!
@@ -273,8 +271,7 @@ namespace Engine
 		}
 
 		// Pre-make ON_UPDATE event so we don't have to create it over and over again in hot loop
-		auto on_update_event =
-			EventHandling::Event(this, EventHandling::EventType::ON_UPDATE);
+		auto on_update_event = EventHandling::Event(this, EventHandling::EventType::onUpdate);
 
 		this->logger->simpleLog<decltype(this)>(
 			Logging::LogLevel::VerboseDebug,
@@ -283,10 +280,10 @@ namespace Engine
 			config.framerate_target == 0 ? " (VSYNC)" : ""
 		);
 
-		auto build_clock = std::chrono::steady_clock::now();
-
 		// Build scene
 		{
+			TIMEMEASURE_START(scenebuild);
+
 			const auto& objects = scene->getAllObjects();
 
 			this->logger->simpleLog<decltype(this)>(
@@ -304,16 +301,12 @@ namespace Engine
 				object->getMeshBuilder()->build();
 			}
 
-			auto scene_build_time =
-				static_cast<double>(
-					(std::chrono::steady_clock::now() - build_clock).count()
-				) /
-				nano_to_msec;
+			TIMEMEASURE_END_MILLI(scenebuild);
 
 			this->logger->simpleLog<decltype(this)>(
 				Logging::LogLevel::Info,
-				"Scene build finished in %lums",
-				static_cast<uint_fast32_t>(scene_build_time)
+				"Scene build finished in %.3lfms",
+				scenebuild_total.count()
 			);
 		}
 
@@ -321,8 +314,8 @@ namespace Engine
 		auto* glfw_window = vk_instance->getWindow();
 		glfw_window->setVisibility(true);
 
-		double	 average_event_total = 0.00;
-		uint64_t average_event_count = 1;
+		dur_milli_t avg_event{};
+		uint64_t	avg_event_count{};
 
 		auto prev_clock = std::chrono::steady_clock::now();
 
@@ -330,22 +323,20 @@ namespace Engine
 		// hot loop
 		while (!glfw_window->getShouldClose())
 		{
-			const auto				next_clock = std::chrono::steady_clock::now();
-			static constexpr double min_delta  = 0.1 / sec_to_msec;
-			static constexpr double max_delta  = 100000.0;
-			const double			delta_time = std::clamp(
-				   static_cast<double>((next_clock - prev_clock).count()) / nano_to_sec,
-				   min_delta,
-				   max_delta
-			   );
-			last_delta_time = delta_time;
+			const auto next_clock = std::chrono::steady_clock::now();
+
+			constexpr dur_second_t min_delta = 0.01s;
+			constexpr dur_second_t max_delta = 10000.0s;
+			const auto			   delta_time =
+				std::clamp(dur_second_t(next_clock - prev_clock), min_delta, max_delta);
+			last_delta_time = delta_time.count();
 
 			// Check return code of FireEvent (events should return non-zero codes as failure)
 			if (!first_frame)
 			{
-				handleInput(delta_time);
+				handleInput(delta_time.count());
 
-				on_update_event.delta_time = delta_time;
+				on_update_event.delta_time = delta_time.count();
 				const auto ret			   = fireEvent(on_update_event);
 				if (ret != 0)
 				{
@@ -359,51 +350,49 @@ namespace Engine
 			}
 			first_frame = false;
 
-			const auto event_clock = std::chrono::steady_clock::now();
+			const auto event_end = std::chrono::steady_clock::now();
 
 			// Render
 			glfw_window->drawFrame();
 
-			const auto draw_clock = std::chrono::steady_clock::now();
+			const auto draw_end = std::chrono::steady_clock::now();
 
 			// Sync with glfw event loop
 			glfwPollEvents();
 
-			const auto poll_clock = std::chrono::steady_clock::now();
+			const auto poll_end = std::chrono::steady_clock::now();
 
-			const double event_time =
-				static_cast<double>((event_clock - next_clock).count()) / nano_to_msec;
-			const double draw_time =
-				static_cast<double>((draw_clock - event_clock).count()) / nano_to_msec;
-			const double poll_time =
-				static_cast<double>((poll_clock - draw_clock).count()) / nano_to_msec;
+			const dur_milli_t event_total = (event_end - next_clock);
+			const dur_milli_t draw_total  = (draw_end - event_end);
+			const dur_milli_t poll_total  = (poll_end - draw_end);
 
-			const auto time_sum = event_time + draw_time + poll_time;
+			const dur_milli_t sum_total = event_total + draw_total + poll_total;
 
-			average_event_total += event_time;
-			average_event_count++;
+			avg_event += event_total;
+			avg_event_count++;
 
-			constexpr double limits[] = {12.0, 19.0, 8.0};
-
-			if (event_time > limits[0] || time_sum > limits[1] || time_sum < limits[2])
+			// Warn if a frame takes too long or is too short
+			constexpr dur_milli_t limits[] = {12.0ms, 19.0ms, 8.0ms};
+			if (event_total > limits[0] || sum_total > limits[1] || sum_total < limits[2])
 			{
 				this->logger->simpleLog<decltype(this)>(
 					Logging::LogLevel::Warning,
 					"delta %lf sum %lf (event %lf draw %lf poll %lf)",
-					delta_time * sec_to_msec,
-					time_sum,
-					event_time,
-					draw_time,
-					poll_time
+					dur_milli_t(delta_time).count(),
+					sum_total.count(),
+					event_total.count(),
+					draw_total.count(),
+					poll_total.count()
 				);
 			}
 
-			const auto	 frame_clock = std::chrono::steady_clock::now();
-			const double sleep_secs =
-				1.0 / config.framerate_target -
-				static_cast<double>((frame_clock - next_clock).count()) / nano_to_sec;
-			// spin sleep if sleep necessary and VSYNC disabled
-			if (sleep_secs > 0 && config.framerate_target != 0) { spinSleep(sleep_secs); }
+			// Time the frame actually took to render
+			const dur_second_t frame_actual = std::chrono::steady_clock::now() - next_clock;
+			// Time we want the frame to take
+			const double frame_expected		= 1.0 / config.framerate_target;
+			const double frame_sleep		= frame_expected - frame_actual.count();
+			// If VSYNC is disabled and we need to sleep
+			if (config.framerate_target != 0 && frame_sleep > 0) { spinSleep(frame_sleep); }
 
 			prev_clock = next_clock;
 		}
@@ -411,7 +400,7 @@ namespace Engine
 		this->logger->simpleLog<decltype(this)>(
 			Logging::LogLevel::Debug,
 			"Closing engine (eventtime avg %lf)",
-			average_event_total / static_cast<double>(average_event_count)
+			avg_event.count() / static_cast<double>(avg_event_count)
 		);
 	}
 
@@ -419,7 +408,7 @@ namespace Engine
 	{
 		int sum = 0;
 
-		const auto& current_scene = scene_manager->getSceneCurrent();
+		auto current_scene = scene_manager->getSceneCurrent();
 
 		// Get all handlers that match this type
 		auto [handlers_begin, handlers_end] =
@@ -441,7 +430,7 @@ namespace Engine
 					Logging::LogLevel::Exception,
 					"Caught exception trying to fire event '%s'! e.what(): %s",
 					event_type_str.data(),
-					unrollExceptions(e).c_str()
+					Base::unrollExceptions(e).c_str()
 				);
 			}
 		}
@@ -454,10 +443,7 @@ namespace Engine
 
 	Engine::~Engine()
 	{
-		this->logger->simpleLog<decltype(this)>(
-			Logging::LogLevel::Info,
-			"Destructor called"
-		);
+		this->logger->simpleLog<decltype(this)>(Logging::LogLevel::Info, "Destructor called");
 
 		scene_manager.reset();
 
@@ -470,7 +456,7 @@ namespace Engine
 
 	void Engine::run()
 	{
-		const auto init_start = std::chrono::steady_clock::now();
+		TIMEMEASURE_START(run);
 
 		this->logger->mapCurrentThreadToName("engine");
 
@@ -478,8 +464,8 @@ namespace Engine
 		this->logger->simpleLog<decltype(this)>(
 			Logging::LogLevel::Info,
 			"build info:\n////\nRunning %s\nCompiled by %s\n////",
-			buildinfo_build,
-			buildinfo_compiledby
+			buildinfo_build.data(),
+			buildinfo_compiledby.data()
 		);
 
 		// Load configuration
@@ -492,7 +478,7 @@ namespace Engine
 			std::throw_with_nested(ENGINE_EXCEPTION("Exception parsing config!"));
 		}
 
-		asset_manager = std::make_shared<AssetManager>(this);
+		asset_manager = std::make_shared<AssetManager>(logger);
 		scene_manager = std::make_shared<SceneManager>(this);
 
 		vk_instance = new Rendering::Vulkan::Instance(
@@ -519,39 +505,13 @@ namespace Engine
 		scene_manager->loadScene(config.default_scene);
 		scene_manager->setScene(config.default_scene);
 
-		// auto oninit_start = std::chrono::steady_clock::now();
-
-		/**
-		 * @todo Fire ON_INIT on scene load!
-		 */
-		// Fire ON_INIT event
-		// auto on_init_event = EventHandling::Event(this, EventHandling::EventType::ON_INIT);
-		// int on_init_event_ret = fireEvent(on_init_event);
-
-		const auto end = std::chrono::steady_clock::now();
-
-		// Measure and log ON_INIT time
-		static constexpr double nano_to_msec = 1.e6;
-		double init_total = static_cast<double>((end - init_start).count()) / nano_to_msec;
-		/* double oninit_total = static_cast<double>((end - oninit_start).count()) /
-							  nano_to_msec; */
+		TIMEMEASURE_END_MILLI(run);
 
 		this->logger->simpleLog<decltype(this)>(
 			Logging::LogLevel::Info,
-			"Initialized in %.3lfms", // "Initialized in %.3lfms (of that %.3lfms ON_INIT)",
-			init_total				  //,
-									  // oninit_total
+			"Initialized in %.3lfms",
+			run_total.count()
 		);
-
-		/* if (on_init_event_ret != 0)
-		{
-			this->logger->simpleLog<decltype(this)>(
-				Logging::LogLevel::VerboseDebug,
-				"ON_INIT returned non-zero %u",
-				on_init_event_ret
-			);
-			return;
-		} */
 
 		engineLoop();
 	}

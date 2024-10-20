@@ -10,24 +10,26 @@
 
 namespace Engine
 {
-	class Object final : public InternalEngineObject
+	class SceneObject final : public InternalEngineObject
 	{
 	public:
-		Object(
+		SceneObject(
 			Engine*					 with_engine,
 			Rendering::IRenderer*	 with_renderer,
 			Rendering::IMeshBuilder* with_mesh_builder
 		);
-		~Object() noexcept;
-
-		void screenSizeInform(Rendering::ScreenSize with_screen_size);
+		~SceneObject() noexcept;
 
 		/**
 		 * @todo relative functions?
 		 */
-		void setPosition(glm::vec3 with_pos);
-		void setSize(glm::vec3 with_size);
-		void setRotation(glm::vec3 with_rotation);
+		void setPosition(const glm::vec3& with_pos);
+		void setSize(const glm::vec3& with_size);
+		void setRotation(const glm::vec3& with_rotation);
+
+		[[nodiscard]] glm::vec3 getPosition() const noexcept;
+		[[nodiscard]] glm::vec3 getSize() const noexcept;
+		[[nodiscard]] glm::vec3 getRotation() const noexcept;
 
 		[[nodiscard]] Rendering::IRenderer* getRenderer()
 		{
@@ -38,29 +40,19 @@ namespace Engine
 			return mesh_builder;
 		}
 
-		[[nodiscard]] glm::vec3 getPosition() const noexcept;
-		[[nodiscard]] glm::vec3 getSize() const noexcept;
-		[[nodiscard]] glm::vec3 getRotation() const noexcept;
-
-		void setParentTransform(Rendering::Transform with_parent_transform);
-
-		void addChild(Object* with_child);
+		void addChild(SceneObject* with_child);
 		void removeChildren();
-		void setParent(Object* with_parent);
+		void setParent(SceneObject* with_parent);
+
+		void setParentTransform(const Rendering::Transform& with_parent_transform);
 
 	private:
-		Rendering::Transform transform;
 		// Initialize parent transform so that the object renders without parent properly
-		Rendering::Transform parent_transform = {
-			glm::vec3(0),
-			glm::vec3(1, 1, 1),
-			glm::vec3(0)
-		};
-		Rendering::ScreenSize screen;
+		Rendering::Transform parent_transform = {glm::vec3(0), glm::vec3(1, 1, 1), glm::vec3(0)};
+		Rendering::Transform transform		  = {};
 
-		Object* parent;
-
-		std::vector<Object*> children;
+		SceneObject*			  parent = nullptr;
+		std::vector<SceneObject*> children;
 
 		Rendering::IRenderer*	 renderer	  = nullptr;
 		Rendering::IMeshBuilder* mesh_builder = nullptr;

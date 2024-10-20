@@ -1,5 +1,7 @@
 #pragma once
 
+#include "backend/ShaderCompiler.hpp"
+
 #include <cstddef>
 #include <type_traits>
 
@@ -41,5 +43,6 @@ namespace Engine::Rendering::Vulkan
 	class Pipeline;
 
 	class ShaderModule;
-	struct PipelineSettingsN;
+	class ShaderCompiler;
+	struct PipelineSettings;
 } // namespace Engine::Rendering::Vulkan

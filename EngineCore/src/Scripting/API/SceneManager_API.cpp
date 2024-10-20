@@ -12,6 +12,7 @@
 
 namespace Engine::Scripting::API
 {
+	/// @cond LUA_API
 	namespace
 	{
 		int getCameraRotation(lua_State* state)
@@ -101,7 +102,7 @@ namespace Engine::Scripting::API
 			CMEP_LUACHECK_FN_ARGC(state, 1)
 			CMEP_LUAGET_PTR(state, SceneManager)
 
-			auto& scene = self->getSceneCurrent();
+			auto scene = self->getSceneCurrent();
 
 			LuaFactories::sceneFactory(state, scene.get());
 
@@ -119,8 +120,8 @@ namespace Engine::Scripting::API
 
 			return 0;
 		}
-
 	} // namespace
+	/// @endcond
 
 	std::unordered_map<std::string, const lua_CFunction> scene_manager_mappings = {
 		CMEP_LUAMAPPING_DEFINE(getCameraRotation),

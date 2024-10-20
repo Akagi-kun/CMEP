@@ -23,18 +23,17 @@ namespace Engine::Rendering::Vulkan
 
 		void copyBufferImage(Buffer* from_buffer, Image* to_image);
 
-		static vk::CommandBufferBeginInfo
-		getBeginInfo(vk::CommandBufferUsageFlags usage_flags);
+		static vk::CommandBufferBeginInfo getBeginInfo(vk::CommandBufferUsageFlags usage_flags);
 
 		/**
-		 * @brief Submit this command buffer to a queue.
+		 * Submit this command buffer to a queue.
 		 *
 		 * @param to_queue The queue to submit to
 		 */
 		void queueSubmit(vk::raii::Queue& to_queue);
 
 		/**
-		 * @brief Shortcut to calling begin with eOneTimeSubmit
+		 * Shortcut to calling begin with eOneTimeSubmit
 		 */
 		void beginOneTime()
 		{

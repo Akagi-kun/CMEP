@@ -44,23 +44,19 @@ namespace Engine::Rendering
 		Font(Engine* with_engine, std::unique_ptr<FontData> init_data);
 		~Font();
 
-		// Use FontChar::page, will throw exception if page isn't found
 		/**
-		 * @brief Get the texture representing a fonts page
+		 * Get the texture representing a fonts page
 		 *
 		 * @param page The index of page, should be some @ref FontChar::page value
 		 * @return A smart pointer to the texture
 		 */
 		[[nodiscard]] std::shared_ptr<Texture> getPageTexture(int page);
-		/**
-		 * @note const version
-		 * @copydoc getPageTexture(int)
-		 */
+		/** (const version)
+		 * @overload */
 		[[nodiscard]] std::shared_ptr<const Texture> getPageTexture(int page) const;
 
 		[[nodiscard]] std::optional<const FontChar*> getChar(char character) const;
-		[[nodiscard]] std::optional<std::string>
-		getFontInfoParameter(const std::string& name) const;
+		[[nodiscard]] std::optional<std::string> getFontInfoParameter(const std::string& name) const;
 
 	private:
 		std::unique_ptr<FontData> data;

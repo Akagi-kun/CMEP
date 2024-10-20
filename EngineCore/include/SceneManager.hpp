@@ -1,7 +1,5 @@
 #pragma once
 
-#include "Rendering/Transform.hpp"
-
 #include "InternalEngineObject.hpp"
 #include "Scene.hpp"
 
@@ -21,10 +19,10 @@ namespace Engine
 		SceneManager(Engine* with_engine);
 		~SceneManager();
 
-		void					setSceneLoadPrefix(const std::string& scene_prefix);
-		void					loadScene(const std::string& scene_name);
-		void					setScene(const std::string& scene_name);
-		std::shared_ptr<Scene>& getSceneCurrent();
+		void				   setSceneLoadPrefix(const std::string& scene_prefix);
+		void				   loadScene(const std::string& scene_name);
+		void				   setScene(const std::string& scene_name);
+		std::shared_ptr<Scene> getSceneCurrent();
 
 		/**
 		 * @todo Remove?
@@ -36,18 +34,20 @@ namespace Engine
 		glm::vec2 getCameraRotation();
 		glm::mat4 getCameraViewMatrix();
 
-		[[nodiscard]] glm::mat4 getProjectionMatrix(Rendering::ScreenSize screen) const;
+		[[nodiscard]] glm::mat4		   getProjectionMatrix() const;
 		[[nodiscard]] static glm::mat4 getProjectionMatrixOrtho();
 
 		void setCameraTransform(glm::vec3 transform);
 		void setCameraRotation(glm::vec2 hvrotation);
 
 	private:
-		std::unordered_map<std::string, std::shared_ptr<Scene>> scenes;
-		std::string current_scene_name = "_default";
+		using scene_t = std::shared_ptr<Scene>;
 
-		glm::vec3 camera_transform{};	// XYZ position
-		glm::vec2 camera_hv_rotation{}; // Horizontal and Vertical rotation
+		std::unordered_map<std::string, scene_t> scenes;
+		scene_t									 current_scene;
+
+		glm::vec3 camera_transform	 = {}; // XYZ position
+		glm::vec2 camera_hv_rotation = {}; // Horizontal and Vertical rotation
 
 		static constexpr float initial_fov = 45.0f;
 

@@ -15,7 +15,7 @@
 namespace Engine
 {
 	class AssetManager;
-	class Object;
+	class SceneObject;
 
 	namespace Rendering::Vulkan
 	{
@@ -57,7 +57,7 @@ namespace Engine
 		void stop();
 
 		/**
-		 * @brief Function that throws an exception when called.
+		 * Function that throws an exception when called.
 		 *
 		 * Used to verify that exceptions thrown by the library
 		 * can be caught outside it.
@@ -65,7 +65,7 @@ namespace Engine
 		[[noreturn]] static void throwTest();
 
 		/**
-		 * @brief Fires an event, calling every handler registered for that type
+		 * Fires an event, calling every handler registered for that type
 		 *
 		 * @param event The event object
 		 * @return Sum of all exit codes from each handler
@@ -95,8 +95,7 @@ namespace Engine
 		{
 			return asset_manager;
 		}
-		[[nodiscard]] std::shared_ptr<Rendering::Vulkan::PipelineManager>
-		getVulkanPipelineManager()
+		[[nodiscard]] std::shared_ptr<Rendering::Vulkan::PipelineManager> getVulkanPipelineManager()
 		{
 			return pipeline_manager;
 		}

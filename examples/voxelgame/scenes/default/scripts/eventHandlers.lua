@@ -264,7 +264,7 @@ end
 --		for chunk_z = -chunks_z, chunks_z, 1 do
 --			if chunks[chunk_x][chunk_z] == nil then
 --
---				local chunk_obj = engine.createSceneObject(asset_manager, "renderer_3d/generator", "terrain", {
+--				local chunk_obj = engine.createSceneObject(asset_manager, "renderer_3d", "generator", "terrain", {
 --					{"texture", "atlas"}, {"generator_script", "testgen"}, {"generator_supplier", "script0/terrain_generator"}
 --				})
 --				chunk_obj:SetPosition((chunk_x) * config.chunk_size_x, 0.0, (chunk_z) * config.chunk_size_z)
@@ -345,14 +345,14 @@ onInit = function(event)
 	scene_manager:setCameraRotation(114.0, 224.8)
 
 	-- Create frametime counter and add it to scene
-	local object0 = createSceneObject(event.engine, "renderer_2d/text", "text",
+	local object0 = createSceneObject(event.engine, "renderer_2d", "text", "text",
 		{ {"font", font} }, { {"text", "avg: \nmin: \nmax: "} }
 	)
 	object0:setPosition(0.0, 0.0, -0.01)
 	object0:setSize(24, 24, 1.0)
 	scene:addObject("_debug_info", object0)
 	
-	local object1 = createSceneObject(event.engine, "renderer_2d/text", "text",
+	local object1 = createSceneObject(event.engine, "renderer_2d", "text", "text",
 		{ {"font", font} }, { {"text", "H: V: \nX: Y: Z: "} }
 	)
 	object1:setPosition(0.6, 0.0, -0.01)
@@ -370,7 +370,7 @@ onInit = function(event)
 
 	for chunk_x = -chunks_x, chunks_x, 1 do
 		for chunk_z = -chunks_z, chunks_z, 1 do
-			local chunk_obj = createSceneObject(event.engine, "renderer_3d/generator", "terrain",
+			local chunk_obj = createSceneObject(event.engine, "renderer_3d", "generator", "terrain",
 				{ {"texture", atlas_texture} }, { {"generator", cdefs.CreateGeneratorData(testgen_script, "generate_fn", supplier_script, "terrain_generator")} }
 			)
 			chunk_obj:setPosition(chunk_x * config.chunk_size_x, 0.0, chunk_z * config.chunk_size_z)

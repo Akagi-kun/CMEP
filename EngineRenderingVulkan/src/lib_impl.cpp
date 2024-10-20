@@ -1,6 +1,6 @@
 /**
  * @file
- * @brief Provides storage for static data needed by other libraries
+ * Provides storage for static data needed by other libraries
  */
 
 // Provide storage for the dynamic dispatcher

@@ -1,4 +1,19 @@
+/**
+ * @file
+ * @brief Defines macros describing the compiler semantics
+ */
 #pragma once
+
+/**
+ * @def CMEP_EXPORT
+ * Mark function as exported across the shared lib boundary.
+ * If used on a member function, also use @ref CMEP_EXPORT_CLASS to export the class
+ */
+/**
+ * @def CMEP_EXPORT_CLASS
+ * Mark class as exported across the shared lib boundary.
+ * @ref CMEP_EXPORT should be used on member functions that should also be exported.
+ */
 
 #if defined(_MSC_VER)
 // Windows
@@ -32,4 +47,11 @@
 #	define CMEP_EXPORT_CLASS
 #	pragma warning Unknown dynamic link import / export semantics.
 
+#endif
+
+// Used for #if checks
+#ifndef NDEBUG
+#	define SEMANTICS_IS_DEBUG 1
+#else
+#	define SEMANTICS_IS_DEBUG 0
 #endif

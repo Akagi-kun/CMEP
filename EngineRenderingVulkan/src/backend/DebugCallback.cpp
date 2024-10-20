@@ -10,9 +10,7 @@ namespace Engine::Rendering::Vulkan
 {
 	namespace
 	{
-		// NOLINTBEGIN(readability-identifier-naming)
-		// this function has names as specified by Vulkan
-		//
+		// NOLINTBEGIN(readability-identifier-naming) this function has names as specified by Vulkan
 		VKAPI_ATTR VkBool32 VKAPI_CALL vulkanDebugCallback(
 			VkDebugUtilsMessageSeverityFlagBitsEXT		messageSeverity,
 			VkDebugUtilsMessageTypeFlagsEXT				messageType,
@@ -22,22 +20,18 @@ namespace Engine::Rendering::Vulkan
 		{
 			(void)(messageType);
 
-			auto locked_logger =
-				static_cast<Logging::SupportsLogging*>(pUserData)->getLogger();
-			ENGINE_EXCEPTION_ON_ASSERT(
-				locked_logger,
-				"Failed locking logger on Lua print() call"
-			)
+			auto locked_logger = static_cast<Logging::SupportsLogging*>(pUserData)->getLogger();
+			EXCEPTION_ASSERT(locked_logger, "Failed locking logger on Lua print() call");
 
 			// Log as error only if error bit set
-			Logging::LogLevel log_level =
-				(messageSeverity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT) != 0
-					? Logging::LogLevel::Error
-					: Logging::LogLevel::Warning;
+			Logging::LogLevel log_level = (messageSeverity &
+										   VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT) != 0
+											  ? Logging::LogLevel::Error
+											  : Logging::LogLevel::Warning;
 
 			locked_logger->simpleLog<void>(
 				log_level,
-				"Vulkan validation layer reported:\n%s",
+				"Validation layer reported:\n%s",
 				pCallbackData->pMessage
 			);
 
@@ -46,6 +40,6 @@ namespace Engine::Rendering::Vulkan
 		// NOLINTEND(readability-identifier-naming)
 	} // namespace
 
-	PFN_vkDebugUtilsMessengerCallbackEXT debug_callback = vulkanDebugCallback;
+	const PFN_vkDebugUtilsMessengerCallbackEXT debug_callback = vulkanDebugCallback;
 
 } // namespace Engine::Rendering::Vulkan

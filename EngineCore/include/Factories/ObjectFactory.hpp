@@ -6,7 +6,7 @@
 #include "EnumStringConvertor.hpp"
 #include "Exception.hpp"
 #include "InternalEngineObject.hpp"
-#include "Object.hpp"
+#include "SceneObject.hpp"
 
 #include <cstdint>
 #include <functional>
@@ -48,7 +48,7 @@ namespace Engine::Factories::ObjectFactory
 	};
 
 	/**
-	 * @brief A generic template for creating scene objects
+	 * A generic template for creating scene objects
 	 *
 	 * @tparam renderer_t A type conforming to the @ref Rendering::IRenderer interface
 	 * @tparam meshbuilder_t A type conforming to the @ref Rendering::IMeshBuilder interface
@@ -58,24 +58,20 @@ namespace Engine::Factories::ObjectFactory
 	 * @return The created object
 	 */
 	template <class renderer_t, class meshbuilder_t>
-	Object* createSceneObject(
+	SceneObject* createSceneObject(
 		Engine*												 with_engine,
 		std::string											 with_pipeline_program,
 		const std::vector<Rendering::RendererSupplyData>&	 renderer_supply_data,
 		const std::vector<Rendering::MeshBuilderSupplyData>& meshbuilder_supply_data
 	)
 		requires(
-			(std::is_same_v<renderer_t, Rendering::Renderer2D> &&
-			 meshbuilder_t::supports_2d) ||
-			(std::is_same_v<renderer_t, Rendering::Renderer3D> &&
-			 meshbuilder_t::supports_3d)
+			(std::is_same_v<renderer_t, Rendering::Renderer2D> && meshbuilder_t::supports_2d) ||
+			(std::is_same_v<renderer_t, Rendering::Renderer3D> && meshbuilder_t::supports_3d)
 		)
 	{
 		if (with_pipeline_program.empty())
 		{
-			throw ENGINE_EXCEPTION(
-				"Cannot CreateSceneObject without a pipeline! (was empty)"
-			);
+			throw ENGINE_EXCEPTION("Cannot CreateSceneObject without a pipeline! (was empty)");
 		}
 
 		auto* with_builder = new meshbuilder_t(with_engine);
@@ -93,33 +89,33 @@ namespace Engine::Factories::ObjectFactory
 			with_renderer->supplyData(supply);
 		}
 
-		auto* object = new Object(with_engine, with_renderer, with_builder);
+		auto* object = new SceneObject(with_engine, with_renderer, with_builder);
 
 		return object;
 	}
 
 	/**
-	 * @brief Callable type that creates an object
+	 * Callable type that creates an object.
 	 *
-	 * For implementation details see @ref createSceneObject
+	 * For implementation details see @ref createSceneObject.
 	 */
 	using object_factory_t = std::function<
-		Object*(Engine*, std::string, const std::vector<Rendering::RendererSupplyData>&, const std::vector<Rendering::MeshBuilderSupplyData>&)>;
+		SceneObject*(Engine*, std::string, const std::vector<Rendering::RendererSupplyData>&, const std::vector<Rendering::MeshBuilderSupplyData>&)>;
 
 	/**
-	 * @brief Get an object factory capable of creating the desired object
+	 * Get an object factory capable of creating the desired object.
 	 *
-	 * @param with_renderer Desired Renderer type
-	 * @param with_mesh_builder Desired MeshBuilder type
+	 * @param with_renderer Desired Renderer type.
+	 * @param with_mesh_builder Desired MeshBuilder type.
 	 *
-	 * @return Callable that performs the object creation
+	 * @return Callable that performs the object creation.
 	 */
 	object_factory_t getSceneObjectFactory(
 		EnumStringConvertor<RendererType>	 with_renderer,
 		EnumStringConvertor<MeshBuilderType> with_mesh_builder
 	);
 
-	Object* instantiateObjectTemplate(Engine* with_engine, ObjectTemplate& from_template);
+	SceneObject* instantiateObjectTemplate(Engine* with_engine, ObjectTemplate& from_template);
 
 	using supply_data_value_t = std::variant<std::monostate, void*, std::string>;
 

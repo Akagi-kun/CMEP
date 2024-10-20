@@ -12,8 +12,6 @@
 #include "Engine.hpp"
 #include "Exception.hpp"
 
-#include "glm/glm.hpp"
-
 #include <algorithm>
 #include <cassert>
 #include <format>
@@ -68,9 +66,7 @@ namespace Engine::Rendering
 		auto size_param = font->getFontInfoParameter("size");
 		if (!size_param.has_value())
 		{
-			throw ENGINE_EXCEPTION(
-				"Could not find parameter 'size' in font! Malformed font file?"
-			);
+			throw ENGINE_EXCEPTION("Could not find parameter 'size' in font! Malformed font file?");
 		}
 		int font_size = std::stoi(size_param.value());
 
@@ -145,17 +141,15 @@ namespace Engine::Rendering
 
 				// Offset origin by xoffset (specified in .fnt file) of this char
 				const float position_x =
-					char_origin_x +
-					((static_cast<float>(char_data->xoffset) * font_size_ratio) /
-					 static_cast<float>(screen_size.x));
+					char_origin_x + ((static_cast<float>(char_data->xoffset) * font_size_ratio) /
+									 static_cast<float>(screen_size.x));
 				const float position_y = char_origin_y;
 				const float position_z = 0.0f;
 
 				// position_x is already set so we can
 				// move origin to the next character using xadvance from font
-				char_origin_x +=
-					(static_cast<float>(char_data->xadvance) * font_size_ratio) /
-					static_cast<float>(screen_size.x);
+				char_origin_x += (static_cast<float>(char_data->xadvance) * font_size_ratio) /
+								 static_cast<float>(screen_size.x);
 
 				// If current character is space we can skip generating a quad for it
 				if (character == ' ') { continue; }
@@ -166,12 +160,10 @@ namespace Engine::Rendering
 				// Final size equation: ((character_width_px / font_size_px) /
 				// screen_width_ss) * selected_size_px
 				//
-				const float char_width_ratio = (char_width / static_cast<float>(font_size));
-				const float char_height_ratio =
-					(char_height / static_cast<float>(font_size));
+				const float char_width_ratio  = (char_width / static_cast<float>(font_size));
+				const float char_height_ratio = (char_height / static_cast<float>(font_size));
 				const float size_x = (char_width_ratio / static_cast<float>(screen_size.x));
-				const float size_y =
-					(char_height_ratio / static_cast<float>(screen_size.y));
+				const float size_y = (char_height_ratio / static_cast<float>(screen_size.y));
 
 				// Color data
 				const float color_r = 1.0f;
@@ -229,8 +221,7 @@ namespace Engine::Rendering
 					}
 				};
 
-				generated_mesh
-					.insert(generated_mesh.end(), vertices.begin(), vertices.end());
+				generated_mesh.insert(generated_mesh.end(), vertices.begin(), vertices.end());
 			}
 		}
 

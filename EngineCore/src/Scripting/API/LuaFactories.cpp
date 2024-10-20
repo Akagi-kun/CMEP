@@ -9,9 +9,9 @@
 #include "Scripting/API/Scene_API.hpp"
 
 #include "Engine.hpp"
-#include "Object.hpp"
 #include "Scene.hpp"
 #include "SceneManager.hpp"
+#include "SceneObject.hpp"
 #include "lua.hpp"
 
 #include <cassert>
@@ -27,6 +27,7 @@
 
 namespace Engine::Scripting::API::LuaFactories
 {
+	/// @cond LUA_API
 	namespace
 	{
 		int mappingTrampoline(lua_State* state)
@@ -105,7 +106,7 @@ namespace Engine::Scripting::API::LuaFactories
 		lua_setfield(state, -2, "_ptr");
 	}
 
-	void objectFactory(lua_State* state, Object* object_ptr)
+	void objectFactory(lua_State* state, SceneObject* object_ptr)
 	{
 		// Generate Object table
 		lua_createtable(state, 0, 3);
@@ -125,8 +126,7 @@ namespace Engine::Scripting::API::LuaFactories
 		lua_setfield(state, -2, "meshbuilder");
 	}
 
-	void
-	assetManagerFactory(lua_State* state, std::weak_ptr<AssetManager> asset_manager_ptr)
+	void assetManagerFactory(lua_State* state, std::weak_ptr<AssetManager> asset_manager_ptr)
 	{
 		// Generate AssetManager table
 		lua_createtable(state, 0, 2);
@@ -150,4 +150,5 @@ namespace Engine::Scripting::API::LuaFactories
 		lua_pushlightuserdata(state, engine_ptr);
 		lua_setfield(state, -2, "_ptr");
 	}
+	/// @endcond
 } // namespace Engine::Scripting::API::LuaFactories

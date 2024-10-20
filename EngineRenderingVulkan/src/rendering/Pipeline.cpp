@@ -5,6 +5,7 @@
 #include "backend/Instance.hpp"
 #include "backend/LogicalDevice.hpp"
 #include "common/StructDefs.hpp"
+#include "common/Utility.hpp"
 #include "objects/Buffer.hpp"
 #include "rendering/PipelineSettings.hpp"
 #include "rendering/RenderPass.hpp"
@@ -24,12 +25,12 @@ namespace Engine::Rendering::Vulkan
 
 	Pipeline::Pipeline(
 		InstanceOwned::value_t		 with_instance,
+		const ShaderCompiler&		 with_shader_compiler,
 		RenderPass*					 with_render_pass,
 		PipelineSettings			 settings,
 		const std::filesystem::path& shader_path
 	)
-		: InstanceOwned(with_instance),
-		  HoldsVMA(with_instance->getGraphicMemoryAllocator())
+		: InstanceOwned(with_instance), HoldsVMA(with_instance->getGraphicMemoryAllocator())
 	{
 		LogicalDevice* logical_device = instance->getLogicalDevice();
 
@@ -39,26 +40,24 @@ namespace Engine::Rendering::Vulkan
 		// Create Shaders
 
 		// Vertex stage
+		const auto vert_glsl_code =
+			Utility::readShaderFile(shader_path / (settings.shader + "_vert.glsl"));
+		const auto vert_code =
+			with_shader_compiler.compileShader(vert_glsl_code, vk::ShaderStageFlagBits::eVertex);
 		auto vert_shader_module =
-			ShaderModule(logical_device, shader_path / (settings.shader + "_vert.spv"));
-		vk::PipelineShaderStageCreateInfo vert_shader_stage_info{
-			.stage	= vk::ShaderStageFlagBits::eVertex,
-			.module = *vert_shader_module.getHandle(),
-			.pName	= "main"
-		};
+			ShaderModule(logical_device, vk::ShaderStageFlagBits::eVertex, vert_code);
 
 		// Fragment stage
+		const auto frag_glsl_code =
+			Utility::readShaderFile(shader_path / (settings.shader + "_frag.glsl"));
+		const auto frag_code =
+			with_shader_compiler.compileShader(frag_glsl_code, vk::ShaderStageFlagBits::eFragment);
 		auto frag_shader_module =
-			ShaderModule(logical_device, shader_path / (settings.shader + "_frag.spv"));
-		vk::PipelineShaderStageCreateInfo frag_shader_stage_info{
-			.stage	= vk::ShaderStageFlagBits::eFragment,
-			.module = *frag_shader_module.getHandle(),
-			.pName	= "main"
-		};
+			ShaderModule(logical_device, vk::ShaderStageFlagBits::eFragment, frag_code);
 
 		std::array<vk::PipelineShaderStageCreateInfo, 2> shader_stages = {
-			vert_shader_stage_info,
-			frag_shader_stage_info
+			vert_shader_module.getStageCreateInfo(),
+			frag_shader_module.getStageCreateInfo()
 		};
 
 		/************************************/
@@ -81,12 +80,10 @@ namespace Engine::Rendering::Vulkan
 		auto attribute_descriptions = RenderingVertex::getAttributeDescriptions();
 
 		vk::PipelineVertexInputStateCreateInfo vertex_input_info{
-			.vertexBindingDescriptionCount =
-				static_cast<uint32_t>(binding_description.size()),
-			.pVertexBindingDescriptions = binding_description.data(),
-			.vertexAttributeDescriptionCount =
-				static_cast<uint32_t>(attribute_descriptions.size()),
-			.pVertexAttributeDescriptions = attribute_descriptions.data(),
+			.vertexBindingDescriptionCount	 = static_cast<uint32_t>(binding_description.size()),
+			.pVertexBindingDescriptions		 = binding_description.data(),
+			.vertexAttributeDescriptionCount = static_cast<uint32_t>(attribute_descriptions.size()),
+			.pVertexAttributeDescriptions	 = attribute_descriptions.data(),
 		};
 
 		/************************************/
@@ -117,8 +114,7 @@ namespace Engine::Rendering::Vulkan
 
 			bindings.push_back(new_binding);
 
-			vk::DescriptorBindingFlags new_flags =
-				vk::DescriptorBindingFlagBits::ePartiallyBound;
+			vk::DescriptorBindingFlags new_flags = vk::DescriptorBindingFlagBits::ePartiallyBound;
 			binding_flags.push_back(new_flags);
 		}
 
@@ -133,8 +129,7 @@ namespace Engine::Rendering::Vulkan
 			.pBindings	  = bindings.data()
 		};
 
-		descriptor_set_layout =
-			logical_device->createDescriptorSetLayout(layout_create_info);
+		descriptor_set_layout = logical_device->createDescriptorSetLayout(layout_create_info);
 
 		/************************************/
 		// Create Graphics Pipeline Layout
@@ -150,8 +145,7 @@ namespace Engine::Rendering::Vulkan
 		// Create Graphics Pipeline
 
 		// Make local copy of viewport settings
-		const auto viewport_settings =
-			PipelineSettings::getViewportSettings(settings.extent);
+		const auto viewport_settings = PipelineSettings::getViewportSettings(settings.extent);
 
 		vk::PipelineViewportStateCreateInfo viewport_state{
 			.viewportCount = 1,
@@ -236,7 +230,7 @@ namespace Engine::Rendering::Vulkan
 		auto* into = new UserData();
 
 		// Allocate uniform buffers
-		static constexpr vk::DeviceSize buffer_size = sizeof(RendererMatrixData);
+		constexpr vk::DeviceSize buffer_size = sizeof(RendererMatrixData);
 		for (size_t i = 0; i < max_frames_in_flight; i++)
 		{
 			into->uniform_buffers[i] = new UniformBuffer(
@@ -298,15 +292,12 @@ namespace Engine::Rendering::Vulkan
 	{
 		LogicalDevice* logical_device = instance->getLogicalDevice();
 
-		std::vector<vk::DescriptorSetLayout> layouts(
-			max_frames_in_flight,
-			*descriptor_set_layout
-		);
-		vk::DescriptorSetAllocateInfo alloc_info{
-			.descriptorPool		= *data_ref.descriptor_pool,
-			.descriptorSetCount = static_cast<uint32_t>(layouts.size()),
-			.pSetLayouts		= layouts.data()
-		};
+		std::vector<vk::DescriptorSetLayout> layouts(max_frames_in_flight, *descriptor_set_layout);
+		vk::DescriptorSetAllocateInfo		 alloc_info{
+				   .descriptorPool	   = *data_ref.descriptor_pool,
+				   .descriptorSetCount = static_cast<uint32_t>(layouts.size()),
+				   .pSetLayouts		   = layouts.data()
+		   };
 
 		data_ref.descriptor_sets = vk::raii::DescriptorSets(*logical_device, alloc_info);
 	}

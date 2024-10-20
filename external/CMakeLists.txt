@@ -8,11 +8,50 @@ add_subdirectory(glfw)
 # We use the author's native build system (make for unix-like, msvcbuild.bat for windows)
 
 # Debug info
-message("-- [EXTERNAL] Source dir is: " ${CMAKE_CURRENT_SOURCE_DIR})
+message(STATUS "[EXTERNAL] Source dir is: " ${CMAKE_CURRENT_SOURCE_DIR})
+
+set(FETCHCONTENT_BASE_DIR "${CMAKE_CURRENT_SOURCE_DIR}")
+include(FetchContent)
+
+# SPIRV-Headers
+FetchContent_Declare(
+    SPIRV-Headers
+    GIT_REPOSITORY https://github.com/KhronosGroup/SPIRV-Headers.git
+    GIT_TAG main
+    SOURCE_DIR "${FETCHCONTENT_BASE_DIR}/SPIRV-Headers"
+)
+FetchContent_MakeAvailable(SPIRV-Headers)
+message(STATUS "Fetched SPIRV-Headers")
+
+# SPIRV-Tools
+FetchContent_Declare(
+    SPIRV-Tools
+    GIT_REPOSITORY https://github.com/KhronosGroup/SPIRV-Tools.git
+    GIT_TAG main
+    SOURCE_DIR "${FETCHCONTENT_BASE_DIR}/SPIRV-Tools"
+)
+set(SPIRV_SKIP_EXECUTABLES ON)
+set(SPIRV-Headers_SOURCE_DIR ${FETCHCONTENT_BASE_DIR}/SPIRV-Headers)
+FetchContent_MakeAvailable(SPIRV-Tools)
+message(STATUS "Fetched SPIRV-Tools")
+
+# glslang
+FetchContent_Declare(
+    glslang
+    GIT_REPOSITORY https://github.com/KhronosGroup/glslang.git
+    GIT_TAG main
+    SOURCE_DIR "${FETCHCONTENT_BASE_DIR}/glslang"
+)
+set(ALLOW_EXTERNAL_SPIRV_TOOLS ON)
+set(ENABLE_GLSLANG_BINARIES OFF CACHE BOOL "" FORCE)
+set(ENABLE_HLSL OFF CACHE BOOL "" FORCE)
+set(ENABLE_OPT ON CACHE BOOL "" FORCE)
+FetchContent_MakeAvailable(glslang)
+message(STATUS "Fetched glslang")
 
 # Setup various platform-specific semantics
 if(NOT MSVC) # Unix-like
-	message("-- Will compile luajit for unix-like")
+	message(STATUS "Will compile luajit for unix-like")
 
 	set(VAR_LUAJIT_NAME libluajit)
 	set(VAR_STATICLIB_EXTENSION a)
@@ -28,7 +67,7 @@ if(NOT MSVC) # Unix-like
 	endif()
 
 else() # Windows
-	message("-- Will compile luajit for Windows")
+	message(STATUS "Will compile luajit for Windows")
 
 	set(VAR_LUAJIT_NAME lua51)
 	set(VAR_DYLIB_EXTENSION dll)

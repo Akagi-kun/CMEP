@@ -30,13 +30,16 @@
 
 namespace Engine::Factories
 {
-	static constexpr size_t max_texture_size = 0x2fff;
+	/**
+	 * Arbitrary limit to texture sizes, Vulkan may not like very large textures.
+	 * This may be completely unnecessary
+	 */
+	static constexpr size_t texture_size_limit = 0x2fff;
 
-	std::shared_ptr<Rendering::Texture> TextureFactory::initFile(
-		const std::filesystem::path&	path,
-		Rendering::Texture_InitFiletype filetype,
-		vk::Filter						filtering,
-		vk::SamplerAddressMode			sampler_address_mode
+	std::shared_ptr<Rendering::Texture> TextureFactory::createTexture(
+		const std::filesystem::path& path,
+		vk::Filter					 filtering,
+		vk::SamplerAddressMode		 sampler_address_mode
 	)
 	{
 		if (!std::filesystem::exists(path))
@@ -57,58 +60,36 @@ namespace Engine::Factories
 		std::unique_ptr<Rendering::TextureData> texture_data =
 			std::make_unique<Rendering::TextureData>();
 
-		switch (filetype)
+		Rendering::ImageSize size;
+		unsigned int		 error;
+
+		// lodepng uses references for output
+		// this makes it incompatible with ImageSize when defined with
+		// different sized integer
 		{
-			case Rendering::Texture_InitFiletype::FILE_PNG:
-			{
-				Rendering::ImageSize size;
-				unsigned int		 error;
+			unsigned int size_x;
+			unsigned int size_y;
 
-				// lodepng uses references for output
-				// this makes it incompatible with ImageSize when defined with
-				// different sized integer
-				{
-					unsigned int size_x;
-					unsigned int size_y;
-
-					error = lodepng::decode(data, size_x, size_y, path.string());
-					size  = {size_x, size_y};
-				}
-
-				ENGINE_EXCEPTION_ON_ASSERT_NOMSG(error == 0)
-
-				if (error != 0 || 0 >= size.x || size.x >= max_texture_size ||
-					0 >= size.y || size.y >= max_texture_size)
-				{
-					throw ENGINE_EXCEPTION("Failed decoding PNG file!");
-				}
-
-				this->logger->simpleLog<decltype(this)>(
-					Logging::LogLevel::VerboseDebug,
-					"Decoded png file %s; width %u; height %u; filter %u",
-					path.c_str(),
-					size.x,
-					size.y,
-					filtering
-				);
-
-				initRaw(
-					texture_data,
-					std::move(data),
-					4,
-					filtering,
-					sampler_address_mode,
-					size
-				);
-				break;
-			}
-			default:
-			{
-				throw ENGINE_EXCEPTION(
-					"Unknown texture filetype passed to TextureFactory!"
-				);
-			}
+			error = lodepng::decode(data, size_x, size_y, path.string());
+			size  = {size_x, size_y};
 		}
+
+		if (error != 0 || 0 >= size.x || size.x >= texture_size_limit || 0 >= size.y ||
+			size.y >= texture_size_limit)
+		{
+			throw ENGINE_EXCEPTION("Failed decoding PNG file!");
+		}
+
+		this->logger->simpleLog<decltype(this)>(
+			Logging::LogLevel::VerboseDebug,
+			"Decoded png file %s; width %u; height %u; filter %u",
+			path.c_str(),
+			size.x,
+			size.y,
+			filtering
+		);
+
+		createTextureInternal(texture_data, std::move(data), 4, filtering, sampler_address_mode, size);
 
 		std::shared_ptr<Rendering::Texture> texture =
 			std::make_shared<Rendering::Texture>(owner_engine, std::move(texture_data));
@@ -116,7 +97,7 @@ namespace Engine::Factories
 		return texture;
 	}
 
-	int TextureFactory::initRaw(
+	int TextureFactory::createTextureInternal(
 		std::unique_ptr<Rendering::TextureData>& texture_data,
 		std::vector<unsigned char>				 raw_data,
 		int										 color_format,

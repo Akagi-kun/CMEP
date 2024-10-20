@@ -3,23 +3,31 @@
 #include "backend/LogicalDevice.hpp"
 #include "common/Utility.hpp"
 
-#include <cstdint>
-#include <filesystem>
+#include <cassert>
 
 namespace Engine::Rendering::Vulkan
 {
 	ShaderModule::ShaderModule(
-		LogicalDevice*				 with_device,
-		const std::filesystem::path& filepath
+		LogicalDevice*						with_device,
+		vk::ShaderStageFlagBits				with_stage,
+		const ShaderCompiler::spirv_code_t& with_code
 	)
+		: stage(with_stage)
 	{
-		const auto shader_code = Vulkan::Utility::readShaderFile(filepath);
-
 		vk::ShaderModuleCreateInfo create_info{
-			.codeSize = shader_code.size(),
-			.pCode	  = reinterpret_cast<const uint32_t*>(shader_code.data())
+			.codeSize = with_code.size() * sizeof(ShaderCompiler::spirv_code_t::value_type),
+			.pCode = with_code.data()
 		};
 
 		native_handle = with_device->createShaderModule(create_info);
+	}
+
+	vk::PipelineShaderStageCreateInfo ShaderModule::getStageCreateInfo()
+	{
+		return vk::PipelineShaderStageCreateInfo{
+			.stage	= stage,
+			.module = native_handle,
+			.pName	= "main"
+		};
 	}
 } // namespace Engine::Rendering::Vulkan

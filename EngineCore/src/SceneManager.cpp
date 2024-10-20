@@ -1,7 +1,6 @@
 #include "SceneManager.hpp"
 
 #include "Rendering/Renderers/Renderer.hpp"
-#include "Rendering/Transform.hpp"
 
 #include "Logging/Logging.hpp"
 
@@ -11,32 +10,26 @@
 #include "InternalEngineObject.hpp"
 #include "Scene.hpp"
 #include "SceneLoader.hpp"
+#include "TimeMeasure.hpp"
 
 #include "glm/ext/matrix_clip_space.hpp"
 #include "glm/ext/matrix_transform.hpp"
-#include "glm/glm.hpp"
 
 #include <algorithm>
 #include <cassert>
 #include <chrono>
 #include <cmath>
 #include <exception>
-#include <format>
 #include <memory>
 #include <string>
 
 namespace Engine
 {
-	using std::clamp;
-
 	SceneManager::SceneManager(Engine* with_engine) : InternalEngineObject(with_engine)
 	{
-		// Reset transform and rotation
-		this->logger = owner_engine->getLogger();
-
-		std::shared_ptr<Scene> default_scene = std::make_shared<Scene>(with_engine);
-
-		scenes.emplace("_default", default_scene);
+		// Set default scene
+		current_scene = std::make_shared<Scene>(with_engine);
+		scenes.emplace("_default", current_scene);
 
 		scene_loader = std::make_unique<SceneLoader>(with_engine);
 
@@ -47,10 +40,7 @@ namespace Engine
 
 	SceneManager::~SceneManager()
 	{
-		this->logger->simpleLog<decltype(this)>(
-			Logging::LogLevel::Info,
-			"Destructor called"
-		);
+		this->logger->simpleLog<decltype(this)>(Logging::LogLevel::Info, "Destructor called");
 
 		scenes.clear();
 
@@ -59,8 +49,6 @@ namespace Engine
 
 	void SceneManager::onCameraUpdated()
 	{
-		auto& current_scene = scenes.at(current_scene_name);
-
 		// Explicitly update matrices of all objects
 		// since otherwise they'd update them only on transform updates
 		for (const auto& [name, ptr] : current_scene->getAllObjects())
@@ -97,47 +85,46 @@ namespace Engine
 	void SceneManager::setScene(const std::string& scene_name)
 	{
 		// Try loading the scene if it isn't loaded
-		if (!scenes.contains(scene_name)) { loadScene(scene_name); }
+		if (!scenes.contains(scene_name))
+		{
+			loadScene(scene_name);
+		}
 
 		logger->simpleLog<decltype(this)>(
 			Logging::LogLevel::Info,
-			"Switching to scene '%s' (currently '%s')",
-			scene_name.c_str(),
-			current_scene_name.c_str()
+			"Switching to scene '%s'",
+			scene_name.c_str()
 		);
 
-		current_scene_name = scene_name;
+		auto asset_manager = owner_engine->getAssetManager().lock();
+		assert(asset_manager);
+
+		current_scene = scenes[scene_name];
+		asset_manager->setSceneRepository(current_scene->asset_repository.get());
 
 		// Measure init event time
-		const auto start = std::chrono::steady_clock::now();
+		TIMEMEASURE_START(oninit);
 
 		// Fire init event
-		auto event = EventHandling::Event(owner_engine, EventHandling::EventType::ON_INIT);
-		int init_ret = owner_engine->fireEvent(event);
+		auto event	  = EventHandling::Event(owner_engine, EventHandling::EventType::onInit);
+		int	 init_ret = owner_engine->fireEvent(event);
 
-		ENGINE_EXCEPTION_ON_ASSERT_NOMSG(init_ret == 0)
+		EXCEPTION_ASSERT(init_ret == 0, "onInit Event returned non-zero!");
 
-		const auto		 end		  = std::chrono::steady_clock::now();
-		constexpr double nano_to_msec = 1.e6;
-		double oninit_total = static_cast<double>((end - start).count()) / nano_to_msec;
+		TIMEMEASURE_END_MILLI(oninit);
 
 		logger->simpleLog<decltype(this)>(
 			Logging::LogLevel::Debug,
-			"ON_INIT took %.3lfms",
-			oninit_total
+			"onInit event took %.3lfms",
+			oninit_total.count()
 		);
 	}
 
-	std::shared_ptr<Scene>& SceneManager::getSceneCurrent()
+	std::shared_ptr<Scene> SceneManager::getSceneCurrent()
 	{
-		if (!scenes.contains(current_scene_name))
-		{
-			throw ENGINE_EXCEPTION(
-				std::format("No such scene loaded: '{}'", current_scene_name)
-			);
-		}
+		assert(current_scene);
 
-		return scenes[current_scene_name];
+		return current_scene;
 	}
 
 	glm::vec3 SceneManager::getLightTransform()
@@ -160,17 +147,25 @@ namespace Engine
 		return camera_hv_rotation;
 	}
 
-	glm::mat4 SceneManager::getProjectionMatrix(Rendering::ScreenSize screen) const
+	glm::mat4 SceneManager::getProjectionMatrix() const
 	{
-		static constexpr float nearplane = 0.1f;
-		static constexpr float farplane	 = 1000.0f;
+		constexpr float nearplane = 0.1f;
+		constexpr float farplane  = 1000.0f;
 
-		return glm::perspective<float>(
+		const auto* window_data = owner_engine->getVulkanInstance()->getWindow();
+		const auto& screen_size = window_data->getFramebufferSize();
+
+		auto projection = glm::perspective<float>(
 			glm::radians(field_of_vision),
-			static_cast<float>(screen.x) / static_cast<float>(screen.y),
+			static_cast<float>(screen_size.x) / static_cast<float>(screen_size.y),
 			nearplane,
 			farplane
 		);
+
+		// Fix projection because GLM was made for OpenGL and in Vulkan the NDC Y axis is flipped
+		projection[1][1] *= -1;
+
+		return projection;
 	}
 
 	glm::mat4 SceneManager::getProjectionMatrixOrtho()
@@ -180,8 +175,8 @@ namespace Engine
 
 	glm::mat4 SceneManager::getCameraViewMatrix()
 	{
-		auto pitch = glm::radians(camera_hv_rotation.y);
-		auto yaw   = glm::radians(camera_hv_rotation.x);
+		float yaw	= glm::radians(camera_hv_rotation.x);
+		float pitch = glm::radians(camera_hv_rotation.y);
 
 		// Points forward
 		glm::vec3 direction = {
@@ -196,8 +191,7 @@ namespace Engine
 		// Points up
 		glm::vec3 up_local = glm::normalize(glm::cross(right, forward));
 
-		glm::mat4 view_matrix =
-			glm::lookAt(camera_transform, camera_transform + forward, up_local);
+		glm::mat4 view_matrix = glm::lookAt(camera_transform, camera_transform + forward, up_local);
 
 		return view_matrix;
 	}
@@ -210,23 +204,35 @@ namespace Engine
 
 	void SceneManager::setCameraRotation(glm::vec2 hvrotation)
 	{
-		static constexpr float y_center = 180.f;
-		static constexpr float y_min	= y_center - 90.f;
-		static constexpr float y_max	= y_center + 89.9f;
+		constexpr float y_center = 180.f;
+		constexpr float y_min	 = y_center - 90.f;
+		constexpr float y_max	 = y_center + 89.9f;
 
 		// Account for rotation possibly being NaN
-		if (std::isnan(hvrotation.y)) { hvrotation.y = y_center; }
-		if (std::isnan(hvrotation.x)) { hvrotation.x = 0; }
+		if (std::isnan(hvrotation.y))
+		{
+			hvrotation.y = y_center;
+		}
+		if (std::isnan(hvrotation.x))
+		{
+			hvrotation.x = 0;
+		}
 
 		// Clamp Y so you can't do a backflip
 		hvrotation.y = std::clamp(hvrotation.y, y_min, y_max);
 
-		static constexpr float x_min = 0.f;
-		static constexpr float x_max = 360.f;
+		constexpr float x_min = 0.f;
+		constexpr float x_max = 360.f;
 
 		// Wrap X around (so we don't get awkwardly high or low X values)
-		if (hvrotation.x > x_max) { hvrotation.x = x_min; }
-		else if (hvrotation.x < x_min) { hvrotation.x = x_max; }
+		if (hvrotation.x > x_max)
+		{
+			hvrotation.x = x_min;
+		}
+		else if (hvrotation.x < x_min)
+		{
+			hvrotation.x = x_max;
+		}
 
 		camera_hv_rotation = hvrotation;
 		onCameraUpdated();

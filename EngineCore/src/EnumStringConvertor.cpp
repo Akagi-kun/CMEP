@@ -13,11 +13,11 @@ namespace Engine
 	template <>
 	EnumStringConvertor<EventHandling::EventType>::map_t
 		EnumStringConvertor<EventHandling::EventType>::value_map = {
-			{"on_init"sv, value_t::ON_INIT},
-			{"on_mouse_moved"sv, value_t::ON_MOUSEMOVED},
-			{"on_key_down"sv, value_t::ON_KEYDOWN},
-			{"on_key_up"sv, value_t::ON_KEYUP},
-			{"on_update"sv, value_t::ON_UPDATE},
+			{"on_init"sv, value_t::onInit},
+			{"on_mouse_moved"sv, value_t::onMouseMoved},
+			{"on_key_down"sv, value_t::onKeyDown},
+			{"on_key_up"sv, value_t::onKeyUp},
+			{"on_update"sv, value_t::onUpdate},
 	};
 
 	using namespace Factories::ObjectFactory;
@@ -29,12 +29,11 @@ namespace Engine
 	};
 
 	template <>
-	EnumStringConvertor<MeshBuilderType>::map_t
-		EnumStringConvertor<MeshBuilderType>::value_map = {
-			{"sprite"sv, value_t::SPRITE},
-			{"text"sv, value_t::TEXT},
-			{"axis"sv, value_t::AXIS},
-			{"generator"sv, value_t::GENERATOR},
+	EnumStringConvertor<MeshBuilderType>::map_t EnumStringConvertor<MeshBuilderType>::value_map = {
+		{"sprite"sv, value_t::SPRITE},
+		{"text"sv, value_t::TEXT},
+		{"axis"sv, value_t::AXIS},
+		{"generator"sv, value_t::GENERATOR},
 	};
 
 	template <>

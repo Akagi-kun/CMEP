@@ -63,10 +63,7 @@ namespace Engine::Rendering::Vulkan
 
 		initInstance();
 
-		this->logger->simpleLog<decltype(this)>(
-			Logging::LogLevel::Info,
-			"Instance initialized"
-		);
+		this->logger->simpleLog<decltype(this)>(Logging::LogLevel::Info, "Instance initialized");
 
 		window = new Window(
 			this,
@@ -106,7 +103,7 @@ namespace Engine::Rendering::Vulkan
 
 #pragma region Private
 
-	const std::vector<const char*> Instance::validation_layers = {
+	const std::vector<const char*> validation_layers = {
 		"VK_LAYER_KHRONOS_validation",
 	};
 
@@ -129,8 +126,7 @@ namespace Engine::Rendering::Vulkan
 
 		// Get extensions required by GLFW
 		uint32_t	 glfw_extension_count = 0;
-		const char** glfw_extensions =
-			glfwGetRequiredInstanceExtensions(&glfw_extension_count);
+		const char** glfw_extensions = glfwGetRequiredInstanceExtensions(&glfw_extension_count);
 
 		// Get our required extensions
 		std::vector<const char*> instance_extensions(
@@ -147,7 +143,7 @@ namespace Engine::Rendering::Vulkan
 			instance_extensions.push_back(vk::EXTDebugUtilsExtensionName);
 		}
 
-		native_handle = context.createInstance(vk::InstanceCreateInfo{
+		native_handle = context.createInstance({
 			.pApplicationInfo		 = &app_info,
 			.enabledLayerCount		 = static_cast<uint32_t>(instance_layers.size()),
 			.ppEnabledLayerNames	 = instance_layers.data(),
@@ -158,10 +154,7 @@ namespace Engine::Rendering::Vulkan
 		// Load instance functions in dispatcher
 		VULKAN_HPP_DEFAULT_DISPATCHER.init(*native_handle);
 
-		this->logger->simpleLog<decltype(this)>(
-			Logging::LogLevel::Info,
-			"Created a Vulkan instance"
-		);
+		this->logger->simpleLog<decltype(this)>(Logging::LogLevel::Debug, "Created instance object");
 
 		// If it's a debug build, add a debug callback to Vulkan
 		if (enable_vk_validation_layers)
@@ -182,8 +175,7 @@ namespace Engine::Rendering::Vulkan
 				.pUserData		 = this
 			};
 
-			debug_messenger =
-				native_handle.createDebugUtilsMessengerEXT(messenger_create_info);
+			debug_messenger = native_handle.createDebugUtilsMessengerEXT(messenger_create_info);
 
 			this->logger->simpleLog<decltype(this)>(
 				Logging::LogLevel::VerboseDebug,
@@ -194,8 +186,7 @@ namespace Engine::Rendering::Vulkan
 
 	bool Instance::checkVulkanValidationLayers()
 	{
-		std::vector<vk::LayerProperties> available_layers =
-			vk::enumerateInstanceLayerProperties();
+		std::vector<vk::LayerProperties> available_layers = vk::enumerateInstanceLayerProperties();
 
 		// Check if any of the supported validation layers feature the ones we want to enable
 		for (const char* layer_name : validation_layers)
@@ -212,7 +203,10 @@ namespace Engine::Rendering::Vulkan
 			}
 
 			// If none of those we want are supported, return false
-			if (!layer_found) { return false; }
+			if (!layer_found)
+			{
+				return false;
+			}
 		}
 
 		return true;
@@ -220,12 +214,9 @@ namespace Engine::Rendering::Vulkan
 
 	void Instance::initDevice()
 	{
-		this->logger->simpleLog<decltype(this)>(
-			Logging::LogLevel::Debug,
-			"Initializing vulkan device"
-		);
+		this->logger->simpleLog<decltype(this)>(Logging::LogLevel::Debug, "Initializing device");
 
-		// Get physical devices
+		// Get all physical devices
 		std::vector<vk::raii::PhysicalDevice> physical_devices =
 			native_handle.enumeratePhysicalDevices();
 
@@ -234,21 +225,29 @@ namespace Engine::Rendering::Vulkan
 		candidates.reserve(physical_devices.size());
 		for (const auto& device : physical_devices)
 		{
+			// Check device suitability and generate score based on it's parameters
 			auto score = DeviceScore(device, window->getSurface());
 
 			this->logger->simpleLog<decltype(this)>(
 				Logging::LogLevel::VerboseDebug,
-				"Found device '%s' %u %s %s",
+				"Found device '%s'; score %u; %s %s",
 				score.device_scored.getDeviceName().c_str(),
 				score.preference_score,
 				score ? "suitable" : "unsuitable",
 				score ? "" : score.unsupported_reason.data()
 			);
 
-			if (score) { candidates.emplace_back(score); }
+			// Emplace only devices that are supported
+			if (score)
+			{
+				candidates.emplace_back(score);
+			}
 		}
 
-		if (candidates.empty()) { throw ENGINE_EXCEPTION("No physical device found!"); }
+		if (candidates.empty())
+		{
+			throw ENGINE_EXCEPTION("No physical device found!");
+		}
 
 		// Sort devices, using std::greater to achieve the descending order
 		std::sort(candidates.begin(), candidates.end(), std::greater<>());

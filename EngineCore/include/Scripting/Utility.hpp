@@ -10,7 +10,7 @@ namespace Engine::Scripting::Utility
 	static constexpr int lua_cdata_typeid = 10;
 
 	/**
-	 * @brief Unwinds a stack trace into a string
+	 * Unwinds a stack trace into a string
 	 *
 	 * Pops a singular value from the stack (index -1) that is expected to be an error message
 	 *
@@ -23,7 +23,7 @@ namespace Engine::Scripting::Utility
 	int luaErrorHandler(lua_State* state);
 
 	/**
-	 * @brief Generates a string containing the values on a Lua stack
+	 * Generates a string containing the values on a Lua stack
 	 *
 	 * @param state Lua context from which to take the stack
 	 * @param start_at first stack index to be put into the string
@@ -32,7 +32,7 @@ namespace Engine::Scripting::Utility
 	std::string stackContentToString(lua_State* state, int start_at = 0);
 
 	/**
-	 * @brief Gets cdata from the stack
+	 * Gets cdata from the stack
 	 *
 	 * @tparam value_t Type of the cdata value
 	 * @warning The type of the cdata is not verified
@@ -46,13 +46,11 @@ namespace Engine::Scripting::Utility
 	{
 		// lua_topointer provides access to a pointer
 		// that when dereferenced points to the cdata itself
-		return static_cast<value_t>(
-			*reinterpret_cast<void* const*>(lua_topointer(state, idx))
-		);
+		return static_cast<value_t>(*reinterpret_cast<void* const*>(lua_topointer(state, idx)));
 	}
 
 	/**
-	 * @brief Gets the name of a function from a function pointer
+	 * Gets the name of a function from a function pointer
 	 *
 	 * @param lookup_function A valid pointer to a Lua/C API function
 	 * @return std::string_view name of the function (guaranteed null-terminated) or undetermined invalid
@@ -60,7 +58,7 @@ namespace Engine::Scripting::Utility
 	std::string_view mappingReverseLookup(lua_CFunction lookup_function);
 
 	/**
-	 * @brief Convert a potentially relative stack index to absolute
+	 * Convert a potentially relative stack index to absolute
 	 *
 	 * Stack modifications may render relative indices invalid
 	 * use this to avoid that

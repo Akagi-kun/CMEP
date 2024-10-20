@@ -1,6 +1,5 @@
 #include "Factories/ObjectFactory.hpp"
 
-#include "Assets/AssetManager.hpp"
 #include "Rendering/MeshBuilders/AxisMeshBuilder.hpp"
 #include "Rendering/MeshBuilders/GeneratorMeshBuilder.hpp"
 #include "Rendering/MeshBuilders/SpriteMeshBuilder.hpp"
@@ -11,7 +10,7 @@
 #include "EnumStringConvertor.hpp"
 #include "Exception.hpp"
 #include "InternalEngineObject.hpp"
-#include "Object.hpp"
+#include "SceneObject.hpp"
 
 #include <cassert>
 #include <format>
@@ -99,7 +98,7 @@ namespace Engine::Factories::ObjectFactory
 		}
 	}
 
-	Object* instantiateObjectTemplate(Engine* with_engine, ObjectTemplate& from_template)
+	SceneObject* instantiateObjectTemplate(Engine* with_engine, ObjectTemplate& from_template)
 	{
 		const auto& factory =
 			getSceneObjectFactory(from_template.with_renderer, from_template.with_mesh_builder);
@@ -117,7 +116,7 @@ namespace Engine::Factories::ObjectFactory
 		supply_data_value_t										 with_value
 	)
 	{
-		ENGINE_EXCEPTION_ON_ASSERT(with_value.index() != 0, "Invalid supply data value passed!")
+		EXCEPTION_ASSERT(with_value.index() != 0, "Invalid supply data value passed!");
 
 		switch (of_type)
 		{
@@ -150,7 +149,7 @@ namespace Engine::Factories::ObjectFactory
 		supply_data_value_t											with_value
 	)
 	{
-		ENGINE_EXCEPTION_ON_ASSERT(with_value.index() != 0, "Invalid supply data value passed!")
+		EXCEPTION_ASSERT(with_value.index() != 0, "Invalid supply data value passed!");
 
 		switch (of_type)
 		{
