@@ -31,6 +31,8 @@ jobs:
     - name: Install Vulkan SDK
       uses: humbletim/install-vulkan-sdk@v1.1.1
       with:
+        # Use known-working Vulkan SDK
+        version: 1.3.290.0
         cache: true
 
     - name: Set reusable strings
@@ -50,13 +52,6 @@ jobs:
       shell: bash
       run: sudo apt install libxrandr-dev libxinerama-dev libxcursor-dev libxi-dev libxext-dev wayland-protocols libwayland-dev libxkbcommon-dev
 
-    #- name: Configure CMake
-    #  run: >
-    #    cmake -B ${{ steps.strings.outputs.build-output-dir }}
-    #    -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }}
-    #    -DCMAKE_C_COMPILER=${{ matrix.c_compiler }}
-    #    -S ${{ github.workspace }}
-      
     - name: Build.sh
       shell: bash
       env:
