@@ -4,9 +4,9 @@
 #include "PlatformSemantics.hpp"
 
 #include <algorithm>
-#include <cstdarg>
 #include <cstdint>
 #include <cstdio>
+#include <format>
 #include <memory>
 #include <string>
 #include <type_traits>
@@ -107,8 +107,8 @@ namespace Logging
 
 	struct LoggerInternalMapping
 	{
-		LogLevel min_level;
 		FILE*	 handle;
+		LogLevel min_level;
 		bool	 has_started_logging;
 		bool	 use_colors;
 	};
@@ -125,8 +125,11 @@ namespace Logging
 	/**
 	 * The type internally responsible for storage of logging prefixes
 	 */
-	template <typename noptr_class_t> struct CMEP_EXPORT_CLASS logpfx_generator_internal
+	template <typename noptr_class_t>
+	struct CMEP_EXPORT_CLASS LogprefixGeneratorImpl
 	{
+		static_assert(!std::is_pointer_v<noptr_class_t>);
+
 		CMEP_EXPORT static const char* value;
 	};
 
@@ -136,17 +139,18 @@ namespace Logging
 	 * @tparam class_t Type representing the caller (i.e. a method's class),
 	 *                 generates an empty string if this is void.
 	 */
-	template <typename class_t> struct logpfx_generator
+	template <typename class_t>
+	struct LogprefixGenerator
 	{
-		using nocv_remptr_t = std::remove_cv_t<std::remove_pointer_t<class_t>>;
-		using prefix_t		= decltype(logpfx_generator_internal<nocv_remptr_t>::value);
+		using nocv_noptr_t = std::remove_cv_t<std::remove_pointer_t<class_t>>;
+		using prefix_t	   = decltype(LogprefixGeneratorImpl<nocv_noptr_t>::value);
 
 		/**
 		 * @return The prefix as a string
 		 */
 		operator prefix_t() const
 		{
-			return logpfx_generator_internal<nocv_remptr_t>::value;
+			return LogprefixGeneratorImpl<nocv_noptr_t>::value;
 		}
 	};
 
@@ -159,22 +163,24 @@ namespace Logging
 		void addOutputHandle(LogLevel min_level, FILE* handle, bool use_colors = false);
 		void mapCurrentThreadToName(std::string name);
 
-		template <typename class_t> void startLog(LogLevel level)
+		template <typename class_t>
+		void startLog(LogLevel level)
 		{
-			internalStartLog(level, logpfx_generator<class_t>{});
+			internalStartLog(level, LogprefixGenerator<class_t>{});
 		}
-		void log(const char* format, ...);
 		void stopLog();
 
-		template <typename class_t> void simpleLog(LogLevel level, const char* format, ...)
+		template <typename... args_t>
+		void log(const std::format_string<args_t...> format, args_t&&... args)
+		{
+			internalLogStr(std::vformat(format.get(), std::make_format_args(args...)).c_str());
+		}
+
+		template <typename class_t, typename... args_t>
+		void logSingle(LogLevel level, const std::format_string<args_t...> format, args_t&&... args)
 		{
 			startLog<class_t>(level);
-
-			va_list args;
-			va_start(args, format);
-			internalLog(format, args);
-			va_end(args);
-
+			log(format, std::forward<args_t>(args)...);
 			stopLog();
 		}
 
@@ -183,7 +189,7 @@ namespace Logging
 
 		void internalStartLog(LogLevel level, const char* log_prefix);
 
-		void internalLog(const char* format, va_list args);
+		void internalLogStr(const char* string);
 	};
 
 	class CMEP_EXPORT_CLASS SupportsLogging

@@ -1,6 +1,7 @@
 #include "Exception.hpp"
 
 #include <functional>
+#include <type_traits>
 
 #define ENGINERENDERINGVULKAN_LIBRARY_IMPLEMENTATION
 #include "Logging/Logging.hpp"
@@ -56,14 +57,14 @@ namespace Engine::Rendering::Vulkan
 		}
 		glfwSetErrorCallback(glfwErrorCallback);
 
-		this->logger->simpleLog<decltype(this)>(Logging::LogLevel::Info, "GLFW initialized");
+		this->logger->logSingle<decltype(this)>(Logging::LogLevel::Info, "GLFW initialized");
 
 		// Initialize dynamic dispatcher base before all other vulkan calls
 		VULKAN_HPP_DEFAULT_DISPATCHER.init(vkGetInstanceProcAddr);
 
 		initInstance();
 
-		this->logger->simpleLog<decltype(this)>(Logging::LogLevel::Info, "Instance initialized");
+		this->logger->logSingle<decltype(this)>(Logging::LogLevel::Info, "Instance initialized");
 
 		window = new Window(
 			this,
@@ -154,12 +155,12 @@ namespace Engine::Rendering::Vulkan
 		// Load instance functions in dispatcher
 		VULKAN_HPP_DEFAULT_DISPATCHER.init(*native_handle);
 
-		this->logger->simpleLog<decltype(this)>(Logging::LogLevel::Debug, "Created instance object");
+		this->logger->logSingle<decltype(this)>(Logging::LogLevel::Debug, "Created instance object");
 
 		// If it's a debug build, add a debug callback to Vulkan
 		if (enable_vk_validation_layers)
 		{
-			this->logger->simpleLog<decltype(this)>(
+			this->logger->logSingle<decltype(this)>(
 				Logging::LogLevel::VerboseDebug,
 				"Creating debug messenger"
 			);
@@ -177,7 +178,7 @@ namespace Engine::Rendering::Vulkan
 
 			debug_messenger = native_handle.createDebugUtilsMessengerEXT(messenger_create_info);
 
-			this->logger->simpleLog<decltype(this)>(
+			this->logger->logSingle<decltype(this)>(
 				Logging::LogLevel::VerboseDebug,
 				"Created debug messenger"
 			);
@@ -214,7 +215,7 @@ namespace Engine::Rendering::Vulkan
 
 	void Instance::initDevice()
 	{
-		this->logger->simpleLog<decltype(this)>(Logging::LogLevel::Debug, "Initializing device");
+		this->logger->logSingle<decltype(this)>(Logging::LogLevel::Debug, "Initializing device");
 
 		// Get all physical devices
 		std::vector<vk::raii::PhysicalDevice> physical_devices =
@@ -228,13 +229,13 @@ namespace Engine::Rendering::Vulkan
 			// Check device suitability and generate score based on it's parameters
 			auto score = DeviceScore(device, window->getSurface());
 
-			this->logger->simpleLog<decltype(this)>(
+			this->logger->logSingle<decltype(this)>(
 				Logging::LogLevel::VerboseDebug,
-				"Found device '%s'; score %u; %s %s",
-				score.device_scored.getDeviceName().c_str(),
+				"Found device '{}'; score {}; {}{}",
+				score.device_scored.getDeviceName(),
 				score.preference_score,
-				score ? "suitable" : "unsuitable",
-				score ? "" : score.unsupported_reason.data()
+				score ? "suitable" : "unsuitable ",
+				score ? "" : score.unsupported_reason
 			);
 
 			// Emplace only devices that are supported
@@ -255,15 +256,17 @@ namespace Engine::Rendering::Vulkan
 		// First device is assumed to be the best after sort
 		physical_device = new PhysicalDevice(candidates[0].device_scored);
 
-		this->logger->simpleLog<decltype(this)>(
+		this->logger->logSingle<decltype(this)>(
 			Logging::LogLevel::Info,
-			"Found a capable physical device: '%s'",
-			physical_device->getDeviceName().c_str()
+			"Found a capable physical device: '{}'",
+			physical_device->getDeviceName()
 		);
-		this->logger->simpleLog<decltype(this)>(
+		this->logger->logSingle<decltype(this)>(
 			Logging::LogLevel::Info,
-			"Using MSAAx%u",
-			physical_device->getMSAASamples()
+			"Using MSAAx{}",
+			static_cast<std::underlying_type_t<vk::SampleCountFlagBits>>(
+				physical_device->getMSAASamples()
+			)
 		);
 	}
 

@@ -226,18 +226,15 @@ namespace Engine
 
 	SceneLoader::~SceneLoader()
 	{
-		this->logger->simpleLog<decltype(this)>(Logging::LogLevel::VerboseDebug, "Destructor called");
+		this->logger->logSingle<decltype(this)>(Logging::LogLevel::VerboseDebug, "Destructor called");
 	}
 
 	std::shared_ptr<Scene> SceneLoader::loadScene(const std::string& scene_name)
 	{
 		std::shared_ptr<Scene> new_scene = std::make_shared<Scene>(owner_engine);
 
-		this->logger->simpleLog<decltype(this)>(
-			Logging::LogLevel::Info,
-			"Loading scene: '%s'",
-			scene_name.c_str()
-		);
+		this->logger
+			->logSingle<decltype(this)>(Logging::LogLevel::Info, "Loading scene: '{}'", scene_name);
 
 		loadSceneInternal(new_scene, scene_name);
 
@@ -266,10 +263,10 @@ namespace Engine
 			std::throw_with_nested(ENGINE_EXCEPTION("Failed on json parse"));
 		}
 
-		this->logger->simpleLog<decltype(this)>(
+		this->logger->logSingle<decltype(this)>(
 			Logging::LogLevel::VerboseDebug,
-			"Loading scene prefix is: '%s'",
-			scene_path.string().c_str()
+			"Loading scene prefix is: '{}'",
+			scene_path.string()
 		);
 
 		try
@@ -316,7 +313,7 @@ namespace Engine
 			);
 		}
 
-		this->logger->simpleLog<decltype(this)>(
+		this->logger->logSingle<decltype(this)>(
 			Logging::LogLevel::Debug,
 			"Done stage: Event Handlers"
 		);
@@ -370,14 +367,14 @@ namespace Engine
 
 			scene->loadTemplatedObject(name, obj_template);
 
-			this->logger->simpleLog<decltype(this)>(
+			this->logger->logSingle<decltype(this)>(
 				Logging::LogLevel::VerboseDebug,
-				"Loaded template '%s'",
-				name.c_str()
+				"Loaded template '{}'",
+				name
 			);
 		}
 
-		this->logger->simpleLog<decltype(this)>(Logging::LogLevel::Debug, "Done stage: Templates");
+		this->logger->logSingle<decltype(this)>(Logging::LogLevel::Debug, "Done stage: Templates");
 	}
 
 	void SceneLoader::loadSceneAssets(
@@ -401,7 +398,7 @@ namespace Engine
 			}
 		}
 
-		this->logger->simpleLog<decltype(this)>(Logging::LogLevel::Debug, "Done stage: Assets");
+		this->logger->logSingle<decltype(this)>(Logging::LogLevel::Debug, "Done stage: Assets");
 	}
 
 #pragma endregion

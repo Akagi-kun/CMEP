@@ -25,7 +25,7 @@ namespace Engine::Rendering
 
 	Font::~Font()
 	{
-		logger->simpleLog<decltype(this)>(Logging::LogLevel::VerboseDebug, "Destructor called");
+		logger->logSingle<decltype(this)>(Logging::LogLevel::VerboseDebug, "Destructor called");
 
 		data.reset();
 	}

@@ -29,9 +29,9 @@ namespace Engine::Rendering::Vulkan
 											  ? Logging::LogLevel::Error
 											  : Logging::LogLevel::Warning;
 
-			locked_logger->simpleLog<void>(
+			locked_logger->logSingle<void>(
 				log_level,
-				"Validation layer reported:\n%s",
+				"Validation layer reported:\n{}",
 				pCallbackData->pMessage
 			);
 

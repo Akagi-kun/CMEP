@@ -26,7 +26,7 @@ namespace Engine
 
 	SceneObject::~SceneObject() noexcept
 	{
-		this->logger->simpleLog<decltype(this)>(Logging::LogLevel::VerboseDebug, "Destructor called");
+		this->logger->logSingle<decltype(this)>(Logging::LogLevel::VerboseDebug, "Destructor called");
 
 		delete renderer;
 	}

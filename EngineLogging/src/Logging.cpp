@@ -16,7 +16,6 @@
 #include <algorithm>
 #include <cassert>
 #include <chrono>
-#include <cstdarg>
 #include <cstdint>
 #include <cstdio>
 #include <cstring>
@@ -29,24 +28,23 @@ namespace Logging
 {
 	namespace
 	{
-		using color_t = std::string_view;
 		using level_t = std::string_view;
 
-		constexpr color_t level_to_color_table[] = {
-			Logging::Console::GRAY_FG,
-			Logging::Console::GRAY_FG,
-			Logging::Console::GRAY_FG,
-			Logging::Console::WHITE_FG,
-			Logging::Console::YELLOW_FG,
-			Logging::Console::RED_FG,
-			Logging::Console::BLUE_FG
+		constexpr Console::color_t level_to_color_table[] = {
+			Console::GRAY_FG,
+			Console::GRAY_FG,
+			Console::GRAY_FG,
+			Console::WHITE_FG,
+			Console::YELLOW_FG,
+			Console::RED_FG,
+			Console::BLUE_FG
 		};
 
 		constexpr level_t level_to_string_table[] =
 			{"???", "VDEBUG", "DEBUG", "INFO", "WARN", "ERROR", "EXCEPT"};
 
 		static_assert(
-			(sizeof(level_to_color_table) / sizeof(color_t)) ==
+			(sizeof(level_to_color_table) / sizeof(Console::color_t)) ==
 			(sizeof(level_to_string_table) / sizeof(level_t))
 		);
 
@@ -104,8 +102,7 @@ namespace Logging
 		}
 	} // namespace
 
-	Logger::Logger() : state(new LoggerInternalState())
-	{}
+	Logger::Logger() : state(new LoggerInternalState()) {}
 
 	Logger::~Logger()
 	{
@@ -124,11 +121,12 @@ namespace Logging
 		assert(isValid(min_level));
 
 		// Create new mapping
-		LoggerInternalMapping new_map = LoggerInternalMapping();
-		new_map.min_level			  = min_level;
-		new_map.handle				  = handle;
-		new_map.has_started_logging	  = false;
-		new_map.use_colors			  = use_colors;
+		LoggerInternalMapping new_map = {
+			.handle				 = handle,
+			.min_level			 = min_level,
+			.has_started_logging = false,
+			.use_colors			 = use_colors,
+		};
 
 		// Add new mapping to list
 		state->outputs.push_back(new_map);
@@ -182,22 +180,12 @@ namespace Logging
 					output.use_colors ? level_color : "",
 					level_str,
 					getMaxLevelLength(),
-					log_prefix != nullptr ? log_prefix : logpfx_generator<void>{}
+					log_prefix != nullptr ? log_prefix : LogprefixGenerator<void>{}
 				);
 
 				fputs(out.c_str(), output.handle);
 			}
 		}
-	}
-
-	void Logger::log(const char* format, ...)
-	{
-		assert(format != nullptr);
-
-		va_list args;
-		va_start(args, format);
-		internalLog(format, args);
-		va_end(args);
 	}
 
 	void Logger::stopLog()
@@ -219,14 +207,13 @@ namespace Logging
 		state->thread_mutex.unlock();
 	}
 
-	ATTRIBUTE_PRINTF_COMPAT(2, 0)
-	void Logger::internalLog(const char* const format, va_list args)
+	void Logger::internalLogStr(const char* string)
 	{
 		for (auto& output : state->outputs)
 		{
 			if (output.has_started_logging)
 			{
-				vfprintf(output.handle, format, args);
+				fputs(string, output.handle);
 			}
 		}
 	}

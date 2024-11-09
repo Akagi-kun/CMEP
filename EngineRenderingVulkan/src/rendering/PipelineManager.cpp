@@ -33,9 +33,9 @@ namespace Engine::Rendering::Vulkan
 
 	PipelineManager::~PipelineManager()
 	{
-		this->logger->simpleLog<decltype(this)>(
+		this->logger->logSingle<decltype(this)>(
 			Logging::LogLevel::Debug,
-			"Destructor called with %u pipelines left",
+			"Destructor called with {} pipelines left",
 			pipelines.size()
 		);
 
@@ -57,10 +57,10 @@ namespace Engine::Rendering::Vulkan
 			return user_ref;
 		}
 
-		this->logger->simpleLog<decltype(this)>(
+		this->logger->logSingle<decltype(this)>(
 			Logging::LogLevel::VerboseDebug,
-			"Creating new pipeline (none found, '%s'), current pipelines: %u",
-			reason.data(),
+			"Creating new pipeline (none found, '{}'), current pipelines: {}",
+			reason,
 			pipelines.size()
 		);
 

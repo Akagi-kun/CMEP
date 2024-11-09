@@ -25,16 +25,16 @@ namespace Engine
 
 	Scene::~Scene()
 	{
-		this->logger->simpleLog<decltype(this)>(Logging::LogLevel::VerboseDebug, "Destructor called");
+		this->logger->logSingle<decltype(this)>(Logging::LogLevel::VerboseDebug, "Destructor called");
 
 		templates.clear();
 
 		for (auto& [name, ptr] : objects)
 		{
-			this->logger->simpleLog<decltype(this)>(
+			this->logger->logSingle<decltype(this)>(
 				Logging::LogLevel::VerboseDebug,
-				"Deleting object '%s'",
-				name.c_str()
+				"Deleting object '{}'",
+				name
 			);
 			delete ptr;
 		}
@@ -70,17 +70,14 @@ namespace Engine
 
 	void Scene::addObject(const std::string& name, SceneObject* ptr)
 	{
-		if (ptr != nullptr)
+		if (ptr == nullptr)
 		{
-			this->logger->simpleLog<decltype(this)>(
-				Logging::LogLevel::Debug,
-				"Adding object '%s'",
-				name.c_str()
-			);
+			throw ENGINE_EXCEPTION("Called AddObject with nullptr!");
+		}
+
+		this->logger->logSingle<decltype(this)>(Logging::LogLevel::Debug, "Adding object '{}'", name);
 
 			objects.emplace(name, ptr);
-		}
-		else { throw ENGINE_EXCEPTION("Called AddObject with nullptr!"); }
 	}
 
 	SceneObject* Scene::findObject(const std::string& name)

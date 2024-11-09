@@ -120,9 +120,9 @@ namespace Engine::Rendering
 				// Check if font contains this character
 				if (char_data == nullptr)
 				{
-					logger->simpleLog<void>(
+					logger->logSingle<void>(
 						Logging::LogLevel::Error,
-						"Char 0x%x is not found in set font",
+						"Char 0x{:x} is not found in set font",
 						character
 					);
 					continue;

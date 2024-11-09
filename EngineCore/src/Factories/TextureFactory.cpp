@@ -1,32 +1,30 @@
+#include "Factories/TextureFactory.hpp"
+
 #include "Assets/Texture.hpp"
 #include "Rendering/Transform.hpp"
 #include "Rendering/Vulkan/backend.hpp"
+#include "Rendering/Vulkan/exports.hpp"
 
 #include "Logging/Logging.hpp"
 
+#include "Engine.hpp"
 #include "Exception.hpp"
 #include "InternalEngineObject.hpp"
 
 #include <cassert>
+#include <cstddef>
+#include <cstdint>
 #include <exception>
 #include <filesystem>
+#include <format>
 #include <memory>
+#include <type_traits>
 #include <utility>
 #include <vector>
 
 #pragma warning(push, 2)
 #include "lodepng.h"
 #pragma warning(pop)
-
-#include "Rendering/Vulkan/exports.hpp"
-
-#include "Factories/TextureFactory.hpp"
-
-#include "Engine.hpp"
-
-#include <cstddef>
-#include <cstdint>
-#include <format>
 
 namespace Engine::Factories
 {
@@ -50,10 +48,10 @@ namespace Engine::Factories
 			));
 		}
 
-		this->logger->simpleLog<decltype(this)>(
+		this->logger->logSingle<decltype(this)>(
 			Logging::LogLevel::VerboseDebug,
-			"Initializing texture from file '%s'",
-			path.lexically_normal().string().c_str()
+			"Initializing texture from file '{}'",
+			path.lexically_normal().string()
 		);
 
 		std::vector<unsigned char>				data;
@@ -80,13 +78,13 @@ namespace Engine::Factories
 			throw ENGINE_EXCEPTION("Failed decoding PNG file!");
 		}
 
-		this->logger->simpleLog<decltype(this)>(
+		this->logger->logSingle<decltype(this)>(
 			Logging::LogLevel::VerboseDebug,
-			"Decoded png file %s; width %u; height %u; filter %u",
-			path.c_str(),
+			"Decoded png file '{}'; width {}; height {}; filter {}",
+			path.lexically_normal().string(),
 			size.x,
 			size.y,
-			filtering
+			static_cast<std::underlying_type_t<vk::Filter>>(filtering)
 		);
 
 		createTextureInternal(texture_data, std::move(data), 4, filtering, sampler_address_mode, size);

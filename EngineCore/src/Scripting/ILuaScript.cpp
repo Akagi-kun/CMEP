@@ -23,7 +23,7 @@
 
 namespace Engine::Scripting
 {
-#pragma region Static functions
+#pragma region Static
 
 	namespace
 	{
@@ -82,7 +82,7 @@ namespace Engine::Scripting
 				lua_setglobal(state, mapping.first.c_str());
 			}
 
-			// Replace print by a simpleLog wrapper
+			// Replace print by a logger wrapper
 			void* ptr_obj = lua_newuserdata(state, sizeof(std::weak_ptr<Logging::Logger>));
 			new (ptr_obj) std::weak_ptr<Logging::Logger>(logger);
 
@@ -125,6 +125,7 @@ namespace Engine::Scripting
 			lua_getglobal(state, LUA_LOADLIBNAME);
 			EXCEPTION_ASSERT(lua_istable(state, -1), "Lua Module 'package' is not loaded!");
 
+			/** @todo Take require path from somewhere else, scripts aren't guaranteed to be in the `./scripts/` directory. */
 			std::filesystem::path require_origin = with_script->getPath();
 			std::string require_origin_str = require_origin.remove_filename().parent_path().string();
 
@@ -230,14 +231,16 @@ namespace Engine::Scripting
 		// Register c callback functions
 		registerCallbacks(state, this->logger);
 
-		this->logger->simpleLog<decltype(this)>(
+		this->logger->logSingle<decltype(this)>(
 			Logging::LogLevel::Debug,
-			"Loaded and compiled Lua script: '%s'",
-			script_path.lexically_normal().string().c_str()
+			"Loaded and compiled Lua script: '{}'",
+			path.lexically_normal().string()
 		);
 	}
 
-#pragma region Public functions
+#pragma endregion
+
+#pragma region Public
 
 	ILuaScript::ILuaScript(
 		Engine*				  with_engine,
@@ -264,14 +267,6 @@ namespace Engine::Scripting
 		if (enable_profiling)
 		{
 			luaJIT_profile_stop(state);
-
-			this->logger->simpleLog<decltype(this)>(
-				Logging::LogLevel::Info,
-				"Profiling result:\n E:%i N:%i I:%i\n",
-				profiler_state.engine_count,
-				profiler_state.native_count,
-				profiler_state.interpreted_count
-			);
 		}
 
 		lua_close(state);
@@ -287,7 +282,7 @@ namespace Engine::Scripting
 			const char* errormsg = lua_tostring(state, -1);
 
 			throw ENGINE_EXCEPTION(std::format(
-				"Error {} occured calling script '{}' (fn: '{}')\n{}",
+				"Error '{}' occured calling script '{}' (fn: '{}')\n{}",
 				errcall,
 				path.lexically_normal().string(),
 				function,

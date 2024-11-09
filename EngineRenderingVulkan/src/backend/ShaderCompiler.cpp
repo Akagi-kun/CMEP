@@ -9,8 +9,8 @@
 #include "glslang/SPIRV/GlslangToSpv.h"
 #include "glslang/SPIRV/Logger.h"
 
-#include <chrono>
 #include <cstring>
+#include <format>
 #include <string>
 #include <utility>
 
@@ -30,13 +30,13 @@ namespace Engine::Rendering::Vulkan
 		std::string spirv_version;
 		glslang::GetSpirvVersion(spirv_version);
 
-		this->logger->simpleLog<decltype(this)>(
+		this->logger->logSingle<decltype(this)>(
 			Logging::LogLevel::Info,
-			"Initialized (Using glslang v%u.%u.%u for SPIR-V '%s')",
+			"Initialized (Using glslang v{}.{}.{} for SPIR-V '{}')",
 			version.major,
 			version.minor,
 			version.patch,
-			spirv_version.c_str()
+			spirv_version
 		);
 	}
 	ShaderCompiler::~ShaderCompiler()
@@ -82,7 +82,10 @@ namespace Engine::Rendering::Vulkan
 		shader.parse(GetDefaultResources(), dialect_version, false, EShMsgDefault);
 
 		const char* current_log = shader.getInfoLog();
-		if (strlen(current_log) > 0) { logCompileEvent("Shader parse", current_log); }
+		if (strlen(current_log) > 0)
+		{
+			logCompileEvent("Shader parse", current_log);
+		}
 
 		// Link shader into a program
 		glslang::TProgram program;
@@ -90,7 +93,10 @@ namespace Engine::Rendering::Vulkan
 		program.link(EShMsgDefault);
 
 		current_log = program.getInfoLog();
-		if (strlen(current_log) > 0) { logCompileEvent("Program link", current_log); }
+		if (strlen(current_log) > 0)
+		{
+			logCompileEvent("Program link", current_log);
+		}
 
 		// Get intermediate form from linked program
 		glslang::TIntermediate* intermediate = program.getIntermediate(stage_lang);
@@ -105,13 +111,16 @@ namespace Engine::Rendering::Vulkan
 		glslang::GlslangToSpv(*intermediate, spirv_code, &build_logger, &spirv_options);
 
 		current_log = build_logger.getAllMessages().c_str();
-		if (strlen(current_log) > 0) { logCompileEvent("SPIR-V build", current_log); }
+		if (strlen(current_log) > 0)
+		{
+			logCompileEvent("SPIR-V build", current_log);
+		}
 
 		TIMEMEASURE_END_MILLI(compile);
 
-		this->logger->simpleLog<decltype(this)>(
+		this->logger->logSingle<decltype(this)>(
 			Logging::LogLevel::VerboseDebug,
-			"Compiled shader in %.3lfms",
+			"Compiled shader in {:.3f}ms",
 			compile_total.count()
 		);
 
@@ -124,9 +133,9 @@ namespace Engine::Rendering::Vulkan
 
 	void ShaderCompiler::logCompileEvent(const char* occured_at, const char* message_log) const
 	{
-		this->logger->simpleLog<decltype(this)>(
+		this->logger->logSingle<decltype(this)>(
 			Logging::LogLevel::Warning,
-			"Potentially important compilation event occured at '%s', log: '%s'",
+			"Potentially important compilation event occured at '{}', log: '{}'",
 			occured_at,
 			message_log
 		);

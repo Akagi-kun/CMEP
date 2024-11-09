@@ -1,5 +1,8 @@
 #pragma once
 
+#include <chrono> // IWYU pragma: export
+#include <ratio>  // IWYU pragma: export
+
 /**
  * Start measuring time using @c std::chrono::steady_clock, defines @c \<name\>_start.
  */

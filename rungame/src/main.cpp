@@ -59,9 +59,9 @@ namespace
 		const std::string&						message
 	)
 	{
-		logger->simpleLog<void>(
+		logger->logSingle<void>(
 			Logging::LogLevel::Exception,
-			"%s\n%s",
+			"{}\n{}",
 			message.c_str(),
 			Engine::Base::unrollExceptions(exception).c_str()
 		);
@@ -90,35 +90,32 @@ namespace
 		}
 		else
 		{
-			logger->simpleLog<void>(
+			logger->logSingle<void>(
 				Logging::LogLevel::Warning,
-				"Failed opening logfile '%s', will log only to stdout",
+				"Failed opening logfile '{}', will log only to stdout",
 				logfile_name
 			);
 		}
 
-		logger->simpleLog<void>(
+		logger->logSingle<void>(
 			Logging::LogLevel::Info,
-			"Logger initialized (stdout loglevel is %u)",
-			stdout_loglevel
+			"Logger initialized (stdout loglevel is {})",
+			static_cast<std::underlying_type_t<Logging::LogLevel>>(stdout_loglevel)
 		);
 
 		// Initialize engine
-		std::unique_ptr<Engine::OpaqueEngine> engine =
-			std::make_unique<Engine::OpaqueEngine>(logger);
+		std::unique_ptr<Engine::OpaqueEngine> engine = std::make_unique<Engine::OpaqueEngine>(logger
+		);
 
 		// This tests whether exceptions thrown inside EngineCore
 		// can be successfully caught in rungame
 		if (!checkExceptions(engine))
 		{
-			logger->simpleLog<void>(
-				Logging::LogLevel::Error,
-				"checkABI returned false! aborting"
-			);
+			logger->logSingle<void>(Logging::LogLevel::Error, "checkABI returned false! aborting");
 			std::abort();
 		}
 
-		logger->simpleLog<void>(Logging::LogLevel::Info, "Exception check successful");
+		logger->logSingle<void>(Logging::LogLevel::Info, "Exception check successful");
 
 		// Initialize engine, load config
 		try
@@ -145,7 +142,7 @@ namespace
 		}
 
 		engine.reset();
-		logger->simpleLog<void>(Logging::LogLevel::Info, "Bye!");
+		logger->logSingle<void>(Logging::LogLevel::Info, "Bye!");
 
 		return 0;
 	}

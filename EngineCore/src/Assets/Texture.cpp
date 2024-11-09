@@ -18,7 +18,7 @@ namespace Engine::Rendering
 
 	Texture::~Texture()
 	{
-		this->logger->simpleLog<decltype(this)>(Logging::LogLevel::VerboseDebug, "Destructor called");
+		this->logger->logSingle<decltype(this)>(Logging::LogLevel::VerboseDebug, "Destructor called");
 
 		delete this->data->image;
 		delete this->data->sampler;

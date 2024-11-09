@@ -107,19 +107,19 @@ namespace Engine::Factories
 			std::format("font file '{}' could not be opened", font_path.lexically_normal().string())
 		);
 
-		this->logger->simpleLog<decltype(this)>(
+		this->logger->logSingle<decltype(this)>(
 			Logging::LogLevel::VerboseDebug,
-			"Loading file '%s'",
-			font_path.lexically_normal().string().c_str()
+			"Loading file '{}'",
+			font_path.lexically_normal().string()
 		);
 
 		std::unique_ptr<Rendering::FontData> font_data =
 			parseBmfont(font_path, font_file, opt_callback);
 
-		this->logger->simpleLog<decltype(this)>(
+		this->logger->logSingle<decltype(this)>(
 			Logging::LogLevel::Debug,
-			"File '%s' loaded successfully",
-			font_path.lexically_normal().string().c_str()
+			"File '{}' loaded successfully",
+			font_path.lexically_normal().string()
 		);
 
 		font_file.close();
@@ -210,11 +210,11 @@ namespace Engine::Factories
 			}
 		} while ((page_idx == -1) || page_path.empty());
 
-		this->logger->simpleLog<decltype(this)>(
+		this->logger->logSingle<decltype(this)>(
 			Logging::LogLevel::VerboseDebug,
-			"Font page index %u is '%s'",
+			"Font page index {} is '{}'",
 			page_idx,
-			page_path.lexically_normal().string().c_str()
+			page_path.lexically_normal().string()
 		);
 
 		std::filesystem::path asset_path = font_path.remove_filename() / page_path;

@@ -15,10 +15,7 @@ namespace Engine
 
 	AssetManager::~AssetManager()
 	{
-		this->logger->simpleLog<decltype(this)>(
-			Logging::LogLevel::Debug,
-			"Destructor called"
-		);
+		this->logger->logSingle<decltype(this)>(Logging::LogLevel::Debug, "Destructor called");
 	}
 
 	void AssetManager::setSceneRepository(AssetRepository* with_repository)

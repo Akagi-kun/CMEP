@@ -40,7 +40,7 @@ namespace Engine
 
 	SceneManager::~SceneManager()
 	{
-		this->logger->simpleLog<decltype(this)>(Logging::LogLevel::Info, "Destructor called");
+		this->logger->logSingle<decltype(this)>(Logging::LogLevel::Info, "Destructor called");
 
 		scenes.clear();
 
@@ -70,15 +70,13 @@ namespace Engine
 	 */
 	void SceneManager::loadScene(const std::string& scene_name)
 	{
-		assert(owner_engine != nullptr);
-
 		try
 		{
 			scenes.emplace(scene_name, scene_loader->loadScene(scene_name));
 		}
 		catch (...)
 		{
-			std::throw_with_nested(ENGINE_EXCEPTION("Could not load scene"));
+			std::throw_with_nested(ENGINE_EXCEPTION("Exception occured during loadScene"));
 		}
 	}
 
@@ -90,10 +88,10 @@ namespace Engine
 			loadScene(scene_name);
 		}
 
-		logger->simpleLog<decltype(this)>(
+		logger->logSingle<decltype(this)>(
 			Logging::LogLevel::Info,
-			"Switching to scene '%s'",
-			scene_name.c_str()
+			"Switching to scene '{}'",
+			scene_name
 		);
 
 		auto asset_manager = owner_engine->getAssetManager().lock();
@@ -113,9 +111,9 @@ namespace Engine
 
 		TIMEMEASURE_END_MILLI(oninit);
 
-		logger->simpleLog<decltype(this)>(
+		logger->logSingle<decltype(this)>(
 			Logging::LogLevel::Debug,
-			"onInit event took %.3lfms",
+			"onInit event took {:.3f}ms",
 			oninit_total.count()
 		);
 	}

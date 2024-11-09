@@ -273,9 +273,9 @@ namespace Engine
 		// Pre-make ON_UPDATE event so we don't have to create it over and over again in hot loop
 		auto on_update_event = EventHandling::Event(this, EventHandling::EventType::onUpdate);
 
-		this->logger->simpleLog<decltype(this)>(
+		this->logger->logSingle<decltype(this)>(
 			Logging::LogLevel::VerboseDebug,
-			"Locked to framerate %u%s",
+			"Locked to framerate {}{}",
 			config.framerate_target,
 			config.framerate_target == 0 ? " (VSYNC)" : ""
 		);
@@ -286,26 +286,26 @@ namespace Engine
 
 			const auto& objects = scene->getAllObjects();
 
-			this->logger->simpleLog<decltype(this)>(
+			this->logger->logSingle<decltype(this)>(
 				Logging::LogLevel::Info,
-				"Starting scene build (%lu objects)",
+				"Starting scene build ({} objects)",
 				objects.size()
 			);
 			for (const auto& [name, object] : objects)
 			{
-				this->logger->simpleLog<decltype(this)>(
+				this->logger->logSingle<decltype(this)>(
 					Logging::LogLevel::Debug,
-					"Building object '%s'",
-					name.c_str()
+					"Building object '{}'",
+					name
 				);
 				object->getMeshBuilder()->build();
 			}
 
 			TIMEMEASURE_END_MILLI(scenebuild);
 
-			this->logger->simpleLog<decltype(this)>(
+			this->logger->logSingle<decltype(this)>(
 				Logging::LogLevel::Info,
-				"Scene build finished in %.3lfms",
+				"Scene build finished in {:.3f}ms",
 				scenebuild_total.count()
 			);
 		}
@@ -325,7 +325,7 @@ namespace Engine
 		{
 			const auto next_clock = std::chrono::steady_clock::now();
 
-			constexpr dur_second_t min_delta = 0.01s;
+			constexpr dur_second_t min_delta = 0.0001s;
 			constexpr dur_second_t max_delta = 10000.0s;
 			const auto			   delta_time =
 				std::clamp(dur_second_t(next_clock - prev_clock), min_delta, max_delta);
@@ -340,9 +340,9 @@ namespace Engine
 				const auto ret			   = fireEvent(on_update_event);
 				if (ret != 0)
 				{
-					this->logger->simpleLog<decltype(this)>(
+					this->logger->logSingle<decltype(this)>(
 						Logging::LogLevel::Error,
-						"Firing event ON_UPDATE returned %u! Exiting event-loop",
+						"Firing event onUpdate returned {}! Exiting event-loop",
 						ret
 					);
 					break;
@@ -375,9 +375,9 @@ namespace Engine
 			constexpr dur_milli_t limits[] = {12.0ms, 19.0ms, 8.0ms};
 			if (event_total > limits[0] || sum_total > limits[1] || sum_total < limits[2])
 			{
-				this->logger->simpleLog<decltype(this)>(
+				this->logger->logSingle<decltype(this)>(
 					Logging::LogLevel::Warning,
-					"delta %lf sum %lf (event %lf draw %lf poll %lf)",
+					"delta {:.3f} sum {:.3f} (event {:.3f} draw {:.3f} poll {:.3f})",
 					dur_milli_t(delta_time).count(),
 					sum_total.count(),
 					event_total.count(),
@@ -392,14 +392,17 @@ namespace Engine
 			const double frame_expected		= 1.0 / config.framerate_target;
 			const double frame_sleep		= frame_expected - frame_actual.count();
 			// If VSYNC is disabled and we need to sleep
-			if (config.framerate_target != 0 && frame_sleep > 0) { spinSleep(frame_sleep); }
+			if (config.framerate_target != 0 && frame_sleep > 0)
+			{
+				spinSleep(frame_sleep);
+			}
 
 			prev_clock = next_clock;
 		}
 
-		this->logger->simpleLog<decltype(this)>(
+		this->logger->logSingle<decltype(this)>(
 			Logging::LogLevel::Debug,
-			"Closing engine (eventtime avg %lf)",
+			"Closing engine (eventtime avg {:.3})",
 			avg_event.count() / static_cast<double>(avg_event_count)
 		);
 	}
@@ -426,11 +429,11 @@ namespace Engine
 				// Get the EventType as a string
 				std::string_view event_type_str = EnumStringConvertor(event.event_type);
 
-				this->logger->simpleLog<decltype(this)>(
+				this->logger->logSingle<decltype(this)>(
 					Logging::LogLevel::Exception,
-					"Caught exception trying to fire event '%s'! e.what(): %s",
-					event_type_str.data(),
-					Base::unrollExceptions(e).c_str()
+					"Caught exception trying to fire event '{}'! e.what(): {}",
+					event_type_str,
+					Base::unrollExceptions(e)
 				);
 			}
 		}
@@ -443,7 +446,7 @@ namespace Engine
 
 	Engine::~Engine()
 	{
-		this->logger->simpleLog<decltype(this)>(Logging::LogLevel::Info, "Destructor called");
+		this->logger->logSingle<decltype(this)>(Logging::LogLevel::Info, "Destructor called");
 
 		scene_manager.reset();
 
@@ -461,11 +464,11 @@ namespace Engine
 		this->logger->mapCurrentThreadToName("engine");
 
 		// Engine info printout
-		this->logger->simpleLog<decltype(this)>(
+		this->logger->logSingle<decltype(this)>(
 			Logging::LogLevel::Info,
-			"build info:\n////\nRunning %s\nCompiled by %s\n////",
-			buildinfo_build.data(),
-			buildinfo_compiledby.data()
+			"build info:\n////\nRunning {}\nCompiled by {}\n////",
+			buildinfo_build,
+			buildinfo_compiledby
 		);
 
 		// Load configuration
@@ -507,9 +510,9 @@ namespace Engine
 
 		TIMEMEASURE_END_MILLI(run);
 
-		this->logger->simpleLog<decltype(this)>(
+		this->logger->logSingle<decltype(this)>(
 			Logging::LogLevel::Info,
-			"Initialized in %.3lfms",
+			"Initialized in {:.3f}ms",
 			run_total.count()
 		);
 
