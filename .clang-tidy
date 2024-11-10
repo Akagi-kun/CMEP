@@ -16,19 +16,22 @@ HeaderFileExtensions:
 ImplementationFileExtensions:
   - cpp
 CheckOptions:
-  - key: readability-identifier-naming.FunctionCase
-    value: 'camelBack'
-  - key: readability-identifier-naming.MethodCase
-    value: 'camelBack'
-  - key: readability-identifier-naming.VariableCase
-    value: 'lower_case'
-  - key: readability-identifier-naming.MemberCase
-    value: 'lower_case'
-  - key: readability-identifier-naming.ParameterCase
-    value: 'lower_case'
-  - key: readability-redundant-inline-specifier.StrictMode
-    value: true
-  - key: readability-magic-numbers.IgnorePowersOf2IntegerValues
-    value: true
-  - key: readability-magic-numbers.IgnoredIntegerValues
-    value: "1;2;3;4;5;6;7;8;9"
+  # All classes, structs
+  readability-identifier-naming.ClassCase: 'CamelCase'
+  # All functions
+  readability-identifier-naming.FunctionCase: 'camelBack'
+  # Class members
+  readability-identifier-naming.MemberCase: 'lower_case'
+  # Local variables
+  readability-identifier-naming.VariableCase: 'lower_case'
+  # Function parameters
+  readability-identifier-naming.ParameterCase: 'lower_case'
+  # Template parameters
+  readability-identifier-naming.TemplateParameterCase: 'lower_case'
+  # Only typename template parameters
+  readability-identifier-naming.TypeTemplateParameterSuffix: '_t'
+
+  readability-redundant-inline-specifier.StrictMode: true
+  
+  readability-magic-numbers.IgnorePowersOf2IntegerValues: true
+  readability-magic-numbers.IgnoredIntegerValues: "1;2;3;4;5;6;7;8;9"

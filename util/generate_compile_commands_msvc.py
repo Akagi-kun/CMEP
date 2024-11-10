@@ -1,11 +1,18 @@
+from itertools import chain
 import re
 import json
 import os
 import subprocess
 from pathlib import Path
 
+vcxproj_glob_list = [
+	"Engine*.vcxproj",
+	"rungame.vcxproj"
+]
+
 def parse_vcxproj(project_file):
-	with open(project_file, 'r') as file:
+	""""""
+	with open(project_file, 'r', encoding='utf-8') as file:
 		data = file.read()
 
 	# Extract relevant information from the .vcxproj file
@@ -45,14 +52,17 @@ def parse_vcxproj(project_file):
 	return list(set(includes)), list(set(defines)), files, warning_level, cpp_version
 
 def generate_compile_commands(vs_project_path, output_path, root_path, default_includes : list):
+	""""""
 	compile_commands = []
 
 	default_includes_as_str: list[str] = [str(include) for include in default_includes]
 
 	files_listing: list[str] = []
 
-	print(f"- Generating compile_commands.json")
-	for project_file in Path(vs_project_path).rglob('*.vcxproj'):
+	project_files: list = [vs_project_path.rglob(glob) for glob in vcxproj_glob_list]
+
+	print("- Generating compile_commands.json")
+	for project_file in chain.from_iterable(project_files):
 		includes, defines, files, warning_level, cpp_version = parse_vcxproj(project_file)
 		print(f"  Parsing {project_file}")
 
@@ -95,15 +105,16 @@ def generate_compile_commands(vs_project_path, output_path, root_path, default_i
 			}
 			compile_commands.append(command)
 
-	print(f"- Writing compile_commands.json")
-	with open(output_path + "compile_commands.json", 'w') as f:
+	print("- Writing compile_commands.json")
+	with open(output_path / "compile_commands.json", 'w', encoding='utf-8') as f:
 		json.dump(compile_commands, f, indent=2)
 
-	print(f"- Writing source_files.txt")
-	with open(output_path + "source_files.txt", "w") as f:
+	print("- Writing source_files.txt")
+	with open(output_path / "source_files.txt", "w", encoding='utf-8') as f:
 		f.writelines(files_listing)
 
 def get_default_includes():
+	""""""
 	vswhere_path = os.path.expandvars("%ProgramFiles(x86)%\\Microsoft Visual Studio\\Installer\\vswhere.exe")
 
 	print("- Running vswhere.exe")
@@ -118,7 +129,7 @@ def get_default_includes():
 	print(f"- VS Installed at '{str(install_path)}'")
 
 	tool_path: Path = install_path.joinpath("VC", "Auxiliary", "Build")
-	vcvars_path: str = (str(tool_path) + "\\vcvarsall.bat")
+	vcvars_path: str = str(tool_path / "vcvarsall.bat")
 
 	print(f"- vcvarsall.bat at '{ vcvars_path }'")
 
@@ -131,12 +142,12 @@ def get_default_includes():
 	return paths
 
 if __name__ == '__main__':
-	vs_project_path = 'build/'
-	output_path = './'
 	root_path = Path().absolute()
+	vs_project_path = root_path
+	output_path = root_path
 
 	print(f"Generating compile_commands.json at '{output_path}' from projects at '{vs_project_path}'")
-	print(f"- Root is '{str(root_path)}'")
+	print(f"- Root is '{root_path}'")
 
 	default_includes = get_default_includes()
 	generate_compile_commands(vs_project_path, output_path, root_path, default_includes)

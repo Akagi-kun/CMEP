@@ -22,23 +22,27 @@ To build the project, use the following steps, depending on your selected genera
 
 <details>
 <summary>Single-config (Makefiles, Ninja)</summary>
-```bash
+
+```sh
 cmake -DCMAKE_BUILD_TYPE=<CONFIG> .
 cmake --build . --target rungame
 ```
+
 </details>
 <details>
 <summary>Multi-config (Visual Studio)</summary>
-```bash
+
+```sh
 cmake .
 cmake --build . --target rungame --config <CONFIG>
 ```
+
 </details>
 
 The `rungame` target will also build all of it's dependencies. 
 
 > [!IMPORTANT]
-> Where `<CONFIG>` should be a valid configuration value (Either `Debug` or `Release`, case-sensitive)
+> Where `<CONFIG>` should be replaced with a valid configuration value (Either `Debug` or `Release`, case-sensitive)
 
 > [!WARNING]
 > By default most generators build the Debug configuration if none is specified, this may not be what you want.

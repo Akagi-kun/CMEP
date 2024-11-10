@@ -35,6 +35,7 @@ BraceWrapping:
   AfterControlStatement: Always
 BreakBeforeBraces: Custom
 AlwaysBreakAfterReturnType: None
+AlwaysBreakTemplateDeclarations: Yes
 PenaltyBreakAssignment: 30
 PenaltyBreakComment: 2000
 PenaltyExcessCharacter: 50

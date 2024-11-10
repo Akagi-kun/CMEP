@@ -1,4 +1,4 @@
-message("[EXAMPLES] Source dir is: " ${CMAKE_SOURCE_DIR})
+message(STATUS "[EXAMPLES] Source dir is: " ${CMAKE_SOURCE_DIR})
 
 file(STRINGS 
 	 ${CMAKE_SOURCE_DIR}/shader_library/files.txt
