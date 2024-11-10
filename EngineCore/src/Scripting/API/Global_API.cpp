@@ -126,13 +126,7 @@ namespace Engine::Scripting::API
 		{
 			CMEP_LUACHECK_FN_ARGC(state, 6)
 
-			lua_getfield(state, 1, "_ptr");
-			auto* owner_engine = static_cast<Engine*>(lua_touserdata(state, -1));
-
-			EXCEPTION_ASSERT(
-				owner_engine != nullptr,
-				"Tried to create scene object with invalid Engine pointer!"
-			);
+			auto* owner_engine = getObjectAsPointer<Engine>(state, 1);
 
 			std::string renderer_type	  = LuaValue(state, 2);
 			std::string mesh_builder_type = LuaValue(state, 3);

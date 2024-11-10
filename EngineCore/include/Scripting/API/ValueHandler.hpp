@@ -14,8 +14,6 @@
 
 namespace Engine::Scripting::API
 {
-#define SHOULDNT_IMPLEMENT static_assert(false)
-
 	// NOLINTBEGIN(bugprone-macro-parentheses)
 
 /** Define a getter with specified parameter names */
@@ -26,11 +24,7 @@ namespace Engine::Scripting::API
 #define DEFINE_GETTER_IMPL DEFINE_GETTER_NAMEDPARAM(state, idx)
 
 /** Use to define a `get()` function that is present for compliance, but won't compile if ever called */
-#define DEFINE_GETTER_NOIMPL                                                                       \
-	DEFINE_GETTER_NAMEDPARAM(, )                                                                   \
-	{                                                                                              \
-		SHOULDNT_IMPLEMENT;                                                                        \
-	}
+#define DEFINE_GETTER_NOIMPL DEFINE_GETTER_NAMEDPARAM(, ) = delete;
 
 /** Same as @ref DEFINE_GETTER_NAMEDPARAM but for `push()` */
 #define DEFINE_PUSHER_NAMEDPARAM(state_name, target_name)                                          \
@@ -40,11 +34,7 @@ namespace Engine::Scripting::API
 #define DEFINE_PUSHER_IMPL DEFINE_PUSHER_NAMEDPARAM(state, target)
 
 /** Same as @ref DEFINE_GETTER_NOIMPL but for `push()` */
-#define DEFINE_PUSHER_NOIMPL                                                                       \
-	DEFINE_PUSHER_NAMEDPARAM(, )                                                                   \
-	{                                                                                              \
-		SHOULDNT_IMPLEMENT;                                                                        \
-	}
+#define DEFINE_PUSHER_NOIMPL DEFINE_PUSHER_NAMEDPARAM(, ) = delete;
 
 	// NOLINTEND(bugprone-macro-parentheses)
 
