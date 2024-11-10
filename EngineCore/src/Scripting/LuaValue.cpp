@@ -118,6 +118,42 @@ namespace Engine::Scripting
 		: type(luaTypeGetter(state, stack_index)), value(luaValueGetter(state, stack_index, type))
 	{}
 
+	void LuaValue::push(lua_State* state) const
+	{
+		switch (type)
+		{
+			case Type::STRING:
+			{
+				lua_pushstring(state, static_cast<string_t>(*this).c_str());
+				break;
+			}
+			case Type::BOOL:
+			{
+				lua_toboolean(state, static_cast<int>(static_cast<bool>(*this)));
+				break;
+			}
+			case Type::NUMBER:
+			{
+				lua_pushnumber(state, static_cast<number_t>(*this));
+				break;
+			}
+			case Type::NIL:
+			{
+				lua_pushnil(state);
+				break;
+			}
+			case Type::LUSERDATA:
+			{
+				lua_pushlightuserdata(state, static_cast<ptr_t>(*this));
+				break;
+			}
+			default:
+			{
+				assert(false && "Not implemented!");
+			}
+		}
+	}
+
 	/**
 	 * Error message returned when calling a conversion operator or getter function of @ref LuaValue
 	 * with @ref LuaValue::type being incompatible with the type the getter expects

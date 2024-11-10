@@ -71,6 +71,8 @@ namespace Engine::Scripting
 		 */
 		LuaValue(lua_State* state, int stack_index);
 
+		void push(lua_State* state) const;
+
 		/** @{ Convert to desired type, throw if @ref type is incompatible. */
 		operator string_t() const;
 		operator number_t() const;
@@ -78,8 +80,25 @@ namespace Engine::Scripting
 		operator bool() const;
 		/** @} */
 
+		template <typename val_t>
+			requires(std::is_integral_v<val_t>)
+		explicit operator val_t() const
+		{
+			return static_cast<val_t>(static_cast<number_t>(*this));
+		}
+
+		template <typename class_t>
+		explicit operator class_t*() const
+		{
+			// Lua pointer types are inherently unsafe
+			// NOLINTNEXTLINE(bugprone-casting-through-void)
+			return static_cast<class_t*>(static_cast<ptr_t>(*this));
+		}
+
 		/**
 		 * Index operator for tables. Invalid to call if @ref type is not @ref Type::TABLE.
+		 *
+		 * @note Indexing arrays is 1-based like in Lua (index 1 is the first array element)
 		 *
 		 * @tparam val_compat_t @ref LuaValue compatible type.
 		 *
@@ -106,7 +125,8 @@ namespace Engine::Scripting
 		[[nodiscard]] size_t  size() const;
 
 		// Specialized getters
-		template <typename enum_t> operator EnumStringConvertor<enum_t>() const
+		template <typename enum_t>
+		operator EnumStringConvertor<enum_t>() const
 		{
 			return static_cast<std::string>(*this);
 		}

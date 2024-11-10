@@ -15,15 +15,8 @@
 #include "lua.hpp"
 
 #include <cassert>
-#include <memory>
 #include <string>
 #include <unordered_map>
-#include <utility>
-
-#define CMEP_USE_FACTORY_TRAMPOLINE
-#undef CMEP_USE_FACTORY_NEW_PUSH
-#undef CMEP_USE_FACTORY_OLD_PUSH
-#include "Scripting/API/FactoryMappings.hpp"
 
 namespace Engine::Scripting::API::LuaFactories
 {
@@ -82,72 +75,80 @@ namespace Engine::Scripting::API::LuaFactories
 		}
 	} // namespace
 
-	void sceneManagerFactory(lua_State* state, SceneManager* scene_manager_ptr)
+	template <>
+	void templatedFactory<SceneManager>(lua_State* state, SceneManager* object_ptr)
 	{
 		// Generate SceneManager table
 		lua_createtable(state, 0, 2);
 
-		CMEP_LUAFACTORY_PUSH_MAPPINGS(state, scene_manager_mappings)
+		createMappingTrampoline(state, &scene_manager_mappings);
 
 		// Add SceneManager pointer
-		lua_pushlightuserdata(state, scene_manager_ptr);
+		lua_pushlightuserdata(state, object_ptr);
 		lua_setfield(state, -2, "_ptr");
 	}
 
-	void sceneFactory(lua_State* state, Scene* scene_ptr)
+	template <>
+	void templatedFactory<Scene>(lua_State* state, Scene* object_ptr)
 	{
 		// Generate Scene table
-		lua_createtable(state, 0, 1);
+		lua_createtable(state, 0, 2);
 
-		CMEP_LUAFACTORY_PUSH_MAPPINGS(state, scene_mappings)
+		createMappingTrampoline(state, &scene_mappings);
 
 		// Scene pointer
-		lua_pushlightuserdata(state, scene_ptr);
+		lua_pushlightuserdata(state, object_ptr);
 		lua_setfield(state, -2, "_ptr");
 	}
 
-	void objectFactory(lua_State* state, SceneObject* object_ptr)
+	template <>
+	void templatedFactory<SceneObject>(lua_State* state, SceneObject* object_ptr)
 	{
 		// Generate Object table
-		lua_createtable(state, 0, 3);
+		lua_createtable(state, 0, 4);
 
-		CMEP_LUAFACTORY_PUSH_MAPPINGS(state, object_mappings)
+		createMappingTrampoline(state, &object_mappings);
 
 		// Object pointer
 		lua_pushlightuserdata(state, object_ptr);
 		lua_setfield(state, -2, "_ptr");
 
 		// Renderer
+		lua_createtable(state, 0, 1);
 		lua_pushlightuserdata(state, object_ptr->getRenderer());
+		lua_setfield(state, -2, "_ptr");
 		lua_setfield(state, -2, "renderer");
 
 		// MeshBuilder
+		lua_createtable(state, 0, 1);
 		lua_pushlightuserdata(state, object_ptr->getMeshBuilder());
+		lua_setfield(state, -2, "_ptr");
 		lua_setfield(state, -2, "meshbuilder");
 	}
 
-	void assetManagerFactory(lua_State* state, std::weak_ptr<AssetManager> asset_manager_ptr)
+	template <>
+	void templatedFactory<AssetManager>(lua_State* state, AssetManager* object_ptr)
 	{
 		// Generate AssetManager table
 		lua_createtable(state, 0, 2);
 
-		CMEP_LUAFACTORY_PUSH_MAPPINGS(state, asset_manager_mappings)
+		createMappingTrampoline(state, &asset_manager_mappings);
 
 		// AssetManager pointer
-		void* ptr_obj = lua_newuserdata(state, sizeof(std::weak_ptr<AssetManager>));
-		new (ptr_obj) std::weak_ptr<AssetManager>(std::move(asset_manager_ptr));
-		lua_setfield(state, -2, "_smart_ptr");
+		lua_pushlightuserdata(state, object_ptr);
+		lua_setfield(state, -2, "_ptr");
 	}
 
-	void engineFactory(lua_State* state, Engine* engine_ptr)
+	template <>
+	void templatedFactory<Engine>(lua_State* state, Engine* object_ptr)
 	{
 		// Generate Engine table
 		lua_createtable(state, 0, 2);
 
-		CMEP_LUAFACTORY_PUSH_MAPPINGS(state, engine_mappings)
+		createMappingTrampoline(state, &engine_mappings);
 
 		// Engine pointer
-		lua_pushlightuserdata(state, engine_ptr);
+		lua_pushlightuserdata(state, object_ptr);
 		lua_setfield(state, -2, "_ptr");
 	}
 	/// @endcond

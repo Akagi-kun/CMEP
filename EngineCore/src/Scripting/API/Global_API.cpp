@@ -6,6 +6,7 @@
 
 #include "Scripting/API/LuaFactories.hpp"
 #include "Scripting/API/framework.hpp"
+#include "Scripting/ILuaScript.hpp"
 #include "Scripting/LuaValue.hpp"
 
 #include "Factories/ObjectFactory.hpp"
@@ -34,8 +35,7 @@ namespace Engine::Scripting::API
 			lua_touserdata(state, lua_upvalueindex(1))
 		);
 
-		auto locked_logger = logger.lock();
-		EXCEPTION_ASSERT(locked_logger, "Failed locking logger on Lua print() call");
+		auto locked_logger = CHECK(logger);
 
 		locked_logger->startLog<void>(Logging::LogLevel::Info);
 
@@ -57,15 +57,23 @@ namespace Engine::Scripting::API
 	{
 #pragma region ObjectFactory
 
+		using namespace Factories::ObjectFactory;
+
+		ScriptFunctionRef valueToScriptFnRef(LuaValue source)
+		{
+			return ScriptFunctionRef{
+				.script	  = *static_cast<std::weak_ptr<Scripting::ILuaScript>*>(UNWRAP(source[1])),
+				.function = UNWRAP(source[2])
+			};
+		}
+
 		template <typename supply_data_t>
 		[[nodiscard]] supply_data_t interpretSupplyData(LuaValue table)
 		{
 			assert(table.toTable().size() == 2);
 
-			EnumStringConvertor<typename supply_data_t::Type> type	= table[1].value();
-			LuaValue										  value = table[2].value();
-
-			using namespace Factories::ObjectFactory;
+			EnumStringConvertor<typename supply_data_t::Type> type	= UNWRAP(table[1]);
+			LuaValue										  value = UNWRAP(table[2]);
 
 			if constexpr (std::is_same_v<supply_data_t, Rendering::RendererSupplyData>)
 			{
@@ -73,9 +81,19 @@ namespace Engine::Scripting::API
 			}
 			else if constexpr (std::is_same_v<supply_data_t, Rendering::MeshBuilderSupplyData>)
 			{
+				if (type == Rendering::MeshBuilderSupplyData::Type::GENERATOR)
+				{
+					Rendering::GeneratorData gen_data = {
+						.generator = valueToScriptFnRef(UNWRAP(value[1])),
+						.supplier  = valueToScriptFnRef(UNWRAP(value[2])),
+					};
+
+					return {type, gen_data};
+				}
+
 				return generateMeshBuilderSupplyData(type, static_cast<supply_data_value_t>(value));
 			}
-		}
+		} // namespace
 
 		template <typename supply_data_t>
 		std::vector<supply_data_t> interpretSupplyDataTable(const LuaValue& table)
@@ -130,8 +148,7 @@ namespace Engine::Scripting::API
 				interpretSupplyDataTable<Rendering::MeshBuilderSupplyData>(LuaValue(state, 6));
 
 			// Get a factory for the desired object
-			const auto factory =
-				Factories::ObjectFactory::getSceneObjectFactory(renderer_type, mesh_builder_type);
+			const auto factory = getSceneObjectFactory(renderer_type, mesh_builder_type);
 
 			if (!factory)
 			{
@@ -147,7 +164,7 @@ namespace Engine::Scripting::API
 				return luaL_error(state, "Object was nullptr!");
 			}
 
-			API::LuaFactories::objectFactory(state, obj);
+			API::LuaFactories::templatedFactory<SceneObject>(state, obj);
 
 			return 1;
 		}
@@ -160,14 +177,12 @@ namespace Engine::Scripting::API
 		{
 			CMEP_LUACHECK_FN_ARGC(state, 3)
 
-			auto* renderer = static_cast<Rendering::IRenderer*>(lua_touserdata(state, 1));
+			auto* self = getObjectAsPointer<Rendering::IRenderer>(state, 1);
 
 			auto type  = LuaValue(state, 2);
 			auto value = LuaValue(state, 3);
 
-			using namespace Factories::ObjectFactory;
-
-			renderer->supplyData(
+			self->supplyData(
 				generateRendererSupplyData(type, static_cast<supply_data_value_t>(value))
 			);
 
@@ -178,14 +193,12 @@ namespace Engine::Scripting::API
 		{
 			CMEP_LUACHECK_FN_ARGC(state, 3)
 
-			auto* mesh_builder = static_cast<Rendering::IMeshBuilder*>(lua_touserdata(state, 1));
+			auto* self = getObjectAsPointer<Rendering::IMeshBuilder>(state, 1);
 
 			auto type  = LuaValue(state, 2);
 			auto value = LuaValue(state, 3);
 
-			using namespace Factories::ObjectFactory;
-
-			mesh_builder->supplyData(
+			self->supplyData(
 				generateMeshBuilderSupplyData(type, static_cast<supply_data_value_t>(value))
 			);
 

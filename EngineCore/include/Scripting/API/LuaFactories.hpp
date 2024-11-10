@@ -7,16 +7,23 @@
 #include "SceneManager.hpp"
 #include "SceneObject.hpp"
 
-#include <memory>
-
 /**
  * Provides functions that construct a proper table for the specified object
  */
 namespace Engine::Scripting::API::LuaFactories
 {
-	void assetManagerFactory(lua_State* state, std::weak_ptr<AssetManager> asset_manager_ptr);
-	void sceneManagerFactory(lua_State* state, SceneManager* scene_manager);
-	void sceneFactory(lua_State* state, Scene* scene_ptr);
-	void objectFactory(lua_State* state, SceneObject* object_ptr);
-	void engineFactory(lua_State* state, Engine* engine_ptr);
+	template <typename class_t>
+	void templatedFactory(lua_State* state, class_t* object_ptr);
+
+	template <>
+	void templatedFactory(lua_State* state, AssetManager* object_ptr);
+	template <>
+	void templatedFactory(lua_State* state, SceneManager* object_ptr);
+	template <>
+	void templatedFactory(lua_State* state, Scene* object_ptr);
+	template <>
+	void templatedFactory(lua_State* state, SceneObject* object_ptr);
+	template <>
+	void templatedFactory(lua_State* state, Engine* object_ptr);
+
 } // namespace Engine::Scripting::API::LuaFactories

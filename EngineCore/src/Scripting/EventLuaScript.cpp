@@ -9,8 +9,6 @@
 
 namespace Engine::Scripting
 {
-	using Scripting::API::LuaFactories::engineFactory;
-
 	void EventLuaScript::initializeCall(const std::string& function)
 	{
 		// Clear stack
@@ -37,7 +35,7 @@ namespace Engine::Scripting
 		lua_pushinteger(state, event->keycode);
 		lua_setfield(state, -2, "keycode");
 
-		engineFactory(state, event->raised_from);
+		API::LuaFactories::templatedFactory<Engine>(state, event->raised_from);
 		lua_setfield(state, -2, "engine");
 
 		// Mouse table

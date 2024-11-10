@@ -5,6 +5,8 @@
 
 #include <exception>
 #include <format>
+#include <memory>
+#include <optional>
 #include <source_location>
 #include <string>
 #include <string_view>
@@ -68,9 +70,8 @@ namespace Engine::Base
 			);
 		}
 	}
-} // namespace Engine::Base
 
-// NOLINTBEGIN(*unused-macros)
+	// NOLINTBEGIN(*unused-macros)
 #define ENGINE_EXCEPTION(message) ::Engine::Base::Exception(message)
 
 /**
@@ -78,4 +79,37 @@ namespace Engine::Base
  */
 #define EXCEPTION_ASSERT(true_expr, message)                                                       \
 	::Engine::Base::exceptionAssert(static_cast<bool>(true_expr), message, #true_expr)
-// NOLINTEND(*unused-macros)
+	// NOLINTEND(*unused-macros)
+
+	template <typename object_t>
+	object_t checkOrThrow(object_t value)
+		requires(std::is_pointer_v<object_t>)
+	{
+		EXCEPTION_ASSERT(value != nullptr, "Check failed! value = nullptr");
+		return value;
+	}
+
+	template <typename class_t>
+	std::optional<class_t> checkOrThrow(std::optional<class_t> value)
+	{
+		EXCEPTION_ASSERT(value.has_value(), "Check failed! has_value() = false");
+		return value;
+	}
+
+	// weak_ptr has to be locked when checked because expired() is unreliable
+	template <typename class_t>
+	std::shared_ptr<class_t> checkOrThrow(std::weak_ptr<class_t> value)
+	{
+		auto locked_value = value.lock();
+		EXCEPTION_ASSERT(locked_value, "Check failed! could not lock()!");
+
+		return locked_value;
+	}
+
+	// NOLINTBEGIN(*unused-macros)
+#define CHECK(v) ::Engine::Base::checkOrThrow(v)
+
+#define UNWRAP(v) ::Engine::Base::checkOrThrow(v).value()
+	// NOLINTEND(*unused-macros)
+
+} // namespace Engine::Base
