@@ -13,28 +13,6 @@ message(STATUS "[EXTERNAL] Source dir is: " ${CMAKE_CURRENT_SOURCE_DIR})
 set(FETCHCONTENT_BASE_DIR "${CMAKE_CURRENT_SOURCE_DIR}")
 include(FetchContent)
 
-# SPIRV-Headers
-FetchContent_Declare(
-    SPIRV-Headers
-    GIT_REPOSITORY https://github.com/KhronosGroup/SPIRV-Headers.git
-    GIT_TAG main
-    SOURCE_DIR "${FETCHCONTENT_BASE_DIR}/SPIRV-Headers"
-)
-FetchContent_MakeAvailable(SPIRV-Headers)
-message(STATUS "Fetched SPIRV-Headers")
-
-# SPIRV-Tools
-FetchContent_Declare(
-    SPIRV-Tools
-    GIT_REPOSITORY https://github.com/KhronosGroup/SPIRV-Tools.git
-    GIT_TAG main
-    SOURCE_DIR "${FETCHCONTENT_BASE_DIR}/SPIRV-Tools"
-)
-set(SPIRV_SKIP_EXECUTABLES ON)
-set(SPIRV-Headers_SOURCE_DIR ${FETCHCONTENT_BASE_DIR}/SPIRV-Headers)
-FetchContent_MakeAvailable(SPIRV-Tools)
-message(STATUS "Fetched SPIRV-Tools")
-
 # glslang
 FetchContent_Declare(
     glslang
@@ -42,10 +20,10 @@ FetchContent_Declare(
     GIT_TAG main
     SOURCE_DIR "${FETCHCONTENT_BASE_DIR}/glslang"
 )
-set(ALLOW_EXTERNAL_SPIRV_TOOLS ON)
+set(ALLOW_EXTERNAL_SPIRV_TOOLS OFF CACHE BOOL "" FORCE)
 set(ENABLE_GLSLANG_BINARIES OFF CACHE BOOL "" FORCE)
 set(ENABLE_HLSL OFF CACHE BOOL "" FORCE)
-set(ENABLE_OPT ON CACHE BOOL "" FORCE)
+set(ENABLE_OPT OFF CACHE BOOL "" FORCE)
 FetchContent_MakeAvailable(glslang)
 message(STATUS "Fetched glslang")
 
