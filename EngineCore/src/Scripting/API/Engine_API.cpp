@@ -1,15 +1,12 @@
 #include "Scripting/API/Engine_API.hpp"
 
-#include "Scripting/API/LuaFactories.hpp"
+#include "Scripting/API/CallGenerator.hpp"
 #include "Scripting/API/framework.hpp"
 
 #include "Engine.hpp"
-#include "SceneManager.hpp"
 #include "lua.hpp"
 
 #include <cassert>
-#include <cstdint>
-#include <memory>
 #include <string>
 #include <unordered_map>
 
@@ -17,7 +14,9 @@ namespace Engine::Scripting::API
 {
 	namespace
 	{
-		int getAssetManager(lua_State* state)
+		GENERATED_LAMBDA_MEMBER_CALL(Engine, getAssetManager)
+
+		/* int getAssetManager(lua_State* state)
 		{
 			CMEP_LUACHECK_FN_ARGC(state, 1)
 			CMEP_LUAGET_PTR(state, Engine)
@@ -32,9 +31,11 @@ namespace Engine::Scripting::API
 			API::LuaFactories::assetManagerFactory(state, asset_manager);
 
 			return 1;
-		}
+		} */
 
-		int getSceneManager(lua_State* state)
+		GENERATED_LAMBDA_MEMBER_CALL(Engine, getSceneManager)
+
+		/* int getSceneManager(lua_State* state)
 		{
 			CMEP_LUACHECK_FN_ARGC(state, 1)
 			CMEP_LUAGET_PTR(state, Engine)
@@ -47,9 +48,11 @@ namespace Engine::Scripting::API
 			API::LuaFactories::sceneManagerFactory(state, locked_scene_manager.get());
 
 			return 1;
-		}
+		} */
 
-		int setFramerateTarget(lua_State* state)
+		GENERATED_LAMBDA_MEMBER_CALL(Engine, setFramerateTarget)
+
+		/* int setFramerateTarget(lua_State* state)
 		{
 			CMEP_LUACHECK_FN_ARGC(state, 2)
 			CMEP_LUAGET_PTR(state, Engine)
@@ -59,9 +62,11 @@ namespace Engine::Scripting::API
 			self->setFramerateTarget(framerate_target);
 
 			return 0;
-		}
+		} */
 
-		int stop(lua_State* state)
+		GENERATED_LAMBDA_MEMBER_CALL(Engine, stop)
+
+		/* int stop(lua_State* state)
 		{
 			CMEP_LUACHECK_FN_ARGC(state, 1)
 			CMEP_LUAGET_PTR(state, Engine)
@@ -69,7 +74,7 @@ namespace Engine::Scripting::API
 			self->stop();
 
 			return 0;
-		}
+		} */
 
 	} // namespace
 

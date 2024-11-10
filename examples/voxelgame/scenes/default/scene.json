@@ -10,7 +10,6 @@
             "file": "script0",
             "function": "onUpdate"
         },
-        
         {
             "type": "on_update",
             "file": "script1",
@@ -32,8 +31,7 @@
             "function": "onMouseMoved"
         }
     ],
-    "templates": [
-    ],
+    "templates": [],
     "assets": [
         {
             "type": "font",
@@ -52,8 +50,8 @@
         },
         {
             "type": "script",
-            "name": "testgen",
-            "location": "scripts/testgen.lua",
+            "name": "voxelgen",
+            "location": "scripts/voxelgen.lua",
             "is_generator": true
         },
         {

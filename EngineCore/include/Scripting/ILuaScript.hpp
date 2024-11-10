@@ -51,7 +51,6 @@ namespace Engine::Scripting
 
 		std::filesystem::path path;
 
-		void performPreloadSteps();
 		void loadAndCompileScript();
 
 		virtual int internalCall(const std::string& function, void* data) = 0;

@@ -142,56 +142,9 @@ namespace Engine::Scripting
 			lua_pop(state, 1);
 		}
 
-		int cdefLazyLoader(lua_State* state)
-		{
-			const char* preload_code = "local ffi = require('ffi');"
-									   "local lib = ffi.load('EngineCore', true)"
-									   "ffi.cdef[[\n"
-									   "void* CreateGeneratorData("
-									   "void* generator_script,const char* generator_script_fn,"
-									   "void* generator_supplier,const char* generator_supplier_fn"
-									   ");"
-									   "]]\n"
-									   "package.loaded['cdef'] = { CreateGeneratorData = "
-									   "lib.CreateGeneratorData }";
-
-			int load_return = luaL_loadstring(state, preload_code);
-			if (load_return != LUA_OK)
-			{
-				throw ENGINE_EXCEPTION(std::format(
-					"Exception loading Lua preload code! loadfile: {}\n\t{}",
-					load_return,
-					lua_tostring(state, -1)
-				));
-			}
-
-			int pcall_return = lua_pcall(state, 0, LUA_MULTRET, 0);
-			if (pcall_return != LUA_OK)
-			{
-				throw ENGINE_EXCEPTION(std::format(
-					"Exception compiling Lua preload code! loadfile: {}\n\t{}",
-					pcall_return,
-					lua_tostring(state, -1)
-				));
-			}
-
-			return 0;
-		}
 	} // namespace
 
 #pragma endregion
-
-	void ILuaScript::performPreloadSteps()
-	{
-		lua_getglobal(state, LUA_LOADLIBNAME);
-		EXCEPTION_ASSERT(lua_istable(state, -1), "Lua Module 'package' is not loaded!");
-
-		lua_getfield(state, -1, "preload");
-		assert(lua_istable(state, -1));
-
-		lua_pushcfunction(state, cdefLazyLoader);
-		lua_setfield(state, -2, "cdef");
-	}
 
 	void ILuaScript::loadAndCompileScript()
 	{
@@ -258,7 +211,6 @@ namespace Engine::Scripting
 			luaJIT_profile_start(state, "fl", &profilerCallback, &profiler_state);
 		}
 
-		performPreloadSteps();
 		loadAndCompileScript();
 	}
 

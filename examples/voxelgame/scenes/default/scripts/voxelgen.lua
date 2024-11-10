@@ -68,8 +68,10 @@ local faceYielder = function(value, face, x_off, z_off, y_off)
 				z = z + z_off - 1
 				y = y + y_off - 1
 
-				local u_ratio = 0.8 / game_defs.block_type_count -- 0.9
-				local v_ratio = 0.8 / game_defs.block_textures -- 0.9
+				local pixel_ratio = 8 / 10
+
+				local u_ratio = pixel_ratio / game_defs.block_type_count
+				local v_ratio = pixel_ratio / game_defs.block_textures
 
 				-- ((size of 1 texture in atlas) * uv coord) + (offset from first texture) 
 				local modified_u = (u_ratio * u)

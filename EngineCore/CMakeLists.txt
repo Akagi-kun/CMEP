@@ -31,15 +31,13 @@ target_sources(EngineCore PRIVATE
 	src/Rendering/MeshBuilders/SpriteMeshBuilder.cpp
 	src/Rendering/MeshBuilders/GeneratorMeshBuilder.cpp
 	
-	src/Scripting/FFI_Mappings.cpp
-	src/Scripting/CrossStateFunctionCall.cpp
-
 	src/Scripting/ILuaScript.cpp
 	src/Scripting/EventLuaScript.cpp
 	src/Scripting/GeneratorLuaScript.cpp
 	
 	src/Scripting/Utility.cpp
 	src/Scripting/LuaValue.cpp
+	src/Scripting/CrossStateFunctionCall.cpp
 
 	src/Scripting/API/Global_API.cpp
 	src/Scripting/API/LuaFactories.cpp
@@ -56,7 +54,7 @@ target_compile_features(EngineCore PUBLIC cxx_std_20)
 set_target_properties(EngineCore PROPERTIES CXX_STANDARD_REQUIRED ON CXX_EXTENSIONS OFF)
 target_compile_options(EngineCore PRIVATE ${ENGINE_COMPILE_OPTIONS})
 
-target_precompile_headers(EngineCore PRIVATE [["vulkan/vulkan.hpp"]] [["glm/glm.hpp"]] [["EnumStringConvertor.hpp"]] [["lua.hpp"]])
+target_precompile_headers(EngineCore PRIVATE [["vulkan/vulkan.hpp"]] [["glm/glm.hpp"]] [["lua.hpp"]])
 
 target_link_directories(EngineCore PRIVATE ../build)
 target_include_directories(EngineCore PRIVATE include

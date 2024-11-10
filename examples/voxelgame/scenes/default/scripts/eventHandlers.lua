@@ -4,8 +4,6 @@ local util = require("util")
 local game_defs = require("game_defs")
 require("perlin")
 
-local cdefs = require("cdef")
-
 -- Debugging data
 local deltaTime_accum = 0.0
 local deltaTime_count = 0
@@ -265,7 +263,7 @@ end
 --			if chunks[chunk_x][chunk_z] == nil then
 --
 --				local chunk_obj = engine.createSceneObject(asset_manager, "renderer_3d", "generator", "terrain", {
---					{"texture", "atlas"}, {"generator_script", "testgen"}, {"generator_supplier", "script0/terrain_generator"}
+--					{"texture", "atlas"}, {"generator_script", "voxelgen"}, {"generator_supplier", "script0/terrain_generator"}
 --				})
 --				chunk_obj:SetPosition((chunk_x) * config.chunk_size_x, 0.0, (chunk_z) * config.chunk_size_z)
 --				chunk_obj:SetSize(1, 1, 1)
@@ -363,7 +361,7 @@ onInit = function(event)
 	generate_chunk(0, 0)
 	collectgarbage()
 
-	local testgen_script = asset_manager:getScript("testgen")
+	local voxelgen_script = asset_manager:getScript("voxelgen")
 	local supplier_script = asset_manager:getScript("script0")
 
 	local atlas_texture = asset_manager:getTexture("atlas")
@@ -371,7 +369,7 @@ onInit = function(event)
 	for chunk_x = -chunks_x, chunks_x, 1 do
 		for chunk_z = -chunks_z, chunks_z, 1 do
 			local chunk_obj = createSceneObject(event.engine, "renderer_3d", "generator", "terrain",
-				{ {"texture", atlas_texture} }, { {"generator", cdefs.CreateGeneratorData(testgen_script, "generate_fn", supplier_script, "terrain_generator")} }
+				{ {"texture", atlas_texture} }, { {"generator", {{voxelgen_script, "generate_fn"}, {supplier_script, "terrain_generator"}}} }
 			)
 			chunk_obj:setPosition(chunk_x * config.chunk_size_x, 0.0, chunk_z * config.chunk_size_z)
 			chunk_obj:setSize(1, 1, 1)
