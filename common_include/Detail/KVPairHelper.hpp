@@ -6,7 +6,7 @@
 #include <string_view>
 #include <utility>
 
-namespace Engine::Utility
+namespace Engine::Detail
 {
 	inline std::string streamGetNextToken(std::stringstream& from_sstream)
 	{
@@ -38,4 +38,4 @@ namespace Engine::Utility
 
 		return {from_string, ""};
 	}
-} // namespace Engine::Utility
+} // namespace Engine::Detail

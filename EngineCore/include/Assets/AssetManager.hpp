@@ -8,6 +8,7 @@
 
 #include "Logging/Logging.hpp"
 
+#include "Detail/Detail.hpp"
 #include "Exception.hpp"
 
 #include <cassert>
@@ -30,7 +31,7 @@ namespace Engine
 	/**
 	 * Common point to store and maintain Assets
 	 */
-	class AssetRepository
+	class AssetRepository : public Detail::DisableCopy
 	{
 	public:
 		/**
@@ -46,9 +47,6 @@ namespace Engine
 		{
 			clear();
 		}
-
-		AssetRepository(AssetRepository&)			 = delete;
-		AssetRepository& operator=(AssetRepository&) = delete;
 
 		/**
 		 * Get an asset from this repository
@@ -66,7 +64,10 @@ namespace Engine
 			auto map = getAssetMap<asset_t>();
 
 			auto found = map.find(name);
-			if (found != map.end()) { return found->second; }
+			if (found != map.end())
+			{
+				return found->second;
+			}
 
 			// When no match found
 			// Return nullptr cast to the matching return type
@@ -139,17 +140,27 @@ namespace Engine
 		auto& getAssetMap()
 			requires(IsAsset<asset_t>)
 		{
-			if constexpr (std::is_same_v<asset_t, Rendering::Font>) { return fonts; }
-			else if constexpr (std::is_same_v<asset_t, Rendering::Texture>) { return textures; }
+			if constexpr (std::is_same_v<asset_t, Rendering::Font>)
+			{
+				return fonts;
+			}
+			else if constexpr (std::is_same_v<asset_t, Rendering::Texture>)
+			{
+				return textures;
+			}
 			else if constexpr (std::is_same_v<asset_t, Scripting::ILuaScript>)
 			{
 				return luascripts;
 			}
 		}
 
-		template <typename asset_t> Asset::uid_t getNextUID()
+		template <typename asset_t>
+		Asset::uid_t getNextUID()
 		{
-			if constexpr (std::is_same_v<asset_t, Rendering::Font>) { return last_uid.font++; }
+			if constexpr (std::is_same_v<asset_t, Rendering::Font>)
+			{
+				return last_uid.font++;
+			}
 			else if constexpr (std::is_same_v<asset_t, Rendering::Texture>)
 			{
 				return last_uid.texture++;
@@ -160,7 +171,6 @@ namespace Engine
 			}
 		}
 	};
-	static_assert(!std::is_copy_constructible_v<AssetRepository> && !std::is_copy_assignable_v<AssetRepository>);
 
 	class AssetManager final : public Logging::SupportsLogging
 	{

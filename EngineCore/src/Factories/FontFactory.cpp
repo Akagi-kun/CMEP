@@ -5,8 +5,8 @@
 
 #include "Logging/Logging.hpp"
 
+#include "Detail/KVPairHelper.hpp"
 #include "Exception.hpp"
-#include "KVPairHelper.hpp"
 
 #include <array>
 #include <cassert>
@@ -32,7 +32,7 @@ namespace Engine::Factories
 	{
 		std::tuple<std::string, std::string> getNextKVPair(std::stringstream& from_stream)
 		{
-			return Utility::splitKVPair(Utility::streamGetNextToken(from_stream), "=");
+			return Detail::splitKVPair(Detail::streamGetNextToken(from_stream), "=");
 		}
 
 		void parseBmfontEntryChar(
@@ -253,8 +253,7 @@ namespace Engine::Factories
 				// Add every entry of the line
 				while (!line_stream.eof())
 				{
-					auto [key, value] =
-						Utility::splitKVPair(Utility::streamGetNextToken(line_stream), "=");
+					auto [key, value] = getNextKVPair(line_stream);
 					font->info.emplace(key, value);
 				}
 
@@ -263,9 +262,8 @@ namespace Engine::Factories
 			case BmFontLineType::CHARS:
 			{
 				// chars has only a single entry (the count of chars), no loop required
-				auto [key, value] =
-					Utility::splitKVPair(Utility::streamGetNextToken(line_stream), "=");
-				font->char_count = static_cast<unsigned int>(std::stoi(value));
+				auto [key, value] = getNextKVPair(line_stream);
+				font->char_count  = static_cast<unsigned int>(std::stoi(value));
 
 				break;
 			}

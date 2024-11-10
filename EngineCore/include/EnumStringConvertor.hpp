@@ -12,13 +12,15 @@
 
 namespace Engine
 {
-	template <typename T>
-		requires(std::is_enum_v<T>)
+	template <typename enum_t>
+	concept EnumType = std::is_enum_v<enum_t>;
+
+	template <EnumType enum_t>
 	struct EnumStringConvertor final
 	{
 	public:
-		using self_t  = EnumStringConvertor<T>;
-		using value_t = T;
+		using self_t  = EnumStringConvertor<enum_t>;
+		using value_t = enum_t;
 		using map_t	  = const std::unordered_map<std::string_view, value_t>;
 
 		EnumStringConvertor() = default;
@@ -123,5 +125,6 @@ namespace Engine
 	/**
 	 * Deduction guide for value-constructed @ref EnumStringConvertor.
 	 */
-	template <typename T> EnumStringConvertor(T val) -> EnumStringConvertor<T>;
+	template <EnumType enum_t>
+	EnumStringConvertor(enum_t val) -> EnumStringConvertor<enum_t>;
 } // namespace Engine
