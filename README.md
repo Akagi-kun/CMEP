@@ -72,7 +72,7 @@ This project depends on:
 - tinyobjloader
 - nlohmann-json
 - Vulkan SDK
-- glslang, SPIRV-Tools and SPIRV-Headers
+- glslang
 
 All except the Vulkan SDK are prepackaged or built automatically once the build script is run.
 These projects are external to this one and are not affiliated with this project in any way, when using this project take care to follow licenses of the dependencies.

@@ -4,7 +4,7 @@
 
 #include "Logging/Logging.hpp"
 
-#include "Detail/Detail.hpp"
+#include "Detail.hpp"
 #include "backend/ShaderCompiler.hpp"
 #include "common/InstanceOwned.hpp"
 #include "common/StructDefs.hpp"
@@ -45,21 +45,21 @@ namespace Engine::Rendering::Vulkan
 			const PipelineSettings& with_settings
 		);
 
-		/**
-		 * Called when a Pipeline is deallocated, removes it from @ref pipelines
-		 */
+		void allocatePipeline(const PipelineSettings& with_settings);
+
+		/** Called when a Pipeline is deallocated, removes it from @ref pipelines */
 		void pipelineDeallocCallback();
 	};
 
 	// Indirection for Pipeline so that they can be shared
 	// there may be many of these for a single origin
 	//
-	struct PipelineUserRef final : public InstanceOwned, public Detail::DisableCopy
+	struct PipelineUserRef final : public Detail::DisableCopy
 	{
 	public:
 		Pipeline::UserData* user_data = nullptr;
 
-		PipelineUserRef(InstanceOwned::value_t with_instance, std::shared_ptr<Pipeline> with_origin);
+		PipelineUserRef(LogicalDevice* with_device, std::shared_ptr<Pipeline> with_origin);
 		~PipelineUserRef();
 
 		operator bool() const
@@ -81,6 +81,8 @@ namespace Engine::Rendering::Vulkan
 		void updateDescriptorSetsAll(const vk::WriteDescriptorSet& with_write);
 
 	private:
+		LogicalDevice* logical_device;
+
 		std::shared_ptr<Pipeline> origin = nullptr;
 	};
 } // namespace Engine::Rendering::Vulkan
