@@ -18,44 +18,43 @@ First use `git clone "https://github.com/Snezhnaya-chan/CMEP.git"` in a new clea
 Then `git submodule init` and `git submodule update --recursive` to initialize and clone dependency submodules.
 
 ### Project build
-To build the core libraries and rungame executable use the `build.sh` and `build.bat` scripts depending on your platform.
-Both can be used as follows:
-```
-./build.sh <CONFIG>
-```
-or
-```
-./build.bat <CONFIG>
-```
-> [!IMPORTANT]
-> Where `<CONFIG>` can be omitted (which builds Debug by default) and if provided is a valid configuration value (Either `Debug` or `Release`, case-sensitive)
+To build the project, use the following steps, depending on your selected generator:
 
-You can also build manually by directly invoking cmake (useful if the build scripts do not work for you):
-```
+<details>
+<summary>Single-config (Makefiles, Ninja)</summary>
+```bash
 cmake -DCMAKE_BUILD_TYPE=<CONFIG> .
+cmake --build . --target rungame
+```
+</details>
+<details>
+<summary>Multi-config (Visual Studio)</summary>
+```bash
+cmake .
 cmake --build . --target rungame --config <CONFIG>
 ```
-> [!TIP]
-> It is not necessary to specify *both* CMAKE_BUILD_TYPE (only used by Makefile generators) and --config (only used by multi-config generators)
-> you may instead specify only the one your generator uses
+</details>
+
+The `rungame` target will also build all of it's dependencies. 
+
+> [!IMPORTANT]
+> Where `<CONFIG>` should be a valid configuration value (Either `Debug` or `Release`, case-sensitive)
 
 > [!WARNING]
-> By default most generators build the Debug configuration if none is specified, this may not be what you want 
+> By default most generators build the Debug configuration if none is specified, this may not be what you want.
 
 ### Build an example
 
-To build any of the examples, use cmake:
+There are CMake targets provided for every example:
 ```
 cmake --build . --target <examplename>
 ```
 > [!IMPORTANT]
 > Where `<examplename>` is a name of a subdirectory under `./examples/` (e.g. `floppybirb`)
 
-> [!NOTE]
-> Examples do not use the `--config` syntax and therefore it isn't necessary to provide it
-
 ### Running
-To start the engine use the `rungame` executable. This is located under the `./build/` subdirectory if the build is successful. A `./build/game/` directory with valid content is necessary for startup, this can be created by building an example.
+To start the engine use the `rungame` executable. This is located under the `./build/` subdirectory if the build is successful.¨
+A `./build/game/` directory with valid content is necessary for startup, this can be created by building an example.
 
 ### Building documentation
 HTML documentation can be generated using doxygen, the `build_docs` cmake target is provided for this purpose, output is by default generated in the `./docs/output` directory.

@@ -48,9 +48,16 @@ jobs:
     - name: Update submodules
       run: git submodule update
       
-    - name: Build.sh
+    - name: CMake configure
+      shell: bash
+      env: 
+        CC: ${{ matrix.c_compiler }}
+        CXX: ${{ matrix.cpp_compiler }}
+      run: cmake -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} .
+
+    - name: CMake build
       shell: bash
       env:
         CC: ${{ matrix.c_compiler }}
         CXX: ${{ matrix.cpp_compiler }}
-      run: ./build.sh ${{ matrix.build_type }}
+      run: cmake --build . --target rungame

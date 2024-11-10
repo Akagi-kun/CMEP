@@ -52,9 +52,16 @@ jobs:
       shell: bash
       run: sudo apt install libxrandr-dev libxinerama-dev libxcursor-dev libxi-dev libxext-dev wayland-protocols libwayland-dev libxkbcommon-dev
 
-    - name: Build.sh
+    - name: CMake configure
+      shell: bash
+      env: 
+        CC: ${{ matrix.c_compiler }}
+        CXX: ${{ matrix.cpp_compiler }}
+      run: cmake -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} .
+
+    - name: CMake build
       shell: bash
       env:
         CC: ${{ matrix.c_compiler }}
         CXX: ${{ matrix.cpp_compiler }}
-      run: ./build.sh ${{ matrix.build_type }}
+      run: cmake --build . --target rungame
