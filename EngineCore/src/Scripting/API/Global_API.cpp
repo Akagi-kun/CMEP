@@ -44,7 +44,7 @@ namespace Engine::Scripting::API
 			LuaValue	value(state, arg);
 			std::string string = LuaValue::toString(value);
 
-			locked_logger->log("%s\t", string.c_str());
+			locked_logger->log("{}\t", string.c_str());
 		}
 
 		locked_logger->stopLog();
